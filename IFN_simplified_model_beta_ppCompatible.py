@@ -13,16 +13,20 @@ Parameter('cell_thickness', 8E-6) # height, m
 Parameter('cell_dens', 1E5) # density of cells , /L
 Parameter('width_PM', 1E-6) # effective width of membrane , m
 
-Expression('volEC', 1/cell_dens) # vol. extracellular space , L
-Expression('volPM', 2*rad_cell**2 + rad_cell*cell_thickness*4 ) # virtual vol. of plasma membrane , L
-Expression('volCP', cell_thickness*rad_cell**2) # vol. of cytoplasm , L 
+#vol. extracellular space , L
+Parameter('volEC', 1E-5) # = 1/cell_dens 
+
+# virtual vol. of plasma membrane , L 
+Parameter('volPM', 2.76e-09 ) # = 2*rad_cell**2 + rad_cell*cell_thickness*4
+
+# vol. of cytoplasm , L 
+Parameter('volCP', 7.2e-15) # = cell_thickness*rad_cell**2  
 
 Parameter('IFN', 1E-9)    # initial concentration in Molar
-Expression('I', IFN*volEC*NA) # number of copies per cell (~ 6.022e8 copies per cell)
-#Expression('Ia', I)
-Expression('Ib', I) 
-#Parameter('r', 0) # Receptor assymmetry
-#Parameter('R', 0) #
+#number of copies per cell 
+Parameter('I', 6.022E9) # = IFN*volEC*NA
+Parameter('Ib', 6.022E9) # = I
+
 Parameter('R1', 2000) #(2000/7.2e-15)*volCP#(8000/2.76e-9)*volPM#R -r#
 Parameter('R2', 2000)#(2000/7.2e-15)*volCP#(8000/2.76e-9)*volPM#(8000/2.76e-9)*volPM#R +r#
 
@@ -33,47 +37,40 @@ Parameter('S', 1E4)#(1e4/7.2e-15)*volCP#
 # from /M/sec to /(molecule/cell)/sec
 
 # Beta block
-Expression('k_a1', (3E5)/(NA*volEC))
+Parameter('k_a1', 4.98E-14)
 Parameter('k_d1', 0.030)#*10
 
-Expression('k_a2', (5e6)/(NA*volEC))   # ligand-monomer binding  (scaled)
+Parameter('k_a2', 8.30e-13)   # ligand-monomer binding  (scaled)
 Parameter('k_d2', 0.001) #*10              # ligand-monomer dissociation
 
 #NEW PARAMETERS IN VIVO
-Expression('k_a3', 1E-12/(volPM))
+Parameter('k_a3', 3.62e-4)
 
-Expression('k_a4', k_a3) #*20#e-12
+Parameter('k_a4', 3.62e-4) #*20#e-12
 Parameter('k_d4', 0.006) #*20
 
-Expression('q_1', (k_a1/k_d1))
-Expression('q_2', (k_a2/k_d2))
-Expression('q_4', (k_a4/k_d4))
-Expression('q_3', (q_2*q_4)/(q_1))
-
-Expression('k_d3', k_a3/q_3) #(ka3)/(q3)
+Parameter('k_d3', 1.2e-5) #(ka3)/(q3)
 
 Parameter('kpa', 1E-6)#6e-5##OLD VALUE was (1e6)/(NA*volCP)=1e-6
 Parameter('kpu', 1E-3)#1e-3
 
 #Internalization: 
-Parameter('Internalization_switch',0)
 # Basal:
-Expression('kIntBasal_r1', 0.0001*Internalization_switch)#0.0002
-Expression('kIntBasal_r2', 0.00002*Internalization_switch)#0.000012
-Expression('krec_r1', 0.0001*Internalization_switch)
-Expression('krec_r2', 0.0001*Internalization_switch)
+#Parameter('kIntBasal_r1', 0.0001)#0.0002
+#Parameter('kIntBasal_r2', 0.00002)#0.000012
+#Parameter('krec_r1', 0.0001)
+#Parameter('krec_r2', 0.0001)
 # Beta:
 # Asymmetric:
-Expression('kint_b', 0.0002*Internalization_switch)
-Expression('kdeg_b', 0.0008*Internalization_switch)
-Expression('krec_b1', 0.0001*Internalization_switch)
-Expression('krec_b2', 0.001*Internalization_switch)
+#Parameter('kint_b', 0.0002)
+#Parameter('kdeg_b', 0.0008)
+#Parameter('krec_b1', 0.0001)
+#Parameter('krec_b2', 0.001)
 
 #SOCS Feedback Inhibition
 Parameter('kSOCS', 4E-3) # 4e-3 was old value #Should sufficiently separate peak pSTAT from peak SOCS
 Parameter('SOCSdeg', (5e-4)*5)	#Maiwald*form factor
-Parameter('kSOCSonModifier',1)
-Expression('kSOCSon', kpa*kSOCSonModifier)
+Parameter('kSOCSon', 1e-6)
 Parameter('kSOCSoff', 5.5E-4)#1.5e-3	#Rate of SOCS unbinding ternary complex. Very fudged. Was 1.5e-3 
 
 
@@ -151,11 +148,11 @@ Rule('SOCS_inhibition', SOCS(site=None) + IFNAR1(re=1, ri=None, loc='out')%IFN_b
   
 # Internalization Block
 # Basal:
-Rule('Basal_int1', IFNAR1(re=None, ri=None, loc='out') | IFNAR1(re=None, ri=None, loc='in'), kIntBasal_r1, krec_r1)
-Rule('Basal_int2', IFNAR2(re=None, ri=None, loc='out') | IFNAR2(re=None, ri=None, loc='in'), kIntBasal_r2, krec_r2)
-Rule('Basal_intT', IFNAR1(re=1, ri=None, loc='in')%IFN_beta(r1=1,r2=2)%IFNAR2(re=2, ri=None, loc='in') >> IFNAR1(re=None, ri=None, loc='in') + IFNAR2(re=None, ri=None, loc='in'), kdeg_b)
+#Rule('Basal_int1', IFNAR1(re=None, ri=None, loc='out') | IFNAR1(re=None, ri=None, loc='in'), kIntBasal_r1, krec_r1)
+#Rule('Basal_int2', IFNAR2(re=None, ri=None, loc='out') | IFNAR2(re=None, ri=None, loc='in'), kIntBasal_r2, krec_r2)
+#Rule('Basal_intT', IFNAR1(re=1, ri=None, loc='in')%IFN_beta(r1=1,r2=2)%IFNAR2(re=2, ri=None, loc='in') >> IFNAR1(re=None, ri=None, loc='in') + IFNAR2(re=None, ri=None, loc='in'), kdeg_b)
 # Alpha Block:
-Rule('IFNa_intT', IFNAR1(re=1, ri=None, loc='out')%IFN_beta(r1=1,r2=2)%IFNAR2(re=2, ri=None, loc='out') >> IFNAR1(re=1,ri=None,loc='in')%IFN_beta(r1=1,r2=2)%IFNAR2(re=2,ri=None,loc='in'), kint_b)
-Rule('Rec_1', IFNAR1(re=None, ri=None, loc='in')>>IFNAR1(re=None, ri=None, loc='out'), krec_b1)
-Rule('Rec_2', IFNAR2(re=None, ri=None, loc='in')>>IFNAR2(re=None, ri=None, loc='out'), krec_b2)
+#Rule('IFNb_intT', IFNAR1(re=1, ri=None, loc='out')%IFN_beta(r1=1,r2=2)%IFNAR2(re=2, ri=None, loc='out') >> IFNAR1(re=1,ri=None,loc='in')%IFN_beta(r1=1,r2=2)%IFNAR2(re=2,ri=None,loc='in'), kint_b)
+#Rule('Rec_1', IFNAR1(re=None, ri=None, loc='in')>>IFNAR1(re=None, ri=None, loc='out'), krec_b1)
+#Rule('Rec_2', IFNAR2(re=None, ri=None, loc='in')>>IFNAR2(re=None, ri=None, loc='out'), krec_b2)
 
