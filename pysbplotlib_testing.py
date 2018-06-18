@@ -95,49 +95,7 @@ def main(tc=False, dr=False, multi_dr=False, multi_tc=False,
                                     ['r','g'], 
                                     axes_labels = ['IFN (M)',r"pSTAT/pSTAT$_{Total}$"], 
                                     title = 'Weighted dose response', Norm=10000)
-    if param_dr==True:
-        pass
-#       x = pyplt.mp_DR_parameter_scan([[1,7],[2,7],[3,7]],3)(3, 1, IFNaModel.model, ['IFN',np.logspace(-14,-2,num=50)],
-#                                3600, ['pSTAT',"pSTAT"], 'kd4', [0.2,0.4],
-#                                'kd2', [0.01,0.03], Norm=10000, parameters={'kpa':0.3})
-# =============================================================================
-# from multiprocessing import Process, Queue, JoinableQueue, cpu_count
-# def working(id, jobs, result):
-#     while True:
-#         task = jobs.get()
-#         if task is None:
-#             break
-#         print( "%d task:" % id, task)
-#         result.put("%s task r" % id)
-#     #result.put(None)
-# def wrapper():
-#     jobs = Queue()
-#     result = JoinableQueue()
-#     NUMBER_OF_PROCESSES = cpu_count()
-#     
-#     tasks = ["1","2","3","4","5"]
-#     
-#     for w in tasks:
-#         jobs.put(w)
-# 
-#     [Process(target=working, args=(i, jobs, result)).start()
-#             for i in range(NUMBER_OF_PROCESSES)]
-#     
-#     print( 'starting workers')
-#     
-#     for t in range(len(tasks)):
-#         r = result.get()
-#         print( r )
-#         result.task_done()
-#     
-#     for w in range(NUMBER_OF_PROCESSES):
-#         jobs.put(None)
-# 
-#     result.join()
-#     jobs.close()
-#     result.close()
-# 
-# =============================================================================
+
 if __name__ == "__main__":
-   main(wdr=True)
+   main(tc=True)
    

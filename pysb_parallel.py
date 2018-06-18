@@ -17,7 +17,7 @@ Suite of functions for performing parallelized routines such as 2D parameter
 # Import statements required for the parallelized routines
 from multiprocessing import Process, Queue, JoinableQueue, cpu_count
 from pysb.export import export
-from numpy import divide, subtract, abs, linspace, logspace, zeros
+from numpy import divide, subtract, abs, logspace, reshape, flipud, flip
 
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -434,7 +434,8 @@ def p_Wdoseresponse(modelfiles, weights, parameters, dose, t, spec,
 #	   param2 = a list of the form ['parameter_name',[values for the parameter]]
 #		** param1 and param2 are the two parameters being scanned over
 #      dose = list composed of ['parameter_title',[parameter values to scan]]
-#      t_end = int representing the time to simulate each timecourse in the dose-response to
+#      t_list = list of times to use for each timecourse in the dose-response. More time points
+#				*may* make numerical integration more stable.
 #      spec = a two-element list of the form [name of an observable, label for observable]
 #	   custom_params = a list of other parameters to control in the same form as param1        
 #      Norm = normalization factor. Default = None (ie. no normalization)
@@ -450,6 +451,22 @@ def p_Wdoseresponse(modelfiles, weights, parameters, dose, t, spec,
 # Returns: A 2D array with each element containing three values: 
 #			[x-axis value, y-axis value, z_value]
 # =============================================================================
+def IFN_heatmap(image, param1, param2):
+    fig, ax = plt.subplots()
+    # Build title
+    title = "{} vs {}".format(param1[0],param2[0])   
+	 # Build x and y axis labels
+    xticks =  ['{:.2e}'.format(float(i)) for i in param1[1]]
+    xticks = [float(i) for i in xticks]
+    yticks = ['{:.2e}'.format(float(i)) for i in param2[1]]
+    yticks = [float(i) for i in yticks]
+    yticks = flip(yticks,0)
+    # Plot image
+    sns.heatmap(flipud(image), xticklabels=xticks, yticklabels=yticks)
+    plt.title(title)
+    # Save figure
+    plt.savefig("{}.pdf".format(title))
+
 def p_DRparamScan_helper(id, jobs, result):
     # try to work as long as work is available
     while True:
@@ -465,14 +482,14 @@ def p_DRparamScan_helper(id, jobs, result):
         # put the result onto the results queue
         result.put([params[0][1], params[1][1], HMR])
 
-def p_DRparamScan(modelfile, param1, param2, testDose, t_end, spec, 
-                  custom_params=None, Norm=False, cpu=None):
+def p_DRparamScan(modelfile, param1, param2, testDose, t_list, spec, 
+                  custom_params=None, Norm=False, cpu=None, suppress=False):
     # initialization
     jobs = Queue()
     result = JoinableQueue()
     if cpu == None or cpu >= cpu_count():
         NUMBER_OF_PROCESSES = cpu_count()-1
-	else:
+    else:
         NUMBER_OF_PROCESSES = cpu
     print("using {} processors".format(NUMBER_OF_PROCESSES))
     # build task list
@@ -487,7 +504,7 @@ def p_DRparamScan(modelfile, param1, param2, testDose, t_end, spec,
             for val2 in param2[1]:
                 params.append([[param1[0],val1],[param2[0],val2]]+[c for c in custom_params])
 
-    tasks = [[modelfile, testDose, linspace(0,t_end,50), spec, Norm, p] for p in params]
+    tasks = [[modelfile, testDose, t_list, spec, Norm, p] for p in params]
     # put jobs on the queue
     print("There are {} tasks to compute".format(len(params)))
     print("putting tasks on the queue")
@@ -514,7 +531,12 @@ def p_DRparamScan(modelfile, param1, param2, testDose, t_end, spec,
     result.join()
     jobs.close()
     result.close()
-    print("done scan")    
+    print("done scan")
+    # plot heatmap if suppress==False
+    if suppress==False:
+        	image = [el[2] for el in pool_results]
+        	image = reshape(image, (len(param1[1]),len(param2[1])))
+        	IFN_heatmap(image, param1, param2)
     #return the scan 
     return pool_results
 	
