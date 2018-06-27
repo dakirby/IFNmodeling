@@ -1,6 +1,6 @@
 # Import of \IFN January 2018\Simplified SOCS model - beta model from 
 #   Rulebender to PySB. This is just a model file - must be run from a run file
-from pysb import *
+from pysb import Model, Parameter, Rule, Monomer, Initial, Observable, WILD
 Model() 
 # =============================================================================
 # # Parameters
@@ -8,7 +8,7 @@ Model()
 Parameter('NA', 6.022E23)   # Avogadro's number (molecues/mol)
 Parameter('PI', 3.142)      # no unit
 
-Parameter('rad_cell', 30E-6)      # radius of cell in m approx 10 micron
+Parameter('rad_cell', 30E-6)      # radius of cell in m approx 30 micron
 Parameter('cell_thickness', 8E-6) # height, m
 Parameter('cell_dens', 1E5) # density of cells , /L
 Parameter('width_PM', 1E-6) # effective width of membrane , m
@@ -25,7 +25,6 @@ Parameter('volCP', 7.2e-15) # = cell_thickness*rad_cell**2
 Parameter('IFN', 1E-9)    # initial concentration in Molar
 #number of copies per cell 
 Parameter('I', 6.022E9) # = IFN*volEC*NA
-Parameter('Ib', 6.022E9) # = I
 
 Parameter('R1', 2000) #(2000/7.2e-15)*volCP#(8000/2.76e-9)*volPM#R -r#
 Parameter('R2', 2000)#(2000/7.2e-15)*volCP#(8000/2.76e-9)*volPM#(8000/2.76e-9)*volPM#R +r#
@@ -90,7 +89,7 @@ Monomer('SOCS',['site'])
 # =============================================================================
 # # Seed Species
 # =============================================================================
-Initial(IFN_beta(r1=None,r2=None), Ib)
+Initial(IFN_beta(r1=None,r2=None), I)
 
 Initial(IFNAR1(re=None, ri=None, loc='out'), R1)
 Initial(IFNAR2(re=None, ri=None, loc='out'), R2)

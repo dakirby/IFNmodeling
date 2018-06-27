@@ -50,13 +50,13 @@ def get_ODE_model(modelfile):
 # =============================================================================
 def get_EC50(dose, response):
     if len(dose) != len(response):
-        print("Expected lengths of dose and response to match.")
+        print("len(dose) = "+str(len(dose))+" , len(response) = "+str(len(response)))
         return 1
     half_max_response = max(response)/2
     # Find the simulation point closest to the half-max value. Be careful that
     # the selected point isn't in the right tail of the dose-response curve
     max_idx = response.index(max(response))+1
-    dif = dose[0:max_idx] # Avoids right tail of response curve   
+    dif = response[0:max_idx] # Avoids right tail of response curve   
     
 	# This makes the half-max point near 0
     dif = abs(subtract(dif,half_max_response)).tolist()
@@ -156,6 +156,12 @@ def p_timecourse(modelfile, t, spec, axes_labels = ['',''], title = '',
                             label=species[1], linewidth=2.0)
                     spec_count+=1
         plt.legend()
+        if title != '':
+            plt.savefig(title+".pdf")
+        else:
+            plt.savefig("tc.pdf")
+                
+                
     return timecourse
 
 # =============================================================================
@@ -211,9 +217,8 @@ def p_doseresponse(modelfile, dose, t, spec, axes_labels = ['',''], title = '',
         else:
             # no custom parameters given
             parameters = [[dose[0],d]]
-        temp = parameters.copy()    
-        simres = p_timecourse(modelfile, t, spec, suppress=True, parameters = temp)
-
+        temp = parameters.copy() 
+        simres = p_timecourse(modelfile, t, spec, suppress=True, title=str(d), parameters = temp)
         # Get the final time point for each dose
         if Norm==None:#No normalization
             for i in range(len(spec)):
@@ -234,7 +239,6 @@ def p_doseresponse(modelfile, dose, t, spec, axes_labels = ['',''], title = '',
                     for i in range(len(spec)):
                         final_dr[i].append(simres[spec[i][0]][-1]/Norm[i][dose_index])
         dose_index+=1
-
     # Plot the final dose-response
     if suppress == False:
         plt.ion()
@@ -250,6 +254,10 @@ def p_doseresponse(modelfile, dose, t, spec, axes_labels = ['',''], title = '',
             else:
                  ax.plot(dose[1], final_dr[species], label=spec[species][1], linewidth=2.0)
             plt.legend()
+        if title != '':
+            plt.savefig(title+".pdf")
+        else:
+            plt.savefig("dr.pdf")
     return final_dr
 
 # =============================================================================
@@ -327,6 +335,11 @@ def p_Wtimecourse(modelfiles, weights, params, t, spec, axes_labels = ['',''],
                             label=species[1], linewidth=2.0,)
                         spec_count+=1
         plt.legend()
+        if title != '':
+            plt.savefig(title+".pdf")
+        else:
+            plt.savefig("tc.pdf")
+        
     return weightedSim
 # =============================================================================
 # p_Wdoseresponse() takes a combination of models, a set of doses, and a set of 
@@ -421,6 +434,11 @@ def p_Wdoseresponse(modelfiles, weights, parameters, dose, t, spec,
             for species in range(len(spec)):
                 ax.plot(dose[1], final_dr[species], label=spec[species][1], linewidth=2.0,)
                 plt.legend()
+        if title != '':
+            plt.savefig(title+".pdf")
+        else:
+            plt.savefig("dr.pdf")
+
     return final_dr
 
 # =============================================================================
@@ -478,12 +496,17 @@ def p_DRparamScan_helper(id, jobs, result):
         # there is a job, so do it
         modelfile, dose, t, spec, inNorm, params = task
         dr = p_doseresponse(modelfile, dose, t, spec, suppress=True, Norm=inNorm, parameters = params)
-        doseEC50, HMR = get_EC50(logspace(-14,-2,num=50),dr[0])
+        analysis = get_EC50(dose[1],dr[0])
+        if analysis==1:
+            print("Expected lengths of dose and response to match.")
+            return [1,1,1]
+        else:
+            doseEC50, HMR = analysis
         # put the result onto the results queue
         result.put([params[0][1], params[1][1], HMR])
 
 def p_DRparamScan(modelfile, param1, param2, testDose, t_list, spec, 
-                  custom_params=None, Norm=False, cpu=None, suppress=False):
+                  custom_params=None, Norm=None, cpu=None, suppress=False):
     # initialization
     jobs = Queue()
     result = JoinableQueue()

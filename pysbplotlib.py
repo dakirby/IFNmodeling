@@ -472,7 +472,7 @@ def Wdoseresponse(modelfiles, weights, parameters, dose, t, spec,
             if type(wNorm[0])==int or type(wNorm[0])==float:#species-specific normalization factors
                 for i in range(len(spec)):
                     final_dr[i].append(wtraj[spec[i][0]][-1]/wNorm[i])
-            else:#species-specific trajectory to normalize by (ie. norm-factor is a function of time)
+            else:#species-specific trajectory to normalize by (ie. norm-factor is a function of x-axis variable)
                 if len(dose[1])!= len(wNorm[0]):
                     print("Expected a trajectory to normalize each species by, but len(dose) != len(Norm[0])")
                     return 1

@@ -8,7 +8,7 @@ Model()
 Parameter('NA', 6.022E23)   # Avogadro's number (molecues/mol)
 Parameter('PI', 3.142)      # no unit
 
-Parameter('rad_cell', 30E-6)      # radius of cell in m approx 10 micron
+Parameter('rad_cell', 30E-6)      # radius of cell in m approx 30 micron
 Parameter('cell_thickness', 8E-6) # height, m
 Parameter('cell_dens', 1E5) # density of cells , /L
 Parameter('width_PM', 1E-6) # effective width of membrane , m
