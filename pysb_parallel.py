@@ -39,7 +39,7 @@ def get_ODE_model(modelfile):
         f.write(py_output)
     import ODE_system
     return ODE_system.Model()
-
+	
 # =============================================================================
 # get_EC50() takes a dose-response trajectory for a single species and returns
 # an estimate of the EC50.
@@ -67,6 +67,15 @@ def get_EC50(dose, response):
     return dose[ec50_idx], response[ec50_idx]
 
 # =============================================================================
+# get_ODE_model_scan() is an internal function, only used when p_DRparamScan 
+# is called. It is required because the model has to be exported before
+# parallel threads are started, changing the import statements for p_timecourse
+# =============================================================================
+def get_ODE_model_scan():
+    import ODE_system
+    return ODE_system.Model()			
+
+# =============================================================================
 # p_timecourse() takes a PySB model and a set of time points and runs a 
 # simulation using scipy.integrate. It can output a figure of the simulation.
 # Inputs:
@@ -90,9 +99,12 @@ def get_EC50(dose, response):
 # Returns: timecourse = list indexed by observable names
 # =============================================================================
 def p_timecourse(modelfile, t, spec, axes_labels = ['',''], title = '',
-               Norm=None, suppress=False, parameters=None):
+               Norm=None, suppress=False, parameters=None, scan=0):
     # Get model
-    mod = get_ODE_model(modelfile)
+    if scan==0:
+        mod = get_ODE_model(modelfile)
+    elif scan==1:
+        mod = get_ODE_model_scan()
     # Run simulation
     if parameters==None:
         #(species_output, observables_output)
@@ -195,7 +207,8 @@ def p_timecourse(modelfile, t, spec, axes_labels = ['',''], title = '',
 #  Returns: final_dr = final species concentrations for each dose's timecourse
 # =============================================================================
 def p_doseresponse(modelfile, dose, t, spec, axes_labels = ['',''], title = '',
-                 suppress=False, Norm=None, parameters=False, dose_axis_norm=False):
+                 suppress=False, Norm=None, parameters=False, dose_axis_norm=False,
+                 scan=0):
     # Sanity check: dose parameter should not also be in parameters
     if parameters:
         for p in parameters:
@@ -219,7 +232,10 @@ def p_doseresponse(modelfile, dose, t, spec, axes_labels = ['',''], title = '',
             # no custom parameters given
             parameters = [[dose[0],d]]
         temp = parameters.copy() 
-        simres = p_timecourse(modelfile, t, spec, suppress=True, title=str(d), parameters = temp)
+        if scan==0:
+            simres = p_timecourse(modelfile, t, spec, suppress=True, title=str(d), parameters = temp)
+        elif scan==1:
+            simres = p_timecourse(modelfile, t, spec, suppress=True, title=str(d), parameters = temp, scan=1)
         # Get the final time point for each dose
         if Norm==None:#No normalization
             for i in range(len(spec)):
@@ -483,7 +499,8 @@ def p_DRparamScan_helper(id, jobs, result):
             break
         # there is a job, so do it
         modelfile, dose, t, spec, inNorm, params = task
-        dr = p_doseresponse(modelfile, dose, t, spec, suppress=True, Norm=inNorm, parameters = params)
+        dr = p_doseresponse(modelfile, dose, t, spec, suppress=True, Norm=inNorm, 
+                                parameters = params, scan=1)
         analysis = get_EC50(dose[1],dr[0])
         if analysis==1:
             print("Expected lengths of dose and response to match.")
@@ -570,6 +587,12 @@ def p_DRparamScan(modelfile, param1, param2, testDose, t_list, spec, custom_para
             for val2 in param2[1]:
                 params.append([[param1[0],val1],[param2[0],val2]]+[c for c in custom_params])
 
+    # Write modelfile
+    imported_model = __import__(modelfile)
+    py_output = export(imported_model.model, 'python')
+    with open('ODE_system.py','w') as f:
+        f.write(py_output)
+				
     tasks = [[modelfile, testDose, t_list, spec, Norm, p] for p in params]
     # put jobs on the queue
     print("There are {} tasks to compute".format(len(params)))
