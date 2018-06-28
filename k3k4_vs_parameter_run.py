@@ -1,45 +1,25 @@
 # -*- coding: utf-8 -*-
 """
-Created on Thu Jun  7 12:03:19 2018
-
-@author: Duncan
-"""
-# -*- coding: utf-8 -*-
-"""
 Created on Thu Jun  7 11:19:35 2018
 
 @author: Duncan
 # =============================================================================
 # NOTES:
 # 1. param_values is now a list (rather than a dictionary, as in pysbplotlib)
-# 2. Cannot pass IFN as a parameter. Must pass IFN*volEC*NA to the parameter 
-#    Ia or Ib.
+# 2. Cannot pass IFN as a parameter. Must pass IFN*volEC*NA to the parameter I
 # 3. param_values must receive a vector with ALL parameter values to use
 # =============================================================================
 
-Suite of functions for performing parallelized routines such as 2D parameter
- scans: get_EC50(), mp_DR_parameter_scan()
-"""
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Jun  7 11:19:35 2018
+Intended to allow 2D parameter scans of Interferon models of the form 
+K3 and K4 vs any other parameter, without breaking the detailed balance 
+conditions for K3 and K4.
 
-@author: Duncan
-# =============================================================================
-# NOTES:
-# 1. param_values is now a list (rather than a dictionary, as in pysbplotlib)
-# 2. Cannot pass IFN as a parameter. Must pass IFN*volEC*NA to the parameter 
-#    Ia or Ib.
-# 3. param_values must receive a vector with ALL parameter values to use
-# =============================================================================
-
-Suite of functions for performing parallelized routines such as 2D parameter
- scans: get_EC50(), mp_DR_parameter_scan()
 """
 # Import statements required for the parallelized routines
 from multiprocessing import Process, Queue, JoinableQueue, cpu_count
 from pysb.export import export
 from numpy import divide, subtract, abs, logspace, linspace, reshape, flipud, flip
+from operator import itemgetter # for sorting results after processes return
 
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -252,6 +232,20 @@ def p_DRparamScan_helper(id, jobs, result):
         # put the result onto the results queue
         result.put([params[0][1], params[1][1], doseEC50, HMR])
 
+# image is of the form [[xidx, yidx, pixel], [...], ...]
+def image_builder(results, doseNorm, shape):
+    dose_image = [[el[0], el[1], el[2]/doseNorm] for el in results]
+    dose_image.sort(key=itemgetter(1,0))
+    dose_image = [el[2] for el in dose_image]
+    dose_image = reshape(dose_image,(shape[0],shape[1]))
+    
+    response_image = [[el[0], el[1], el[3]] for el in results]
+    response_image.sort(key=itemgetter(1,0))
+    response_image = [el[2] for el in response_image]
+    response_image = reshape(response_image,(shape[0],shape[1]))
+  
+    return dose_image, response_image
+
 
 def k3k4_DRparamScan(modelfile, typeIFN, param2, testDose, t_list, spec, 
                   custom_params=None, Norm=False, cpu=None, suppress=False, doseNorm=1):    
@@ -328,10 +322,8 @@ def k3k4_DRparamScan(modelfile, typeIFN, param2, testDose, t_list, spec,
     print("done scan")
     # plot heatmap if suppress==False
     if suppress==False:
-        dose_image = [el[2]/doseNorm for el in pool_results]
-        response_image = [el[3] for el in pool_results]
-        response_image = reshape(response_image, (len(k4scan),len(param2[1])))
-        dose_image = reshape(dose_image,(len(k4scan),len(param2[1])))
+        dose_image, response_image = image_builder(pool_results, doseNorm, (len(k4scan),len(param2[1])))
+        
         if typeIFN=='alpha':
             IFN_heatmap(response_image, ['Response_EC50_alpha_k4',k4scan], param2)
             IFN_heatmap(dose_image, ['Dose_EC50_alpha_k4',k4scan], param2)
@@ -348,8 +340,6 @@ def k3k4_DRparamScan(modelfile, typeIFN, param2, testDose, t_list, spec,
 # =============================================================================
 alpha_modelfilename = "IFN_simplified_model_alpha_ppCompatible"
 beta_modelfilename = "IFN_simplified_model_beta_ppCompatible"
-import seaborn as sns
-sns.set_style("ticks")
 
 def main():
     plt.close('all')

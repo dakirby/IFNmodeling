@@ -53,8 +53,8 @@ def main(timecourse=False, dose_response=False, wtimecourse=False, wdose_respons
         print(pp.get_EC50(logspace(-14,-2,num=50),pWdr[1]))
     
     if paramScan==True:
-        kpaScan = 1E-6*logspace(-2,2,num=30)
-        kSSCan= 1E-6*logspace(-2,2,num=30)
+        kpaScan = 1E-6*logspace(-2,2,num=8)
+        kSSCan= 1E-6*logspace(-2,2,num=8)
         t=linspace(0,3600,num=200)
         zscan = pp.p_DRparamScan(modelfilename, ['kpa',kpaScan], ['kSOCSon',kSSCan],
                                  testDose, t, [['TotalpSTAT',"Total pSTAT"]])

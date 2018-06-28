@@ -12,12 +12,13 @@ Created on Thu Jun  7 11:19:35 2018
 # =============================================================================
 
 Suite of functions for performing parallelized routines such as 2D parameter
- scans: get_EC50(), mp_DR_parameter_scan()
+ scans: get_EC50(), p_DRparamScan()
 """
 # Import statements required for the parallelized routines
 from multiprocessing import Process, Queue, JoinableQueue, cpu_count
 from pysb.export import export
 from numpy import divide, subtract, abs, logspace, reshape, flipud, flip
+from operator import itemgetter # for sorting results after processes return
 
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -442,6 +443,81 @@ def p_Wdoseresponse(modelfiles, weights, parameters, dose, t, spec,
     return final_dr
 
 # =============================================================================
+# IFN_heatmap() is an internal function for p_DRparamScan(). It plots the scans.
+# Inputs:
+#     image: the EC50 image to plot, with pixels oriented such that top left is 
+#             origin (ie. as the output from image_builder())
+#     param1, param2: the scanned parameters to mark x and y axes by, respectively
+# =============================================================================
+def IFN_heatmap(image, param1, param2):
+    fig, ax = plt.subplots()
+    # Build title
+    title = "{} vs {}".format(param1[0],param2[0])   
+	 # Build x and y axis labels
+    xticks =  ['{:.2e}'.format(float(i)) for i in param1[1]]
+    xticks = [float(i) for i in xticks]
+    yticks = ['{:.2e}'.format(float(i)) for i in param2[1]]
+    yticks = [float(i) for i in yticks]
+    yticks = flip(yticks,0)
+    # Plot image
+    sns.heatmap(flipud(image), xticklabels=xticks, yticklabels=yticks)
+    plt.title(title)
+    # Save figure
+    plt.savefig("{}.pdf".format(title))
+
+# =============================================================================
+# p_DRparamScan_helper() is an internal function used by p_DRparamScan(). Each 
+# thread calls this function. 
+# Inputs:
+#     id: the thread ID
+#     jobs: the arguments for p_doseresponse()
+#     result: the queue to put results on to
+# =============================================================================
+def p_DRparamScan_helper(id, jobs, result):
+    # try to work as long as work is available
+    while True:
+        # get job from the queue
+        task = jobs.get()
+        if task is None:
+            # there are no jobs
+            break
+        # there is a job, so do it
+        modelfile, dose, t, spec, inNorm, params = task
+        dr = p_doseresponse(modelfile, dose, t, spec, suppress=True, Norm=inNorm, parameters = params)
+        analysis = get_EC50(dose[1],dr[0])
+        if analysis==1:
+            print("Expected lengths of dose and response to match.")
+            return [1,1,1]
+        else:
+            doseEC50, HMR = analysis
+        # put the result onto the results queue
+        result.put([params[0][1], params[1][1], doseEC50, HMR])
+
+# =============================================================================
+# image_builder() is an internal function used by p_DRparamScan() to ensure
+# results are reordered correctly after all threads return
+# Inputs: 
+#     results: pool_results returned by parameter scan
+#     doseNorm: see p_DRparamScan() documentation
+#     shape: the x and y axis dimensions
+# Returns: 
+#     dose_image: dose EC50 ordered with top left item as origin 
+#                 (ie. first x and y values of scan parameters)
+#     response_image: same as dose_image but pixels are the response EC50
+# =============================================================================
+def image_builder(results, doseNorm, shape):
+    dose_image = [[el[0], el[1], el[2]/doseNorm] for el in results]
+    dose_image.sort(key=itemgetter(1,0))
+    dose_image = [el[2] for el in dose_image]
+    dose_image = reshape(dose_image,(shape[0],shape[1]))
+    
+    response_image = [[el[0], el[1], el[3]] for el in results]
+    response_image.sort(key=itemgetter(1,0))
+    response_image = [el[2] for el in response_image]
+    response_image = reshape(response_image,(shape[0],shape[1]))
+  
+    return dose_image, response_image
+# =============================================================================
 # p_DRparamScan() is a 2D dose-response parameter scan for a given modelfile, 
 # parallelized with Python multiprocessing.
 #   NOTE: MULTIPROCESSING IS NOT COMPATIBLE WITH INTERACTIVE PYTHON INTERPRETERS    
@@ -464,49 +540,16 @@ def p_Wdoseresponse(modelfiles, weights, parameters, dose, t, spec,
 #                otherwise the function will assume the normalization is a 
 #                trajectory over the same number of doses.   
 #     cpu = number of cpus to use (relies on the user to give a reasonable number)
-#           (default is cpu = multiprocessing.cpu_count())    
+#           (default is cpu = multiprocessing.cpu_count())   
+#     doseNorm = a value to normalize the dose by for plotting, 
+#               ie. convert molecules to concentrations just for plotting 
 # Outputs: None
 # Returns: A 2D array with each element containing three values: 
 #			[x-axis value, y-axis value, z_value]
 # =============================================================================
-def IFN_heatmap(image, param1, param2):
-    fig, ax = plt.subplots()
-    # Build title
-    title = "{} vs {}".format(param1[0],param2[0])   
-	 # Build x and y axis labels
-    xticks =  ['{:.2e}'.format(float(i)) for i in param1[1]]
-    xticks = [float(i) for i in xticks]
-    yticks = ['{:.2e}'.format(float(i)) for i in param2[1]]
-    yticks = [float(i) for i in yticks]
-    yticks = flip(yticks,0)
-    # Plot image
-    sns.heatmap(flipud(image), xticklabels=xticks, yticklabels=yticks)
-    plt.title(title)
-    # Save figure
-    plt.savefig("{}.pdf".format(title))
 
-def p_DRparamScan_helper(id, jobs, result):
-    # try to work as long as work is available
-    while True:
-        # get job from the queue
-        task = jobs.get()
-        if task is None:
-            # there are no jobs
-            break
-        # there is a job, so do it
-        modelfile, dose, t, spec, inNorm, params = task
-        dr = p_doseresponse(modelfile, dose, t, spec, suppress=True, Norm=inNorm, parameters = params)
-        analysis = get_EC50(dose[1],dr[0])
-        if analysis==1:
-            print("Expected lengths of dose and response to match.")
-            return [1,1,1]
-        else:
-            doseEC50, HMR = analysis
-        # put the result onto the results queue
-        result.put([params[0][1], params[1][1], HMR])
-
-def p_DRparamScan(modelfile, param1, param2, testDose, t_list, spec, 
-                  custom_params=None, Norm=None, cpu=None, suppress=False):
+def p_DRparamScan(modelfile, param1, param2, testDose, t_list, spec, custom_params=None,
+                  Norm=None, cpu=None, suppress=False, doseNorm=1):
     # initialization
     jobs = Queue()
     result = JoinableQueue()
@@ -557,9 +600,8 @@ def p_DRparamScan(modelfile, param1, param2, testDose, t_list, spec,
     print("done scan")
     # plot heatmap if suppress==False
     if suppress==False:
-        	image = [el[2] for el in pool_results]
-        	image = reshape(image, (len(param1[1]),len(param2[1])))
-        	IFN_heatmap(image, param1, param2)
+        	dose_image, response_image = image_builder(pool_results, doseNorm, (len(param1[1]),len(param2[1])))
+        	IFN_heatmap(response_image, param1, param2)
     #return the scan 
     return pool_results
 	
