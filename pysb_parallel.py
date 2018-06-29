@@ -500,7 +500,7 @@ def p_DRparamScan_helper(id, jobs, result):
         # there is a job, so do it
         modelfile, dose, t, spec, inNorm, params = task
         dr = p_doseresponse(modelfile, dose, t, spec, suppress=True, Norm=inNorm, 
-                                parameters = params, scan=1)
+                                parameters=params, scan=1)
         analysis = get_EC50(dose[1],dr[0])
         if analysis==1:
             print("Expected lengths of dose and response to match.")
@@ -624,6 +624,7 @@ def p_DRparamScan(modelfile, param1, param2, testDose, t_list, spec, custom_para
     # plot heatmap if suppress==False
     if suppress==False:
         	dose_image, response_image = image_builder(pool_results, doseNorm, (len(param1[1]),len(param2[1])))
+        	IFN_heatmap(dose_image, param1, param2)
         	IFN_heatmap(response_image, param1, param2)
     #return the scan 
     return pool_results
