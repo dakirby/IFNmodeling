@@ -624,8 +624,25 @@ def p_DRparamScan(modelfile, param1, param2, testDose, t_list, spec, custom_para
     # plot heatmap if suppress==False
     if suppress==False:
         	dose_image, response_image = image_builder(pool_results, doseNorm, (len(param1[1]),len(param2[1])))
-        	IFN_heatmap(dose_image, param1, param2)
-        	IFN_heatmap(response_image, param1, param2)
+        	IFN_heatmap(dose_image, ["dose image - {}".format(param1[0]), param1[1]], param2)
+        	IFN_heatmap(response_image, ["response image - {}".format(param1[0]), param1[1]], param2)
     #return the scan 
     return pool_results
 	
+# =============================================================================
+# fit_model() takes a PySB model and fits an input list of parameters to 
+# experimental (or otherwise) data by nonlinear least squares regression.
+# Input: 
+#       modelfile = the name of the model file to use for the fit
+#       xdata = x-axis values of experimental data to fit to
+#       ydata = y-axis values of experimental data to fit to
+#       paramslist = a list of the parameters in the model to fit
+#       p0 = the initial guesses for parameter values; default parameter values
+#           will be used if p0 is unspecified
+# Output:
+#       parameters = list of optimal values for the parameters specified by paramslist
+# =============================================================================
+      
+def fit_model(modelfile, xdata, ydata):
+    
+
