@@ -7,5 +7,12 @@ Created on Mon Jul  9 08:35:40 2018
 Experimental data set
 """
 import pandas as pd
-data = pd.read_csv("Experimental_Data.csv")
-print(data.loc[(data.loc[:,'Dose (pM)']==10) & (data.loc[:,'Interferon']=="Alpha"),:])
+try:
+    data = pd.read_csv("IFNmodeling\Experimental_Data.csv")
+except FileNotFoundError:
+    try:
+        data = pd.read_csv("Experimental_Data.csv")
+    except:
+        raise
+#print(data.loc[(data.loc[:,'Dose (pM)']==10) & (data.loc[:,'Interferon']=="Alpha"),:])
+#print(data.loc[(data.loc[:,'Dose (pM)']==10) & (data.loc[:,'Interferon']=="Alpha"),'0':'60'])
