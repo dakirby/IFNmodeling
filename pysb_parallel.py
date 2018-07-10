@@ -17,8 +17,10 @@ Suite of functions for performing parallelized routines such as 2D parameter
 # Import statements required for the parallelized routines
 from multiprocessing import Process, Queue, JoinableQueue, cpu_count
 from pysb.export import export
-from numpy import divide, subtract, abs, logspace, reshape, flipud, flip
+from numpy import divide, subtract, abs, reshape, flipud, flip
+import numpy as np
 from operator import itemgetter # for sorting results after processes return
+import itertools #for creating all combinations of lists
 
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -564,7 +566,6 @@ def image_builder(results, doseNorm, shape):
 # Returns: A 2D array with each element containing three values: 
 #			[x-axis value, y-axis value, z_value]
 # =============================================================================
-
 def p_DRparamScan(modelfile, param1, param2, testDose, t_list, spec, custom_params=None,
                   Norm=None, cpu=None, suppress=False, doseNorm=1):
     # initialization
@@ -628,21 +629,223 @@ def p_DRparamScan(modelfile, param1, param2, testDose, t_list, spec, custom_para
         	IFN_heatmap(response_image, ["response image - {}".format(param1[0]), param1[1]], param2)
     #return the scan 
     return pool_results
-	
+
+# =============================================================================
+# lhc() builds an origin-centered latin hypercube for parameters to investigate
+# Inputs:
+#   parameters = a list of lists, each sublist of the form ['name',upper limit, lower limit]
+#   n = number of points to generate    
+# =============================================================================
+def lhc(parameters, n):
+    d = len(parameters)
+    def latin(n, d):
+        """
+        Build unit latin hypercube.
+        Parameters
+        ----------
+        n : int
+            Number of points.
+        d : int
+            Size of space.
+        Returns
+        -------
+        lh : ndarray
+            Array of points uniformly placed in d-dimensional unit cube.
+        """
+        # spread function
+        def spread(points):
+            return sum(1./np.linalg.norm(np.subtract(points[i], points[j])) for i in range(n) for j in range(n) if i > j)
+    
+        # start with diagonal shape
+        lh = [[i/(n-1.)]*d for i in range(n)]
+    
+        # minimize spread function by shuffling
+        minspread = spread(lh)
+    
+        for i in range(1000):
+            point1 = np.random.randint(n)
+            point2 = np.random.randint(n)
+            dim = np.random.randint(d)
+    
+            newlh = np.copy(lh)
+            newlh[point1, dim], newlh[point2, dim] = newlh[point2, dim], newlh[point1, dim]
+            newspread = spread(newlh)
+    
+            if newspread < minspread:
+                lh = np.copy(newlh)
+                minspread = newspread  
+        # shift to be origin-centered
+        for point in lh:
+            for ind in range(d):
+                point[ind]-=0.5
+        return lh
+    unitCube = latin(n,d)
+    # rescale in parameter ranges
+    for point in unitCube:
+        for dim in range(d):
+            point[dim] = (parameters[dim][1]-parameters[dim][2])*point[dim]+(parameters[dim][1]+parameters[dim][2])/2
+    return unitCube #no longer unit
+# =============================================================================
+# brute_parameters() builds all combinations of all parameter values to test
+# Inputs:
+#   parameters = list of the form 
+#                [['name', [values to test]], ['name', [values to test]], ...]
+#   custom_params = list of additional custom parameters, common to every run
+#               eg. [['c1',value],['c2',value],...]
+# Returns:
+#   list of all parameter combinations to run        
+# =============================================================================
+def brute_parameters(parameters, custom_params=None):
+    params=[]
+    for l in parameters:
+        params.append([[l[0],val] for val in l[1]])
+    paramCombinations = list(itertools.product(*params))
+    if custom_params != None:
+        print("Add custom params")
+        cpy = []
+        for item in paramCombinations:
+            cpy.append(list(item)+[custom_params])
+        paramCombinations = cpy
+    return paramCombinations
+        
+# =============================================================================
+# fit_helper is an internal function to allow fit_model to be parallelized
+# =============================================================================
+def fit_helper(id, jobs, result):
+    # try to work as long as work is available
+    while True:
+        # get job from the queue
+        task = jobs.get()
+        if task is None:
+            # there are no jobs
+            break
+        # there is a job, so do it
+        # run simulation
+        modelfile, xdata, ydata, ylabel, paramsList, data_type, time, sigma = task
+        if data_type=="tc":
+            simres = p_timecourse(modelfile, xdata, ylabel, suppress=True,
+                                  parameters=paramsList, scan=1)
+        elif data_type=="dr":
+            if time==None:
+                print("Require input time")
+                return False
+            else:
+                simres = p_doseresponse(modelfile, xdata, time, ylabel,
+                     suppress=True, parameters=paramsList, scan=1)[ylabel]
+        else:
+            print("Expected to fit either time course or dose response data.")
+            return False
+        # calculate residual
+        if sigma == None:
+            if (len(simres) != len(xdata)):
+                print("Model did not output correct number of data points")
+                return 'NaN'
+        elif (len(simres) != len(xdata)) or (len(simres) != len(sigma)):
+            print("Model did not output correct number of data points")
+            return 'NaN'
+        else:
+            res = 0
+            if sigma != None:
+                for point in range(len(simres)):
+                    res += ((simres[point]-ydata[point])/sigma[point])**2
+            else:
+                for point in range(len(simres)):
+                    res += (simres[point]-ydata[point])**2
+        # put the result onto the results queue
+        result.put([res, paramsList])     
+
 # =============================================================================
 # fit_model() takes a PySB model and fits an input list of parameters to 
 # experimental (or otherwise) data by nonlinear least squares regression.
 # Input: 
 #       modelfile = the name of the model file to use for the fit
 #       xdata = x-axis values of experimental data to fit to
+#               for timecourse data, xdata will be a list of times
+#               for dose response data, xdata will be a list of doses        
 #       ydata = y-axis values of experimental data to fit to
-#       paramslist = a list of the parameters in the model to fit
+#       ylabel = the model name for the variable which ydata is to be fit with        
+#       paramsList = a list of the parameters in the model to fit
+#       data_type = "tc" if time course data, or "dr" if dose-response data 
+#       OPTIONAL ARGUMENTS:
+#       time = a list of times, only used for dose response fitting
+#       sigma = a list of uncertainties for each ydata point; equivalent to 
+#               a list of ones when sigma not specified    
 #       p0 = the initial guesses for parameter values; default parameter values
-#           will be used if p0 is unspecified
+#           will be used if p0 is unspecified. Each value corresponds to the 
+#           parameter in paramsList (ie. order must match)   
+#       conditions = list of experimental conditions to be altered in model for 
+#                   all simulations. List is of the form [['name', value],['name', value],...]        
+#       cpu = number of cpu's to use. If none specified, function will use n-1 
+#               cores on an n-core machine
+#       method = method to search parameter space; default is via brute force
+#               options: 
+#                   "brute" : try all parameter combinations
+#                   "sampling" : sample parameter space using latin hypercube
+#                                to generate n samples for testing
+#       n = integer
+#   for method = "sampling", number of parameter combinations to try (default is n=500)
+#   for method = "brute", number of points to test for each parameter
 # Output:
 #       parameters = list of optimal values for the parameters specified by paramslist
 # =============================================================================
-      
-def fit_model(modelfile, xdata, ydata):
+def dummy(i, jobs, result):
+    return 1
+def fit_model(modelfile, xdata, ydata, ylabel, paramsList, data_type, time=None,
+              n=500, sigma=None, p0=None, conditions=None, cpu=None, method="brute"):
+# Write modelfile
+    print("Importing model")
+    imported_model = __import__(modelfile)
+    py_output = export(imported_model.model, 'python')
+    with open('ODE_system.py','w') as f:
+        f.write(py_output)    
+# Set up parallelization
+    jobs = Queue()
+    result = JoinableQueue()
+    if cpu == None or cpu >= cpu_count():
+        NUMBER_OF_PROCESSES = cpu_count()-1
+    else:
+        NUMBER_OF_PROCESSES = cpu
+    print("using {} processors".format(NUMBER_OF_PROCESSES))
+# Build list of parameter values to test
+    print("building tasks")
+    if p0==None:
+        # get default model values
+        print("Currently, you must guess parameter values.")
+        return 1
+    else:
+        parameters = [[paramsList[i], p0[i]] for i in range(len(paramsList))]
+    if method == "brute":
+        n = int(n/np.math.factorial(len(parameters)))
+        if n < 8: n = 8
+        for p in parameters:
+            p[1] = np.logspace(np.log10(1E-3*p[1]),np.log10(1E3*p[1]), num=n)
+        tasks = brute_parameters(parameters, custom_params=conditions)
+    elif method == "sampling":
+        tasks = lhc(parameters, n)
+    else:
+        print("Did not recognize the method specified")
+        return(1)
+# Run all combos of parameter values, calculating fit for each
+    print("computing scan")
+    # start up the workers          fit_helper
+    [Process(target=dummy, args=(i, jobs, result)).start()
+            for i in range(NUMBER_OF_PROCESSES)]
     
+    # pull in the results from each worker
+    pool_results=[]
+    for t in range(len(tasks)):
+        r = result.get()
+        pool_results.append(r)
+        result.task_done()
+    # tell the workers there are no more jobs
+    for w in range(NUMBER_OF_PROCESSES):
+        jobs.put(None)
+    # close all extra threads
+    result.join()
+    jobs.close()
+    result.close()
+    print("done scan")
+    
+# order the outputs by fit
+# return top result, save all results to text file
 
