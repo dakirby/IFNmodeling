@@ -96,7 +96,7 @@ def get_ODE_model_scan():
 #                otherwise the function will assume the normalization is a 
 #                trajectory over the same number of doses.      
 #      suppress = a boolean determining whether or not to plot the results
-#      parameters = a dictionary with keys='parameter name' and values to use
+#      parameters = a list of lists, with sublists of the form ['parameter name', value]
 # Outputs:
 #     figure of the time course
 # Returns: timecourse = list indexed by observable names
@@ -727,17 +727,24 @@ def fit_helper(id, jobs, result):
         for i in range(len(conditions)):
             if (conditions[len(conditions)-1-i][0]=='t') or (conditions[len(conditions)-1-i][0]=='time'):
                 time = np.linspace(0,conditions[len(conditions)-1-i][1])
+                if conditions[len(conditions)-1-i][1] == 0:
+                    # IN THIS SITUATION WE SHOULD REALLY JUST RETURN THE VALUE OF MODEL PSTAT_0 TO AVOID NUMERICAL ISSUES. THIS CURRENTLY ISN'T AN OPTION BUT I INTEND TO FIGURE OUT HOW.
+                    pass
                 params_without_time = [conditions[l] for l in range(len(conditions)-1-i)]+[conditions[l] for l in range(len(conditions)-i, len(conditions))]
                 break
         
         simres = p_timecourse('', time, [ydata[0],ydata[0]], suppress=True,
                                   parameters=params_without_time, scan=1)[ydata[0]]
+        
+        #FOR DEBUGGING: Check that fit generates "correct" values
+        #pString = "ydata = " +str(ydata[1])+"\nsimres({0}){1} = ".format(time[-1],str(params_without_time[0:2]))+str(simres[-1])
+        #print(pString)
+        
         # calculate residual
-        if sigma != None:
-            res = ((simres[-1]-ydata[1])/sigma)**2
+        if (sigma == None):
+            res = (simres[-1]-ydata[1])**2            
         else:
-            for point in range(len(simres)):
-                res = (simres[-1]-ydata[1])**2
+            res = ((simres[-1]-ydata[1])/sigma)**2
         # put the result onto the results queue
         result.put([res, conditions])     
 
@@ -782,15 +789,17 @@ def fit_helper(id, jobs, result):
 # Output:
 #       parameters = list of optimal values for the parameters specified by paramslist
 # =============================================================================
-# For debugging
-def dummy(i, jobs, result):
-    while True:
-        # get job from the queue
-        task = jobs.get()
-        if task is None:
-            # there are no jobs
-            break
-        result.put(1)     
+# =============================================================================
+# # For debugging
+# def dummy(i, jobs, result):
+#     while True:
+#         # get job from the queue
+#         task = jobs.get()
+#         if task is None:
+#             # there are no jobs
+#             break
+#         result.put(1)     
+# =============================================================================
 def fit_model(modelfile, conditions, ydata, paramsList, n=5, sigma=None,
               p0=None, cpu=None, method="brute"):
 # Basic sanity checks
@@ -800,7 +809,7 @@ def fit_model(modelfile, conditions, ydata, paramsList, n=5, sigma=None,
     if len(paramsList) != len(p0):
         print("Number of guesses must match number of parameters to be fit")
         return 1
-    if (sigma != None) and len(sigma) != len(ydata[1]):
+    if (type(sigma)==list) and (len(sigma) != len(ydata[1])):
         print("Number of uncertainties provided does not match number of experimental observations.")
         return 1
 # Write modelfile
@@ -842,7 +851,7 @@ def fit_model(modelfile, conditions, ydata, paramsList, n=5, sigma=None,
     taskList = []
     for t in range(len(tasks)):
         datapoint = t % len(ydata[1])
-        taskList.append([tasks[t], [ydata[0],ydata[1][datapoint]], paramsList, sigma])
+        taskList.append([tasks[t], [ydata[0],ydata[1][datapoint]], paramsList, sigma[datapoint]])
 #    for t in taskList:
 #        print(t)        
 # Run all combos of parameter values, calculating fit for each
