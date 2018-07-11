@@ -575,10 +575,10 @@ def p_DRparamScan(modelfile, param1, param2, testDose, t_list, spec, custom_para
         NUMBER_OF_PROCESSES = cpu_count()-1
     else:
         NUMBER_OF_PROCESSES = cpu
-    print("using {} processors".format(NUMBER_OF_PROCESSES))
+    print("Using {} processors".format(NUMBER_OF_PROCESSES))
     # build task list
     params=[]
-    print("building tasks")
+    print("Building tasks")
     if custom_params == None:
         for val1 in param1[1]:
             for val2 in param2[1]:
@@ -597,12 +597,12 @@ def p_DRparamScan(modelfile, param1, param2, testDose, t_list, spec, custom_para
     tasks = [[modelfile, testDose, t_list, spec, Norm, p] for p in params]
     # put jobs on the queue
     print("There are {} tasks to compute".format(len(params)))
-    print("putting tasks on the queue")
+    print("Putting tasks on the queue")
 	
     for w in tasks:
         jobs.put(w)
 		
-    print("computing scan")
+    print("Computing scan")
 	
     # start up the workers
     [Process(target=p_DRparamScan_helper, args=(i, jobs, result)).start()
@@ -621,7 +621,7 @@ def p_DRparamScan(modelfile, param1, param2, testDose, t_list, spec, custom_para
     result.join()
     jobs.close()
     result.close()
-    print("done scan")
+    print("Done scan")
     # plot heatmap if suppress==False
     if suppress==False:
         	dose_image, response_image = image_builder(pool_results, doseNorm, (len(param1[1]),len(param2[1])))
@@ -695,18 +695,18 @@ def lhc(parameters, n):
 # Returns:
 #   list of all parameter combinations to run        
 # =============================================================================
-def brute_parameters(parameters, custom_params=None):
-    params=[]
+def brute_parameters(parameters, exp_params):
+    reformatted=[]
+    # reformat list 
     for l in parameters:
-        params.append([[l[0],val] for val in l[1]])
-    paramCombinations = list(itertools.product(*params))
-    if custom_params != None:
-        print("Add custom params")
-        cpy = []
-        for item in paramCombinations:
-            cpy.append(list(item)+[custom_params])
-        paramCombinations = cpy
-    return paramCombinations
+        reformatted.append([[l[0],val] for val in l[1]])
+    # generate all unique combinations
+    testCombinations = list(itertools.product(*reformatted))
+    full_fit = []
+    for test in testCombinations:
+        for experiment in exp_params:
+            full_fit.append(list(test)+[experiment])
+    return full_fit
         
 # =============================================================================
 # fit_helper is an internal function to allow fit_model to be parallelized
@@ -721,60 +721,55 @@ def fit_helper(id, jobs, result):
             break
         # there is a job, so do it
         # run simulation
-        modelfile, xdata, ydata, ylabel, paramsList, data_type, time, sigma = task
-        if data_type=="tc":
-            simres = p_timecourse(modelfile, xdata, ylabel, suppress=True,
-                                  parameters=paramsList, scan=1)
-        elif data_type=="dr":
-            if time==None:
-                print("Require input time")
-                return False
-            else:
-                simres = p_doseresponse(modelfile, xdata, time, ylabel,
-                     suppress=True, parameters=paramsList, scan=1)[ylabel]
-        else:
-            print("Expected to fit either time course or dose response data.")
-            return False
+        conditions, ydata, paramsList, sigma = task
+        # get the time for the simulation from conditions
+        for i in range(len(conditions)):
+            if (conditions[len(conditions)-i][0]=='t') or (conditions[len(conditions)-i][0]=='time'):
+                time = [0,conditions[len(conditions)-i][1]]
+                params_without_time = [conditions[l] for l in range(len(conditions)-i)]+[conditions[l] for l in range(len(conditions)-i+1, len(conditions))]
+                break
+        simres = p_timecourse('', time, [ydata[0],ydata[0]], suppress=True,
+                                  parameters=params_without_time, scan=1)[ydata[0]]
         # calculate residual
-        if sigma == None:
-            if (len(simres) != len(xdata)):
-                print("Model did not output correct number of data points")
-                return 'NaN'
-        elif (len(simres) != len(xdata)) or (len(simres) != len(sigma)):
-            print("Model did not output correct number of data points")
+            # sanity check
+        if len(simres)-1 != len(ydata[1]):
+            print("Simulation generated too many or too few data points")
             return 'NaN'
+        elif sigma != None:
+            res = ((simres[-1]-ydata[1])/sigma)**2
         else:
-            res = 0
-            if sigma != None:
-                for point in range(len(simres)):
-                    res += ((simres[point]-ydata[point])/sigma[point])**2
-            else:
-                for point in range(len(simres)):
-                    res += (simres[point]-ydata[point])**2
+            for point in range(len(simres)):
+                res += (simres[-1]-ydata[1])**2
         # put the result onto the results queue
-        result.put([res, paramsList])     
+        result.put([res, conditions])     
 
 # =============================================================================
 # fit_model() takes a PySB model and fits an input list of parameters to 
 # experimental (or otherwise) data by nonlinear least squares regression.
 # Input: 
 #       modelfile = the name of the model file to use for the fit
-#       xdata = x-axis values of experimental data to fit to
-#               for timecourse data, xdata will be a list of times
-#               for dose response data, xdata will be a list of doses        
-#       ydata = y-axis values of experimental data to fit to
-#       ylabel = the model name for the variable which ydata is to be fit with        
+#       conditions = a list of lists, each sublist describing the experimental conditions 
+#               which were used to generate the corresponding ydata point.
+#               Each *sublist* is of the form [['name',value],['name',value],...]
+#
+#               NOTE: All data points are time course measurements. If the data
+#                       point is a dose-response point, it's just a time course
+#                       measurement for a specific dose and end time. It would
+#                       be computationally more efficient to only run unique
+#                       time courses but for now I haven't figured out how to 
+#                       do that.        
+#        
+#       ydata = a list of lists with y-axis values of experimental data to fit to.
+#               Each element of ydata should be a 2-list of the form
+#                   ['corresponding model parameter name', measured value]        
 #       paramsList = a list of the parameters in the model to fit
-#       data_type = "tc" if time course data, or "dr" if dose-response data 
 #       OPTIONAL ARGUMENTS:
-#       time = a list of times, only used for dose response fitting
 #       sigma = a list of uncertainties for each ydata point; equivalent to 
 #               a list of ones when sigma not specified    
 #       p0 = the initial guesses for parameter values; default parameter values
 #           will be used if p0 is unspecified. Each value corresponds to the 
 #           parameter in paramsList (ie. order must match)   
-#       conditions = list of experimental conditions to be altered in model for 
-#                   all simulations. List is of the form [['name', value],['name', value],...]        
+#                   for every experimental data point provided
 #       cpu = number of cpu's to use. If none specified, function will use n-1 
 #               cores on an n-core machine
 #       method = method to search parameter space; default is via brute force
@@ -784,14 +779,32 @@ def fit_helper(id, jobs, result):
 #                                to generate n samples for testing
 #       n = integer
 #   for method = "sampling", number of parameter combinations to try (default is n=500)
-#   for method = "brute", number of points to test for each parameter
+#   for method = "brute", number of points to test for each parameter 
+#                   (default is 8, with a default total of 64 points) (THIS SHOULD BE MADE n=500 after debugging is done)!!!
 # Output:
 #       parameters = list of optimal values for the parameters specified by paramslist
 # =============================================================================
+# For debugging
 def dummy(i, jobs, result):
-    return 1
-def fit_model(modelfile, xdata, ydata, ylabel, paramsList, data_type, time=None,
-              n=500, sigma=None, p0=None, conditions=None, cpu=None, method="brute"):
+    while True:
+        # get job from the queue
+        task = jobs.get()
+        if task is None:
+            # there are no jobs
+            break
+        result.put(1)     
+def fit_model(modelfile, conditions, ydata, paramsList, n=5, sigma=None,
+              p0=None, cpu=None, method="brute"):
+# Basic sanity checks
+    if len(conditions) != len(ydata[1]):
+        print("Number of experimental conditions and observations do not match")
+        return 1
+    if len(paramsList) != len(p0):
+        print("Number of guesses must match number of parameters to be fit")
+        return 1
+    if (sigma != None) and len(sigma) != len(ydata[1]):
+        print("Number of uncertainties provided does not match number of experimental observations.")
+        return 1
 # Write modelfile
     print("Importing model")
     imported_model = __import__(modelfile)
@@ -805,9 +818,9 @@ def fit_model(modelfile, xdata, ydata, ylabel, paramsList, data_type, time=None,
         NUMBER_OF_PROCESSES = cpu_count()-1
     else:
         NUMBER_OF_PROCESSES = cpu
-    print("using {} processors".format(NUMBER_OF_PROCESSES))
+    print("Using {} processors".format(NUMBER_OF_PROCESSES))
 # Build list of parameter values to test
-    print("building tasks")
+    print("Building tasks")
     if p0==None:
         # get default model values
         print("Currently, you must guess parameter values.")
@@ -815,19 +828,35 @@ def fit_model(modelfile, xdata, ydata, ylabel, paramsList, data_type, time=None,
     else:
         parameters = [[paramsList[i], p0[i]] for i in range(len(paramsList))]
     if method == "brute":
+        # calculate the number of values to test per parameter
         n = int(n/np.math.factorial(len(parameters)))
-        if n < 8: n = 8
+        # but if this is too few points then just override this
+        if n < 5: n = 5
         for p in parameters:
             p[1] = np.logspace(np.log10(1E-3*p[1]),np.log10(1E3*p[1]), num=n)
-        tasks = brute_parameters(parameters, custom_params=conditions)
+        tasks = brute_parameters(parameters, conditions)
     elif method == "sampling":
         tasks = lhc(parameters, n)
     else:
         print("Did not recognize the method specified")
         return(1)
+    # add the other arguments required for fitting to each parameter combo
+    taskList = []
+    for t in range(len(tasks)):
+        datapoint = t % len(ydata[1])
+        taskList.append([tasks[t], [ydata[0],ydata[1][datapoint]], paramsList, sigma])
+    for t in taskList:
+        print(t)        
 # Run all combos of parameter values, calculating fit for each
-    print("computing scan")
-    # start up the workers          fit_helper
+    # put jobs on the queue
+    print("There are {} tasks to compute".format(len(tasks)))
+    print("Putting tasks on the queue")
+    for w in taskList:
+        jobs.put(w)
+		
+    print("Computing scan")
+
+    # start up the workers          
     [Process(target=dummy, args=(i, jobs, result)).start()
             for i in range(NUMBER_OF_PROCESSES)]
     
@@ -844,7 +873,7 @@ def fit_model(modelfile, xdata, ydata, ylabel, paramsList, data_type, time=None,
     result.join()
     jobs.close()
     result.close()
-    print("done scan")
+    print("Done scan")
     
 # order the outputs by fit
 # return top result, save all results to text file

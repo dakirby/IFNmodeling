@@ -63,10 +63,11 @@ def main(timecourse=False, dose_response=False, wtimecourse=False, wdose_respons
         kpaScan = 1E-6*logspace(-2,2,num=8)
         kSSCan= 1E-6*logspace(-2,2,num=8)
         xdata = [0,5*60,15*60,30*60,60*60]
+        xdata = [['t',el] for el in xdata]
         ydata = ED.data.loc[(ED.data.loc[:,'Interferon']=="Beta"),['0','5','15','30','60']].values[0]
-        
-        zscan = pp.fit_model(modelfilename, xdata, ydata, 'TotalpSTAT', 
-                             [['kpa',kpaScan],['kSOCSon',kSSCan]],"tc")
+
+        zscan = pp.fit_model(modelfilename, xdata, ['TotalpSTAT',ydata], ['kpa','kSOCSon'],
+                             p0=[1E-6,1E-6])
 
 if __name__ == '__main__':
     main(fit=True)
