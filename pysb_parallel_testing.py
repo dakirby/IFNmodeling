@@ -65,8 +65,12 @@ def main(timecourse=False, dose_response=False, wtimecourse=False, wdose_respons
         xdata = [0,5*60,15*60,30*60,60*60]
         xdata = [['t',el] for el in xdata]
         ydata = ED.data.loc[(ED.data.loc[:,'Interferon']=="Beta"),['0','5','15','30','60']].values[0]
-
-        zscan = pp.fit_model(modelfilename, xdata, ['TotalpSTAT',ydata], ['kpa','kSOCSon'],
+        NA = 6.022E23
+        volEC = 1E-5
+        IFN = [['I', NA*volEC*10E-12] for i in ydata]
+        xdata = [[IFN[el]]+[xdata[el]] for el in range(len(xdata))]
+        tc = pp.p_timecourse(modelfilename, [0,5*60,15*60,30*60,60*60], [['TotalpSTAT',"Total pSTAT"]],suppress=True)['TotalpSTAT']
+        zscan = pp.fit_model(modelfilename, xdata, ['TotalpSTAT',tc], ['kpa','kSOCSon'],
                              p0=[1E-6,1E-6])
 
 if __name__ == '__main__':

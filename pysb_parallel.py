@@ -21,6 +21,7 @@ from numpy import divide, subtract, abs, reshape, flipud, flip
 import numpy as np
 from operator import itemgetter # for sorting results after processes return
 import itertools #for creating all combinations of lists
+import re # for printing results to text files
 
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -705,7 +706,7 @@ def brute_parameters(parameters, exp_params):
     full_fit = []
     for test in testCombinations:
         for experiment in exp_params:
-            full_fit.append(list(test)+[experiment])
+            full_fit.append(list(test)+experiment)
     return full_fit
         
 # =============================================================================
@@ -724,22 +725,19 @@ def fit_helper(id, jobs, result):
         conditions, ydata, paramsList, sigma = task
         # get the time for the simulation from conditions
         for i in range(len(conditions)):
-            if (conditions[len(conditions)-i][0]=='t') or (conditions[len(conditions)-i][0]=='time'):
-                time = [0,conditions[len(conditions)-i][1]]
-                params_without_time = [conditions[l] for l in range(len(conditions)-i)]+[conditions[l] for l in range(len(conditions)-i+1, len(conditions))]
+            if (conditions[len(conditions)-1-i][0]=='t') or (conditions[len(conditions)-1-i][0]=='time'):
+                time = np.linspace(0,conditions[len(conditions)-1-i][1])
+                params_without_time = [conditions[l] for l in range(len(conditions)-1-i)]+[conditions[l] for l in range(len(conditions)-i, len(conditions))]
                 break
+        
         simres = p_timecourse('', time, [ydata[0],ydata[0]], suppress=True,
                                   parameters=params_without_time, scan=1)[ydata[0]]
         # calculate residual
-            # sanity check
-        if len(simres)-1 != len(ydata[1]):
-            print("Simulation generated too many or too few data points")
-            return 'NaN'
-        elif sigma != None:
+        if sigma != None:
             res = ((simres[-1]-ydata[1])/sigma)**2
         else:
             for point in range(len(simres)):
-                res += (simres[-1]-ydata[1])**2
+                res = (simres[-1]-ydata[1])**2
         # put the result onto the results queue
         result.put([res, conditions])     
 
@@ -845,8 +843,8 @@ def fit_model(modelfile, conditions, ydata, paramsList, n=5, sigma=None,
     for t in range(len(tasks)):
         datapoint = t % len(ydata[1])
         taskList.append([tasks[t], [ydata[0],ydata[1][datapoint]], paramsList, sigma])
-    for t in taskList:
-        print(t)        
+#    for t in taskList:
+#        print(t)        
 # Run all combos of parameter values, calculating fit for each
     # put jobs on the queue
     print("There are {} tasks to compute".format(len(tasks)))
@@ -857,12 +855,12 @@ def fit_model(modelfile, conditions, ydata, paramsList, n=5, sigma=None,
     print("Computing scan")
 
     # start up the workers          
-    [Process(target=dummy, args=(i, jobs, result)).start()
+    [Process(target=fit_helper, args=(i, jobs, result)).start()
             for i in range(NUMBER_OF_PROCESSES)]
     
     # pull in the results from each worker
     pool_results=[]
-    for t in range(len(tasks)):
+    for t in range(len(taskList)):
         r = result.get()
         pool_results.append(r)
         result.task_done()
@@ -874,7 +872,40 @@ def fit_model(modelfile, conditions, ydata, paramsList, n=5, sigma=None,
     jobs.close()
     result.close()
     print("Done scan")
-    
 # order the outputs by fit
-# return top result, save all results to text file
+    print("Scoring models")
+    scoreboard = {}
+    # create a list of all models, indexing each one
+    for score, key in pool_results:
+         # format key to only include parameters, not experimental conditions
+         key = str(key[0:len(paramsList)])
+         scoreboard.setdefault(key, 0) # adds key to dictionary with value 0, unless key already exists (in which case it returns value) 
+         scoreboard[key]+=score
+    # order models from smallest to largest total score
+    leaderboard = [(k, scoreboard[k]) for k in sorted(scoreboard, key=scoreboard.get)]
+    # write results to a file and print the best scoring model to output
+    #   first clear any existing text from modelfit.txt
+    f = open('modelfit.txt', 'w')
+    f.close()
+    with open('modelfit.txt', 'a') as outfile:
+        outfile.write("# keys: "+str(len(leaderboard))+"\n") 
+        outfile.write("# tests: "+str(len(tasks)/len(ydata[1]))+"\n")
+        outfile.write("---------------------------------------------------------\n")
+        header = ""
+        for p in paramsList:
+            header+=p+"          "
+        header += "score\n"
+        outfile.write(header)
+        for key, score in leaderboard:
+            # Example string below shows what happens before and after each line of code
+            #[['kpa', 0.001], ['kSOCSon', 3.1622776601683792e-08]]
+            key = key[3:-2]
+            #kpa', 0.001], ['kSOCSon', 3.1622776601683792e-08
+            key = re.split("', |\], \['", key)
+            #["kpa" , "0.001" , "kSOCSon" , "3.1622776601683792e-08"]
+            mod_p = ""
+            for i in range(1,len(key),2):
+                mod_p += '{:.3e}'.format(float(key[i]))+"    "
+            outfile.write(mod_p+str(score)+"\n")
+    print(leaderboard[0][0]+": "+str(leaderboard[0][1]))
 
