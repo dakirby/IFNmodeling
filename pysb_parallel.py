@@ -22,6 +22,8 @@ import numpy as np
 from operator import itemgetter # for sorting results after processes return
 import itertools #for creating all combinations of lists
 import re # for printing results to text files
+import importlib # allows scripts to run in parent directory linked to IFNmodeling
+import os # allows scripts to run in parent directory which is linked to IFNmodeling
 
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -771,9 +773,13 @@ def fit_helper(id, jobs, result):
 #       OPTIONAL ARGUMENTS:
 #       sigma = a list of uncertainties for each ydata point; equivalent to 
 #               a list of ones when sigma not specified    
-#       p0 = the initial guesses for parameter values; default parameter values
-#           will be used if p0 is unspecified. Each value corresponds to the 
-#           parameter in paramsList (ie. order must match)   
+#       p0 = a list of lists, each sublist of the form 
+#                   [initial_guess, lower_bound, upper_bound, 'linear' or 'log']
+#               initial_guess = the initial guesses for parameter value
+#               lower_bound, upper_bound = the minimum and maximum values to test for the parameter
+#               'linear' or 'log' = strings to indicate if the values
+#                       to test between bounds should be distributed linearly or logarithmically        
+#        NOTE: Each value corresponds to a parameter in paramsList (ie. order MUST match)   
 #                   for every experimental data point provided
 #       cpu = number of cpu's to use. If none specified, function will use n-1 
 #               cores on an n-core machine
@@ -817,7 +823,7 @@ def fit_model(modelfile, conditions, ydata, paramsList, n=5, sigma=None,
     imported_model = __import__(modelfile)
     py_output = export(imported_model.model, 'python')
     with open('ODE_system.py','w') as f:
-        f.write(py_output)    
+        f.write(py_output)
 # Set up parallelization
     jobs = Queue()
     result = JoinableQueue()
@@ -830,6 +836,7 @@ def fit_model(modelfile, conditions, ydata, paramsList, n=5, sigma=None,
     print("Building tasks")
     if p0==None:
         # get default model values
+        # This feature will be added later
         print("Currently, you must guess parameter values.")
         return 1
     else:
@@ -840,7 +847,13 @@ def fit_model(modelfile, conditions, ydata, paramsList, n=5, sigma=None,
         # but if this is too few points then just override this
         if n < 5: n = 5
         for p in parameters:
-            p[1] = np.logspace(np.log10(1E-3*p[1]),np.log10(1E3*p[1]), num=n)
+            if p[1][3]=='log':
+                p[1] = np.logspace(np.log10(p[1][1]),np.log10(p[1][2]), num=n)
+            elif p[1][3]=='linear':
+                p[1] = np.linspace(p[1][1],p[1][2], num=n)
+            else:
+                print("Did not recognize specified distribution of parameter values to test")
+                return 1
         tasks = brute_parameters(parameters, conditions)
     elif method == "sampling":
         tasks = lhc(parameters, n)

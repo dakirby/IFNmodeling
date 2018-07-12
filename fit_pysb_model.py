@@ -20,6 +20,26 @@ import pysb_parallel as pp
 import Experimental_Data as ED
 import os # For renaming output file to prevent overwriting results
 
+# =============================================================================
+# Parameter tests for IFN Alpha
+# =============================================================================
+Alpha_tests = ['kpa','kSOCSon','R1','R2']
+p0_Alpha=[[1E-6,1E-9,1E-3,'log'],
+          [1E-6,1E-9,1E-3,'log'],
+          [2000,100,9000,'linear'],
+          [2000,100,9000,'linear']]
+
+# =============================================================================
+# Parameter tests for IFN Beta
+# =============================================================================
+Beta_tests = ['kpa','kSOCSon','R1','R2']
+p0_Beta=[[1E-6,1E-9,1E-3,'log'],
+          [1E-6,1E-9,1E-3,'log'],
+          [2000,100,9000,'linear'],
+          [2000,100,9000,'linear']]
+
+
+
 def main():
     if os.path.isfile('modelfit_alpha.txt') or os.path.isfile('modelfit_beta.txt'):
         print("Cannot overwrite previous model fit. Remove modelfit_xxx.txt and try re-running.")
@@ -111,11 +131,11 @@ def main():
         if provided == False:
             Beta_uncertainty.append(1)
     # Now fit the models
-    pp.fit_model(modelfileA, xdata_Alpha, ['TotalpSTAT',ydata_Alpha], ['kpa','kSOCSon','R1','R2'],
-                     p0=[1E-6,1E-6,2000,2000], sigma=Alpha_uncertainty)
+    pp.fit_model(modelfileA, xdata_Alpha, ['TotalpSTAT',ydata_Alpha], Alpha_tests,
+                     p0=p0_Alpha, sigma=Alpha_uncertainty, n=15000)
     os.rename('modelfit.txt', 'modelfit_alpha.txt')
-    pp.fit_model(modelfileB, xdata_Beta, ['TotalpSTAT',ydata_Beta], ['kpa','kSOCSon','R1','R2'],
-                     p0=[1E-6,1E-6,2000,2000], sigma=Beta_uncertainty)
+    pp.fit_model(modelfileB, xdata_Beta, ['TotalpSTAT',ydata_Beta], Beta_tests,
+                     p0=p0_Beta, sigma=Beta_uncertainty, n=15000)
     os.rename('modelfit.txt', 'modelfit_beta.txt')
     
 if __name__ == '__main__':

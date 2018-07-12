@@ -75,7 +75,8 @@ def main(timecourse=False, dose_response=False, wtimecourse=False, wdose_respons
                              parameters=[['I',NA*volEC*10E-12]])['TotalpSTAT']
         print("ydata = "+str(tc))
         zscan = pp.fit_model(modelfilename, xdata, ['TotalpSTAT',tc], ['kpa','kSOCSon'],
-                             p0=[1E-6,1E-6], sigma=uncertainty)
+                             p0=[[1E-6,1E-9,1E-3,'log'],[1E-6,1E-9,1E-3,'log']],
+                             sigma=uncertainty)
 
 if __name__ == '__main__':
     main(fit=True)
