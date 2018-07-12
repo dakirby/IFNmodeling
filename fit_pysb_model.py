@@ -4,7 +4,15 @@ Created on Wed Jul 11 20:00:22 2018
 
 @author: Duncan
 
-Script for formatting experimental data and fitting the PySB model
+Script for formatting experimental Interferon flow cytometry data stored in 
+Experimental_Data so that it can be fairly compared to a PySB model, and then
+fitting the PySB model to this data by fine tuning the parameters specified.
+
+This script makes the following assumptions:
+    data is stored in Experimental_Data
+    data is time course data as measured by flow cytometry
+    measurements are MFI for IFN-stimulated cells stained with anti-pSTAT antibody
+    measurements made at t=0 MUST preceed all other measurements in the same time course
 """
 modelfileA = "IFN_simplified_model_alpha_ppCompatible"
 modelfileB = "IFN_simplified_model_beta_ppCompatible"
@@ -13,6 +21,9 @@ import Experimental_Data as ED
 import os # For renaming output file to prevent overwriting results
 
 def main():
+    if os.path.isfile('modelfit_alpha.txt') or os.path.isfile('modelfit_beta.txt'):
+        print("Cannot overwrite previous model fit. Remove modelfit_xxx.txt and try re-running.")
+        return 1
     NA = 6.022E23
     volEC = 1E-5    
     # Read in data
@@ -26,6 +37,7 @@ def main():
 
     # Assume the data is time course data. Dose-response data reading can be added later.
     table = ED.data
+    # Reformat:
     col_labels = [l for l in table.columns.values]
     for label in range(len(col_labels)):
         if col_labels[label] == 'Dose (pM)':
@@ -48,6 +60,7 @@ def main():
         tc_data = table.iloc[r]
         IFNconcentration=0
         IFNtype=''
+        zero = 0
         for col in range(len(col_labels)):
             if col_labels[col]=='IFN':
                 IFNconcentration = float(tc_data[col])
@@ -55,10 +68,14 @@ def main():
                 IFNtype = tc_data[col]
             elif col_labels[col]=='time':
                 if IFNtype=='Alpha':
-                    ydata_Alpha.append(tc_data[col])
+                    if int(table.columns.values[col]) == 0:
+                        zero = tc_data[col]
+                    ydata_Alpha.append(tc_data[col]-zero)
                     xdata_Alpha.append([['I',NA*volEC*1E-12*IFNconcentration], ['time', int(table.columns.values[col])*60]])
                 if IFNtype=='Beta':
-                    ydata_Beta.append(tc_data[col])
+                    if int(table.columns.values[col]) == 0:
+                        zero = tc_data[col]                    
+                    ydata_Beta.append(tc_data[col]-zero)
                     xdata_Beta.append([['I',NA*volEC*1E-12*IFNconcentration], ['time', int(table.columns.values[col])*60]])
                 if IFNtype=='Alpha_std':
                     for exp in xdata_Alpha:
@@ -94,11 +111,11 @@ def main():
         if provided == False:
             Beta_uncertainty.append(1)
     # Now fit the models
-    pp.fit_model(modelfileA, xdata_Alpha, ['TotalpSTAT',ydata_Alpha], ['kpa','kSOCSon'],
-                     p0=[1E-6,1E-6], sigma=Alpha_uncertainty)
+    pp.fit_model(modelfileA, xdata_Alpha, ['TotalpSTAT',ydata_Alpha], ['kpa','kSOCSon','R1','R2'],
+                     p0=[1E-6,1E-6,2000,2000], sigma=Alpha_uncertainty)
     os.rename('modelfit.txt', 'modelfit_alpha.txt')
-    pp.fit_model(modelfileB, xdata_Beta, ['TotalpSTAT',ydata_Beta], ['kpa','kSOCSon'],
-                     p0=[1E-6,1E-6], sigma=Beta_uncertainty)
+    pp.fit_model(modelfileB, xdata_Beta, ['TotalpSTAT',ydata_Beta], ['kpa','kSOCSon','R1','R2'],
+                     p0=[1E-6,1E-6,2000,2000], sigma=Beta_uncertainty)
     os.rename('modelfit.txt', 'modelfit_beta.txt')
     
 if __name__ == '__main__':
