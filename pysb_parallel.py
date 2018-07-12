@@ -17,8 +17,13 @@ Suite of functions for performing parallelized routines such as 2D parameter
 # Import statements required for the parallelized routines
 from multiprocessing import Process, Queue, JoinableQueue, cpu_count
 from pysb.export import export
-from numpy import divide, subtract, abs, logspace, reshape, flipud, flip
+from numpy import divide, subtract, abs, reshape, flipud, flip
+import numpy as np
 from operator import itemgetter # for sorting results after processes return
+import itertools #for creating all combinations of lists
+import re # for printing results to text files
+import importlib # allows scripts to run in parent directory linked to IFNmodeling
+import os # allows scripts to run in parent directory which is linked to IFNmodeling
 
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -93,7 +98,7 @@ def get_ODE_model_scan():
 #                otherwise the function will assume the normalization is a 
 #                trajectory over the same number of doses.      
 #      suppress = a boolean determining whether or not to plot the results
-#      parameters = a dictionary with keys='parameter name' and values to use
+#      parameters = a list of lists, with sublists of the form ['parameter name', value]
 # Outputs:
 #     figure of the time course
 # Returns: timecourse = list indexed by observable names
@@ -564,7 +569,6 @@ def image_builder(results, doseNorm, shape):
 # Returns: A 2D array with each element containing three values: 
 #			[x-axis value, y-axis value, z_value]
 # =============================================================================
-
 def p_DRparamScan(modelfile, param1, param2, testDose, t_list, spec, custom_params=None,
                   Norm=None, cpu=None, suppress=False, doseNorm=1):
     # initialization
@@ -574,10 +578,10 @@ def p_DRparamScan(modelfile, param1, param2, testDose, t_list, spec, custom_para
         NUMBER_OF_PROCESSES = cpu_count()-1
     else:
         NUMBER_OF_PROCESSES = cpu
-    print("using {} processors".format(NUMBER_OF_PROCESSES))
+    print("Using {} processors".format(NUMBER_OF_PROCESSES))
     # build task list
     params=[]
-    print("building tasks")
+    print("Building tasks")
     if custom_params == None:
         for val1 in param1[1]:
             for val2 in param2[1]:
@@ -596,12 +600,12 @@ def p_DRparamScan(modelfile, param1, param2, testDose, t_list, spec, custom_para
     tasks = [[modelfile, testDose, t_list, spec, Norm, p] for p in params]
     # put jobs on the queue
     print("There are {} tasks to compute".format(len(params)))
-    print("putting tasks on the queue")
+    print("Putting tasks on the queue")
 	
     for w in tasks:
         jobs.put(w)
 		
-    print("computing scan")
+    print("Computing scan")
 	
     # start up the workers
     [Process(target=p_DRparamScan_helper, args=(i, jobs, result)).start()
@@ -620,12 +624,310 @@ def p_DRparamScan(modelfile, param1, param2, testDose, t_list, spec, custom_para
     result.join()
     jobs.close()
     result.close()
-    print("done scan")
+    print("Done scan")
     # plot heatmap if suppress==False
     if suppress==False:
         	dose_image, response_image = image_builder(pool_results, doseNorm, (len(param1[1]),len(param2[1])))
-        	IFN_heatmap(dose_image, param1, param2)
-        	IFN_heatmap(response_image, param1, param2)
+        	IFN_heatmap(dose_image, ["dose image - {}".format(param1[0]), param1[1]], param2)
+        	IFN_heatmap(response_image, ["response image - {}".format(param1[0]), param1[1]], param2)
     #return the scan 
     return pool_results
-	
+
+# =============================================================================
+# lhc() builds an origin-centered latin hypercube for parameters to investigate
+# Inputs:
+#   parameters = a list of lists, each sublist of the form ['name',upper limit, lower limit]
+#   n = number of points to generate    
+# =============================================================================
+def lhc(parameters, n):
+    d = len(parameters)
+    def latin(n, d):
+        """
+        Build unit latin hypercube.
+        Parameters
+        ----------
+        n : int
+            Number of points.
+        d : int
+            Size of space.
+        Returns
+        -------
+        lh : ndarray
+            Array of points uniformly placed in d-dimensional unit cube.
+        """
+        # spread function
+        def spread(points):
+            return sum(1./np.linalg.norm(np.subtract(points[i], points[j])) for i in range(n) for j in range(n) if i > j)
+    
+        # start with diagonal shape
+        lh = [[i/(n-1.)]*d for i in range(n)]
+    
+        # minimize spread function by shuffling
+        minspread = spread(lh)
+    
+        for i in range(1000):
+            point1 = np.random.randint(n)
+            point2 = np.random.randint(n)
+            dim = np.random.randint(d)
+    
+            newlh = np.copy(lh)
+            newlh[point1, dim], newlh[point2, dim] = newlh[point2, dim], newlh[point1, dim]
+            newspread = spread(newlh)
+    
+            if newspread < minspread:
+                lh = np.copy(newlh)
+                minspread = newspread  
+        # shift to be origin-centered
+        for point in lh:
+            for ind in range(d):
+                point[ind]-=0.5
+        return lh
+    unitCube = latin(n,d)
+    # rescale in parameter ranges
+    for point in unitCube:
+        for dim in range(d):
+            point[dim] = (parameters[dim][1]-parameters[dim][2])*point[dim]+(parameters[dim][1]+parameters[dim][2])/2
+    return unitCube #no longer unit
+# =============================================================================
+# brute_parameters() builds all combinations of all parameter values to test
+# Inputs:
+#   parameters = list of the form 
+#                [['name', [values to test]], ['name', [values to test]], ...]
+#   custom_params = list of additional custom parameters, common to every run
+#               eg. [['c1',value],['c2',value],...]
+# Returns:
+#   list of all parameter combinations to run        
+# =============================================================================
+def brute_parameters(parameters, exp_params):
+    reformatted=[]
+    # reformat list 
+    for l in parameters:
+        reformatted.append([[l[0],val] for val in l[1]])
+    # generate all unique combinations
+    testCombinations = list(itertools.product(*reformatted))
+    full_fit = []
+    for test in testCombinations:
+        for experiment in exp_params:
+            full_fit.append(list(test)+experiment)
+    return full_fit
+        
+# =============================================================================
+# fit_helper is an internal function to allow fit_model to be parallelized
+# =============================================================================
+def fit_helper(id, jobs, result):
+    # try to work as long as work is available
+    while True:
+        # get job from the queue
+        task = jobs.get()
+        if task is None:
+            # there are no jobs
+            break
+        # there is a job, so do it
+        # run simulation
+        conditions, ydata, paramsList, sigma = task
+        # get the time for the simulation from conditions
+        for i in range(len(conditions)):
+            if (conditions[len(conditions)-1-i][0]=='t') or (conditions[len(conditions)-1-i][0]=='time'):
+                time = np.linspace(0,conditions[len(conditions)-1-i][1])
+                if conditions[len(conditions)-1-i][1] == 0:
+                    # IN THIS SITUATION WE SHOULD REALLY JUST RETURN THE VALUE OF MODEL PSTAT_0 TO AVOID NUMERICAL ISSUES. THIS CURRENTLY ISN'T AN OPTION BUT I INTEND TO FIGURE OUT HOW.
+                    pass
+                params_without_time = [conditions[l] for l in range(len(conditions)-1-i)]+[conditions[l] for l in range(len(conditions)-i, len(conditions))]
+                break
+        
+        simres = p_timecourse('', time, [ydata[0],ydata[0]], suppress=True,
+                                  parameters=params_without_time, scan=1)[ydata[0]]
+        
+        #FOR DEBUGGING: Check that fit generates "correct" values
+        #pString = "ydata = " +str(ydata[1])+"\nsimres({0}){1} = ".format(time[-1],str(params_without_time[0:2]))+str(simres[-1])
+        #print(pString)
+        
+        # calculate residual
+        if (sigma == None):
+            res = (simres[-1]-ydata[1])**2            
+        else:
+            res = ((simres[-1]-ydata[1])/sigma)**2
+        # put the result onto the results queue
+        result.put([res, conditions])     
+
+# =============================================================================
+# fit_model() takes a PySB model and fits an input list of parameters to 
+# experimental (or otherwise) data by nonlinear least squares regression.
+# Input: 
+#       modelfile = the name of the model file to use for the fit
+#       conditions = a list of lists, each sublist describing the experimental conditions 
+#               which were used to generate the corresponding ydata point.
+#               Each *sublist* is of the form [['name',value],['name',value],...]
+#
+#               NOTE: All data points are time course measurements. If the data
+#                       point is a dose-response point, it's just a time course
+#                       measurement for a specific dose and end time. It would
+#                       be computationally more efficient to only run unique
+#                       time courses but for now I haven't figured out how to 
+#                       do that.        
+#        
+#       ydata = a list of lists with y-axis values of experimental data to fit to.
+#               Each element of ydata should be a 2-list of the form
+#                   ['corresponding model parameter name', measured value]        
+#       paramsList = a list of the parameters in the model to fit
+#       OPTIONAL ARGUMENTS:
+#       sigma = a list of uncertainties for each ydata point; equivalent to 
+#               a list of ones when sigma not specified    
+#       p0 = a list of lists, each sublist of the form 
+#                   [initial_guess, lower_bound, upper_bound, 'linear' or 'log']
+#               initial_guess = the initial guesses for parameter value
+#               lower_bound, upper_bound = the minimum and maximum values to test for the parameter
+#               'linear' or 'log' = strings to indicate if the values
+#                       to test between bounds should be distributed linearly or logarithmically        
+#        NOTE: Each value corresponds to a parameter in paramsList (ie. order MUST match)   
+#                   for every experimental data point provided
+#       cpu = number of cpu's to use. If none specified, function will use n-1 
+#               cores on an n-core machine
+#       method = method to search parameter space; default is via brute force
+#               options: 
+#                   "brute" : try all parameter combinations
+#                   "sampling" : sample parameter space using latin hypercube
+#                                to generate n samples for testing
+#       n = integer
+#   for method = "sampling", number of parameter combinations to try (default is n=500)
+#   for method = "brute", number of points to test for each parameter 
+#                   (default is 8, with a default total of 64 points) (THIS SHOULD BE MADE n=500 after debugging is done)!!!
+# Output:
+#       parameters = list of optimal values for the parameters specified by paramslist
+# =============================================================================
+# =============================================================================
+# # For debugging
+# def dummy(i, jobs, result):
+#     while True:
+#         # get job from the queue
+#         task = jobs.get()
+#         if task is None:
+#             # there are no jobs
+#             break
+#         result.put(1)     
+# =============================================================================
+def fit_model(modelfile, conditions, ydata, paramsList, n=5, sigma=None,
+              p0=None, cpu=None, method="brute"):
+# Basic sanity checks
+    if len(conditions) != len(ydata[1]):
+        print("Number of experimental conditions and observations do not match")
+        return 1
+    if len(paramsList) != len(p0):
+        print("Number of guesses must match number of parameters to be fit")
+        return 1
+    if (type(sigma)==list) and (len(sigma) != len(ydata[1])):
+        print("Number of uncertainties provided does not match number of experimental observations.")
+        return 1
+# Write modelfile
+    print("Importing model")
+    imported_model = __import__(modelfile)
+    py_output = export(imported_model.model, 'python')
+    with open('ODE_system.py','w') as f:
+        f.write(py_output)
+# Set up parallelization
+    jobs = Queue()
+    result = JoinableQueue()
+    if cpu == None or cpu >= cpu_count():
+        NUMBER_OF_PROCESSES = cpu_count()-1
+    else:
+        NUMBER_OF_PROCESSES = cpu
+    print("Using {} processors".format(NUMBER_OF_PROCESSES))
+# Build list of parameter values to test
+    print("Building tasks")
+    if p0==None:
+        # get default model values
+        # This feature will be added later
+        print("Currently, you must guess parameter values.")
+        return 1
+    else:
+        parameters = [[paramsList[i], p0[i]] for i in range(len(paramsList))]
+    if method == "brute":
+        # calculate the number of values to test per parameter
+        n = int(n/np.math.factorial(len(parameters)))
+        # but if this is too few points then just override this
+        if n < 5: n = 5
+        for p in parameters:
+            if p[1][3]=='log':
+                p[1] = np.logspace(np.log10(p[1][1]),np.log10(p[1][2]), num=n)
+            elif p[1][3]=='linear':
+                p[1] = np.linspace(p[1][1],p[1][2], num=n)
+            else:
+                print("Did not recognize specified distribution of parameter values to test")
+                return 1
+        tasks = brute_parameters(parameters, conditions)
+    elif method == "sampling":
+        tasks = lhc(parameters, n)
+    else:
+        print("Did not recognize the method specified")
+        return(1)
+    # add the other arguments required for fitting to each parameter combo
+    taskList = []
+    for t in range(len(tasks)):
+        datapoint = t % len(ydata[1])
+        taskList.append([tasks[t], [ydata[0],ydata[1][datapoint]], paramsList, sigma[datapoint]])
+#    for t in taskList:
+#        print(t)        
+# Run all combos of parameter values, calculating fit for each
+    # put jobs on the queue
+    print("There are {} tasks to compute".format(len(tasks)))
+    print("Putting tasks on the queue")
+    for w in taskList:
+        jobs.put(w)
+		
+    print("Computing scan")
+
+    # start up the workers          
+    [Process(target=fit_helper, args=(i, jobs, result)).start()
+            for i in range(NUMBER_OF_PROCESSES)]
+    
+    # pull in the results from each worker
+    pool_results=[]
+    for t in range(len(taskList)):
+        r = result.get()
+        pool_results.append(r)
+        result.task_done()
+    # tell the workers there are no more jobs
+    for w in range(NUMBER_OF_PROCESSES):
+        jobs.put(None)
+    # close all extra threads
+    result.join()
+    jobs.close()
+    result.close()
+    print("Done scan")
+# order the outputs by fit
+    print("Scoring models")
+    scoreboard = {}
+    # create a list of all models, indexing each one
+    for score, key in pool_results:
+         # format key to only include parameters, not experimental conditions
+         key = str(key[0:len(paramsList)])
+         scoreboard.setdefault(key, 0) # adds key to dictionary with value 0, unless key already exists (in which case it returns value) 
+         scoreboard[key]+=score
+    # order models from smallest to largest total score
+    leaderboard = [(k, scoreboard[k]) for k in sorted(scoreboard, key=scoreboard.get)]
+    # write results to a file and print the best scoring model to output
+    #   first clear any existing text from modelfit.txt
+    f = open('modelfit.txt', 'w')
+    f.close()
+    with open('modelfit.txt', 'a') as outfile:
+        outfile.write("# keys: "+str(len(leaderboard))+"\n") 
+        outfile.write("# tests: "+str(len(tasks)/len(ydata[1]))+"\n")
+        outfile.write("---------------------------------------------------------\n")
+        header = ""
+        for p in paramsList:
+            header+=p+"          "
+        header += "score\n"
+        outfile.write(header)
+        for key, score in leaderboard:
+            # Example string below shows what happens before and after each line of code
+            #[['kpa', 0.001], ['kSOCSon', 3.1622776601683792e-08]]
+            key = key[3:-2]
+            #kpa', 0.001], ['kSOCSon', 3.1622776601683792e-08
+            key = re.split("', |\], \['", key)
+            #["kpa" , "0.001" , "kSOCSon" , "3.1622776601683792e-08"]
+            mod_p = ""
+            for i in range(1,len(key),2):
+                mod_p += '{:.3e}'.format(float(key[i]))+"    "
+            outfile.write(mod_p+str(score)+"\n")
+    print(leaderboard[0][0]+": "+str(leaderboard[0][1]))
+
