@@ -80,8 +80,8 @@ Expression('krec_a2', 0.005*Internalization_switch)
 #SOCS Feedback Inhibition
 Parameter('kSOCS', 4E-3) # 4e-3 was old value #Should sufficiently separate peak pSTAT from peak SOCS
 Parameter('SOCSdeg', (5e-4)*5)	#Maiwald*form factor
-Parameter('kSOCSonModifier',1)
-Expression('kSOCSon', kpa*kSOCSonModifier)
+Parameter('kSOCSonModifier',1) # this times kSOCSon is sometimes used
+Parameter('kSOCSon', 1e-6)
 Parameter('kSOCSoff', 5.5E-4)#1.5e-3	#Rate of SOCS unbinding ternary complex. Very fudged. Was 1.5e-3 
 
 

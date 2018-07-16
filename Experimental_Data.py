@@ -14,5 +14,6 @@ except FileNotFoundError:
         data = pd.read_csv("Experimental_Data.csv")
     except:
         raise
+#print(data)
 #print(data.loc[(data.loc[:,'Dose (pM)']==10) & (data.loc[:,'Interferon']=="Alpha"),:])
 #print(data.loc[(data.loc[:,'Dose (pM)']==10) & (data.loc[:,'Interferon']=="Alpha"),'0':'60'])

@@ -299,7 +299,8 @@ def compare_doseresponse(modelfiles, dose, time_list, spec, style,
 #                if type(Norm[0]) is float or int then that factor will be a number
 #                otherwise the function will assume the normalization is a 
 #                trajectory over the same number of doses.      
-#      suppress = a boolean determining whether or not to plot the results
+#      suppress = a boolean determining whether or not to plot the results. If false
+#                   then setting Norm will have no effect        
 # Outputs:
 #     figure of the time course
 # Returns: timecourse = ScipyOdeSimulator().run().all

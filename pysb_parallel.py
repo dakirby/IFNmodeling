@@ -846,6 +846,7 @@ def fit_model(modelfile, conditions, ydata, paramsList, n=5, sigma=None,
         n = int(n/np.math.factorial(len(parameters)))
         # but if this is too few points then just override this
         if n < 5: n = 5
+        print("Using {} points per parameter".format(n))        
         for p in parameters:
             if p[1][3]=='log':
                 p[1] = np.logspace(np.log10(p[1][1]),np.log10(p[1][2]), num=n)
@@ -910,8 +911,7 @@ def fit_model(modelfile, conditions, ydata, paramsList, n=5, sigma=None,
     f = open('modelfit.txt', 'w')
     f.close()
     with open('modelfit.txt', 'a') as outfile:
-        outfile.write("# keys: "+str(len(leaderboard))+"\n") 
-        outfile.write("# tests: "+str(len(tasks)/len(ydata[1]))+"\n")
+        outfile.write("# tests: "+str(len(leaderboard))+"\n \n") 
         outfile.write("---------------------------------------------------------\n")
         header = ""
         for p in paramsList:
