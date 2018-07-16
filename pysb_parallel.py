@@ -724,17 +724,28 @@ def fit_helper(id, jobs, result):
             break
         # there is a job, so do it
         # run simulation
-        conditions, ydata, paramsList, sigma = task
+        if len(task)==4:
+            conditions, ydata, paramsList, sigma = task
+        else:
+            conditions, ydata, paramsList = task
+            sigma=None
+        params_without_time=[]
+        gamma=1
         # get the time for the simulation from conditions
         for i in range(len(conditions)):
             if (conditions[len(conditions)-1-i][0]=='t') or (conditions[len(conditions)-1-i][0]=='time'):
-                time = np.linspace(0,conditions[len(conditions)-1-i][1])
                 if conditions[len(conditions)-1-i][1] == 0:
                     # IN THIS SITUATION WE SHOULD REALLY JUST RETURN THE VALUE OF MODEL PSTAT_0 TO AVOID NUMERICAL ISSUES. THIS CURRENTLY ISN'T AN OPTION BUT I INTEND TO FIGURE OUT HOW.
-                    pass
-                params_without_time = [conditions[l] for l in range(len(conditions)-1-i)]+[conditions[l] for l in range(len(conditions)-i, len(conditions))]
-                break
-        
+                    time = [0,0.0001,0.0002]
+                else:
+                    time = np.linspace(0,conditions[len(conditions)-1-i][1])
+            elif conditions[len(conditions)-1-i][0]=='R':
+                params_without_time.append(['R1',conditions[len(conditions)-1-i][1]])
+                params_without_time.append(['R2',conditions[len(conditions)-1-i][1]])
+            elif conditions[len(conditions)-1-i][0]=='gamma':
+                gamma=conditions[len(conditions)-1-i][1]
+            else:
+                params_without_time.append(conditions[len(conditions)-1-i])
         simres = p_timecourse('', time, [ydata[0],ydata[0]], suppress=True,
                                   parameters=params_without_time, scan=1)[ydata[0]]
         
@@ -744,9 +755,9 @@ def fit_helper(id, jobs, result):
         
         # calculate residual
         if (sigma == None):
-            res = (simres[-1]-ydata[1])**2            
+            res = (simres[-1]-ydata[1]/gamma)**2            
         else:
-            res = ((simres[-1]-ydata[1])/sigma)**2
+            res = ((simres[-1]-ydata[1]/gammma)/(sigma/gamma))**2
         # put the result onto the results queue
         result.put([res, conditions])     
 
@@ -770,6 +781,9 @@ def fit_helper(id, jobs, result):
 #               Each element of ydata should be a 2-list of the form
 #                   ['corresponding model parameter name', measured value]        
 #       paramsList = a list of the parameters in the model to fit
+#           Note: special arguments include:
+#                   'R': using this parameter will set R1 and R2 to the value of R
+#                   'gamma': using this parameter will fit the scale factor for the experimental data        
 #       OPTIONAL ARGUMENTS:
 #       sigma = a list of uncertainties for each ydata point; equivalent to 
 #               a list of ones when sigma not specified    
@@ -846,7 +860,7 @@ def fit_model(modelfile, conditions, ydata, paramsList, n=5, sigma=None,
         n = int(n/np.math.factorial(len(parameters)))
         # but if this is too few points then just override this
         if n < 5: n = 5
-        print("Using {} points per parameter".format(n))        
+        print("Using {} points per parameter".format(n))
         for p in parameters:
             if p[1][3]=='log':
                 p[1] = np.logspace(np.log10(p[1][1]),np.log10(p[1][2]), num=n)
@@ -865,7 +879,10 @@ def fit_model(modelfile, conditions, ydata, paramsList, n=5, sigma=None,
     taskList = []
     for t in range(len(tasks)):
         datapoint = t % len(ydata[1])
-        taskList.append([tasks[t], [ydata[0],ydata[1][datapoint]], paramsList, sigma[datapoint]])
+        if sigma != None:
+            taskList.append([tasks[t], [ydata[0],ydata[1][datapoint]], paramsList, sigma[datapoint]])
+        else:
+            taskList.append([tasks[t], [ydata[0],ydata[1][datapoint]], paramsList])
 #    for t in taskList:
 #        print(t)        
 # Run all combos of parameter values, calculating fit for each
@@ -911,7 +928,8 @@ def fit_model(modelfile, conditions, ydata, paramsList, n=5, sigma=None,
     f = open('modelfit.txt', 'w')
     f.close()
     with open('modelfit.txt', 'a') as outfile:
-        outfile.write("# tests: "+str(len(leaderboard))+"\n \n") 
+        outfile.write("# keys: "+str(len(leaderboard))+"\n") 
+        outfile.write("# tests: "+str(len(tasks)/len(ydata[1]))+"\n")
         outfile.write("---------------------------------------------------------\n")
         header = ""
         for p in paramsList:
@@ -930,4 +948,3 @@ def fit_model(modelfile, conditions, ydata, paramsList, n=5, sigma=None,
                 mod_p += '{:.3e}'.format(float(key[i]))+"    "
             outfile.write(mod_p+str(score)+"\n")
     print(leaderboard[0][0]+": "+str(leaderboard[0][1]))
-
