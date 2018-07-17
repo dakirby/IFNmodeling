@@ -76,7 +76,7 @@ def main(timecourse=False, dose_response=False, wtimecourse=False, wdose_respons
         print("ydata = "+str(tc))
         zscan = pp.fit_model(modelfilename, xdata, ['TotalpSTAT',tc], ['kpa','kSOCSon'],
                              p0=[[1E-6,1E-9,1E-3,'log'],[1E-6,1E-9,1E-3,'log']],
-                             sigma=uncertainty)
+                             sigma=uncertainty, method="bayesian")
 
 if __name__ == '__main__':
     main(fit=True)

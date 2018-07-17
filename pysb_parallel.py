@@ -578,7 +578,7 @@ def p_DRparamScan(modelfile, param1, param2, testDose, t_list, spec, custom_para
         NUMBER_OF_PROCESSES = cpu_count()-1
     else:
         NUMBER_OF_PROCESSES = cpu
-    print("Using {} processors".format(NUMBER_OF_PROCESSES))
+    print("Using {} threads".format(NUMBER_OF_PROCESSES))
     # build task list
     params=[]
     print("Building tasks")
@@ -754,12 +754,12 @@ def fit_helper(id, jobs, result):
         #print(pString)
         if method == "bayesian":
             if (sigma == None):
-                if ydata[1]==0: #If it's a t=0 data point, it doesn't contribute to the bayesian cost function
+                if ydata[1]<=0: #Reject data that doesn't make sense physically
                     res=0
                 else:
-                    res = (np.log(simres[-1])-np.log(ydata[1]/gamma))**2            
+                    res = (np.log(simres[-1])-np.log(ydata[1]/gamma))**2 
             else:
-                if ydata[1]==0:
+                if ydata[1]<=0:#Reject data that doesn't make sense physically
                     res=0
                 else:
                     res = (np.log(simres[-1])-np.log(ydata[1]/gamma))**2/(sigma/gamma)**2
@@ -860,7 +860,7 @@ def fit_model(modelfile, conditions, ydata, paramsList, n=5, sigma=None,
         NUMBER_OF_PROCESSES = cpu_count()-1
     else:
         NUMBER_OF_PROCESSES = cpu
-    print("Using {} processors".format(NUMBER_OF_PROCESSES))
+    print("Using {} threads".format(NUMBER_OF_PROCESSES))
 # Build list of parameter values to test
     print("Building tasks")
     if p0==None:
