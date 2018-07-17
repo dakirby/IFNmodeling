@@ -23,22 +23,88 @@ import os # For renaming output file to prevent overwriting results
 # =============================================================================
 # Parameter tests for IFN Alpha
 # =============================================================================
-Alpha_tests = ['kpa','kSOCSon','R1','R2']
+Alpha_tests = ['kpa','kSOCSon','R1','R2','gamma']
 p0_Alpha=[[1E-6,1E-9,1E-3,'log'],
           [1E-6,1E-9,1E-3,'log'],
           [2000,100,9000,'linear'],
-          [2000,100,9000,'linear']]
+          [2000,100,9000,'linear'],
+          [40,2,64]]
 
 # =============================================================================
 # Parameter tests for IFN Beta
 # =============================================================================
-Beta_tests = ['kpa','kSOCSon','R1','R2']
+Beta_tests = ['kpa','kSOCSon','R1','R2','gamma']
 p0_Beta=[[1E-6,1E-9,1E-3,'log'],
           [1E-6,1E-9,1E-3,'log'],
           [2000,100,9000,'linear'],
-          [2000,100,9000,'linear']]
+          [2000,100,9000,'linear'],
+          [40,2,64]]
 
 
+# =============================================================================
+# Script to automate combining alpha and beta models
+# =============================================================================
+from operator import itemgetter
+def fit_alpha_and_beta():
+    modelbase = []
+    # Read in all models and their scores
+    linecount=0
+    with open('modelfit_alpha.txt', 'r') as df:
+        df.readline()
+        df.readline()
+        df.readline()
+        header = df.readline()
+        labels = header.split()
+        while True:
+            line = df.readline().split()
+            if not line: break
+            linecount+=1
+            score = float(line[-1])
+            key = [[labels[i], line[i]] for i in range(len(line)-1)]
+            modelbase.append([key,score])
+    print("Summing {} scores".format(linecount))
+    # Now add the scores for the fit to IFN beta data to each model   
+    progress=0
+    threshold=0.05
+    mismatches=0
+    with open('modelfit_beta.txt', 'r') as df:
+        df.readline()
+        df.readline()
+        df.readline()
+        labels = df.readline().split()
+        while True:
+            line = df.readline().split()
+            if not line: break
+            progress += 1
+            if progress/linecount > threshold:
+                threshold += 0.05
+                print("{0:.1f}% done".format(progress/linecount*100.))
+            score = float(line[-1])
+            key = [[labels[i], line[i]] for i in range(len(line)-1)]
+            found = False
+            for model in modelbase:
+                if key == model[0]:
+                    found=True
+                    model[1]+=score
+                    break
+            if found == False:
+                mismatches+=1
+                
+    # Rank the models based on their new scores
+    print("Re-ranking models")
+    modelbase = sorted(modelbase, key = itemgetter(1))
+    with open('modelfit_alpha_and_beta.txt', 'w') as outfile:
+        outfile.write("{} models\n".format(len(modelbase)))
+        outfile.write("{} models were not matched between beta and alpha\n".format(mismatches))
+        outfile.write("---------------------------------------------------------\n")
+        outfile.write(header)
+        for model in modelbase:
+            l = ""
+            for pval in model[0]:
+                l+=pval[1]+"    "
+            l+=str(model[1])+'\n'
+            outfile.write(l)
+        
 
 def main():
     if os.path.isfile('modelfit_alpha.txt') or os.path.isfile('modelfit_beta.txt'):
@@ -132,11 +198,14 @@ def main():
             Beta_uncertainty.append(1)
     # Now fit the models
     pp.fit_model(modelfileA, xdata_Alpha, ['TotalpSTAT',ydata_Alpha], Alpha_tests,
-                     p0=p0_Alpha, sigma=Alpha_uncertainty, n=15000)
+                     p0=p0_Alpha, sigma=Alpha_uncertainty, n=500)
     os.rename('modelfit.txt', 'modelfit_alpha.txt')
     pp.fit_model(modelfileB, xdata_Beta, ['TotalpSTAT',ydata_Beta], Beta_tests,
-                     p0=p0_Beta, sigma=Beta_uncertainty, n=15000)
+                     p0=p0_Beta, sigma=Beta_uncertainty, n=500)
     os.rename('modelfit.txt', 'modelfit_beta.txt')
+    # Combine the alpha and beta fits to get the best overall model
+    print("Finding the best model for alpha and beta Interferon")
+    fit_alpha_and_beta()
     
 if __name__ == '__main__':
     main()
