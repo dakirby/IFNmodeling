@@ -710,7 +710,12 @@ def brute_parameters(parameters, exp_params):
         for experiment in exp_params:
             full_fit.append(list(test)+experiment)
     return full_fit
-        
+
+# =============================================================================
+# bayes_cf returns the bayesian cost function for the model
+# =============================================================================
+def bayes_cf(simres[-1],ydata[1]/gamma, sigma, params_without_time, p0):
+    return 0        
 # =============================================================================
 # fit_helper is an internal function to allow fit_model to be parallelized
 # =============================================================================
@@ -724,10 +729,10 @@ def fit_helper(id, jobs, result):
             break
         # there is a job, so do it
         # run simulation
-        if len(task)==4:
-            conditions, ydata, paramsList, sigma = task
+        if len(task)==6:
+            conditions, ydata, paramsList, sigma, method, p0 = task
         else:
-            conditions, ydata, paramsList = task
+            conditions, ydata, paramsList, method, p0 = task
             sigma=None
         params_without_time=[]
         gamma=1
@@ -752,14 +757,19 @@ def fit_helper(id, jobs, result):
         #FOR DEBUGGING: Check that fit generates "correct" values
         #pString = "ydata = " +str(ydata[1])+"\nsimres({0}){1} = ".format(time[-1],str(params_without_time[0:2]))+str(simres[-1])
         #print(pString)
-        
-        # calculate residual
-        if (sigma == None):
-            res = (simres[-1]-ydata[1]/gamma)**2            
+        if method == "bayesian":
+            if (sigma == None):
+                res = (np.log(simres[-1])-np.log(ydata[1]/gamma))**2            
+            else:
+                res = (np.log(simres[-1])-np.log(ydata[1]/gammma))**2/(sigma/gamma)**2
         else:
-            res = ((simres[-1]-ydata[1]/gammma)/(sigma/gamma))**2
+            # calculate residual
+            if (sigma == None):
+                res = (simres[-1]-ydata[1]/gamma)**2            
+            else:
+                res = ((simres[-1]-ydata[1]/gammma)/(sigma/gamma))**2
         # put the result onto the results queue
-        result.put([res, conditions])     
+        result.put([res, params_without_time])     
 
 # =============================================================================
 # fit_model() takes a PySB model and fits an input list of parameters to 
@@ -821,7 +831,7 @@ def fit_helper(id, jobs, result):
 #         result.put(1)     
 # =============================================================================
 def fit_model(modelfile, conditions, ydata, paramsList, n=5, sigma=None,
-              p0=None, cpu=None, method="brute"):
+              p0=None, cpu=None, method="bayesian"):
 # Basic sanity checks
     if len(conditions) != len(ydata[1]):
         print("Number of experimental conditions and observations do not match")
@@ -855,7 +865,7 @@ def fit_model(modelfile, conditions, ydata, paramsList, n=5, sigma=None,
         return 1
     else:
         parameters = [[paramsList[i], p0[i]] for i in range(len(paramsList))]
-    if method == "brute":
+    if method == "brute" or "bayesian":
         # calculate the number of values to test per parameter
         n = int(n/np.math.factorial(len(parameters)))
         # but if this is too few points then just override this
@@ -880,9 +890,9 @@ def fit_model(modelfile, conditions, ydata, paramsList, n=5, sigma=None,
     for t in range(len(tasks)):
         datapoint = t % len(ydata[1])
         if sigma != None:
-            taskList.append([tasks[t], [ydata[0],ydata[1][datapoint]], paramsList, sigma[datapoint]])
+            taskList.append([tasks[t], [ydata[0],ydata[1][datapoint]], paramsList, sigma[datapoint], method, list(zip(paramsList,[p0[i][0] for i in range(len(p0))]))])
         else:
-            taskList.append([tasks[t], [ydata[0],ydata[1][datapoint]], paramsList])
+            taskList.append([tasks[t], [ydata[0],ydata[1][datapoint]], paramsList, method, list(zip(paramsList,[p0[i][0] for i in range(len(p0))]))])
 #    for t in taskList:
 #        print(t)        
 # Run all combos of parameter values, calculating fit for each
@@ -918,9 +928,21 @@ def fit_model(modelfile, conditions, ydata, paramsList, n=5, sigma=None,
     # create a list of all models, indexing each one
     for score, key in pool_results:
          # format key to only include parameters, not experimental conditions
-         key = str(key[0:len(paramsList)])
+         #  THIS HAS BEEN DEALT WITH BY ONLY RETURNING PARAMETERS WITHOUT GAMMA OR TIME FROM FIT_HELPER
+         key = str(key)
          scoreboard.setdefault(key, 0) # adds key to dictionary with value 0, unless key already exists (in which case it returns value) 
          scoreboard[key]+=score
+    if method == "bayesian":
+        # add model cost to model's score
+        for score, key in pool_results:
+            xi2=0
+            rho = 1 #   THIS WILL NEED TO BECOME A USER OPTION
+            for p in key: # CHECK THIS
+                for i in range(len(paramsList)):
+                    if paramsList[i]==p[0]:
+                        xi2 += ((np.log(p[1])-np.log(p0[i]))**2)
+                        break
+            scoreboard[str(key)]+= xi2/(rho**2)
     # order models from smallest to largest total score
     leaderboard = [(k, scoreboard[k]) for k in sorted(scoreboard, key=scoreboard.get)]
     # write results to a file and print the best scoring model to output
