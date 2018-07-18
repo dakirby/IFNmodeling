@@ -113,7 +113,7 @@ def timecourse(modelfile, t, spec, axes_labels = ['',''], title = '',
 # =============================================================================
 def compare_timecourse(modelfiles, params_list, t, spec, style, global_Norm=1, 
                              axes_labels = ['',''], title = '', custom_legend=False):
-    trajectories = [] # to store each simulation output
+    trajectories = [[] for i in range(len(spec))] # to store each simulation output
     # set up plot
     plt.ion()
     fig, ax = plt.subplots()
@@ -125,19 +125,22 @@ def compare_timecourse(modelfiles, params_list, t, spec, style, global_Norm=1,
     for modelfile in modelfiles:
         for params in params_list:
             tc = timecourse(modelfile, t, spec, suppress=True, parameters=params)
-            trajectories.append(tc[spec[0]])
+            for s in range(len(spec)):
+                trajectories[s].append(tc[spec[s][0]])
     # plot all trajectories
-    style_index = -1    
-    for trajectory in trajectories:
-        style_index+=1
-        if global_Norm==1:
-            ax.plot(t, trajectory, style[style_index],
-                        label=spec[1], linewidth=2.0,)
-        elif type(global_Norm)==int or type(global_Norm)==float:
-            ax.plot(t, trajectory/global_Norm, style[style_index],
-                        label=spec[1], linewidth=2.0)
-        else:
-            print("global_Norm must be an int or float")
+    for s in range(len(spec)):
+        style_index = -1    
+        for trajectory in trajectories[s]:
+            style_index+=1
+            if global_Norm==1:
+                for s in range(len(spec)):
+                    ax.plot(t, trajectory, style[style_index],
+                                label=spec[s][1], linewidth=2.0,)
+            elif type(global_Norm)==int or type(global_Norm)==float:
+                ax.plot(t, trajectory/global_Norm, style[style_index],
+                            label=spec[s][1], linewidth=2.0)
+            else:
+                print("global_Norm must be an int or float")
     if custom_legend != False:
         ax.legend(custom_legend)
 
@@ -243,7 +246,7 @@ def doseresponse(modelfile, dose, t, spec, axes_labels = ['',''], title = '',
 # =============================================================================
 def compare_doseresponse(modelfiles, dose, time_list, spec, style, 
                          axes_labels = ['',''], title = '', Norm=1, 
-                         customlegend=False, params_list=False):
+                         custom_legend=False, params_list=False):
     model_traj=[]#For storing each simulation
     # Call doseresponse() for each model file
     for m in range(len(modelfiles)):
@@ -269,8 +272,8 @@ def compare_doseresponse(modelfiles, dose, time_list, spec, style,
         for m in model_traj:
             ax.plot(dose[1], m[s], style[style_index], linewidth=2.0)
             style_index+=1
-        if customlegend!=False:
-            plt.legend(customlegend)
+        if custom_legend!=False:
+            plt.legend(custom_legend)
         plt.show()
         
 # =============================================================================
