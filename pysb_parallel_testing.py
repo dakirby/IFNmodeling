@@ -30,7 +30,7 @@ import seaborn as sns
 sns.set_style("ticks")
 
 def main(timecourse=False, dose_response=False, wtimecourse=False, wdose_response=False,
-         paramScan=False, fit=False, detailed_tc=False, detailed_dr=False):
+         paramScan=False, fit=False, detailed_tc=False, detailed_dr=False, fit_lhc=False):
     plt.close('all')
     t=linspace(0,3600,num=100)
     testDose = ['I',6.022e18*logspace(-14,-2,num=50)]    
@@ -96,8 +96,24 @@ def main(timecourse=False, dose_response=False, wtimecourse=False, wdose_respons
         zscan = pp.fit_model(simpleA, xdata, ['TotalpSTAT',tc], ['kpa','kSOCSon'],
                              p0=[[1E-6,1E-9,1E-3,'log'],[1E-6,1E-9,1E-3,'log']],
                              sigma=uncertainty, method="bayesian")
-        
+    if fit_lhc==True:
+        kpaScan = 1E-6*logspace(-2,2,num=8)
+        kSSCan= 1E-6*logspace(-2,2,num=8)
+        xdata = [5*60,15*60,30*60,60*60]
+        xdata = [['t',el] for el in xdata]
+        ydata = ED.data.loc[(ED.data.loc[:,'Interferon']=="Beta"),['5','15','30','60']].values[0]
+        uncertainty = ED.data.loc[(ED.data.loc[:,'Interferon']=="Beta_std"),['5','15','30','60']].values[0]
+        NA = 6.022E23
+        volEC = 1E-5
+        IFN = [['I', NA*volEC*10E-12] for i in ydata]
+        xdata = [[IFN[el]]+[xdata[el]] for el in range(len(xdata))]
+        tc = pp.p_timecourse(simpleB, [5*60,15*60,30*60,60*60], 
+                             [['TotalpSTAT',"Total pSTAT"]],suppress=True,
+                             parameters=[['I',NA*volEC*10E-12]])['TotalpSTAT']
+        zscan = pp.fit_model(simpleA, xdata, ['TotalpSTAT',tc], ['kpa','kSOCSon','R1'],
+                             p0=[[1E-6,1E-8,1E-4,'log'],[1E-6,1E-8,1E-4,'log'],[2E3,8E2,8E4,'linear']],
+                             sigma=uncertainty, method="lhc_sampling", n=25)
 
 if __name__ == '__main__':
-    main(fit=True)
+    main(fit_lhc=True)
 

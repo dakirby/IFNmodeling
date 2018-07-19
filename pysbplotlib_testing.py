@@ -101,6 +101,16 @@ def main(tc=False, dr=False, multi_dr=False, multi_tc=False,
         dtc = pyplt.timecourse(IFNbModel_d, t, [['TotalpSTAT',"Total pSTAT"],['BoundSOCS',"Bound SOCS"]],
                          ['Time (s)','Molecules/cell'],title='IFNb Time Course',
                          parameters={'IFN':500E-12})
+
+
+        kpaa = 1    #  3.981e-07 = 80.69% BEST FIT BY CHOOSING DIFFERENT GAMMAS - Used Gamma_40 fit for beta and fit_all_new for alpha (might be wrong about alpha)
+        kSOCSona = 1.000e-06 
+        R1a = 2.625e+03
+        R2a = 2.625e+03
+        kloc = 3.219e-03
+        kSOCSmRNA = 2.575e-03
+        kSOCS = 1.288e-02        
+
         import IFN_detailed_model_beta_ppCompatible as IFNbModel_dpp
         dtc_pp = pyplt.timecourse(IFNbModel_dpp, t, [['TotalpSTAT',"Total pSTAT"],['BoundSOCS',"Bound SOCS"]],
                          ['Time (s)','Molecules/cell'],title='IFNb Time Course',

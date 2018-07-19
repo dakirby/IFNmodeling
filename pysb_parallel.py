@@ -42,9 +42,6 @@ def get_ODE_model(modelfile):
     py_output = export(imported_model.model, 'python')
     with open('ODE_system.py','w') as f:
         f.write(py_output)
-    with open('ODE_system.py','r') as f:
-        print(f.readline())
-        
     import ODE_system
     return ODE_system.Model()
 	
@@ -639,65 +636,68 @@ def p_DRparamScan(modelfile, param1, param2, testDose, t_list, spec, custom_para
 # =============================================================================
 # lhc() builds an origin-centered latin hypercube for parameters to investigate
 # Inputs:
-#   parameters = a list of lists, each sublist of the form ['name',upper limit, lower limit]
-#   n = number of points to generate    
+#   parameters = these are the model parameters to fit
+#           a list of lists, each sublist of the form ['name',upper limit, lower limit]
+#   n = number of points to generate 
+#   exp_params =  These are model parameters which are not being fitted but are needed
+#                 to replicate experimental data (ie. one item in this list per data point)    
+#               a list of lists, each sublist describing the experimental conditions 
+#               which were used to generate the corresponding ydata point.
+#               Each *sublist* is of the form [['name',value],['name',value],...]       
 # =============================================================================
-def lhc(parameters, n):
+def lhc(parameters, n, exp_params):
     d = len(parameters)
-    def latin(n, d):
-        """
-        Build unit latin hypercube.
-        Parameters
-        ----------
-        n : int
-            Number of points.
-        d : int
-            Size of space.
-        Returns
-        -------
-        lh : ndarray
-            Array of points uniformly placed in d-dimensional unit cube.
-        """
-        # spread function
-        def spread(points):
-            return sum(1./np.linalg.norm(np.subtract(points[i], points[j])) for i in range(n) for j in range(n) if i > j)
-    
-        # start with diagonal shape
-        lh = [[i/(n-1.)]*d for i in range(n)]
-    
-        # minimize spread function by shuffling
-        minspread = spread(lh)
-    
-        for i in range(1000):
-            point1 = np.random.randint(n)
-            point2 = np.random.randint(n)
-            dim = np.random.randint(d)
-    
-            newlh = np.copy(lh)
-            newlh[point1, dim], newlh[point2, dim] = newlh[point2, dim], newlh[point1, dim]
-            newspread = spread(newlh)
-    
-            if newspread < minspread:
-                lh = np.copy(newlh)
-                minspread = newspread  
-        # shift to be origin-centered
-        for point in lh:
-            for ind in range(d):
-                point[ind]-=0.5
-        return lh
-    unitCube = latin(n,d)
-    # rescale in parameter ranges
+    # spread function
+    def spread(points):
+        return sum(1./np.linalg.norm(np.subtract(points[i], points[j])) for i in range(n) for j in range(n) if i > j)
+
+    # start with diagonal shape
+    unitCube = [[i/(n-1.)]*d for i in range(n)]
+
+    # minimize spread function by shuffling
+    minspread = spread(unitCube)
+
+    for i in range(1000):
+        point1 = np.random.randint(n)
+        point2 = np.random.randint(n)
+        dim = np.random.randint(d)
+
+        newlh = np.copy(unitCube)
+        newlh[point1, dim], newlh[point2, dim] = newlh[point2, dim], newlh[point1, dim]
+        newspread = spread(newlh)
+
+        if newspread < minspread:
+            unitCube = np.copy(newlh)
+            minspread = newspread  
+    # shift to be origin-centered
     for point in unitCube:
+        for ind in range(d):
+            point[ind]-=0.5
+    # rescale in parameter ranges, add labels, and add experimental conditions
+    reformatted = []
+    for point in unitCube:
+        point_copy = [[] for i in point]
         for dim in range(d):
-            point[dim] = (parameters[dim][1]-parameters[dim][2])*point[dim]+(parameters[dim][1]+parameters[dim][2])/2
-    return unitCube #no longer unit
+            lower_bound = parameters[dim][1][1]
+            upper_bound = parameters[dim][1][2]
+            scale = parameters[dim][1][3]
+            if scale=='linear':
+                point_copy[dim] = [parameters[dim][0],(upper_bound-lower_bound)*point[dim]+0.5*(upper_bound+lower_bound)]
+            elif scale=='log':
+                logY = (np.log10(upper_bound)-np.log10(lower_bound))*point[dim]+0.5*(np.log10(upper_bound)+np.log10(lower_bound))
+                point_copy[dim] = [parameters[dim][0],10**logY]
+        for exp in exp_params:
+            reformatted.append(point_copy+exp)
+    return reformatted
+
 # =============================================================================
 # brute_parameters() builds all combinations of all parameter values to test
 # Inputs:
 #   parameters = list of the form 
 #                [['name', [values to test]], ['name', [values to test]], ...]
-#   custom_params = list of additional custom parameters, common to every run
-#               eg. [['c1',value],['c2',value],...]
+#   exp_params =  a list of lists, each sublist describing the experimental conditions 
+#               which were used to generate the corresponding ydata point.
+#               Each *sublist* is of the form [['name',value],['name',value],...]
 # Returns:
 #   list of all parameter combinations to run        
 # =============================================================================
@@ -823,8 +823,10 @@ def fit_helper(id, jobs, result):
 #               options: 
 #                   "brute" : try all parameter combinations
 #                   "bayesian": bayesian inference fitting        
-#                   "sampling" : sample parameter space using latin hypercube
-#                                to generate n samples for testing
+#                   "lhc_sampling" : sample parameter space using latin hypercube
+#                                    to generate n samples for testing. 
+#                                    Note: n total samples, not per parameter.
+#                                    Score models based on their sum of squared residuals.       
 #       rho = int or float used to weight the cost of deviating from bayesian prior
 #               - a larger value for rho will make it easier to deviate from p0 prior guesses        
 # Output:
@@ -876,7 +878,8 @@ def fit_model(modelfile, conditions, ydata, paramsList, n=5, sigma=None,
         return 1
     else:
         parameters = [[paramsList[i], p0[i]] for i in range(len(paramsList))]
-    if method == "brute" or "bayesian":
+    if method == "brute" or method =="bayesian":
+        print(method)
         print("Using {} points per parameter".format(n))
         print("Generating {} models to test".format(n**len(paramsList)))
         for p in parameters:
@@ -888,13 +891,11 @@ def fit_model(modelfile, conditions, ydata, paramsList, n=5, sigma=None,
                 print("Did not recognize specified distribution of parameter values to test")
                 return 1
         tasks = brute_parameters(parameters, conditions)
-    elif method == "sampling":
+    elif method == "lhc_sampling":
+        print("Using latin hyper cube sampling with {} points".format(n))
         # calculate the number of values to test per parameter
-        n = int(n/np.math.factorial(len(parameters)))
-        # but if this is too few points then just override this
-        if n < 5: n = 5
-
-        tasks = lhc(parameters, n)
+        #n_p = int(n/np.math.factorial(len(parameters)))
+        tasks = lhc(parameters, n, conditions)
     else:
         print("Did not recognize the method specified")
         return(1)
