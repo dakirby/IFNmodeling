@@ -40,7 +40,7 @@ Parameter('k_a1', 4.98E-14)
 Parameter('k_d1', 0.030)#*10
 
 Parameter('k_a2', 8.30e-13)   # ligand-monomer binding  (scaled)
-Parameter('k_d2', 0.001) #*10              # ligand-monomer dissociation
+Parameter('k_d2', 0.002) #*10              # ligand-monomer dissociation
 
 #NEW PARAMETERS IN VIVO
 Parameter('k_a3', 3.62e-4)
@@ -48,7 +48,7 @@ Parameter('k_a3', 3.62e-4)
 Parameter('k_a4', 3.62e-4) #*20#e-12
 Parameter('k_d4', 0.006) #*20
 
-Parameter('k_d3', 1.2e-5) #(ka3)/(q3)
+Parameter('k_d3', 2.4e-5) #(ka3)/(q3)
 
 Parameter('kpa', 1E-6)#6e-5##OLD VALUE was (1e6)/(NA*volCP)=1e-6
 Parameter('kpu', 1E-3)#1e-3

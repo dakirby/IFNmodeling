@@ -79,7 +79,7 @@ Parameter('mRNAdeg', 5e-4)
 Parameter('mRNAtrans',1e-3)
 
 Parameter('kSOCS', 5E-3) # 4e-3 was old value #Should sufficiently separate peak pSTAT from peak SOCS
-Parameter('SOCSdeg', 5e-4)	#Maiwald*form factor
+Parameter('SOCSdeg', 5e-4*5)	#Maiwald*form factor
 Parameter('kSOCSon', 1E-3) # = kpa
 Parameter('kSOCSoff', 5E-4)#1.5e-3	#Rate of SOCS unbinding ternary complex. Very fudged. Was 1.5e-3 
 

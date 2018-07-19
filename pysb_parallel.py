@@ -877,11 +877,8 @@ def fit_model(modelfile, conditions, ydata, paramsList, n=5, sigma=None,
     else:
         parameters = [[paramsList[i], p0[i]] for i in range(len(paramsList))]
     if method == "brute" or "bayesian":
-        # calculate the number of values to test per parameter
-        n = int(n/np.math.factorial(len(parameters)))
-        # but if this is too few points then just override this
-        if n < 5: n = 5
         print("Using {} points per parameter".format(n))
+        print("Generating {} models to test".format(n**len(paramsList)))
         for p in parameters:
             if p[1][3]=='log':
                 p[1] = np.logspace(np.log10(p[1][1]),np.log10(p[1][2]), num=n)
@@ -892,6 +889,11 @@ def fit_model(modelfile, conditions, ydata, paramsList, n=5, sigma=None,
                 return 1
         tasks = brute_parameters(parameters, conditions)
     elif method == "sampling":
+        # calculate the number of values to test per parameter
+        n = int(n/np.math.factorial(len(parameters)))
+        # but if this is too few points then just override this
+        if n < 5: n = 5
+
         tasks = lhc(parameters, n)
     else:
         print("Did not recognize the method specified")

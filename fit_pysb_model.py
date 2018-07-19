@@ -25,25 +25,27 @@ import numpy as np
 # =============================================================================
 # Parameter tests for IFN Alpha
 # =============================================================================
-Alpha_tests = ['kpa','kSOCSon','R1','R2']
+Alpha_tests = ['kpa','kSOCSon','kSOCS','R1','R2']
 p0_Alpha=[[1E-6,1E-8,1E-4,'log'],
           [1E-6,1E-8,1E-4,'log'],
+          [4E-3,4E-4,4E-2,'linear'],
           [2000,500,9000,'linear'],
           [2000,500,9000,'linear']]
 
 # =============================================================================
 # Parameter tests for IFN Beta
 # =============================================================================
-Beta_tests = ['kpa','kSOCSon','R1','R2']
+Beta_tests = ['kpa','kSOCSon','kSOCS','R1','R2']
 p0_Beta=[[1E-6,1E-8,1E-4,'log'],
           [1E-6,1E-8,1E-4,'log'],
+          [4E-3,4E-4,4E-2,'linear'],
           [2000,500,9000,'linear'],
           [2000,500,9000,'linear']]
 
 # =============================================================================
 # Global gamma (default is 1)
 # =============================================================================
-gamma = 26.8
+gamma = 20
 # =============================================================================
 # Script to automate combining alpha and beta models
 # =============================================================================
@@ -205,10 +207,10 @@ def main():
         Beta_uncertainty = np.divide(Beta_uncertainty,gamma)
     # Now fit the models
     pp.fit_model(modelfileA, xdata_Alpha, ['TotalpSTAT',ydata_Alpha], Alpha_tests,
-                     p0=p0_Alpha, sigma=Alpha_uncertainty, n=100, method="bayesian")
+                     p0=p0_Alpha, sigma=Alpha_uncertainty, n=2000, method="brute")
     os.rename('modelfit.txt', 'modelfit_alpha.txt')
     pp.fit_model(modelfileB, xdata_Beta, ['TotalpSTAT',ydata_Beta], Beta_tests,
-                     p0=p0_Beta, sigma=Beta_uncertainty, n=100, method="bayesian")
+                     p0=p0_Beta, sigma=Beta_uncertainty, n=2000, method="brute")
     os.rename('modelfit.txt', 'modelfit_beta.txt')
     # Combine the alpha and beta fits to get the best overall model
     print("Finding the best model for alpha and beta Interferon")

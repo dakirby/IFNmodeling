@@ -37,7 +37,7 @@ Expression('k_a1', (3E5)/(NA*volEC))
 Parameter('k_d1', 0.030)#*10
 
 Expression('k_a2', (5e6)/(NA*volEC))   # ligand-monomer binding  (scaled)
-Parameter('k_d2', 0.001) #*10              # ligand-monomer dissociation
+Parameter('k_d2', 0.002) #*10              # ligand-monomer dissociation
 
 #NEW PARAMETERS IN VIVO
 Expression('k_a3', 1E-12/(volPM))

@@ -113,7 +113,7 @@ Monomer('SOCS',['site'])
 # =============================================================================
 # # Seed Species
 # =============================================================================
-Initial(IFN_alpha2(r1=None,r2=None), Ia)
+Initial(IFN_alpha2(r1=None,r2=None), I)
 
 Initial(IFNAR1(re=None, ri=None, loc='out'), R1)
 Initial(IFNAR2(re=None, ri=None, rs=None, loc='out'), R2)
