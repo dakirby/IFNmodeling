@@ -8,6 +8,8 @@ Used to test functions in pysbplotlib.py as I develop them.
 """
 import IFN_simplified_model_alpha as IFNaModel
 import IFN_simplified_model_beta as IFNbModel
+import IFN_detailed_model_alpha as IFNaModel_d
+import IFN_detailed_model_beta as IFNbModel_d
 import pysbplotlib as pyplt
 import matplotlib.pyplot as plt
 import numpy as np
@@ -19,7 +21,7 @@ plt.close('all')
 # Run simulation
 def main(tc=False, dr=False, multi_dr=False, multi_tc=False, 
          wtc=False, wctc=False, wdr=False, wmulti_dr=False,
-         param_dr=False):
+         detailed_tc=False, detailed_dr=False):
     t = np.linspace(0, 3600)
     if tc==True:
         pyplt.timecourse(IFNaModel, t, [['TotalpSTAT',"Total pSTAT"]],
@@ -95,7 +97,50 @@ def main(tc=False, dr=False, multi_dr=False, multi_tc=False,
                                     ['r','g'], 
                                     axes_labels = ['IFN (M)',r"pSTAT/pSTAT$_{Total}$"], 
                                     title = 'Weighted dose response', Norm=10000)
+    if detailed_tc==True:
+        dtc = pyplt.timecourse(IFNbModel_d, t, [['TotalpSTAT',"Total pSTAT"],['BoundSOCS',"Bound SOCS"]],
+                         ['Time (s)','Molecules/cell'],title='IFNb Time Course',
+                         parameters={'IFN':500E-12})
+        import IFN_detailed_model_beta_ppCompatible as IFNbModel_dpp
+        dtc_pp = pyplt.timecourse(IFNbModel_dpp, t, [['TotalpSTAT',"Total pSTAT"],['BoundSOCS',"Bound SOCS"]],
+                         ['Time (s)','Molecules/cell'],title='IFNb Time Course',
+                         parameters={'I':500E-12*6.022E23*1E-5})
+        
+        test_detailed = dtc['TotalpSTAT']-dtc_pp['TotalpSTAT']
+        if all(np.square(test_detailed)) < 1:
+            print("versions of detailed model are equivalent")
+        pyplt.compare_timecourse([IFNaModel_d, IFNbModel_d], 
+                                 [{'IFN':10E-12},{'IFN':100E-12},{'IFN':500E-12}],
+                                 t, [['TotalpSTAT',"pSTAT"]], 
+                                 ['r','r--','r:','g','g--','g:'],
+                                 axes_labels=['Time (s)','Molecules/cell'],
+                                 title=r"IFN$\alpha$ and IFN$\beta$ Time Course",
+                                 custom_legend=[r"IFN$\alpha$ 10 pM",
+                                                r"IFN$\alpha$ 100 pM",
+                                                r"IFN$\alpha$ 500 pM",
+                                                r"IFN$\beta$ 10 pM",
+                                                r"IFN$\beta$ 100 pM",
+                                                r"IFN$\beta$ 500 pM",])
+
+    if detailed_dr==True:
+        pyplt.compare_doseresponse([IFNaModel_d, IFNaModel_d, IFNaModel_d, 
+                                    IFNbModel_d, IFNbModel_d, IFNbModel_d],
+                                 ['IFN',np.logspace(-14,-2,num=50)], 
+                                 [np.linspace(0,900),np.linspace(0,1800),np.linspace(0,3600),
+                                  np.linspace(0,900),np.linspace(0,1800),np.linspace(0,3600)],
+                                 [['TotalpSTAT',"Total pSTAT"]], 
+                                 ['r','r--','r:','g','g--','g:'],
+                                 Norm=10000,
+                                 axes_labels=['Time (s)','Fraction of pSTAT Phosphorylated'],
+                                 title=r"IFN$\alpha$ and IFN$\beta$ Time Course",
+                                 custom_legend=[r"IFN$\alpha$ 15 min",
+                                                r"IFN$\alpha$ 30 min",
+                                                r"IFN$\alpha$ 60 min",
+                                                r"IFN$\beta$ 15 min",
+                                                r"IFN$\beta$ 30 min",
+                                                r"IFN$\beta$ 60 min",])
+
 
 if __name__ == "__main__":
-   main(tc=True)
+   main(detailed_tc=True)
    

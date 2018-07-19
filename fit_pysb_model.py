@@ -19,26 +19,94 @@ modelfileB = "IFN_simplified_model_beta_ppCompatible"
 import pysb_parallel as pp
 import Experimental_Data as ED
 import os # For renaming output file to prevent overwriting results
+from operator import itemgetter
+import numpy as np
 
 # =============================================================================
 # Parameter tests for IFN Alpha
 # =============================================================================
-Alpha_tests = ['kpa','kSOCSon','R1','R2']
-p0_Alpha=[[1E-6,1E-9,1E-3,'log'],
-          [1E-6,1E-9,1E-3,'log'],
-          [2000,100,9000,'linear'],
-          [2000,100,9000,'linear']]
+Alpha_tests = ['kpa','kSOCSon','kSOCS','R1','R2']
+p0_Alpha=[[1E-6,1E-8,1E-4,'log'],
+          [1E-6,1E-8,1E-4,'log'],
+          [4E-3,4E-4,4E-2,'linear'],
+          [2000,500,9000,'linear'],
+          [2000,500,9000,'linear']]
 
 # =============================================================================
 # Parameter tests for IFN Beta
 # =============================================================================
-Beta_tests = ['kpa','kSOCSon','R1','R2']
-p0_Beta=[[1E-6,1E-9,1E-3,'log'],
-          [1E-6,1E-9,1E-3,'log'],
-          [2000,100,9000,'linear'],
-          [2000,100,9000,'linear']]
+Beta_tests = ['kpa','kSOCSon','kSOCS','R1','R2']
+p0_Beta=[[1E-6,1E-8,1E-4,'log'],
+          [1E-6,1E-8,1E-4,'log'],
+          [4E-3,4E-4,4E-2,'linear'],
+          [2000,500,9000,'linear'],
+          [2000,500,9000,'linear']]
 
-
+# =============================================================================
+# Global gamma (default is 1)
+# =============================================================================
+gamma = 20
+# =============================================================================
+# Script to automate combining alpha and beta models
+# =============================================================================
+def fit_alpha_and_beta():
+    modelbase = []
+    # Read in all models and their scores
+    linecount=0
+    with open('modelfit_alpha.txt', 'r') as df:
+        df.readline()
+        df.readline()
+        header = df.readline()
+        labels = header.split()
+        while True:
+            line = df.readline().split()
+            if not line: break
+            linecount+=1
+            score = float(line[-1])
+            key = [[labels[i], line[i]] for i in range(len(line)-1)]
+            modelbase.append([key,score])
+    print("Summing {} scores".format(linecount))
+    # Now add the scores for the fit to IFN beta data to each model   
+    progress=0
+    threshold=0.05
+    mismatches=0
+    with open('modelfit_beta.txt', 'r') as df:
+        df.readline()
+        df.readline()
+        labels = df.readline().split()
+        while True:
+            line = df.readline().split()
+            if not line: break
+            progress += 1
+            if progress/linecount > threshold:
+                threshold += 0.05
+                print("{0:.1f}% done".format(progress/linecount*100.))
+            score = float(line[-1])
+            key = [[labels[i], line[i]] for i in range(len(line)-1)]
+            found = False
+            for model in modelbase:
+                if key == model[0]:
+                    found=True
+                    model[1]+=score
+                    break
+            if found == False:
+                mismatches+=1
+                
+    # Rank the models based on their new scores
+    print("Re-ranking models")
+    modelbase = sorted(modelbase, key = itemgetter(1))
+    with open('modelfit_alpha_and_beta.txt', 'w') as outfile:
+        outfile.write("{} models\n".format(len(modelbase)))
+        outfile.write("{} models were not matched between beta and alpha\n".format(mismatches))
+        outfile.write("---------------------------------------------------------\n")
+        outfile.write(header)
+        for model in modelbase:
+            l = ""
+            for pval in model[0]:
+                l+=pval[1]+"    "
+            l+=str(model[1])+'\n'
+            outfile.write(l)
+        
 
 def main():
     if os.path.isfile('modelfit_alpha.txt') or os.path.isfile('modelfit_beta.txt'):
@@ -130,13 +198,23 @@ def main():
                 break
         if provided == False:
             Beta_uncertainty.append(1)
+    # Set global gamma if provided:
+    if gamma != 1:
+        print("Global gamma set: {}".format(gamma))
+        ydata_Alpha = np.divide(ydata_Alpha,gamma)
+        ydata_Beta = np.divide(ydata_Beta,gamma)
+        Alpha_uncertainty = np.divide(Alpha_uncertainty,gamma)
+        Beta_uncertainty = np.divide(Beta_uncertainty,gamma)
     # Now fit the models
     pp.fit_model(modelfileA, xdata_Alpha, ['TotalpSTAT',ydata_Alpha], Alpha_tests,
-                     p0=p0_Alpha, sigma=Alpha_uncertainty, n=15000)
+                     p0=p0_Alpha, sigma=Alpha_uncertainty, n=2000, method="brute")
     os.rename('modelfit.txt', 'modelfit_alpha.txt')
     pp.fit_model(modelfileB, xdata_Beta, ['TotalpSTAT',ydata_Beta], Beta_tests,
-                     p0=p0_Beta, sigma=Beta_uncertainty, n=15000)
+                     p0=p0_Beta, sigma=Beta_uncertainty, n=2000, method="brute")
     os.rename('modelfit.txt', 'modelfit_beta.txt')
+    # Combine the alpha and beta fits to get the best overall model
+    print("Finding the best model for alpha and beta Interferon")
+    fit_alpha_and_beta()
     
 if __name__ == '__main__':
     main()
