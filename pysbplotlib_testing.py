@@ -98,10 +98,17 @@ def main(tc=False, dr=False, multi_dr=False, multi_tc=False,
                                     axes_labels = ['IFN (M)',r"pSTAT/pSTAT$_{Total}$"], 
                                     title = 'Weighted dose response', Norm=10000)
     if detailed_tc==True:
-        pyplt.timecourse(IFNbModel_d, t, [['TotalpSTAT',"Total pSTAT"],['BoundSOCS',"Bound SOCS"]],
+        dtc = pyplt.timecourse(IFNbModel_d, t, [['TotalpSTAT',"Total pSTAT"],['BoundSOCS',"Bound SOCS"]],
                          ['Time (s)','Molecules/cell'],title='IFNb Time Course',
                          parameters={'IFN':500E-12})
+        import IFN_detailed_model_beta_ppCompatible as IFNbModel_dpp
+        dtc_pp = pyplt.timecourse(IFNbModel_dpp, t, [['TotalpSTAT',"Total pSTAT"],['BoundSOCS',"Bound SOCS"]],
+                         ['Time (s)','Molecules/cell'],title='IFNb Time Course',
+                         parameters={'I':500E-12*6.022E23*1E-5})
         
+        test_detailed = dtc['TotalpSTAT']-dtc_pp['TotalpSTAT']
+        if all(np.square(test_detailed)) < 1:
+            print("versions of detailed model are equivalent")
         pyplt.compare_timecourse([IFNaModel_d, IFNbModel_d], 
                                  [{'IFN':10E-12},{'IFN':100E-12},{'IFN':500E-12}],
                                  t, [['TotalpSTAT',"pSTAT"]], 

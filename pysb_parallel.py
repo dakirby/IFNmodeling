@@ -42,6 +42,9 @@ def get_ODE_model(modelfile):
     py_output = export(imported_model.model, 'python')
     with open('ODE_system.py','w') as f:
         f.write(py_output)
+    with open('ODE_system.py','r') as f:
+        print(f.readline())
+        
     import ODE_system
     return ODE_system.Model()
 	
@@ -752,23 +755,26 @@ def fit_helper(id, jobs, result):
         #FOR DEBUGGING: Check that fit generates "correct" values
         #pString = "ydata = " +str(ydata[1])+"\nsimres({0}){1} = ".format(time[-1],str(params_without_time[0:2]))+str(simres[-1])
         #print(pString)
-        if method == "bayesian":
-            if (sigma == None):
-                if ydata[1]<=0: #Reject data that doesn't make sense physically
-                    res=0
-                else:
-                    res = (np.log(simres[-1])-np.log(ydata[1]/gamma))**2 
-            else:
-                if ydata[1]<=0:#Reject data that doesn't make sense physically
-                    res=0
-                else:
-                    res = (np.log(simres[-1])-np.log(ydata[1]/gamma))**2/(sigma/gamma)**2
+# =============================================================================
+#         if method == "bayesian":
+#             if (sigma == None):
+#                 if ydata[1]<=0: #Reject data that doesn't make sense physically
+#                     res=0
+#                 else: # The distribution of res over models is distributed over a modified Xi2 distribution
+#                     res = (np.log(simres[-1])-np.log(ydata[1]/gamma))**2 
+#             else:
+#                 if ydata[1]<=0:#Reject data that doesn't make sense physically
+#                     res=0
+#                 else: 
+#                     res = (np.log(simres[-1])-np.log(ydata[1]/gamma))**2/(sigma/gamma)**2
+#        else:
+# =============================================================================
+        # calculate residual
+        if (sigma == None):
+            res = (simres[-1]-ydata[1]/gamma)**2            
         else:
-            # calculate residual
-            if (sigma == None):
-                res = (simres[-1]-ydata[1]/gamma)**2            
-            else:
-                res = ((simres[-1]-ydata[1]/gamma)/(sigma/gamma))**2
+            # The distribution of res over models is Xi2 distributed
+            res = ((simres[-1]-ydata[1]/gamma)/(sigma/gamma))**2
         # put the result onto the results queue
         result.put([res, conditions])     
 
@@ -952,10 +958,10 @@ def fit_model(modelfile, conditions, ydata, paramsList, n=5, sigma=None,
             key = key[3:-2]
             key = re.split("', |\], \['", key)
             key = [[key[i],float(key[i+1])] for i in range(0,len(key),2)]
-            for item in key:
-                if item[0] in paramsList:
-                    index = paramsList.index(item[0])
-                    xi2 += ((np.log(item[1])-np.log(p0[index][0]))**2)
+            for parameter_k in key:
+                if parameter_k[0] in paramsList:
+                    index = paramsList.index(parameter_k[0])
+                    xi2 += ((np.log(parameter_k[1])-np.log(p0[index][0]))**2)
                 else:
                     key.remove(item)
             scoreboard[keyCopy] += xi2/(rho**2)
