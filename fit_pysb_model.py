@@ -25,31 +25,39 @@ import numpy as np
 # =============================================================================
 # Parameter tests for IFN Alpha
 # =============================================================================
-Alpha_tests = ['kpa','kSOCSon','kSOCS','R1','R2']
-p0_Alpha=[[1E-6,1E-8,1E-4,'log'],
-          [1E-6,1E-8,1E-4,'log'],
-          [4E-3,4E-4,4E-2,'linear'],
-          [2000,500,9000,'linear'],
-          [2000,500,9000,'linear']]
-
+Alpha_tests = ['kd4','gamma']#'kpa','kSOCSon','kSOCS','R1','R2',
+p0_Alpha=[[0.3,0.03,3,'log'],
+          [20,5,30,'linear']]
+# =============================================================================
+# [1E-6,1E-8,1E-4,'log'],
+#           [1E-6,1E-8,1E-4,'log'],
+#           [4E-3,4E-4,4E-2,'linear'],
+#           [2000,500,9000,'linear'],
+#           [2000,500,9000,'linear'],
+# =============================================================================
+          
 # =============================================================================
 # Parameter tests for IFN Beta
 # =============================================================================
-Beta_tests = ['kpa','kSOCSon','kSOCS','R1','R2']
-p0_Beta=[[1E-6,1E-8,1E-4,'log'],
-          [1E-6,1E-8,1E-4,'log'],
-          [4E-3,4E-4,4E-2,'linear'],
-          [2000,500,9000,'linear'],
-          [2000,500,9000,'linear']]
-
+Beta_tests = ['k_d4','gamma']#'kpa','kSOCSon','kSOCS','R1','R2',
+p0_Beta=[[0.006,0.0006,0.06,'log'],
+          [20,5,30,'linear']]
+# =============================================================================
+# [1E-6,1E-8,1E-4,'log'],
+#           [1E-6,1E-8,1E-4,'log'],
+#           [4E-3,4E-4,4E-2,'linear'],
+#           [2000,500,9000,'linear'],
+#           [2000,500,9000,'linear'],
+# =============================================================================
+          
 # =============================================================================
 # Global gamma (default is 1)
 # =============================================================================
-gamma = 20
+gamma = 1
 # =============================================================================
 # Script to automate combining alpha and beta models
 # =============================================================================
-def fit_alpha_and_beta():
+def fit_alpha_and_beta(x=0):
     modelbase = []
     # Read in all models and their scores
     linecount=0
@@ -58,12 +66,17 @@ def fit_alpha_and_beta():
         df.readline()
         header = df.readline()
         labels = header.split()
+        if x==1: #parse for K4
+            k4_index = labels.index('kd4')
+            labels[k4_index]='K4 factor'
         while True:
             line = df.readline().split()
             if not line: break
             linecount+=1
             score = float(line[-1])
             key = [[labels[i], line[i]] for i in range(len(line)-1)]
+            # Re-express kd4 as a ratio over initial guess; assumes intervals were symmetric for kd4 and k_d4            
+            key[k4_index][1]=round(float(key[k4_index][1])/p0_Alpha[Alpha_tests.index('kd4')][0],2)
             modelbase.append([key,score])
     print("Summing {} scores".format(linecount))
     # Now add the scores for the fit to IFN beta data to each model   
@@ -74,6 +87,9 @@ def fit_alpha_and_beta():
         df.readline()
         df.readline()
         labels = df.readline().split()
+        if x==1: #parse for K4
+            k4_index = labels.index('k_d4')
+            labels[k4_index]='K4 factor'
         while True:
             line = df.readline().split()
             if not line: break
@@ -83,6 +99,8 @@ def fit_alpha_and_beta():
                 print("{0:.1f}% done".format(progress/linecount*100.))
             score = float(line[-1])
             key = [[labels[i], line[i]] for i in range(len(line)-1)]
+            # Re-express kd4 as a ratio over initial guess; assumes intervals were symmetric for kd4 and k_d4            
+            key[k4_index][1]=round(float(key[k4_index][1])/p0_Beta[Beta_tests.index('k_d4')][0],2)
             found = False
             for model in modelbase:
                 if key == model[0]:
@@ -90,6 +108,7 @@ def fit_alpha_and_beta():
                     model[1]+=score
                     break
             if found == False:
+                print(key)
                 mismatches+=1
                 
     # Rank the models based on their new scores
@@ -103,7 +122,7 @@ def fit_alpha_and_beta():
         for model in modelbase:
             l = ""
             for pval in model[0]:
-                l+=pval[1]+"    "
+                l+=str(pval[1])+"    "
             l+=str(model[1])+'\n'
             outfile.write(l)
         
@@ -207,14 +226,17 @@ def main():
         Beta_uncertainty = np.divide(Beta_uncertainty,gamma)
     # Now fit the models
     pp.fit_model(modelfileA, xdata_Alpha, ['TotalpSTAT',ydata_Alpha], Alpha_tests,
-                     p0=p0_Alpha, sigma=Alpha_uncertainty, n=2000, method="brute")
+                     p0=p0_Alpha, sigma=Alpha_uncertainty, n=5, method="brute")
     os.rename('modelfit.txt', 'modelfit_alpha.txt')
     pp.fit_model(modelfileB, xdata_Beta, ['TotalpSTAT',ydata_Beta], Beta_tests,
-                     p0=p0_Beta, sigma=Beta_uncertainty, n=2000, method="brute")
+                     p0=p0_Beta, sigma=Beta_uncertainty, n=5, method="brute")
     os.rename('modelfit.txt', 'modelfit_beta.txt')
     # Combine the alpha and beta fits to get the best overall model
     print("Finding the best model for alpha and beta Interferon")
-    fit_alpha_and_beta()
+    if 'kd4' in Alpha_tests:
+        fit_alpha_and_beta(1)
+    else:
+        fit_alpha_and_beta()
     
 if __name__ == '__main__':
     main()

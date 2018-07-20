@@ -753,6 +753,9 @@ def read_parameters(pList,filename):
                     count+=1
     if count!=len(pList):
         print("Not all parameters were found")
+        print(pList)
+        print(vals)
+        print("\n")
     return vals
 
 # =============================================================================
@@ -789,20 +792,20 @@ def fit_helper(id, jobs, result):
                 params_without_time.append(['R2',conditions[len(conditions)-1-i][1]])
             elif conditions[len(conditions)-1-i][0]=='gamma': # 'gamma' is used to fit the scale factor for the flow cytometry data
                 gamma=conditions[len(conditions)-1-i][1]
-            elif conditions[len(conditions)-1-i][0]=='ka4': #'ka4' and 'ka_4' can be fit, but detailed balance has to be enforced
-                pvals = read_parameters(['ka1','kd1','ka2','kd2','kd4','ka3'],'ODE_system.py')
+            elif conditions[len(conditions)-1-i][0]=='kd4': #'kd4' and 'k_d4' can be fit, but detailed balance has to be enforced
+                pvals = read_parameters(['ka1','kd1','ka2','kd2','ka4','ka3'],'ODE_system.py')
                 q1=pvals[0]/pvals[1]
                 q2=pvals[2]/pvals[3]
-                q4=conditions[len(conditions)-1-i][1]/pvals[4]
+                q4=pvals[4]/conditions[len(conditions)-1-i][1]
                 q3=q2*q4/q1
                 kd3=pvals[5]/q3
                 params_without_time.append(['kd3',kd3])
                 params_without_time.append(conditions[len(conditions)-1-i])                
-            elif conditions[len(conditions)-1-i][0]=='ka_4':
-                pvals = read_parameters(['k_a1','k_d1','k_a2','k_d2','k_d4','k_a3'],'ODE_system.py')
+            elif conditions[len(conditions)-1-i][0]=='k_d4':
+                pvals = read_parameters(['k_a1','k_d1','k_a2','k_d2','k_a4','k_a3'],'ODE_system.py')
                 q1=pvals[0]/pvals[1]
                 q2=pvals[2]/pvals[3]
-                q4=conditions[len(conditions)-1-i][1]/pvals[4]
+                q4=pvals[4]/conditions[len(conditions)-1-i][1]
                 q3=q2*q4/q1
                 k_d3=pvals[5]/q3
                 params_without_time.append(['k_d3',k_d3])
@@ -846,7 +849,8 @@ def fit_helper(id, jobs, result):
 #       paramsList = a list of the parameters in the model to fit
 #           Note: special arguments include:
 #                   'R': using this parameter will set R1 and R2 to the value of R
-#                   'gamma': using this parameter will fit the scale factor for the experimental data          
+#                   'gamma': using this parameter will fit the scale factor for the experimental data   
+#                   'k_d4' and 'kd4': using these parameterse will fit K3 and K4, maintaining detailed balance            
 #       OPTIONAL ARGUMENTS:
 #       n = integer
 #   for method = "sampling", number of parameter combinations to try (default is n=500)

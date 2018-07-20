@@ -110,7 +110,7 @@ def main(timecourse=False, dose_response=False, wtimecourse=False, wdose_respons
         tc = pp.p_timecourse(simpleB, [5*60,15*60,30*60,60*60], 
                              [['TotalpSTAT',"Total pSTAT"]],suppress=True,
                              parameters=[['I',NA*volEC*10E-12]])['TotalpSTAT']
-        zscan = pp.fit_model(simpleA, xdata, ['TotalpSTAT',tc], ['ka4','kSOCSon','R1'],
+        zscan = pp.fit_model(simpleA, xdata, ['TotalpSTAT',tc], ['kd4','kSOCSon','R1'],
                              #p0=[[3.623188E-4,3.623188E-5,3.623188E-3,'log'],[1E-6,1E-8,1E-4,'log'],[2E3,8E2,8E4,'linear']],                            
                              sigma=uncertainty, method="lhc_sampling", n=25, cpu=3)
 
