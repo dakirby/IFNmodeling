@@ -3,10 +3,7 @@
 ODE_system.py
 ODE_system_alpha.py
 ODE_system_beta.py
-modelfit.txt
-modelfit_alpha.txt
-modelfit_beta.txt
-modelfit_alpha_and_beta.txt
+*.txt
 *.pdf
 
 # Compiled source #

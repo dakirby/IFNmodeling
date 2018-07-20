@@ -22,8 +22,6 @@ import numpy as np
 from operator import itemgetter # for sorting results after processes return
 import itertools #for creating all combinations of lists
 import re # for printing results to text files and getting values from model files
-import importlib # allows scripts to run in parent directory linked to IFNmodeling
-import os # allows scripts to run in parent directory which is linked to IFNmodeling
 
 import matplotlib.pyplot as plt
 import seaborn as sns
