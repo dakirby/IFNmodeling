@@ -21,7 +21,7 @@ from numpy import divide, subtract, abs, reshape, flipud, flip
 import numpy as np
 from operator import itemgetter # for sorting results after processes return
 import itertools #for creating all combinations of lists
-import re # for printing results to text files
+import re # for printing results to text files and getting values from model files
 import importlib # allows scripts to run in parent directory linked to IFNmodeling
 import os # allows scripts to run in parent directory which is linked to IFNmodeling
 
@@ -678,9 +678,9 @@ def lhc(parameters, n, exp_params):
     for point in unitCube:
         point_copy = [[] for i in point]
         for dim in range(d):
-            lower_bound = parameters[dim][1][1]
-            upper_bound = parameters[dim][1][2]
-            scale = parameters[dim][1][3]
+            lower_bound = parameters[dim][2]
+            upper_bound = parameters[dim][3]
+            scale = parameters[dim][4]
             if scale=='linear':
                 point_copy[dim] = [parameters[dim][0],(upper_bound-lower_bound)*point[dim]+0.5*(upper_bound+lower_bound)]
             elif scale=='log':
@@ -715,11 +715,53 @@ def brute_parameters(parameters, exp_params):
     return full_fit
 
 # =============================================================================
+# read_parameters gets the specified model parameters and their values
+# Input:
+#     pList = a list of strings, each string being the name of a model parameter
+#     filename = the name of the modelfile to read
+# Returns:
+#   vals = list of the values corresponding to the parameters; empty list if none found
+# Note: this function will not fail if some parameters are not found, but will notify the user    
+# =============================================================================
+def file_len(fname):
+    with open(fname) as f:
+        for i, l in enumerate(f):
+            pass
+    return i + 1
+def read_parameters(pList,filename):
+    count=0
+    lcount=0
+    vals=np.zeros(len(pList))
+    with open(filename,'r') as f:
+        while lcount<file_len(filename):
+            if count >= len(pList):
+                break
+            else:
+                line = f.readline().lstrip()
+                lcount+=1
+                #if not line: 
+                #    print("EOF")
+                #    break #escape if EOF
+                try:
+                    name = re.search('Parameter\(\'(.+?)\', ', line).group(1) # gets the parameter name
+                    value = float(re.search('\',(.+?)\)', line).group(1)) # gets the parameter name
+                except AttributeError:
+                    name='This is not a parameter'
+                if name in pList:
+                    ind = pList.index(name)
+                    vals[ind] = value
+                    count+=1
+    if count!=len(pList):
+        print("Not all parameters were found")
+    return vals
+
+# =============================================================================
 # fit_helper is an internal function to allow fit_model to be parallelized
 # =============================================================================
 def fit_helper(id, jobs, result):
     # try to work as long as work is available
     while True:
+        t_0=False #assume this is not a t=0 time point
         # get job from the queue
         task = jobs.get()
         if task is None:
@@ -738,45 +780,49 @@ def fit_helper(id, jobs, result):
         for i in range(len(conditions)):
             if (conditions[len(conditions)-1-i][0]=='t') or (conditions[len(conditions)-1-i][0]=='time'):
                 if conditions[len(conditions)-1-i][1] == 0:
-                    # IN THIS SITUATION WE SHOULD REALLY JUST RETURN THE VALUE OF MODEL PSTAT_0 TO AVOID NUMERICAL ISSUES. THIS CURRENTLY ISN'T AN OPTION BUT I INTEND TO FIGURE OUT HOW.
-                    time = [0,0.0001,0.0002]
+                    t_0 = True # model is initialised with 0 pSTAT but simulations hit numerical instability if I try to simulate t=0
                 else:
                     time = np.linspace(0,conditions[len(conditions)-1-i][1])
-            elif conditions[len(conditions)-1-i][0]=='R':
+            # Some special parameters for IFN signaling                    
+            elif conditions[len(conditions)-1-i][0]=='R': # 'R' is used to fit receptor number given R1 = R2 
                 params_without_time.append(['R1',conditions[len(conditions)-1-i][1]])
                 params_without_time.append(['R2',conditions[len(conditions)-1-i][1]])
-            elif conditions[len(conditions)-1-i][0]=='gamma':
+            elif conditions[len(conditions)-1-i][0]=='gamma': # 'gamma' is used to fit the scale factor for the flow cytometry data
                 gamma=conditions[len(conditions)-1-i][1]
+            elif conditions[len(conditions)-1-i][0]=='ka4': #'ka4' and 'ka_4' can be fit, but detailed balance has to be enforced
+                pvals = read_parameters(['ka1','kd1','ka2','kd2','kd4','ka3'],'ODE_system.py')
+                q1=pvals[0]/pvals[1]
+                q2=pvals[2]/pvals[3]
+                q4=conditions[len(conditions)-1-i][1]/pvals[4]
+                q3=q2*q4/q1
+                kd3=pvals[5]/q3
+                params_without_time.append(['kd3',kd3])
+                params_without_time.append(conditions[len(conditions)-1-i])                
+            elif conditions[len(conditions)-1-i][0]=='ka_4':
+                pvals = read_parameters(['k_a1','k_d1','k_a2','k_d2','k_d4','k_a3'],'ODE_system.py')
+                q1=pvals[0]/pvals[1]
+                q2=pvals[2]/pvals[3]
+                q4=conditions[len(conditions)-1-i][1]/pvals[4]
+                q3=q2*q4/q1
+                k_d3=pvals[5]/q3
+                params_without_time.append(['k_d3',k_d3])
+                params_without_time.append(conditions[len(conditions)-1-i])                
             else:
                 params_without_time.append(conditions[len(conditions)-1-i])
-        simres = p_timecourse('', time, [ydata[0],ydata[0]], suppress=True,
-                                  parameters=params_without_time, scan=1)[ydata[0]]
-        
-        #FOR DEBUGGING: Check that fit generates "correct" values
-        #pString = "ydata = " +str(ydata[1])+"\nsimres({0}){1} = ".format(time[-1],str(params_without_time[0:2]))+str(simres[-1])
-        #print(pString)
-# =============================================================================
-#         if method == "bayesian":
-#             if (sigma == None):
-#                 if ydata[1]<=0: #Reject data that doesn't make sense physically
-#                     res=0
-#                 else: # The distribution of res over models is distributed over a modified Xi2 distribution
-#                     res = (np.log(simres[-1])-np.log(ydata[1]/gamma))**2 
-#             else:
-#                 if ydata[1]<=0:#Reject data that doesn't make sense physically
-#                     res=0
-#                 else: 
-#                     res = (np.log(simres[-1])-np.log(ydata[1]/gamma))**2/(sigma/gamma)**2
-#        else:
-# =============================================================================
-        # calculate residual
-        if (sigma == None):
-            res = (simres[-1]-ydata[1]/gamma)**2            
+        if t_0==True:
+            result.put([0,conditions])
         else:
-            # The distribution of res over models is Xi2 distributed
-            res = ((simres[-1]-ydata[1]/gamma)/(sigma/gamma))**2
-        # put the result onto the results queue
-        result.put([res, conditions])     
+            simres = p_timecourse('', time, [ydata[0],ydata[0]], suppress=True,    # modelfile = '' because I'm using scan=1
+                                      parameters=params_without_time, scan=1)[ydata[0]]
+            
+            # calculate residual
+            if (sigma == None):
+                res = (simres[-1]-ydata[1]/gamma)**2            
+            else:
+                # The distribution of res over models is Xi2 distributed
+                res = ((simres[-1]-ydata[1]/gamma)/(sigma/gamma))**2
+            # put the result onto the results queue
+            result.put([res, conditions])     
 
 # =============================================================================
 # fit_model() takes a PySB model and fits an input list of parameters to 
@@ -849,9 +895,10 @@ def fit_model(modelfile, conditions, ydata, paramsList, n=5, sigma=None,
     if len(conditions) != len(ydata[1]):
         print("Number of experimental conditions and observations do not match")
         return 1
-    if len(paramsList) != len(p0):
-        print("Number of guesses must match number of parameters to be fit")
-        return 1
+    if type(p0)==list:
+        if len(paramsList) != len(p0):
+            print("Number of guesses must match number of parameters to be fit")
+            return 1
     if (type(sigma)==list) and (len(sigma) != len(ydata[1])):
         print("Number of uncertainties provided does not match number of experimental observations.")
         return 1
@@ -872,14 +919,16 @@ def fit_model(modelfile, conditions, ydata, paramsList, n=5, sigma=None,
 # Build list of parameter values to test
     print("Building tasks")
     if p0==None:
-        # get default model values
-        # This feature will be added later
-        print("Currently, you must guess parameter values.")
-        return 1
+        vals = read_parameters(paramsList,'ODE_system.py')
+        if len(vals)!=len(paramsList):
+            print("Did not find all parameters in modelfile. Please supply p0 or check the parameters to fit.")
+            return 1
+        else:
+            p0 = [[vals[i],vals[i]*0.1,vals[i]*10,'log'] for i in range(len(paramsList))]
+            parameters = [[paramsList[i],vals[i],vals[i]*0.1,vals[i]*10,'log'] for i in range(len(paramsList))]
     else:
         parameters = [[paramsList[i], p0[i]] for i in range(len(paramsList))]
     if method == "brute" or method =="bayesian":
-        print(method)
         print("Using {} points per parameter".format(n))
         print("Generating {} models to test".format(n**len(paramsList)))
         for p in parameters:
@@ -911,12 +960,12 @@ def fit_model(modelfile, conditions, ydata, paramsList, n=5, sigma=None,
         else:
             taskList.append([tasks[t], [ydata[0],ydata[1][datapoint]], paramsList, sigma[datapoint], method, list(zip(paramsList,[p0[i][0] for i in range(len(p0))]))])
 
-#    for t in taskList:
-#        print(t)        
 # Run all combos of parameter values, calculating fit for each
     # put jobs on the queue
     print("There are {} tasks to compute".format(len(tasks)))
     print("Putting tasks on the queue")
+    #for l in taskList:
+    #    print(l)
     for w in taskList:
         jobs.put(w)
 		
