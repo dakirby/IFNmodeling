@@ -635,7 +635,7 @@ def p_DRparamScan(modelfile, param1, param2, testDose, t_list, spec, custom_para
 # lhc() builds an origin-centered latin hypercube for parameters to investigate
 # Inputs:
 #   parameters = these are the model parameters to fit
-#           a list of lists, each sublist of the form ['name',upper limit, lower limit]
+#           a list of lists, each sublist of the form ['name', lower limit, upper limit]
 #   n = number of points to generate 
 #   exp_params =  These are model parameters which are not being fitted but are needed
 #                 to replicate experimental data (ie. one item in this list per data point)    
@@ -1045,3 +1045,24 @@ def fit_model(modelfile, conditions, ydata, paramsList, n=5, sigma=None,
                 mod_p += '{:.3e}'.format(float(key[i]))+"    "
             outfile.write(mod_p+str(score)+"\n")
     print(leaderboard[0][0]+": "+str(leaderboard[0][1]))
+
+# parameters = list in the form [['name',lower limit, upper limit]]
+def fit_IFN_model(data, models, parameters, sigma, n):
+# Write modelfiles
+    print("Importing models")
+    alpha_model = __import__(models[0])
+    py_output = export(alpha_model.model, 'python')
+    with open('ODE_system_alpha.py','w') as f:
+        f.write(py_output)
+    beta_model = __import__(models[1])
+    py_output = export(beta_model.model, 'python')
+    with open('ODE_system_beta.py','w') as f:
+        f.write(py_output)
+# Generate parameters
+    K4=False
+    if 'k4' in [el[0] for el in parameters]:
+        K4=True
+        parameters.remove('k4')
+    models = lhc(parameters, n, [])
+    
+    
