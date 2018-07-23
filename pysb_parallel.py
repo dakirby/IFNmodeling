@@ -684,8 +684,11 @@ def lhc(parameters, n, exp_params):
             elif scale=='log':
                 logY = (np.log10(upper_bound)-np.log10(lower_bound))*point[dim]+0.5*(np.log10(upper_bound)+np.log10(lower_bound))
                 point_copy[dim] = [parameters[dim][0],10**logY]
-        for exp in exp_params:
-            reformatted.append(point_copy+exp)
+        if len(exp_params)!=0:
+            for exp in exp_params:
+                reformatted.append(point_copy+exp)
+        else:
+            reformatted.append(point_copy)
     return reformatted
 
 # =============================================================================
@@ -1046,8 +1049,99 @@ def fit_model(modelfile, conditions, ydata, paramsList, n=5, sigma=None,
             outfile.write(mod_p+str(score)+"\n")
     print(leaderboard[0][0]+": "+str(leaderboard[0][1]))
 
-# parameters = list in the form [['name',lower limit, upper limit]]
-def fit_IFN_model(data, models, parameters, sigma, n):
+
+
+
+
+
+
+
+def fit_IFN_helper(id, jobs, result):
+    while True:
+        model = jobs.get()
+        if model is None:
+            break
+        # get key
+        key = str(model)
+        # parse arguments
+        gamma=1
+        pList = list(enumerate([el[0] for el in model]))        
+        for p in pList:
+            if p[1]=='gamma':
+                gamma=model[p[0]][1]
+                model=model[0:p[0]]+model[p[0]+1:len(model)]
+                pList = list(enumerate([el[0] for el in model]))        
+                break
+        for p in pList:
+            if p[1]=='k4':
+                q1 = 3.321155762205247e-14/1
+                q2 = 4.98173364330787e-13/0.015
+                q4 = 3.623188E-4/(model[p[0]][1]*0.3)
+                q3 = q2*q4/q1
+                kd3 = 3.623188E-4/q3
+                q_1 = 4.98E-14/0.03
+                q_2 = 8.30e-13/0.002
+                q_4 = 3.62e-4/(model[p[0]][1]*0.006)
+                q_3 = q_2*q_4/q_1
+                k_d3 = 2.4e-5/q_3
+                alpha_parameters=model[0:p[0]]+[['kd4',model[p[0]][1]*0.3],['kd3',kd3]]+model[p[0]+1:len(model)]
+                beta_parameters=model[0:p[0]]+[['k_d4',model[p[0]][1]*0.006],['k_d3',k_d3]]+model[p[0]+1:len(model)]
+        # run simulation
+        #   load models
+        import ODE_system_alpha
+        alpha_mod = ODE_system_alpha.Model()
+        import ODE_system_beta
+        beta_mod = ODE_system_beta.Model()
+        
+        # Build the complete list of parameters to use for the simulation, 
+        # replacing the default parameters with the custom parameters
+        all_parameters_alpha = []
+        for p in alpha_mod.parameters:
+            isINlist=False
+            for y in alpha_parameters:
+                if y[0] == p[0]:
+                    isINlist=True
+                    all_parameters_alpha.append(y[1])
+                    break
+            if isINlist == False:
+                all_parameters_alpha.append(p.value)
+        all_parameters_beta = []
+        for p in beta_mod.parameters:
+            isINlist=False
+            for y in beta_parameters:
+                if y[0] == p[0]:
+                    isINlist=True
+                    all_parameters_beta.append(y[1])
+                    break
+            if isINlist == False:
+                all_parameters_beta.append(p.value)
+        I_index_Alpha = [el[0] for el in alpha_mod.parameters].index('I')
+        I_index_Beta = [el[0] for el in beta_mod.parameters].index('I')
+        mod_score = 0
+        #   get data and simulate it
+        NA = 6.022E23
+        volEC = 1E-5            
+        import Experimental_Data as ED
+        data = ED.data
+        for r in [0,1,4,5,8,9]:
+            IFN = data.iloc[r,0]*NA*volEC*1E-12 # Convert from pM to num_molecules
+            all_parameters_beta
+            typeIFN = data.iloc[r,1]
+            experiment = np.divide(list(data.iloc[r,2:7]),gamma)
+            sigma = data.iloc[r+2,2:7]
+            if typeIFN == 'Alpha':
+                all_parameters_alpha[I_index_Alpha]=IFN
+                (_, sim) = alpha_mod.simulate([0,5*60,15*60,30*60,60*60], param_values=all_parameters_alpha)
+                sim = sim['TotalpSTAT']
+            elif typeIFN == 'Beta':
+                (_, sim) = beta_mod.simulate([0,5*60,15*60,30*60,60*60], param_values=all_parameters_beta)
+                sim = sim['TotalpSTAT']
+            # Add to score
+            mod_score += np.sum(np.square(np.divide(np.subtract(sim,experiment),sigma)))
+        result.put([key,mod_score])
+
+# parameters = list in the form [['name',guess, lower limit, upper limit]]
+def fit_IFN_model(models, parameters, sigma, n, cpu=None):
 # Write modelfiles
     print("Importing models")
     alpha_model = __import__(models[0])
@@ -1060,9 +1154,65 @@ def fit_IFN_model(data, models, parameters, sigma, n):
         f.write(py_output)
 # Generate parameters
     K4=False
+    print("Building model list")
     if 'k4' in [el[0] for el in parameters]:
         K4=True
-        parameters.remove('k4')
-    models = lhc(parameters, n, [])
-    
+        parameters.remove(['k4'])
+        models = lhc(parameters, n, [[['k4',i]] for i in np.logspace(np.log10(0.01),np.log10(100),num=30)])
+    else:
+        models = lhc(parameters, n, [])
+    if cpu == None or cpu >= cpu_count():
+        NUMBER_OF_PROCESSES = cpu_count()-1
+    else:
+        NUMBER_OF_PROCESSES = cpu
+    print("Using {} threads".format(NUMBER_OF_PROCESSES))
+    print("Computing scan")
+    jobs = Queue()
+    result = JoinableQueue()
+    for m in models:
+        jobs.put(m)    
+    # start up the workers          
+    [Process(target=fit_IFN_helper, args=(i, jobs, result)).start()
+            for i in range(NUMBER_OF_PROCESSES)]
+    # pull in the results from each worker
+    pool_results=[]
+    for m in range(len(models)):
+        r = result.get()
+        pool_results.append(r)
+        result.task_done()
+    # tell the workers there are no more jobs
+    for w in range(NUMBER_OF_PROCESSES):
+        jobs.put(None)
+    # close all extra threads
+    result.join()
+    jobs.close()
+    result.close()
+    print("Done scan")
+    # order models from smallest to largest total score
+    leaderboard = sorted(pool_results, key = lambda x: x[1])
+    # Write results
+    f = open('modelfit_alpha_and_beta.txt', 'w')
+    f.close()
+    with open('modelfit_alpha_and_beta.txt', 'a') as outfile:
+        outfile.write("# models: "+str(len(leaderboard))+"\n") 
+        outfile.write("---------------------------------------------------------\n")
+        header = ""
+        for p in parameters:
+            header+=p[0]+"          "
+        if K4==True:
+            header+="K4          "
+        header += "score\n"
+        outfile.write(header)
+        for key, score in leaderboard:
+            # Example string below shows what happens before and after each line of code
+            #[['kpa', 0.001], ['kSOCSon', 3.1622776601683792e-08]]
+            key = key[3:-2]
+            #kpa', 0.001], ['kSOCSon', 3.1622776601683792e-08
+            key = re.split("', |\], \['", key)
+            #["kpa" , "0.001" , "kSOCSon" , "3.1622776601683792e-08"]
+            mod_p = ""
+            for i in range(1,len(key),2):
+                mod_p += '{:.3e}'.format(float(key[i]))+"    "
+            outfile.write(mod_p+str(score)+"\n")
+    print(leaderboard[0][0]+": "+str(leaderboard[0][1]))
     
