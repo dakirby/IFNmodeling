@@ -1051,11 +1051,11 @@ def fit_model(modelfile, conditions, ydata, paramsList, n=5, sigma=None,
 
 
 
-
-
-
-
-
+# =============================================================================
+# fit_IFN_helper() is an internal function used by fit_IFN_model() to allow 
+# for multi-threaded computation of model fits. It receives the thread ID (id),
+# a queue to get tasks from (jobs) and a queue to put results on (result).
+# =============================================================================
 def fit_IFN_helper(id, jobs, result):
     while True:
         model = jobs.get()
@@ -1139,9 +1139,19 @@ def fit_IFN_helper(id, jobs, result):
             # Add to score
             mod_score += np.sum(np.square(np.divide(np.subtract(sim,experiment),sigma)))
         result.put([key,mod_score])
-
-# parameters = list in the form [['name',guess, lower limit, upper limit]]
-def fit_IFN_model(models, parameters, sigma, n, cpu=None):
+# =============================================================================
+# fit_IFN_model() is specifically designed to fit IFN alpha and IFN beta models to the same parameters
+# for a given set of experimental data. The structure is very similar to fit_model() described above,
+# as it is multi-threaded and uses R^2 optimization to enumerate models.
+# Inputs:
+#     models = a list of strings, each item the name of a model file to test
+#             Note: models expects 2 arguments: the first is the IFN alpha model to fit and the
+#                   second is the IFN beta model to fit
+#     parameters = list in the form [['name',guess, lower limit, upper limit]]
+#     n = number of points to test, generated from a random latin hypercube in parameter space
+#     cpu = (default is num_cores -1) specify the number of cores to use
+# =============================================================================
+def fit_IFN_model(models, parameters, n, cpu=None):
 # Write modelfiles
     print("Importing models")
     alpha_model = __import__(models[0])
