@@ -96,7 +96,6 @@ def timecourse(modelfile, t, spec, axes_labels = ['',''], title = '',
 #                   This list will be applied to each model in modelfiles
 #      t = list of time points to simulate over (eg. t = linspace(20000))
 #      spec = [name of an observable, label for observable] 
-#          (only supports comparison of one observable)
 #      style = list of colours/markers to use for plotting; order corresponds to 
 #           [(modelfile1, params_list_1), (model_file1, params_list2),...
 #           (model_file2, params_list1),...]

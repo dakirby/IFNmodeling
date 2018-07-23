@@ -5,6 +5,7 @@ ODE_system_alpha.py
 ODE_system_beta.py
 *.txt
 *.pdf
+scratch.py
 
 # Compiled source #
 ###################
