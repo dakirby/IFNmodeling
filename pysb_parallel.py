@@ -650,12 +650,16 @@ def lhc(parameters, n, exp_params):
         return sum(1./np.linalg.norm(np.subtract(points[i], points[j])) for i in range(n) for j in range(n) if i > j)
 
     # start with diagonal shape
+    print("Building hypercube")
     unitCube = [[i/(n-1.)]*d for i in range(n)]
-
+	
     # minimize spread function by shuffling
+    print("Diffusing points")
     minspread = spread(unitCube)
-
+    print("Shuffling coordinates")
     for i in range(1000):
+        if i%10==0 and n>30:
+            print("{}% done".format(i/10))
         point1 = np.random.randint(n)
         point2 = np.random.randint(n)
         dim = np.random.randint(d)
@@ -1065,6 +1069,8 @@ def fit_IFN_helper(id, jobs, result):
         key = str(model)
         # parse arguments
         gamma=1
+        K4=False
+        K4factor=[]
         pList = list(enumerate([el[0] for el in model]))        
         for p in pList:
             if p[1]=='gamma':
@@ -1074,18 +1080,36 @@ def fit_IFN_helper(id, jobs, result):
                 break
         for p in pList:
             if p[1]=='k4':
+                K4=True
+                K4factor=model[p[0]]
+                model=model[0:p[0]]+model[p[0]+1:len(model)]# First remove the parameter 'k4'
+                break
+        if K4==True:
+            # Generate a variety of this model to find the best kd4 and k_d4 *independently*
+            #   generate factors of original values
+            if K4factor[4]=='log':
+                kd4List = np.logspace(np.log10(K4factor[2]),np.log10(K4factor[3]),num=10)
+                k_d4List = np.logspace(np.log10(K4factor[2]),np.log10(K4factor[3]),num=10)
+            elif K4factor[4]=='linear':
+                kd4List = np.linspace(K4factor[2],K4factor[3],num=10)
+                k_d4List = np.linspace(K4factor[2],K4factor[3],num=10)
+            #   generate actual values
+            alphaK4List=[]
+            betaK4List=[]
+            for i in range(len(kd4List)):
                 q1 = 3.321155762205247e-14/1
                 q2 = 4.98173364330787e-13/0.015
-                q4 = 3.623188E-4/(model[p[0]][1]*0.3)
+                q4 = 3.623188E-4/(kd4List[i]*0.3)
                 q3 = q2*q4/q1
-                kd3 = 3.623188E-4/q3
+                kd3 = 3.623188E-4/q3                
+                alphaK4List.append([['kd4',kd4List[i]],['kd3',kd3]])
+            
                 q_1 = 4.98E-14/0.03
                 q_2 = 8.30e-13/0.002
-                q_4 = 3.62e-4/(model[p[0]][1]*0.006)
+                q_4 = 3.62e-4/(k_d4List[i]*0.006)
                 q_3 = q_2*q_4/q_1
                 k_d3 = 2.4e-5/q_3
-                alpha_parameters=model[0:p[0]]+[['kd4',model[p[0]][1]*0.3],['kd3',kd3]]+model[p[0]+1:len(model)]
-                beta_parameters=model[0:p[0]]+[['k_d4',model[p[0]][1]*0.006],['k_d3',k_d3]]+model[p[0]+1:len(model)]
+                betaK4List.append([['k_d4',k_d4List[i]],['k_d3',k_d3]])
         # run simulation
         #   load models
         import ODE_system_alpha
@@ -1096,9 +1120,17 @@ def fit_IFN_helper(id, jobs, result):
         # Build the complete list of parameters to use for the simulation, 
         # replacing the default parameters with the custom parameters
         all_parameters_alpha = []
+        kd4index=0
+        k_d4index=0
+        kd3index=0
+        k_d3index=0
+        i=-1
         for p in alpha_mod.parameters:
+            i+=1
+            if p[0]=='kd4': kd4index=i
+            if p[0]=='kd3': kd3index=i
             isINlist=False
-            for y in alpha_parameters:
+            for y in model:
                 if y[0] == p[0]:
                     isINlist=True
                     all_parameters_alpha.append(y[1])
@@ -1106,9 +1138,13 @@ def fit_IFN_helper(id, jobs, result):
             if isINlist == False:
                 all_parameters_alpha.append(p.value)
         all_parameters_beta = []
+        i=-1
         for p in beta_mod.parameters:
+            i+=1
+            if p[0]=='k_d4': k_d4index=i
+            if p[0]=='k_d3': k_d3index=i
             isINlist=False
-            for y in beta_parameters:
+            for y in model:
                 if y[0] == p[0]:
                     isINlist=True
                     all_parameters_beta.append(y[1])
@@ -1117,28 +1153,67 @@ def fit_IFN_helper(id, jobs, result):
                 all_parameters_beta.append(p.value)
         I_index_Alpha = [el[0] for el in alpha_mod.parameters].index('I')
         I_index_Beta = [el[0] for el in beta_mod.parameters].index('I')
-        mod_score = 0
-        #   get data and simulate it
+        #   get data from ED
         NA = 6.022E23
         volEC = 1E-5            
         import Experimental_Data as ED
         data = ED.data
-        for r in [0,1,4,5,8,9]:
-            IFN = data.iloc[r,0]*NA*volEC*1E-12 # Convert from pM to num_molecules
-            all_parameters_beta
-            typeIFN = data.iloc[r,1]
-            experiment = np.divide(list(data.iloc[r,2:7]),gamma)
-            sigma = data.iloc[r+2,2:7]
-            if typeIFN == 'Alpha':
-                all_parameters_alpha[I_index_Alpha]=IFN
-                (_, sim) = alpha_mod.simulate([0,5*60,15*60,30*60,60*60], param_values=all_parameters_alpha)
-                sim = sim['TotalpSTAT']
-            elif typeIFN == 'Beta':
-                (_, sim) = beta_mod.simulate([0,5*60,15*60,30*60,60*60], param_values=all_parameters_beta)
-                sim = sim['TotalpSTAT']
-            # Add to score
-            mod_score += np.sum(np.square(np.divide(np.subtract(sim,experiment),sigma)))
-        result.put([key,mod_score])
+        # fit this model to the data, finding the best values of kd4 and k_d4 if called for
+        if K4==False:
+            mod_score = 0            
+            for r in [0,1,4,5,8,9]:
+                IFN = data.iloc[r,0]*NA*volEC*1E-12 # Convert from pM to num_molecules
+                typeIFN = data.iloc[r,1]
+                experiment = np.divide(list(data.iloc[r,2:7]),gamma)
+                sigma = data.iloc[r+2,2:7]
+                if typeIFN == 'Alpha':
+                    all_parameters_alpha[I_index_Alpha]=IFN
+                    (_, sim) = alpha_mod.simulate([0,5*60,15*60,30*60,60*60], param_values=all_parameters_alpha)
+                    sim = sim['TotalpSTAT']
+                elif typeIFN == 'Beta':
+                    all_parameters_alpha[I_index_Beta]=IFN                
+                    (_, sim) = beta_mod.simulate([0,5*60,15*60,30*60,60*60], param_values=all_parameters_beta)
+                    sim = sim['TotalpSTAT']
+                # Add to score
+                mod_score += np.sum(np.square(np.divide(np.subtract(sim,experiment),sigma)))
+            result.put([key,mod_score])
+            
+        else:
+            alpha_score = [1E8,alphaK4List[0][0][1]]
+            for test in alphaK4List:
+                score=0
+                all_parameters_alpha[kd4index]=test[0][1]
+                all_parameters_alpha[kd3index]=test[1][1]
+                for r in [0,4,8]:
+                    IFN = data.iloc[r,0]*NA*volEC*1E-12 # Convert from pM to num_molecules
+                    sigma = data.iloc[r+2,2:7]
+                    experiment = np.divide(list(data.iloc[r,2:7]),gamma)
+                    all_parameters_alpha[I_index_Alpha]=IFN
+                    (_, sim) = alpha_mod.simulate([0,5*60,15*60,30*60,60*60], param_values=all_parameters_alpha)
+                    sim = sim['TotalpSTAT']
+                    score += np.sum(np.square(np.divide(np.subtract(sim,experiment),sigma)))
+                if score<alpha_score[0]:
+                    alpha_score=[score,test[0][1]/0.3]
+            
+            beta_score = [1E8,betaK4List[0][0][1]]
+            for test in betaK4List:
+                score=0
+                all_parameters_beta[k_d4index]=test[0][1]
+                all_parameters_beta[k_d3index]=test[1][1]
+                for r in [1,5,9]:
+                    IFN = data.iloc[r,0]*NA*volEC*1E-12 # Convert from pM to num_molecules
+                    sigma = data.iloc[r+2,2:7]
+                    experiment = np.divide(list(data.iloc[r,2:7]),gamma)
+                    all_parameters_beta[I_index_Beta]=IFN
+                    (_, sim) = beta_mod.simulate([0,5*60,15*60,30*60,60*60], param_values=all_parameters_beta)
+                    sim = sim['TotalpSTAT']
+                    score += np.sum(np.square(np.divide(np.subtract(sim,experiment),sigma)))
+                if score<beta_score[0]:
+                    beta_score=[score,test[0][1]/0.006]
+            key=str(model+[['gamma',gamma],['kd4',alpha_score[1]],['k_d4',beta_score[1]]])
+            mod_score = alpha_score[0]+beta_score[0]
+            result.put([key,mod_score])
+            
 # =============================================================================
 # fit_IFN_model() is specifically designed to fit IFN alpha and IFN beta models to the same parameters
 # for a given set of experimental data. The structure is very similar to fit_model() described above,
@@ -1163,12 +1238,12 @@ def fit_IFN_model(models, parameters, n, cpu=None):
     with open('ODE_system_beta.py','w') as f:
         f.write(py_output)
 # Generate parameters
-    K4=False
+    K4=False # used for formatting output file
     print("Building model list")
     if 'k4' in [el[0] for el in parameters]:
+        k4i = [el[0] for el in parameters].index('k4')
         K4=True
-        parameters.remove(['k4'])
-        models = lhc(parameters, n, [[['k4',i]] for i in np.logspace(np.log10(0.01),np.log10(100),num=30)])
+        models = lhc(parameters[0:k4i]+parameters[k4i+1:len(parameters)], n, [[parameters[k4i]]])
     else:
         models = lhc(parameters, n, [])
     if cpu == None or cpu >= cpu_count():
@@ -1180,7 +1255,8 @@ def fit_IFN_model(models, parameters, n, cpu=None):
     jobs = Queue()
     result = JoinableQueue()
     for m in models:
-        jobs.put(m)    
+        jobs.put(m)   
+    print("There are {} tests to run".format(len(models)))		
     # start up the workers          
     [Process(target=fit_IFN_helper, args=(i, jobs, result)).start()
             for i in range(NUMBER_OF_PROCESSES)]

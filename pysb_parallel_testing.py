@@ -30,7 +30,8 @@ import seaborn as sns
 sns.set_style("ticks")
 
 def main(timecourse=False, dose_response=False, wtimecourse=False, wdose_response=False,
-         paramScan=False, fit=False, detailed_tc=False, detailed_dr=False, fit_lhc=False):
+         paramScan=False, fit=False, detailed_tc=False, detailed_dr=False, fit_lhc=False,
+         fit_IFN=False):
     plt.close('all')
     t=linspace(0,3600,num=100)
     testDose = ['I',6.022e18*logspace(-14,-2,num=50)]    
@@ -113,7 +114,7 @@ def main(timecourse=False, dose_response=False, wtimecourse=False, wdose_respons
         zscan = pp.fit_model(simpleA, xdata, ['TotalpSTAT',tc], ['kd4','kSOCSon','R1'],
                              #p0=[[3.623188E-4,3.623188E-5,3.623188E-3,'log'],[1E-6,1E-8,1E-4,'log'],[2E3,8E2,8E4,'linear']],                            
                              sigma=uncertainty, method="lhc_sampling", n=25, cpu=3)
-
+    
 if __name__ == '__main__':
-    main(fit_lhc=True)
+    main(fit_IFN=True)
 
