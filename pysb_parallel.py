@@ -1186,15 +1186,15 @@ def fit_IFN_helper(id, jobs, result):
                 all_parameters_alpha[kd3index]=test[1][1]
                 for r in [0,4,8]:
                     IFN = data.iloc[r,0]*NA*volEC*1E-12 # Convert from pM to num_molecules
-                    sigma = data.iloc[r+2,2:7]
+                    sigma = np.divide(data.iloc[r+2,2:7],gamma)
                     experiment = np.divide(list(data.iloc[r,2:7]),gamma)
                     all_parameters_alpha[I_index_Alpha]=IFN
                     (_, sim) = alpha_mod.simulate([0,5*60,15*60,30*60,60*60], param_values=all_parameters_alpha)
                     sim = sim['TotalpSTAT']
                     score += np.sum(np.square(np.divide(np.subtract(sim,experiment),sigma)))
                 if score<alpha_score[0]:
-                    alpha_score=[score,test[0][1]/0.3]
-            
+                    alpha_score=[score,test[0][1]]
+#           
             beta_score = [1E8,betaK4List[0][0][1]]
             for test in betaK4List:
                 score=0
@@ -1202,14 +1202,14 @@ def fit_IFN_helper(id, jobs, result):
                 all_parameters_beta[k_d3index]=test[1][1]
                 for r in [1,5,9]:
                     IFN = data.iloc[r,0]*NA*volEC*1E-12 # Convert from pM to num_molecules
-                    sigma = data.iloc[r+2,2:7]
+                    sigma = np.divide(data.iloc[r+2,2:7],gamma)
                     experiment = np.divide(list(data.iloc[r,2:7]),gamma)
                     all_parameters_beta[I_index_Beta]=IFN
                     (_, sim) = beta_mod.simulate([0,5*60,15*60,30*60,60*60], param_values=all_parameters_beta)
                     sim = sim['TotalpSTAT']
                     score += np.sum(np.square(np.divide(np.subtract(sim,experiment),sigma)))
                 if score<beta_score[0]:
-                    beta_score=[score,test[0][1]/0.006]
+                    beta_score=[score,test[0][1]]
             key=str(model+[['gamma',gamma],['kd4',alpha_score[1]],['k_d4',beta_score[1]]])
             mod_score = alpha_score[0]+beta_score[0]
             result.put([key,mod_score])
