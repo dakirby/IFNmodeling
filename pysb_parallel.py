@@ -1102,14 +1102,14 @@ def fit_IFN_helper(id, jobs, result):
                 q4 = 3.623188E-4/(kd4List[i]*0.3)
                 q3 = q2*q4/q1
                 kd3 = 3.623188E-4/q3                
-                alphaK4List.append([['kd4',kd4List[i]],['kd3',kd3]])
+                alphaK4List.append([['kd4',kd4List[i]*0.3],['kd3',kd3]])
             
                 q_1 = 4.98E-14/0.03
                 q_2 = 8.30e-13/0.002
                 q_4 = 3.62e-4/(k_d4List[i]*0.006)
                 q_3 = q_2*q_4/q_1
                 k_d3 = 2.4e-5/q_3
-                betaK4List.append([['k_d4',k_d4List[i]],['k_d3',k_d3]])
+                betaK4List.append([['k_d4',k_d4List[i]*0.006],['k_d3',k_d3]])
         # run simulation
         #   load models
         import ODE_system_alpha
@@ -1238,11 +1238,9 @@ def fit_IFN_model(models, parameters, n, cpu=None):
     with open('ODE_system_beta.py','w') as f:
         f.write(py_output)
 # Generate parameters
-    K4=False # used for formatting output file
     print("Building model list")
     if 'k4' in [el[0] for el in parameters]:
         k4i = [el[0] for el in parameters].index('k4')
-        K4=True
         models = lhc(parameters[0:k4i]+parameters[k4i+1:len(parameters)], n, [[parameters[k4i]]])
     else:
         models = lhc(parameters, n, [])
@@ -1282,13 +1280,13 @@ def fit_IFN_model(models, parameters, n, cpu=None):
     with open('modelfit_alpha_and_beta.txt', 'a') as outfile:
         outfile.write("# models: "+str(len(leaderboard))+"\n") 
         outfile.write("---------------------------------------------------------\n")
-        header = ""
-        for p in parameters:
-            header+=p[0]+"          "
-        if K4==True:
-            header+="K4          "
-        header += "score\n"
-        outfile.write(header)
+        header = leaderboard[0][0][3:-2]
+        header = re.split("', |\], \['", header)
+        temp=""
+        for p in range(0,len(header),2):
+            temp+=header[p]+"          "
+        temp += "score\n"
+        outfile.write(temp)
         for key, score in leaderboard:
             # Example string below shows what happens before and after each line of code
             #[['kpa', 0.001], ['kSOCSon', 3.1622776601683792e-08]]

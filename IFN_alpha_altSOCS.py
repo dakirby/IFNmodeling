@@ -158,6 +158,7 @@ Rule('degrade_SOCS', SOCS(site=None) >> None, SOCSdeg)
 # Alpha
 Rule('SOCS_inhibition1', SOCS(site=None) + IFNAR2(re=None, ri=None, loc='out') | IFNAR2(re=None, ri=3, loc='out')%SOCS(site=3), kSOCSon, kSOCSoff)
 Rule('SOCS_inhibition2', SOCS(site=None) + IFN_alpha2(r1=None,r2=2)%IFNAR2(re=2, ri=None, loc='out') | IFN_alpha2(r1=None,r2=2)%IFNAR2(re=2, ri=3, loc='out')%SOCS(site=3), kSOCSon, kSOCSoff)
+Rule('SOCS_inhibition3', SOCS(site=None) + IFNAR1(re=1,ri=None,loc='out')%IFN_alpha2(r1=1,r2=2)%IFNAR2(re=2, ri=None, loc='out') | IFNAR1(re=1,ri=None,loc='out')%IFN_alpha2(r1=1,r2=2)%IFNAR2(re=2, ri=3, loc='out')%SOCS(site=3), kSOCSon, kSOCSoff)
 Rule('SOCS_R2', IFNAR2(re=None, ri=3, loc='out')%SOCS(site=3) + IFNAR1(re=1,ri=None,loc='out')%IFN_alpha2(r1=1,r2=None) | IFNAR1(re=1,ri=None,loc='out')%IFN_alpha2(r1=1,r2=2)%IFNAR2(re=2, ri=3, loc='out')%SOCS(site=3), ka4, kd4)
 Rule('SOCS_R2_IFN', IFN_alpha2(r1=None,r2=2)%IFNAR2(re=2, ri=3, loc='out')%SOCS(site=3) + IFNAR1(re=None,ri=None,loc='out') | IFNAR1(re=1,ri=None,loc='out')%IFN_alpha2(r1=1,r2=2)%IFNAR2(re=2, ri=3, loc='out')%SOCS(site=3), ka3,kd3)  
 # Internalization Block
