@@ -1299,4 +1299,281 @@ def fit_IFN_model(models, parameters, n, cpu=None):
                 mod_p += '{:.3e}'.format(float(key[i]))+"    "
             outfile.write(mod_p+str(score)+"\n")
     print(leaderboard[0][0]+": "+str(leaderboard[0][1]))
+    temp = re.split("', |\], \['", leaderboard[0][0][3:-2])
+    return [[temp[i],float(temp[i+1])] for i in range(0,len(temp),2)]
     
+
+
+
+
+
+
+
+
+
+
+# =============================================================================
+# fit_IFN_helper_Bayesian() is an internal function used by 
+# fit_IFN_model_Bayesian() to allow for multi-threaded computation of model fits. 
+# It receives the thread ID (id), a queue to get tasks from (jobs) and a queue 
+# to put results on (result).    
+# =============================================================================
+def fit_IFN_helper_Bayesian(id, jobs, result):
+    while True:
+        model,prior,rho = jobs.get()
+        if model is None:
+            break
+        # get key
+        key = str(model)
+        # parse arguments
+        gamma=1
+        K4=False
+        K4factor=[]
+        pList = list(enumerate([el[0] for el in model]))        
+        for p in pList:
+            if p[1]=='gamma':
+                gamma=model[p[0]][1]
+                model=model[0:p[0]]+model[p[0]+1:len(model)]
+                pList = list(enumerate([el[0] for el in model]))        
+                break
+        for p in pList:
+            if p[1]=='k4':
+                K4=True
+                K4factor=model[p[0]]
+                model=model[0:p[0]]+model[p[0]+1:len(model)]# First remove the parameter 'k4'
+                break
+        if K4==True:
+            # Generate a variety of this model to find the best kd4 and k_d4 *independently*
+            #   generate factors of original values
+            if K4factor[4]=='log':
+                kd4List = np.logspace(np.log10(K4factor[2]),np.log10(K4factor[3]),num=10)
+                k_d4List = np.logspace(np.log10(K4factor[2]),np.log10(K4factor[3]),num=10)
+            elif K4factor[4]=='linear':
+                kd4List = np.linspace(K4factor[2],K4factor[3],num=10)
+                k_d4List = np.linspace(K4factor[2],K4factor[3],num=10)
+            #   generate actual values
+            alphaK4List=[]
+            betaK4List=[]
+            for i in range(len(kd4List)):
+                q1 = 3.321155762205247e-14/1
+                q2 = 4.98173364330787e-13/0.015
+                q4 = 3.623188E-4/(kd4List[i]*0.3)
+                q3 = q2*q4/q1
+                kd3 = 3.623188E-4/q3                
+                alphaK4List.append([['kd4',kd4List[i]*0.3],['kd3',kd3]])
+            
+                q_1 = 4.98E-14/0.03
+                q_2 = 8.30e-13/0.002
+                q_4 = 3.62e-4/(k_d4List[i]*0.006)
+                q_3 = q_2*q_4/q_1
+                k_d3 = 2.4e-5/q_3
+                betaK4List.append([['k_d4',k_d4List[i]*0.006],['k_d3',k_d3]])
+        # run simulation
+        #   load models
+        import ODE_system_alpha
+        alpha_mod = ODE_system_alpha.Model()
+        import ODE_system_beta
+        beta_mod = ODE_system_beta.Model()
+        
+        # Build the complete list of parameters to use for the simulation, 
+        # replacing the default parameters with the custom parameters
+        all_parameters_alpha = []
+        kd4index=0
+        k_d4index=0
+        kd3index=0
+        k_d3index=0
+        i=-1
+        for p in alpha_mod.parameters:
+            i+=1
+            if p[0]=='kd4': kd4index=i
+            if p[0]=='kd3': kd3index=i
+            isINlist=False
+            for y in model:
+                if y[0] == p[0]:
+                    isINlist=True
+                    all_parameters_alpha.append(y[1])
+                    break
+            if isINlist == False:
+                all_parameters_alpha.append(p.value)
+        all_parameters_beta = []
+        i=-1
+        for p in beta_mod.parameters:
+            i+=1
+            if p[0]=='k_d4': k_d4index=i
+            if p[0]=='k_d3': k_d3index=i
+            isINlist=False
+            for y in model:
+                if y[0] == p[0]:
+                    isINlist=True
+                    all_parameters_beta.append(y[1])
+                    break
+            if isINlist == False:
+                all_parameters_beta.append(p.value)
+        I_index_Alpha = [el[0] for el in alpha_mod.parameters].index('I')
+        I_index_Beta = [el[0] for el in beta_mod.parameters].index('I')
+        #   get data from ED
+        NA = 6.022E23
+        volEC = 1E-5            
+        import Experimental_Data as ED
+        data = ED.data
+        # fit this model to the data, finding the best values of kd4 and k_d4 if called for
+        if K4==False:
+            mod_score = 0            
+            for r in [0,1,4,5,8,9]:
+                IFN = data.iloc[r,0]*NA*volEC*1E-12 # Convert from pM to num_molecules
+                typeIFN = data.iloc[r,1]
+                experiment = np.divide(list(data.iloc[r,2:7]),gamma)
+                sigma = data.iloc[r+2,2:7]
+                if typeIFN == 'Alpha':
+                    all_parameters_alpha[I_index_Alpha]=IFN
+                    (_, sim) = alpha_mod.simulate([0,5*60,15*60,30*60,60*60], param_values=all_parameters_alpha)
+                    sim = sim['TotalpSTAT']
+                elif typeIFN == 'Beta':
+                    all_parameters_alpha[I_index_Beta]=IFN                
+                    (_, sim) = beta_mod.simulate([0,5*60,15*60,30*60,60*60], param_values=all_parameters_beta)
+                    sim = sim['TotalpSTAT']
+                # Add to score
+                mod_score += np.sum(np.square(np.divide(np.subtract(sim,experiment),sigma)))
+            result.put([key,mod_score])
+            
+        else:
+            alpha_score = [1E8,alphaK4List[0][0][1]]
+            for test in alphaK4List:
+                score=0
+                all_parameters_alpha[kd4index]=test[0][1]
+                all_parameters_alpha[kd3index]=test[1][1]
+                for r in [0,4,8]:
+                    IFN = data.iloc[r,0]*NA*volEC*1E-12 # Convert from pM to num_molecules
+                    sigma = np.divide(data.iloc[r+2,2:7],gamma)
+                    experiment = np.divide(list(data.iloc[r,2:7]),gamma)
+                    all_parameters_alpha[I_index_Alpha]=IFN
+                    (_, sim) = alpha_mod.simulate([0,5*60,15*60,30*60,60*60], param_values=all_parameters_alpha)
+                    sim = sim['TotalpSTAT']
+                    for i in range(len(sim)):
+                        if sim[i]==0: #log(0) not well defined
+                            pass
+                        else:
+                            score += ((np.log(sim[i])-np.log(experiment[i]))/sigma[i])**2
+                if score<alpha_score[0]:
+                    alpha_score=[score,test[0][1]]
+#           
+            beta_score = [1E8,betaK4List[0][0][1]]
+            for test in betaK4List:
+                score=0
+                all_parameters_beta[k_d4index]=test[0][1]
+                all_parameters_beta[k_d3index]=test[1][1]
+                for r in [1,5,9]:
+                    IFN = data.iloc[r,0]*NA*volEC*1E-12 # Convert from pM to num_molecules
+                    sigma = np.divide(data.iloc[r+2,2:7],gamma)
+                    experiment = np.divide(list(data.iloc[r,2:7]),gamma)
+                    all_parameters_beta[I_index_Beta]=IFN
+                    (_, sim) = beta_mod.simulate([0,5*60,15*60,30*60,60*60], param_values=all_parameters_beta)
+                    sim = sim['TotalpSTAT']
+                    for i in range(len(sim)):
+                        if sim[i]==0:
+                            pass
+                        else:
+                            score += ((np.log(sim[i])-np.log(experiment[i]))/sigma[i])**2
+                if score<beta_score[0]:
+                    beta_score=[score,test[0][1]]
+            key=str(model+[['gamma',gamma],['kd4',alpha_score[1]],['k_d4',beta_score[1]]])
+            # add Bayesian cost for deviating from prior
+            xi2=0
+            model += ['kd4',alpha_score[1]],['k_d4',beta_score[1]]
+            for i in range(len(prior)):
+                p,val = prior[i]
+                for m in model:
+                    if m[0]==p:
+                        xi2 += ((np.log(m[1])-np.log(val))/rho)**2
+                        break
+            
+            mod_score = alpha_score[0]+beta_score[0]+xi2
+            result.put([key,mod_score])
+            
+# =============================================================================
+# fit_IFN_model() is specifically designed to fit IFN alpha and IFN beta models to the same parameters
+# for a given set of experimental data. The structure is very similar to fit_model() described above,
+# as it is multi-threaded and uses R^2 optimization to enumerate models.
+# Inputs:
+#     models = a list of strings, each item the name of a model file to test
+#             Note: models expects 2 arguments: the first is the IFN alpha model to fit and the
+#                   second is the IFN beta model to fit
+#     parameters = list in the form [['name',guess, lower limit, upper limit]]
+#     n = number of points to test, generated from a random latin hypercube in parameter space
+#     cpu = (default is num_cores -1) specify the number of cores to use
+# =============================================================================
+def fit_IFN_model_Bayesian(models, parameters, prior, rho, n, cpu=None):
+# Write modelfiles
+    print("Importing models")
+    alpha_model = __import__(models[0])
+    py_output = export(alpha_model.model, 'python')
+    with open('ODE_system_alpha.py','w') as f:
+        f.write(py_output)
+    beta_model = __import__(models[1])
+    py_output = export(beta_model.model, 'python')
+    with open('ODE_system_beta.py','w') as f:
+        f.write(py_output)
+# Generate parameters
+    print("Building model list")
+    if 'k4' in [el[0] for el in parameters]:
+        k4i = [el[0] for el in parameters].index('k4')
+        models = lhc(parameters[0:k4i]+parameters[k4i+1:len(parameters)], n, [[parameters[k4i]]])
+    else:
+        models = lhc(parameters, n, [])
+    if cpu == None or cpu >= cpu_count():
+        NUMBER_OF_PROCESSES = cpu_count()-1
+    else:
+        NUMBER_OF_PROCESSES = cpu
+    print("Using {} threads".format(NUMBER_OF_PROCESSES))
+    print("Computing scan")
+    jobs = Queue()
+    result = JoinableQueue()
+    for m in models:
+        jobs.put([m,prior,rho])   
+    print("There are {} tests to run".format(len(models)))		
+    # start up the workers          
+    [Process(target=fit_IFN_helper, args=(i, jobs, result)).start()
+            for i in range(NUMBER_OF_PROCESSES)]
+    # pull in the results from each worker
+    pool_results=[]
+    for m in range(len(models)):
+        r = result.get()
+        pool_results.append(r)
+        result.task_done()
+    # tell the workers there are no more jobs
+    for w in range(NUMBER_OF_PROCESSES):
+        jobs.put(None)
+    # close all extra threads
+    result.join()
+    jobs.close()
+    result.close()
+    print("Done scan")
+    # order models from smallest to largest total score
+    leaderboard = sorted(pool_results, key = lambda x: x[1])
+    # Write results
+    f = open('modelfit_alpha_and_beta.txt', 'w')
+    f.close()
+    with open('modelfit_alpha_and_beta.txt', 'a') as outfile:
+        outfile.write("# models: "+str(len(leaderboard))+"\n") 
+        outfile.write("---------------------------------------------------------\n")
+        header = leaderboard[0][0][3:-2]
+        header = re.split("', |\], \['", header)
+        temp=""
+        for p in range(0,len(header),2):
+            temp+=header[p]+"          "
+        temp += "score\n"
+        outfile.write(temp)
+        for key, score in leaderboard:
+            # Example string below shows what happens before and after each line of code
+            #[['kpa', 0.001], ['kSOCSon', 3.1622776601683792e-08]]
+            key = key[3:-2]
+            #kpa', 0.001], ['kSOCSon', 3.1622776601683792e-08
+            key = re.split("', |\], \['", key)
+            #["kpa" , "0.001" , "kSOCSon" , "3.1622776601683792e-08"]
+            mod_p = ""
+            for i in range(1,len(key),2):
+                mod_p += '{:.3e}'.format(float(key[i]))+"    "
+            outfile.write(mod_p+str(score)+"\n")
+    print(leaderboard[0][0]+": "+str(leaderboard[0][1]))
+    temp = re.split("', |\], \['", leaderboard[0][0][3:-2])
+    return [[temp[i],float(temp[i+1])] for i in range(0,len(temp),2)]
