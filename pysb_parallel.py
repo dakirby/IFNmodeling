@@ -1304,14 +1304,6 @@ def fit_IFN_model(models, parameters, n, cpu=None):
     
 
 
-
-
-
-
-
-
-
-
 # =============================================================================
 # fit_IFN_helper_Bayesian() is an internal function used by 
 # fit_IFN_model_Bayesian() to allow for multi-threaded computation of model fits. 
@@ -1320,9 +1312,10 @@ def fit_IFN_model(models, parameters, n, cpu=None):
 # =============================================================================
 def fit_IFN_helper_Bayesian(id, jobs, result):
     while True:
-        model,prior,rho = jobs.get()
-        if model is None:
+        mGet = jobs.get()
+        if mGet is None:
             break
+        model,prior,rho = mGet
         # get key
         key = str(model)
         # parse arguments
@@ -1529,10 +1522,10 @@ def fit_IFN_model_Bayesian(models, parameters, prior, rho, n, cpu=None):
     jobs = Queue()
     result = JoinableQueue()
     for m in models:
-        jobs.put([m,prior,rho])   
+        jobs.put([m,prior,rho])
     print("There are {} tests to run".format(len(models)))		
     # start up the workers          
-    [Process(target=fit_IFN_helper, args=(i, jobs, result)).start()
+    [Process(target=fit_IFN_helper_Bayesian, args=(i, jobs, result)).start()
             for i in range(NUMBER_OF_PROCESSES)]
     # pull in the results from each worker
     pool_results=[]
