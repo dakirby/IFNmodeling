@@ -137,10 +137,10 @@ Observable('TSOCS', IFNAR1(re=1,ri=None,loc='out')%IFN_alpha2(r1=1,r2=2)%IFNAR2(
 # =============================================================================
 # Alpha block
 Rule('IFN_bind_R1', IFNAR1(re=None,ri=None,loc='out') + IFN_alpha2(r1=None,r2=None) | IFNAR1(re=1,ri=None,loc='out')%IFN_alpha2(r1=1,r2=None), ka1, kd1 )
-Rule('IFN_bind_R2', IFNAR2(re=None,ri=None,loc='out') + IFN_alpha2(r1=None,r2=None) | IFNAR2(re=1,ri=None,loc='out')%IFN_alpha2(r1=1,r2=None), ka2, kd2 )
+Rule('IFN_bind_R2', IFNAR2(re=None,ri=WILD,loc='out') + IFN_alpha2(r1=None,r2=None) | IFNAR2(re=1,ri=WILD,loc='out')%IFN_alpha2(r1=1,r2=None), ka2, kd2 )
 
-Rule('IR1_bind_R2', IFNAR1(re=1,ri=None,loc='out')%IFN_alpha2(r1=1,r2=None) + IFNAR2(re=None,ri=None,loc='out') | IFNAR1(re=1,ri=None,loc='out')%IFN_alpha2(r1=1,r2=2)%IFNAR2(re=2,ri=None,loc='out'), ka3, kd3)
-Rule('IR2_bind_R1', IFNAR2(re=1,ri=None,loc='out')%IFN_alpha2(r1=1,r2=None) + IFNAR1(re=None,ri=None,loc='out') | IFNAR1(re=1,ri=None,loc='out')%IFN_alpha2(r1=1,r2=2)%IFNAR2(re=2,ri=None,loc='out'), ka4, kd4)
+Rule('IR1_bind_R2', IFNAR1(re=1,ri=None,loc='out')%IFN_alpha2(r1=1,r2=None) + IFNAR2(re=None,ri=WILD,loc='out') | IFNAR1(re=1,ri=None,loc='out')%IFN_alpha2(r1=1,r2=2)%IFNAR2(re=2,ri=WILD,loc='out'), ka3, kd3)
+Rule('IR2_bind_R1', IFNAR2(re=1,ri=WILD,loc='out')%IFN_alpha2(r1=1,r2=None) + IFNAR1(re=None,ri=None,loc='out') | IFNAR1(re=1,ri=None,loc='out')%IFN_alpha2(r1=1,r2=2)%IFNAR2(re=2,ri=WILD,loc='out'), ka4, kd4)
 
 #  STAT Block
 # Alpha:
@@ -153,11 +153,8 @@ Rule('synth_SOCS', STAT(j='P', loc='Cyt',fdbk=None) >> STAT(j='P', loc='Cyt',fdb
 Rule('degrade_SOCS', SOCS(site=None) >> None, SOCSdeg)
 # SOCS Inhibition Feedback
 # Alpha
-Rule('SOCS_inhibition1', SOCS(site=None) + IFNAR2(re=None, ri=None, loc='out') | IFNAR2(re=None, ri=3, loc='out')%SOCS(site=3), kSOCSon, kSOCSoff)
-Rule('SOCS_inhibition2', SOCS(site=None) + IFN_alpha2(r1=None,r2=2)%IFNAR2(re=2, ri=None, loc='out') | IFN_alpha2(r1=None,r2=2)%IFNAR2(re=2, ri=3, loc='out')%SOCS(site=3), kSOCSon, kSOCSoff)
-Rule('SOCS_inhibition3', SOCS(site=None) + IFNAR1(re=1,ri=None,loc='out')%IFN_alpha2(r1=1,r2=2)%IFNAR2(re=2, ri=None, loc='out') | IFNAR1(re=1,ri=None,loc='out')%IFN_alpha2(r1=1,r2=2)%IFNAR2(re=2, ri=3, loc='out')%SOCS(site=3), kSOCSon, kSOCSoff)
-Rule('SOCS_R2', IFNAR2(re=None, ri=3, loc='out')%SOCS(site=3) + IFNAR1(re=1,ri=None,loc='out')%IFN_alpha2(r1=1,r2=None) | IFNAR1(re=1,ri=None,loc='out')%IFN_alpha2(r1=1,r2=2)%IFNAR2(re=2, ri=3, loc='out')%SOCS(site=3), ka4, kd4)
-Rule('SOCS_R2_IFN', IFN_alpha2(r1=None,r2=2)%IFNAR2(re=2, ri=3, loc='out')%SOCS(site=3) + IFNAR1(re=None,ri=None,loc='out') | IFNAR1(re=1,ri=None,loc='out')%IFN_alpha2(r1=1,r2=2)%IFNAR2(re=2, ri=3, loc='out')%SOCS(site=3), ka3,kd3)  
+Rule('SOCS_inhibition1', SOCS(site=None) + IFNAR2(re=WILD, ri=None, loc='out') | IFNAR2(re=WILD, ri=3, loc='out')%SOCS(site=3), kSOCSon, kSOCSoff)
+
 # Internalization Block
 # Basal:
 #Rule('Basal_int1', IFNAR1(re=None, ri=None, loc='out') | IFNAR1(re=None, ri=None, loc='in'), kIntBasal_r1, krec_r1)
