@@ -635,13 +635,15 @@ def p_DRparamScan(modelfile, param1, param2, testDose, t_list, spec, custom_para
 # lhc() builds an origin-centered latin hypercube for parameters to investigate
 # Inputs:
 #   parameters = these are the model parameters to fit
-#           a list of lists, each sublist of the form ['name', lower limit, upper limit]
+#           a list of lists, each sublist of the form ['name', guess, lower limit, upper limit, scale]
 #   n = number of points to generate 
 #   exp_params =  These are model parameters which are not being fitted but are needed
 #                 to replicate experimental data (ie. one item in this list per data point)    
 #               a list of lists, each sublist describing the experimental conditions 
 #               which were used to generate the corresponding ydata point.
-#               Each *sublist* is of the form [['name',value],['name',value],...]       
+#               Each *sublist* is of the form [['name',value],['name',value],...]    
+# Returns:
+#   a list of d-dimensional points (d = len(parameters)) in parameter space
 # =============================================================================
 def lhc(parameters, n, exp_params):
     d = len(parameters)
@@ -1298,9 +1300,8 @@ def fit_IFN_model(models, parameters, n, cpu=None):
             for i in range(1,len(key),2):
                 mod_p += '{:.3e}'.format(float(key[i]))+"    "
             outfile.write(mod_p+str(score)+"\n")
-    print(leaderboard[0][0]+": "+str(leaderboard[0][1]))
-    temp = re.split("', |\], \['", leaderboard[0][0][3:-2])
-    return [[temp[i],float(temp[i+1])] for i in range(0,len(temp),2)]
+    #print(leaderboard[0][0]+": "+str(leaderboard[0][1]))
+    return leaderboard
     
 
 
