@@ -26,6 +26,7 @@ IFN_sigmas =[ED.data.loc[(ED.data.loc[:,'Dose (pM)']==10) & (ED.data.loc[:,'Inte
 import pysb_parallel as pp
 import numpy as np
 import re
+import matplotlib.pyplot as plt
 import scipy.stats
 debugging = True # global value for this script
 
@@ -69,16 +70,15 @@ debugging = True # global value for this script
 #     theta (list) = a proposal parameter vector
 # =============================================================================
 def J(theta_old, priors):
-    print(theta_old)
     for p in range(len(theta_old)):
         if priors[p][4]=='log':
             # generate new parameter from log-normal centered at current value
             # with std dev same as prior for that parameter ??????????   ?????????   ?????????    ????????
-            theta_old[p][1] = scipy.stats.norm(np.log(theta_old[p][1]), priors[2])
+            theta_old[p][1] = np.exp(np.random.normal(np.log(theta_old[p][1]), priors[p][2]))
         elif priors[p][4]=='linear':
             # generate new parameter from normal distribution centered at 
             # current value and std dev = mean
-            theta_old[p][1] = scipy.stats.norm(theta_old[p][1], theta_old[p][1])
+            theta_old[p][1] = np.random.normal(theta_old[p][1], theta_old[p][1])
     return theta_old
 
 # =============================================================================
@@ -100,6 +100,7 @@ def prior_probability(theta, priors):
     p=1
     for parameter in range(len(theta)):
         if priors[parameter][4]=='log':
+            # probability of drawing theta[parameter] from the prior log-normal distribution for parameter
             p *= scipy.stats.norm(priors[parameter][1],priors[parameter][2]).pdf(np.log(theta[parameter][1]))
     return p
 
@@ -155,7 +156,6 @@ def MCMC(models, m, n, priors):
             temp = re.split("', |\], \['", each[0][3:-2])
             each[0] = [[temp[i],float(temp[i+1])] for i in range(0,len(temp),2)]
         starting_points = [el[0] for el in starting_points] # discard previous score for model
-        print(starting_points[0])
     else:
         starting_points = [[['kpa', 4.069588809647314e-06], ['kSOCSon', 3.856211599006977e-05], ['R1', 2143.339929154], ['R2', 1969.2604543664138], ['gamma', 8.0], ['kd4', 3.0], ['k_d4', 6.0]]]
         
@@ -163,28 +163,33 @@ def MCMC(models, m, n, priors):
     #   everything will be done in log-probabilities
     for p in range(len(priors)):
         if priors[p][4]=='log':
+            # sigma chosen so that both bounds are within 1 std dev of guess; sigma stored in priors[p][2]
             priors[p][2] = max(abs(np.log(priors[p][1]/priors[p][2])), abs(np.log(priors[p][1]/priors[p][3])))
-            # sigma stored in priors[p][2]
-            priors[p][1]==np.log(priors[p][1])  # mu
-            
+            priors[p][1] = np.log(priors[p][1])  # mu
+
+    pVal=[]        
     # Perform Metropolis-Hastings algorithm
     for chain in range(m): # eventually I will parallelize or vectorize this
         theta_old = starting_points[chain]
         r2 = posterior(theta_old,priors)
-        if debugging==False:
-            for iteration in range(n): # sequential loop, cannot be parallelized
-                # propose a new theta
-                theta = J(theta_old, priors)
-                r1 = posterior(theta,priors)
-                R = r1/r2
-                if np.random.rand() < R:
-                    theta_old = theta
-                    r2 = r1
-            
-    
+        for iteration in range(n): # sequential loop, cannot be parallelized
+            # propose a new theta
+            theta = J(theta_old, priors)
+            r1 = posterior(theta,priors)
+            R = r1/r2
+            print(R)
+            if np.random.rand() < R:
+                theta_old = theta
+                r2 = r1
+                pVal.append(theta[0][1])
+    print(pVal)
+    plt.figure()
+    plt.scatter(range(len(pVal)),np.log(pVal))
+    plt.savefig('prior.pdf')
     return 0
 
 def main():
+    plt.close('all')
     modelfiles = ['IFN_alpha_altSOCS_ppCompatible','IFN_beta_altSOCS_ppCompatible']
     p0 = [['kpa',1E-6,1E-7,5E-6,'log'],['kSOCSon',1E-6,9E-7,6e-5,'log'],
           ['R1',2000,1000,5000,'log'],['R2',2000,1000,5000,'log'],
