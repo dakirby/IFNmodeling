@@ -1110,7 +1110,7 @@ def fit_IFN_helper(id, jobs, result):
                 q_2 = 8.30e-13/0.002
                 q_4 = 3.62e-4/(k_d4List[i]*0.006)
                 q_3 = q_2*q_4/q_1
-                k_d3 = 2.4e-5/q_3
+                k_d3 = 3.623188e-4/q_3
                 betaK4List.append([['k_d4',k_d4List[i]*0.006],['k_d3',k_d3]])
         # run simulation
         #   load models
@@ -1360,7 +1360,7 @@ def fit_IFN_helper_Bayesian(id, jobs, result):
                 q_2 = 8.30e-13/0.002
                 q_4 = 3.62e-4/(k_d4List[i]*0.006)
                 q_3 = q_2*q_4/q_1
-                k_d3 = 2.4e-5/q_3
+                k_d3 = 3.623188e-5/q_3
                 betaK4List.append([['k_d4',k_d4List[i]*0.006],['k_d3',k_d3]])
         # run simulation
         #   load models
@@ -1423,7 +1423,7 @@ def fit_IFN_helper_Bayesian(id, jobs, result):
                     (_, sim) = alpha_mod.simulate([0,5*60,15*60,30*60,60*60], param_values=all_parameters_alpha)
                     sim = sim['TotalpSTAT']
                 elif typeIFN == 'Beta':
-                    all_parameters_alpha[I_index_Beta]=IFN                
+                    all_parameters_beta[I_index_Beta]=IFN                
                     (_, sim) = beta_mod.simulate([0,5*60,15*60,30*60,60*60], param_values=all_parameters_beta)
                     sim = sim['TotalpSTAT']
                 # Add to score
