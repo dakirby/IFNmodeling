@@ -23,10 +23,13 @@ IFN_sigmas =[ED.data.loc[(ED.data.loc[:,'Dose (pM)']==10) & (ED.data.loc[:,'Inte
              ED.data.loc[(ED.data.loc[:,'Dose (pM)']==600) & (ED.data.loc[:,'Interferon']=="Beta_std"),['0','5','15','30','60']].values[0]]
 
 
-import pysb_parallel as pp
 import numpy as np
-import re
 import matplotlib.pyplot as plt
+import seaborn as sns; 
+sns.set(color_codes=True)
+sns.set_style("darkgrid")
+import pandas as pd
+
 import scipy.stats
 from pysb.export import export
 import time
@@ -397,12 +400,51 @@ def hyperparameter_fitting(n, theta_0, rho, max_attempts):
 #                     ax.set(xscale='linear',yscale='linear')
 #                     ax.plot(range(len(new_theta)),[el[i+4][1] for el in new_theta]) 
 # =============================================================================
-                    
+    if debugging==True:
+        return theta_0                
     raise RuntimeError("Failed to optimize hyperparameters.\n\
                        Please initialise with different variances\n\
                        or check uniform prior ranges, and try again.")
 
+def plot_parameter_distributions(df):
+    k = len(df.columns) # total number subplots
+    n = 2 # number of chart columns
+    m = (k - 1) // n + 1 # number of chart rows
+    fig, axes = plt.subplots(m, n, figsize=(n * 5, m * 3))
+    if k % 2 == 1: # avoids extra empty subplot
+        axes[-1][n-1].set_axis_off()
+    for i, (name, col) in enumerate(df.iteritems()):
+        r, c = i // n, i % n
+        ax = axes[r, c] # get axis object
+        sns.distplot(col, ax=ax, hist=True, kde=True, 
+             color = 'darkblue', 
+             hist_kws={'edgecolor':'black'},
+             kde_kws={'linewidth': 4})
+# =============================================================================
+#         labels = ax.get_xticks()
+#         for lbl in range(len(labels)):
+#             if float(labels[lbl]) < 1E-3:
+#                 labels[lbl] = "{:.2e}".format(float(labels[lbl]))
+#             elif float(labels[lbl]) > 80:
+#                 labels[lbl] = "{:.0f}".format(float(labels[lbl]))
+#         ax.set_xticks(labels)    
+# =============================================================================
+    fig.tight_layout()    
+    plt.savefig('parameter_distributions.pdf')
 
+def get_parameter_distributions(model_record, burn_rate, down_sample):
+    # Build dataframe
+    #   Account for burn in and down sampling
+    sample_record = model_record[int(len(model_record)*burn_rate):-1:down_sample]
+    print("Effectively sampled {} times from posterior distribution".format(len(sample_record)))
+    
+    sample_table = pd.DataFrame([[el[1] for el in r] for r in sample_record],
+                                columns=[l[0] for l in sample_record[0]])
+    # Save dataframe
+    sample_table.to_csv("posterior_samples.csv")
+    
+    # Plot parameter distributions
+    plot_parameter_distributions(sample_table)
 # =============================================================================
 # MCMC() takes an IFN model and fits it using Markov Chain Monte Carlo
 # Inputs:    
@@ -412,20 +454,21 @@ def hyperparameter_fitting(n, theta_0, rho, max_attempts):
 #                   eg. [['kpa',1E-6,0.2,'log'],['R2',2E3,250,'linear',100],['gamma',4,2,'uniform',40]]
 #    rho (float) = the prior component of the model square is weighed by a factor 1/rho**2
 # Optional Inputs:    
+#    burn_rate (float) = initial fraction of samples to discard as 'burn in'
+#                       default is to discard the first 10%    
+#    down_sample (int) = step size for down sampling to reduce autocorrelation
+#                       default is 1 (no down sampling unless user specifies)    
 #    max_attempts (int) = the number of attempts to try and choose hyperparameters
 #                           default is 6
 #    pflag (Boolean) = whether to plot the random walks of each parameter being fit
 #    sflag (Boolean) = whether to automatically adjust prior sigmas to achieve good acceptance rate
 # =============================================================================
-def MCMC(n, theta_0, rho, max_attempts=6, pflag=True, sflag=True):
+def MCMC(n, theta_0, rho, burn_rate=0.1, down_sample=1, max_attempts=6, pflag=True, sflag=True):
     # Selecting hyperparameters
     print("Optimizing hyperparameters")
     hyper_theta = hyperparameter_fitting(n, theta_0, rho, max_attempts)
-    # Burn-in
-    hyper_theta=theta_0
     
-    
-    
+    print("Sampling from posterior distribution")    
     model_record=[hyper_theta]
     old_score = score_model(*[model_record[0][j][1] for j in range(len(model_record[0]))], rho)
     old_index = 0
@@ -463,6 +506,8 @@ def MCMC(n, theta_0, rho, max_attempts=6, pflag=True, sflag=True):
             ax.set(xscale='linear',yscale='linear')
             ax.plot(range(len(model_record)),[el[i+4][1] for el in model_record]) 
     
+    # Perform data analysis
+    get_parameter_distributions(model_record, burn_rate, down_sample)
     
 def main():
     plt.close('all')
