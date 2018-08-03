@@ -72,18 +72,20 @@ debugging = True # global value for this script
 # Returns:
 #     theta (list) = a proposal parameter vector
 # =============================================================================
-def J(theta_old, priors):
-    for p in range(len(theta_old)):
-        if priors[p][4]=='log':
-            # generate new parameter from log-normal centered at current value
-            # with std dev same as prior for that parameter ??????????   ?????????   ?????????    ????????
-            np.random.lognormal(mean=np.log(theta_old[p][1]), sigma=9)
-        elif priors[p][4]=='linear':
-            # generate new parameter from normal distribution centered at 
-            # current value and std dev = mean
-            theta_old[p][1] = np.random.uniform(low=priors[p][2], high=priors[p][3])
-    return theta_old
-
+# =============================================================================
+# def J(theta_old, priors):
+#     for p in range(len(theta_old)):
+#         if priors[p][4]=='log':
+#             # generate new parameter from log-normal centered at current value
+#             # with std dev same as prior for that parameter ??????????   ?????????   ?????????    ????????
+#             np.random.lognormal(mean=np.log(theta_old[p][1]), sigma=9)
+#         elif priors[p][4]=='linear':
+#             # generate new parameter from normal distribution centered at 
+#             # current value and std dev = mean
+#             theta_old[p][1] = np.random.uniform(low=priors[p][2], high=priors[p][3])
+#     return theta_old
+# 
+# =============================================================================
 # =============================================================================
 # prior_probability() returns the probability of a set of parameters, given 
 #                     their priors
@@ -147,53 +149,55 @@ def mcmcChecks(priors):
 #                   'linear' - use a uniform distribution over the range lower - upper
 #     
 # =============================================================================
-def MCMC(models, chains, n, priors):
-    # Check for coherency of arguments
-    if mcmcChecks(priors)==False:
-        return 1
-    # Generate starting modes
-    if debugging == False:
-        starting_points = pp.fit_IFN_model(models, priors, chains*10)[0:chains]
-        
-        for each in starting_points: # Reformat string key into list
-            temp = re.split("', |\], \['", each[0][3:-2])
-            each[0] = [[temp[i],float(temp[i+1])] for i in range(0,len(temp),2)]
-        starting_points = [el[0] for el in starting_points] # discard previous score for model
-    else:
-        starting_points = [[['kpa', 4.069588809647314e-06], ['kSOCSon', 3.856211599006977e-05], ['R1', 2143.339929154], ['R2', 1969.2604543664138], ['gamma', 8.0], ['kd4', 3.0], ['k_d4', 6.0]]]
-    if debugging==True:
-        print("Priors")
-        print(priors)    
-    # Translate priors to log form to avoid extra computations, since almost 
-    #   everything will be done in log-probabilities
-    for p in range(len(priors)):
-        if priors[p][4]=='log':
-            # sigma chosen so that both bounds are within 1 std dev of guess; sigma stored in priors[p][2]
-            priors[p][2] = max(abs(np.log(priors[p][1]/priors[p][2])), abs(np.log(priors[p][1]/priors[p][3])))
-            priors[p][1] = np.log(priors[p][1])  # mu
-
-    theta_record=[]        
-    # Perform Metropolis-Hastings algorithm
-    for chain in range(chains): # eventually I will parallelize or vectorize this
-        theta_old = starting_points[chain]
-        theta_record.append([el[1] for el in theta_old])
-        r2 = posterior(theta_old,priors)
-        for iteration in range(n): # sequential loop, cannot be parallelized
-            # propose a new theta
-            theta = J(theta_old, priors)
-            r1 = posterior(theta,priors)
-            R = r1/r2
-            if np.random.rand() < R:
-                theta_record.append([el[1] for el in theta])                
-                theta_old = theta
-                r2 = r1
-    fig, ax = plt.subplots()
-    ax.set(xscale="linear", yscale="log")
-    plt.scatter(range(len(theta_record)),[el[0] for el in theta_record])
-    print([el[0] for el in theta_record])
-    plt.savefig('prior.pdf')
-    return 0
-
+# =============================================================================
+# def MCMC(models, chains, n, priors):
+#     # Check for coherency of arguments
+#     if mcmcChecks(priors)==False:
+#         return 1
+#     # Generate starting modes
+#     if debugging == False:
+#         starting_points = pp.fit_IFN_model(models, priors, chains*10)[0:chains]
+#         
+#         for each in starting_points: # Reformat string key into list
+#             temp = re.split("', |\], \['", each[0][3:-2])
+#             each[0] = [[temp[i],float(temp[i+1])] for i in range(0,len(temp),2)]
+#         starting_points = [el[0] for el in starting_points] # discard previous score for model
+#     else:
+#         starting_points = [[['kpa', 4.069588809647314e-06], ['kSOCSon', 3.856211599006977e-05], ['R1', 2143.339929154], ['R2', 1969.2604543664138], ['gamma', 8.0], ['kd4', 3.0], ['k_d4', 6.0]]]
+#     if debugging==True:
+#         print("Priors")
+#         print(priors)    
+#     # Translate priors to log form to avoid extra computations, since almost 
+#     #   everything will be done in log-probabilities
+#     for p in range(len(priors)):
+#         if priors[p][4]=='log':
+#             # sigma chosen so that both bounds are within 1 std dev of guess; sigma stored in priors[p][2]
+#             priors[p][2] = max(abs(np.log(priors[p][1]/priors[p][2])), abs(np.log(priors[p][1]/priors[p][3])))
+#             priors[p][1] = np.log(priors[p][1])  # mu
+# 
+#     theta_record=[]        
+#     # Perform Metropolis-Hastings algorithm
+#     for chain in range(chains): # eventually I will parallelize or vectorize this
+#         theta_old = starting_points[chain]
+#         theta_record.append([el[1] for el in theta_old])
+#         r2 = posterior(theta_old,priors)
+#         for iteration in range(n): # sequential loop, cannot be parallelized
+#             # propose a new theta
+#             theta = J(theta_old, priors)
+#             r1 = posterior(theta,priors)
+#             R = r1/r2
+#             if np.random.rand() < R:
+#                 theta_record.append([el[1] for el in theta])                
+#                 theta_old = theta
+#                 r2 = r1
+#     fig, ax = plt.subplots()
+#     ax.set(xscale="linear", yscale="log")
+#     plt.scatter(range(len(theta_record)),[el[0] for el in theta_record])
+#     print([el[0] for el in theta_record])
+#     plt.savefig('prior.pdf')
+#     return 0
+# 
+# =============================================================================
 
 #
 def get_prior_logp(kpa, kSOCSon, kd4, k_d4, R1, R2):
@@ -209,7 +213,7 @@ def get_prior_logp(kpa, kSOCSon, kd4, k_d4, R1, R2):
     S_kd4 = 2
     
     P_k_d4 = np.log(0.006)
-    S_k_d4 = 4
+    S_k_d4 = 3
     
     P_R1 = np.log(R1) # Easy way to choose non-informative prior
     S_R1 = 1
@@ -233,7 +237,7 @@ def get_likelihood_logp(kpa,kSOCSon,kd4,k_d4,R1,R2, gamma):
 
     q_1 = 4.98E-14/0.03
     q_2 = 8.30e-13/0.002
-    q_4 = 3.62e-4/k_d4
+    q_4 = 3.623188e-4/k_d4
     q_3 = q_2*q_4/q_1
     k_d3 = 3.623188e-4/q_3
     fit_list = [['kpa',kpa],['kSOCSon',kSOCSon],['kd4',kd4],['k_d4',k_d4],
@@ -293,26 +297,173 @@ def get_likelihood_logp(kpa,kSOCSon,kd4,k_d4,R1,R2, gamma):
     (_, sim) = beta_mod.simulate(t, param_values=beta_parameters)
     all_sims.append(sim['TotalpSTAT'])
     
-    import IFN_beta_altSOCS as IFNbSOCS
-    from pysb.simulator import ScipyOdeSimulator
-
-    simres = ScipyOdeSimulator(IFNbSOCS.model, tspan=t, 
-                               param_values = {'R1':R1, 'R2':R2,
-                                               'IFN':600E-12,'kSOCSon':kSOCSon, 
-                                               'kpa':kpa, 'k_d4':k_d4},
-                               compiler='python').run()
-    simres = simres.all
-    simres = simres['TotalpSTAT']
-    print(simres)
-    print(all_sims[5])
-
     logp = 0
     for i in range(len(all_sims)):
-        logp += np.sum(np.square(np.divide(np.subtract(IFN_exps[i],np.divide(all_sims[i],gamma)),np.divide(IFN_sigmas[i],gamma))))
+        logp += np.sum(np.square(np.divide(np.subtract(all_sims[i],np.divide(IFN_exps[i],gamma)),np.divide(IFN_sigmas[i],gamma))))
     return logp
-    
-    
+# =============================================================================
+# Returns -log(probability of model)
+# =============================================================================
+def score_model(kpa,kSOCSon,kd4,k_d4,R1,R2, gamma, rho):
+    lk = get_likelihood_logp(kpa,kSOCSon,kd4,k_d4,R1,R2, gamma)
+    pr = get_prior_logp(kpa, kSOCSon, kd4, k_d4, R1, R2)
+    return lk+(pr/(rho)**2)
 
+# =============================================================================
+# J() is the jumping distribution
+# Inputs:
+#   theta (list) = elements of the form ['name', current value, std dev for jumps,'distribution']
+# Jumping distributions:
+#   log - used for reaction rates; lognormal distributed jump lengths
+#   linear - used for concentrations/species counts; normally distributed jump lengths    
+#   uniform - used for data scale factor, for example; restricted uniform distributed jump lengths
+# Returns:
+#   new_theta (list) = same form as theta but with new values stored in second position of subarray    
+# =============================================================================
+def J(theta):
+    new_theta=[]
+    for parameter in theta:
+        if parameter[3]=='log': # lognormal random walk
+            new_theta.append([parameter[0],
+                              np.random.lognormal(mean=np.log(parameter[1]), sigma=parameter[2]),
+                              parameter[2],parameter[3]])
+        elif parameter[3]=='linear': # normal random walk restricted to be greater than cutoff
+            new_theta.append([parameter[0],
+                              max(np.random.normal(loc=parameter[1], scale=parameter[2]),parameter[4]),
+                              parameter[2],parameter[3],parameter[4]])
+        elif parameter[3]=='uniform': # restricted uniform distributed random walk
+            new_theta.append([parameter[0],
+                              np.random.uniform(low=parameter[2], high=min(parameter[1]*1.4,parameter[4])),
+                              parameter[2],parameter[3],parameter[4]])
+    return new_theta
+
+# =============================================================================
+# Performs 50 samples to estimate the acceptance rate with current hyperparameters
+# Returns the acceptance rate as a percentage (eg. 24) and the theta with 
+# variances that were good enough    
+# =============================================================================
+def get_acceptance_rate(theta, rho):
+    old_theta=theta
+    old_score = score_model(*[old_theta[j][1] for j in range(len(old_theta))], rho)
+    acceptance = 0    
+    for i in range(50):
+        proposal = J(old_theta)
+        new_score = score_model(*[proposal[j][1] for j in range(len(proposal))], rho)
+        if np.random.rand() < np.exp(-(new_score-old_score)):
+        # if rand() < probability of proposed/probability of old
+            old_theta=proposal
+            old_score = new_score
+            acceptance += 1
+    return (acceptance*2, old_theta) # = acceptance/50*100
+            
+def hyperparameter_fitting(n, theta_0, rho, max_attempts):
+    n=int(0.1*n)
+    if n<60: n=60
+    theta = [el for el in theta_0]
+    # Try to find variances that give an good acceptance rate
+    for attempt in range(max_attempts):
+        print("Attempt {}".format(attempt+1))
+        acceptance, new_theta = get_acceptance_rate(theta, rho)
+        
+        if acceptance > 20 and acceptance < 50:
+            print("Acceptance rate was {}%".format(acceptance))
+            print("Initial parameter vector will be:")
+            print(new_theta)
+            return new_theta
+        else:
+            if acceptance < 20:
+                print("Acceptance rate was too low")
+                for parameter in range(len(theta)):
+                    if theta[parameter][3] != 'uniform':
+                        theta[parameter][2] = theta[parameter][2]/2
+                        noise = np.random.normal(loc=0,scale=theta[parameter][2]*2) #intentionally *2
+                        if theta[parameter][2]+noise > 0: theta[parameter][2] += noise
+            if acceptance > 50:
+                print("Acceptance rate was too high")
+                for parameter in range(len(theta)):
+                    if theta[parameter][3] != 'uniform':
+                        theta[parameter][2] = theta[parameter][2]*2
+                        noise = np.random.normal(loc=0,scale=theta[parameter][2]*2) #also intentionally *2
+                        if theta[parameter][2]+noise > 0: theta[parameter][2] += noise
+
+# =============================================================================
+#             if attempt==max_attempts-1:
+#                 for i in range(4):
+#                     fig, ax = plt.subplots()
+#                     ax.set(xscale='linear',yscale='log')
+#                     ax.plot(range(len(new_theta)),[el[i][1] for el in new_theta]) 
+#                 for i in range(3):
+#                     fig, ax = plt.subplots()
+#                     ax.set(xscale='linear',yscale='linear')
+#                     ax.plot(range(len(new_theta)),[el[i+4][1] for el in new_theta]) 
+# =============================================================================
+                    
+    raise RuntimeError("Failed to optimize hyperparameters.\n\
+                       Please initialise with different variances\n\
+                       or check uniform prior ranges, and try again.")
+
+
+# =============================================================================
+# MCMC() takes an IFN model and fits it using Markov Chain Monte Carlo
+# Inputs:    
+#    n (int) = number of iterations to run per chain
+#    theta_0 (list) = the initial guesses and jumping distribution definitions for each parameter to fit
+#                       Order of theta_0 is [kpa, kSOCSon, kd4, k_d4, R1, R2, gamma]    
+#                   eg. [['kpa',1E-6,0.2,'log'],['R2',2E3,250,'linear',100],['gamma',4,2,'uniform',40]]
+#    rho (float) = the prior component of the model square is weighed by a factor 1/rho**2
+# Optional Inputs:    
+#    max_attempts (int) = the number of attempts to try and choose hyperparameters
+#                           default is 6
+#    pflag (Boolean) = whether to plot the random walks of each parameter being fit
+#    sflag (Boolean) = whether to automatically adjust prior sigmas to achieve good acceptance rate
+# =============================================================================
+def MCMC(n, theta_0, rho, max_attempts=6, pflag=True, sflag=True):
+    # Selecting hyperparameters
+    print("Optimizing hyperparameters")
+    hyper_theta = hyperparameter_fitting(n, theta_0, rho, max_attempts)
+    # Burn-in
+    hyper_theta=theta_0
+    
+    
+    
+    model_record=[hyper_theta]
+    old_score = score_model(*[model_record[0][j][1] for j in range(len(model_record[0]))], rho)
+    old_index = 0
+    acceptance = 0
+    # Metropolis-Hastings algorithm
+    progress_bar = n/10
+    for i in range(n):
+        # Monitor acceptance rate            
+        if i>progress_bar:
+            progress_bar += n/10
+            print("{:.1f}% done".format(i/n*100))
+            print("Acceptance rate = {:.1f}%".format(acceptance/progress_bar*100))
+        proposal = J(model_record[old_index])
+        new_score = score_model(*[proposal[j][1] for j in range(len(proposal))], rho)
+        if np.random.rand() < np.exp(-(new_score-old_score)):
+        # if rand() < probability of proposed/probability of old
+
+# =============================================================================
+#                if debugging==True:
+#                     lk = get_likelihood_logp(*[proposal[j][1] for j in range(len(proposal))])
+#                     pr = get_prior_logp(*[proposal[j][1] for j in range(len(proposal))][0:len(proposal)-1])
+# =============================================================================
+            model_record.append(proposal)
+            old_score = new_score
+            old_index += 1
+            acceptance += 1
+    
+    if pflag==True:
+        for i in range(4):
+            fig, ax = plt.subplots()
+            ax.set(xscale='linear',yscale='log')
+            ax.plot(range(len(model_record)),[el[i][1] for el in model_record]) 
+        for i in range(3):
+            fig, ax = plt.subplots()
+            ax.set(xscale='linear',yscale='linear')
+            ax.plot(range(len(model_record)),[el[i+4][1] for el in model_record]) 
+    
+    
 def main():
     plt.close('all')
     modelfiles = ['IFN_alpha_altSOCS_ppCompatible','IFN_beta_altSOCS_ppCompatible']
@@ -327,21 +478,15 @@ def main():
     with open('ODE_system_beta.py','w') as f:
         f.write(py_output)
 # =============================================================================
-#     p0 = [['kpa',1E-6,1E-7,5E-6,'log'],['kSOCSon',1E-6,9E-7,6e-5,'log'],
-#           ['R1',2000,1000,5000,'log'],['R2',2000,1000,5000,'log'],
-#           ['gamma',3.5,2,40,'linear'],['kd4',0.3,.01,7,'log'],['k_d4',0.006,0.001,7,'log']]
+#     t0 = time.time()
+#     t1 = time.time()
+#     print("time = {}".format(t1-t0))
 # =============================================================================
-    p0=[['kd4',0.3,0.03,6,'log']]
-    t0 = time.time()
-    print(get_likelihood_logp(1.2E-6, 2E-6, 3, 6, 2000, 2000, 4))
-    t1 = time.time()
-    print("time = {}".format(t1-t0))
-    #MCMC(modelfiles, 1, 25, p0)
-# =============================================================================
-#     walk = [0.3]
-#     for i in range(2000):
-#         walk.append(np.random.lognormal(mean=np.log(walk[i]), sigma=0.1))
-# =============================================================================
+    print("Performing MCMC Analysis")
+    p0=[['kpa',1E-6,0.04,'log'],['kSOCSon',1E-6,0.2,'log'],['kd4',0.3,0.2,'log'],
+        ['k_d4',0.006,0.5,'log'],['R1',2E3,250,'linear',100],['R2',2E3,250,'linear',100],
+        ['gamma',4,1,'uniform',40]]
+    MCMC(500, p0, 0.01)
 
 if __name__ == '__main__':
     main()
