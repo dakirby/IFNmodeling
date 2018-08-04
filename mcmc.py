@@ -30,179 +30,11 @@ sns.set(color_codes=True)
 sns.set_style("darkgrid")
 import pandas as pd
 
-import scipy.stats
 from pysb.export import export
 import time
 
 debugging = True # global value for this script
 
-# =============================================================================
-# SSres_IFN scores the sum of square residuals for IFNa and IFNb models
-# Inputs:
-#     mods (list) = [modAlpha,modBeta] previously imported models
-#     test_parameters (list) = list of dicts, one for alpha model and one for beta model
-#                             eg. {'R1':R1b, 'R2':R2b,'IFN':600E-12,'kSOCSon':kSOCSonb,'kpa':kpab, 'k_d4':k_d4}
-# =============================================================================
-# =============================================================================
-# def SSres_IFN(mods, test_parameters):
-#     modAlpha, modBeta = mods
-#     paramsAlpha, paramsBeta = test_parameters
-#     all_sims = [pyplt.timecourse(modAlpha, [0,5*60,15*60,30*60,60*60], [['TotalpSTAT',"Total pSTAT"]],
-#                                  suppress=True, parameters = paramsAlpha+{'IFN':10E-12*NA*volEC})["TotalpSTAT"],
-#                 pyplt.timecourse(modBeta, [0,5*60,15*60,30*60,60*60], [['TotalpSTAT',"Total pSTAT"]], 
-#                                  suppress=True, parameters = test_parameters[1])["TotalpSTAT"], 
-#                 pyplt.timecourse(modAlpha, [0,5*60,15*60,30*60,60*60], [['TotalpSTAT',"Total pSTAT"]], 
-#                                  suppress=True, parameters = test_parameters[0])["TotalpSTAT"],
-#                 pyplt.timecourse(modBeta, [0,5*60,15*60,30*60,60*60], [['TotalpSTAT',"Total pSTAT"]],
-#                                  suppress=True, parameters = test_parameters[1])["TotalpSTAT"],
-#                 pyplt.timecourse(modAlpha, [0,5*60,15*60,30*60,60*60], [['TotalpSTAT',"Total pSTAT"]],
-#                                  suppress=True, parameters = test_parameters[0])["TotalpSTAT"],
-#                 pyplt.timecourse(modBeta, [0,5*60,15*60,30*60,60*60],  [['TotalpSTAT',"Total pSTAT"]],
-#                                  suppress=True, parameters = test_parameters[1])["TotalpSTAT"]]
-#     SSres = 0   
-#     for i in range(len(IFN_exps)):
-#         SSres += np.sum(np.square(np.subtract(IFN_exps[i],all_sims[i])))
-#     return SSres
-# =============================================================================
-
-# =============================================================================
-# J() is the jumping distribution, which generates a new parameter vector given
-# the current parameter vector and the priors provided by the user
-# Inputs:
-#     theta_old (list) = the current parameter vector
-#     priors (list) = the prior parameter vector, with 'log' distributed parameters
-#                     already converted to log values
-# Returns:
-#     theta (list) = a proposal parameter vector
-# =============================================================================
-# =============================================================================
-# def J(theta_old, priors):
-#     for p in range(len(theta_old)):
-#         if priors[p][4]=='log':
-#             # generate new parameter from log-normal centered at current value
-#             # with std dev same as prior for that parameter ??????????   ?????????   ?????????    ????????
-#             np.random.lognormal(mean=np.log(theta_old[p][1]), sigma=9)
-#         elif priors[p][4]=='linear':
-#             # generate new parameter from normal distribution centered at 
-#             # current value and std dev = mean
-#             theta_old[p][1] = np.random.uniform(low=priors[p][2], high=priors[p][3])
-#     return theta_old
-# 
-# =============================================================================
-# =============================================================================
-# prior_probability() returns the probability of a set of parameters, given 
-#                     their priors
-# Inputs:
-#   theta (list) = the parameters to 'score'
-#   priors (list) = the prior knowledge of the same parameters
-# Returns:
-#   p(theta_1)*p(theta_2)*p(theta_3)...
-# =============================================================================
-def log_prior_probability(theta, priors):
-    if debugging==True:
-        if [el[0] for el in theta] != [el[0] for el in priors]:
-            print("Parameter order got changed!")
-            print([el[0] for el in theta])
-            print([el[0] for el in priors])
-            return 1
-    p=1
-    for parameter in range(len(theta)):
-        if priors[parameter][4]=='log':
-            # probability of drawing theta[parameter] from the prior log-normal distribution for parameter
-            p *= scipy.stats.norm(priors[parameter][1],priors[parameter][2]).pdf(np.log(theta[parameter][1]))
-    return np.log(p)
-
-def log_likelihood(theta):
-    return 1
-
-# =============================================================================
-# posterior() returns value proportional to the posterior probability for 
-#             a model, given data
-# Inputs:
-#   theta (list) = the current model parameters
-#   priors (list) = the prior information on the model parameters
-# Returns:
-#   float = the likelihood*prior_probability     
-# =============================================================================
-def posterior(theta, priors):
-    L = log_likelihood(theta)
-    P = log_prior_probability(theta, priors)    
-    return L*P
-    
-def mcmcChecks(priors):
-    # Sanity checks:
-    for i in range(len(priors)):
-        if priors[i][2]>priors[i][1] or priors[i][3]<priors[i][1]:
-            print("Priors should be specified as ['name',guess,lower bound, upper bound,'distribution']")
-            return False
-    return True
-
-# =============================================================================
-# MCMC() is a Monte Carlo Markov Chain simulation function for finding optimal
-# parameter values for IFN alpha and IFN beta PySB models
-#    
-# models (list of strings) = alpha and beta model files to fit
-# chains (int) = number of parallel markov chains to simulate (recommend m >= 2)
-# n (int) = number of iterations to perform for each chain 
-# priors (list of lists) = these are the model parameters to fit.
-#                          Each sublist is of the form 
-#                          ['name', mu_0, lower limit, upper limit, 'distribution']
-#            *distribution* is a keyword which can take the following strings:
-#                   'log' - use a log-normal distribution with mean mu_0 and std. dev. = (upper-lower)/1.5
-#                   'linear' - use a uniform distribution over the range lower - upper
-#     
-# =============================================================================
-# =============================================================================
-# def MCMC(models, chains, n, priors):
-#     # Check for coherency of arguments
-#     if mcmcChecks(priors)==False:
-#         return 1
-#     # Generate starting modes
-#     if debugging == False:
-#         starting_points = pp.fit_IFN_model(models, priors, chains*10)[0:chains]
-#         
-#         for each in starting_points: # Reformat string key into list
-#             temp = re.split("', |\], \['", each[0][3:-2])
-#             each[0] = [[temp[i],float(temp[i+1])] for i in range(0,len(temp),2)]
-#         starting_points = [el[0] for el in starting_points] # discard previous score for model
-#     else:
-#         starting_points = [[['kpa', 4.069588809647314e-06], ['kSOCSon', 3.856211599006977e-05], ['R1', 2143.339929154], ['R2', 1969.2604543664138], ['gamma', 8.0], ['kd4', 3.0], ['k_d4', 6.0]]]
-#     if debugging==True:
-#         print("Priors")
-#         print(priors)    
-#     # Translate priors to log form to avoid extra computations, since almost 
-#     #   everything will be done in log-probabilities
-#     for p in range(len(priors)):
-#         if priors[p][4]=='log':
-#             # sigma chosen so that both bounds are within 1 std dev of guess; sigma stored in priors[p][2]
-#             priors[p][2] = max(abs(np.log(priors[p][1]/priors[p][2])), abs(np.log(priors[p][1]/priors[p][3])))
-#             priors[p][1] = np.log(priors[p][1])  # mu
-# 
-#     theta_record=[]        
-#     # Perform Metropolis-Hastings algorithm
-#     for chain in range(chains): # eventually I will parallelize or vectorize this
-#         theta_old = starting_points[chain]
-#         theta_record.append([el[1] for el in theta_old])
-#         r2 = posterior(theta_old,priors)
-#         for iteration in range(n): # sequential loop, cannot be parallelized
-#             # propose a new theta
-#             theta = J(theta_old, priors)
-#             r1 = posterior(theta,priors)
-#             R = r1/r2
-#             if np.random.rand() < R:
-#                 theta_record.append([el[1] for el in theta])                
-#                 theta_old = theta
-#                 r2 = r1
-#     fig, ax = plt.subplots()
-#     ax.set(xscale="linear", yscale="log")
-#     plt.scatter(range(len(theta_record)),[el[0] for el in theta_record])
-#     print([el[0] for el in theta_record])
-#     plt.savefig('prior.pdf')
-#     return 0
-# 
-# =============================================================================
-
-#
 def get_prior_logp(kpa, kSOCSon, kd4, k_d4, R1, R2):
     # lognorm(std dev = 1, 0, guess at reaction rate value )
     #         
@@ -307,10 +139,10 @@ def get_likelihood_logp(kpa,kSOCSon,kd4,k_d4,R1,R2, gamma):
 # =============================================================================
 # Returns -log(probability of model)
 # =============================================================================
-def score_model(kpa,kSOCSon,kd4,k_d4,R1,R2, gamma, rho):
+def score_model(kpa,kSOCSon,kd4,k_d4,R1,R2, gamma, beta):
     lk = get_likelihood_logp(kpa,kSOCSon,kd4,k_d4,R1,R2, gamma)
     pr = get_prior_logp(kpa, kSOCSon, kd4, k_d4, R1, R2)
-    return lk+(pr/(rho)**2)
+    return (lk+pr)/beta
 
 # =============================================================================
 # J() is the jumping distribution
@@ -345,13 +177,13 @@ def J(theta):
 # Returns the acceptance rate as a percentage (eg. 24) and the theta with 
 # variances that were good enough    
 # =============================================================================
-def get_acceptance_rate(theta, rho):
+def get_acceptance_rate(theta, beta):
     old_theta=theta
-    old_score = score_model(*[old_theta[j][1] for j in range(len(old_theta))], rho)
+    old_score = score_model(*[old_theta[j][1] for j in range(len(old_theta))], beta)
     acceptance = 0    
     for i in range(50):
         proposal = J(old_theta)
-        new_score = score_model(*[proposal[j][1] for j in range(len(proposal))], rho)
+        new_score = score_model(*[proposal[j][1] for j in range(len(proposal))], beta)
         if np.random.rand() < np.exp(-(new_score-old_score)):
         # if rand() < probability of proposed/probability of old
             old_theta=proposal
@@ -359,14 +191,14 @@ def get_acceptance_rate(theta, rho):
             acceptance += 1
     return (acceptance*2, old_theta) # = acceptance/50*100
             
-def hyperparameter_fitting(n, theta_0, rho, max_attempts):
+def hyperparameter_fitting(n, theta_0, beta, max_attempts):
     n=int(0.1*n)
     if n<60: n=60
     theta = [el for el in theta_0]
     # Try to find variances that give an good acceptance rate
     for attempt in range(max_attempts):
         print("Attempt {}".format(attempt+1))
-        acceptance, new_theta = get_acceptance_rate(theta, rho)
+        acceptance, new_theta = get_acceptance_rate(theta, beta)
         
         if acceptance > 20 and acceptance < 50:
             print("Acceptance rate was {}%".format(acceptance))
@@ -421,13 +253,13 @@ def plot_parameter_distributions(df):
              hist_kws={'edgecolor':'black'},
              kde_kws={'linewidth': 4})
 # =============================================================================
-#         labels = ax.get_xticks()
+#         labels = ax.get_xticklabels()
 #         for lbl in range(len(labels)):
 #             if float(labels[lbl]) < 1E-3:
 #                 labels[lbl] = "{:.2e}".format(float(labels[lbl]))
 #             elif float(labels[lbl]) > 80:
 #                 labels[lbl] = "{:.0f}".format(float(labels[lbl]))
-#         ax.set_xticks(labels)    
+#         ax.set_xticklabels(labels)    
 # =============================================================================
     fig.tight_layout()    
     plt.savefig('parameter_distributions.pdf')
@@ -445,6 +277,23 @@ def get_parameter_distributions(model_record, burn_rate, down_sample):
     
     # Plot parameter distributions
     plot_parameter_distributions(sample_table)
+
+# =============================================================================
+# Sanity checks for MCMC()    
+# =============================================================================
+def mcmcChecks(n, theta_0, beta, burn_rate, down_sample, max_attempts, sampler):
+    if sampler not in ['bayesian','gibbs']:
+        raise ValueError('Did not recognize sampling method {}'.format(sampler)) 
+    if burn_rate>1:
+        raise ValueError('Burn rate should be in the range [0,1)')
+    if down_sample > n:
+        raise ValueError('Cannot thin more than there are samples')
+    if type(theta_0[0][0])!=str or type(theta_0[0][3])!=str:
+        raise ValueError('Order of inputs for theta_0 seems incorrect')
+    return True
+
+def Gibbs(theta_0):
+    return theta_0
 # =============================================================================
 # MCMC() takes an IFN model and fits it using Markov Chain Monte Carlo
 # Inputs:    
@@ -452,7 +301,8 @@ def get_parameter_distributions(model_record, burn_rate, down_sample):
 #    theta_0 (list) = the initial guesses and jumping distribution definitions for each parameter to fit
 #                       Order of theta_0 is [kpa, kSOCSon, kd4, k_d4, R1, R2, gamma]    
 #                   eg. [['kpa',1E-6,0.2,'log'],['R2',2E3,250,'linear',100],['gamma',4,2,'uniform',40]]
-#    rho (float) = the prior component of the model square is weighed by a factor 1/rho**2
+#    beta (float) = effectively temperature, this factor controls the 
+#                   tolerance of the probabilistic parameter search
 # Optional Inputs:    
 #    burn_rate (float) = initial fraction of samples to discard as 'burn in'
 #                       default is to discard the first 10%    
@@ -460,17 +310,22 @@ def get_parameter_distributions(model_record, burn_rate, down_sample):
 #                       default is 1 (no down sampling unless user specifies)    
 #    max_attempts (int) = the number of attempts to try and choose hyperparameters
 #                           default is 6
-#    pflag (Boolean) = whether to plot the random walks of each parameter being fit
-#    sflag (Boolean) = whether to automatically adjust prior sigmas to achieve good acceptance rate
+#    sampler (string) = default is 'bayesian' which uses typical bayesian sampling.
+#                       Another option is 'gibbs', which uses Gibbs samplilng    
+#    pflag (Boolean) = plot a typical random walk for each parameter after hyperparameter selection    
 # =============================================================================
-def MCMC(n, theta_0, rho, burn_rate=0.1, down_sample=1, max_attempts=6, pflag=True, sflag=True):
+def MCMC(n, theta_0, beta, burn_rate=0.1, down_sample=1, max_attempts=6, 
+         sampler='bayesian', pflag=True):
+    # Check input parameters
+    mcmcChecks(n, theta_0, beta, burn_rate, down_sample, max_attempts, sampler)
     # Selecting hyperparameters
-    print("Optimizing hyperparameters")
-    hyper_theta = hyperparameter_fitting(n, theta_0, rho, max_attempts)
-    
+    #print("Optimizing hyperparameters")
+    #hyper_theta = hyperparameter_fitting(n, theta_0, beta, max_attempts)
+    #check_priors(hyper_theta, 50)
+    hyper_theta=theta_0
     print("Sampling from posterior distribution")    
     model_record=[hyper_theta]
-    old_score = score_model(*[model_record[0][j][1] for j in range(len(model_record[0]))], rho)
+    old_score = score_model(*[model_record[0][j][1] for j in range(len(model_record[0]))], beta)
     old_index = 0
     acceptance = 0
     # Metropolis-Hastings algorithm
@@ -481,11 +336,13 @@ def MCMC(n, theta_0, rho, burn_rate=0.1, down_sample=1, max_attempts=6, pflag=Tr
             progress_bar += n/10
             print("{:.1f}% done".format(i/n*100))
             print("Acceptance rate = {:.1f}%".format(acceptance/progress_bar*100))
-        proposal = J(model_record[old_index])
-        new_score = score_model(*[proposal[j][1] for j in range(len(proposal))], rho)
-        if np.random.rand() < np.exp(-(new_score-old_score)):
+        if sampler=='bayesian':
+            proposal = J(model_record[old_index])
+        if sampler=='gibbs':
+            proposal = Gibbs(model_record[old_index])
+        new_score = score_model(*[proposal[j][1] for j in range(len(proposal))], beta)
+        if new_score < old_score or np.random.rand() < np.exp(-(new_score-old_score)):
         # if rand() < probability of proposed/probability of old
-
 # =============================================================================
 #                if debugging==True:
 #                     lk = get_likelihood_logp(*[proposal[j][1] for j in range(len(proposal))])
@@ -496,18 +353,35 @@ def MCMC(n, theta_0, rho, burn_rate=0.1, down_sample=1, max_attempts=6, pflag=Tr
             old_index += 1
             acceptance += 1
     
-    if pflag==True:
-        for i in range(4):
-            fig, ax = plt.subplots()
-            ax.set(xscale='linear',yscale='log')
-            ax.plot(range(len(model_record)),[el[i][1] for el in model_record]) 
-        for i in range(3):
-            fig, ax = plt.subplots()
-            ax.set(xscale='linear',yscale='linear')
-            ax.plot(range(len(model_record)),[el[i+4][1] for el in model_record]) 
-    
     # Perform data analysis
     get_parameter_distributions(model_record, burn_rate, down_sample)
+
+# =============================================================================
+# This function allows the user to get a sense of what the random walk
+# for each parameter looks like with the given values
+# Inputs:
+#   theta (list) = the input parameter vector
+#   n (int) = the number of steps to take in the sample random walk
+# =============================================================================
+def check_priors(theta, n):
+    walk=[theta]
+    for j in range(n):
+        walk.append(J(walk[j]))
+    rearrange = [[walk[i][j][1] for i in range(len(walk))] for j in range(len(theta))]
+    
+    k = len(theta) # total number subplots
+    n = 2 # number of chart columns
+    m = (k - 1) // n + 1 # number of chart rows
+    fig, axes = plt.subplots(m, n, figsize=(n * 5, m * 3))
+    if k % 2 == 1: # avoids extra empty subplot
+        axes[-1][n-1].set_axis_off()
+    for ind, w in enumerate(rearrange):
+        r, c = ind // n, ind % n
+        ax = axes[r, c] # get axis object
+        if theta[r*n+c][3]=='log':
+            ax.set(xscale='linear',yscale='log')
+        ax.plot(range(len(w)), w)
+
     
 def main():
     plt.close('all')
@@ -528,10 +402,16 @@ def main():
 #     print("time = {}".format(t1-t0))
 # =============================================================================
     print("Performing MCMC Analysis")
-    p0=[['kpa',1E-6,0.04,'log'],['kSOCSon',1E-6,0.2,'log'],['kd4',0.3,0.2,'log'],
+    p0=[['kpa',1E-6,0.1,'log'],['kSOCSon',1E-6,0.1,'log'],['kd4',0.3,0.2,'log'],
         ['k_d4',0.006,0.5,'log'],['R1',2E3,250,'linear',100],['R2',2E3,250,'linear',100],
-        ['gamma',4,1,'uniform',40]]
-    MCMC(500, p0, 0.01)
+        ['gamma',4,2,'uniform',40]]
+# =============================================================================
+#     p1=[['kpa', 1e-06, 0.0007, 'log'],['kSOCSon', 1.e-06, 0.002, 'log'],
+#     ['kd4', 0.3, 0.0001, 'log'],['k_d4', 0.006, 0.033, 'log'],
+#     ['R1', 5224, 682, 'linear', 100],['R2', 2000., 21, 'linear', 100],
+#     ['gamma', 2.78, 2, 'uniform', 40]]    
+# =============================================================================
+    MCMC(50000, p0, 75, burn_rate=0.2, down_sample=10)# n, theta, beta
 
 if __name__ == '__main__':
     main()
