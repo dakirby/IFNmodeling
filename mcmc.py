@@ -248,19 +248,18 @@ def plot_parameter_distributions(df):
     for i, (name, col) in enumerate(df.iteritems()):
         r, c = i // n, i % n
         ax = axes[r, c] # get axis object
-        sns.distplot(col, ax=ax, hist=True, kde=True, 
-             color = 'darkblue', 
-             hist_kws={'edgecolor':'black'},
-             kde_kws={'linewidth': 4})
-# =============================================================================
-#         labels = ax.get_xticklabels()
-#         for lbl in range(len(labels)):
-#             if float(labels[lbl]) < 1E-3:
-#                 labels[lbl] = "{:.2e}".format(float(labels[lbl]))
-#             elif float(labels[lbl]) > 80:
-#                 labels[lbl] = "{:.0f}".format(float(labels[lbl]))
-#         ax.set_xticklabels(labels)    
-# =============================================================================
+        # determine whether or not to plot on log axis
+        if abs(int(np.log10(np.max(col)))-int(np.log10(np.min(col)))) >= 4:
+            sns.distplot(col, ax=ax, hist=True, kde=True, 
+                 color = 'darkblue', 
+                 hist_kws={'edgecolor':'black','log':True},
+                 kde_kws={'linewidth': 4})
+        else:
+            sns.distplot(col, ax=ax, hist=True, kde=True, 
+                 color = 'darkblue', 
+                 hist_kws={'edgecolor':'black'},
+                 kde_kws={'linewidth': 4})
+            
     fig.tight_layout()    
     plt.savefig('parameter_distributions.pdf')
 
@@ -277,13 +276,58 @@ def get_parameter_distributions(model_record, burn_rate, down_sample):
     
     # Plot parameter distributions
     plot_parameter_distributions(sample_table)
+    
+    # Return the downsampled data frame
+    return sample_table
+
+# =============================================================================
+# plot_parameter_aurocorrelations() plots the aurocorrelation of each parameter
+# from a given chain, to check that downsampling was sufficient to create
+# independent samples from the posterior
+# Inputs:
+#   df (DataFrame) = the downsampled draws from posterior, typically the object 
+#       returned from get_parameter_distributions()
+# Outputs:
+#   chain_autocorrelation.pdf (file) = the plots for the input chain, saved as a pdf
+# Returns: nothing        
+# =============================================================================
+def plot_parameter_aurocorrelations(df):
+    k = len(df.columns) # total number subplots
+    n = 2 # number of chart columns
+    m = (k - 1) // n + 1 # number of chart rows
+    fig, axes = plt.subplots(m, n, figsize=(n * 5, m * 3))
+    if k % 2 == 1: # avoids extra empty subplot
+        axes[-1][n-1].set_axis_off()
+    for i, (name, col) in enumerate(df.iteritems()):
+        r, c = i // n, i % n
+        ax = axes[r, c] # get axis object
+        ax.set_title(name)
+        ax.acorr(col)
+        ax.set_xlabel('Lag')
+        ax.set_ylabel('Autocorrelation')
+    fig.tight_layout()    
+    plt.savefig('chain_autocorrelation.pdf')
+   
+# =============================================================================
+# get_summary_statistics() computes the summary statistics for each parameter 
+# from a chain, and writes this summary to a csv file titled parameter_summary.csv
+# Inputs:
+#   df (DataFrame) = the downsampled draws from posterior, typically the object 
+#       returned from get_parameter_distributions()
+# Returns: nothing
+# =============================================================================
+def get_summary_statistics(df):
+    headers = ['name', 'mean', 'std dev', '5%', '95%']
+    summary=[]
+    for (name, col) in df.iteritems():
+        summary.append([name, np.mean(col), np.std(col), np.percentile(col, 5), np.percentile(col, 95)])
+    summary_df = pd.DataFrame.from_records(summary,columns=headers)
+    summary_df.to_csv("parameter_summary.csv")
 
 # =============================================================================
 # Sanity checks for MCMC()    
 # =============================================================================
-def mcmcChecks(n, theta_0, beta, burn_rate, down_sample, max_attempts, sampler):
-    if sampler not in ['bayesian','gibbs']:
-        raise ValueError('Did not recognize sampling method {}'.format(sampler)) 
+def mcmcChecks(n, theta_0, beta, burn_rate, down_sample, max_attempts):
     if burn_rate>1:
         raise ValueError('Burn rate should be in the range [0,1)')
     if down_sample > n:
@@ -292,8 +336,6 @@ def mcmcChecks(n, theta_0, beta, burn_rate, down_sample, max_attempts, sampler):
         raise ValueError('Order of inputs for theta_0 seems incorrect')
     return True
 
-def Gibbs(theta_0):
-    return theta_0
 # =============================================================================
 # MCMC() takes an IFN model and fits it using Markov Chain Monte Carlo
 # Inputs:    
@@ -309,15 +351,12 @@ def Gibbs(theta_0):
 #    down_sample (int) = step size for down sampling to reduce autocorrelation
 #                       default is 1 (no down sampling unless user specifies)    
 #    max_attempts (int) = the number of attempts to try and choose hyperparameters
-#                           default is 6
-#    sampler (string) = default is 'bayesian' which uses typical bayesian sampling.
-#                       Another option is 'gibbs', which uses Gibbs samplilng    
+#                           default is 6    
 #    pflag (Boolean) = plot a typical random walk for each parameter after hyperparameter selection    
 # =============================================================================
-def MCMC(n, theta_0, beta, burn_rate=0.1, down_sample=1, max_attempts=6, 
-         sampler='bayesian', pflag=True):
+def MCMC(n, theta_0, beta, burn_rate=0.1, down_sample=1, max_attempts=6, pflag=True):
     # Check input parameters
-    mcmcChecks(n, theta_0, beta, burn_rate, down_sample, max_attempts, sampler)
+    mcmcChecks(n, theta_0, beta, burn_rate, down_sample, max_attempts)
     # Selecting hyperparameters
     #print("Optimizing hyperparameters")
     #hyper_theta = hyperparameter_fitting(n, theta_0, beta, max_attempts)
@@ -336,28 +375,22 @@ def MCMC(n, theta_0, beta, burn_rate=0.1, down_sample=1, max_attempts=6,
             progress_bar += n/10
             print("{:.1f}% done".format(i/n*100))
             print("Acceptance rate = {:.1f}%".format(acceptance/progress_bar*100))
-        if sampler=='bayesian':
-            proposal = J(model_record[old_index])
-        if sampler=='gibbs':
-            proposal = Gibbs(model_record[old_index])
+        proposal = J(model_record[old_index])
         new_score = score_model(*[proposal[j][1] for j in range(len(proposal))], beta)
         if new_score < old_score or np.random.rand() < np.exp(-(new_score-old_score)):
-        # if rand() < probability of proposed/probability of old
-# =============================================================================
-#                if debugging==True:
-#                     lk = get_likelihood_logp(*[proposal[j][1] for j in range(len(proposal))])
-#                     pr = get_prior_logp(*[proposal[j][1] for j in range(len(proposal))][0:len(proposal)-1])
-# =============================================================================
             model_record.append(proposal)
             old_score = new_score
             old_index += 1
             acceptance += 1
     
     # Perform data analysis
-    get_parameter_distributions(model_record, burn_rate, down_sample)
-
+    samples = get_parameter_distributions(model_record, burn_rate, down_sample)
+    plot_parameter_aurocorrelations(samples)
+    get_summary_statistics(samples)
+    
+    
 # =============================================================================
-# This function allows the user to get a sense of what the random walk
+# check_priors() allows the user to get a sense of what the random walk
 # for each parameter looks like with the given values
 # Inputs:
 #   theta (list) = the input parameter vector
@@ -380,8 +413,8 @@ def check_priors(theta, n):
         ax = axes[r, c] # get axis object
         if theta[r*n+c][3]=='log':
             ax.set(xscale='linear',yscale='log')
-        ax.plot(range(len(w)), w)
-
+        ax.plot(range(len(w)), w)    
+    
     
 def main():
     plt.close('all')
@@ -411,7 +444,9 @@ def main():
 #     ['R1', 5224, 682, 'linear', 100],['R2', 2000., 21, 'linear', 100],
 #     ['gamma', 2.78, 2, 'uniform', 40]]    
 # =============================================================================
-    MCMC(50000, p0, 75, burn_rate=0.2, down_sample=10)# n, theta, beta
+    MCMC(500, p0, 75, burn_rate=0.2, down_sample=10)# n, theta, beta
+    
+    #testChain = pd.read_csv('test_posterior_samples.csv',index_col=0)
 
 if __name__ == '__main__':
     main()
