@@ -31,6 +31,8 @@ sns.set_style("darkgrid")
 import pandas as pd
 
 from pysb.export import export
+from multiprocessing import Process, Queue, JoinableQueue, cpu_count
+import itertools
 import time
 
 debugging = True # global value for this script
@@ -238,47 +240,99 @@ def hyperparameter_fitting(n, theta_0, beta, max_attempts):
                        Please initialise with different variances\n\
                        or check uniform prior ranges, and try again.")
 
-def plot_parameter_distributions(df):
-    k = len(df.columns) # total number subplots
-    n = 2 # number of chart columns
-    m = (k - 1) // n + 1 # number of chart rows
-    fig, axes = plt.subplots(m, n, figsize=(n * 5, m * 3))
-    if k % 2 == 1: # avoids extra empty subplot
-        axes[-1][n-1].set_axis_off()
-    for i, (name, col) in enumerate(df.iteritems()):
-        r, c = i // n, i % n
-        ax = axes[r, c] # get axis object
-        # determine whether or not to plot on log axis
-        if abs(int(np.log10(np.max(col)))-int(np.log10(np.min(col)))) >= 4:
-            sns.distplot(col, ax=ax, hist=True, kde=True, 
-                 color = 'darkblue', 
-                 hist_kws={'edgecolor':'black','log':True},
-                 kde_kws={'linewidth': 4})
-        else:
-            sns.distplot(col, ax=ax, hist=True, kde=True, 
-                 color = 'darkblue', 
-                 hist_kws={'edgecolor':'black'},
-                 kde_kws={'linewidth': 4})
-            
-    fig.tight_layout()    
-    plt.savefig('parameter_distributions.pdf')
+def plot_parameter_distributions(df, title='', save=True):
+    if type(df)==list:
+        k = len(df[0].columns) # total number subplots
+        n = 2 # number of chart columns
+        m = (k - 1) // n + 1 # number of chart rows
+        fig, axes = plt.subplots(m, n, figsize=(n * 5, m * 3))
+        if k % 2 == 1: # avoids extra empty subplot
+            axes[-1][n-1].set_axis_off()
+        palette = itertools.cycle(sns.color_palette("GnBu_d", 10)) # make chain colours nice
+        for j in range(len(df)):
+            for i, (name, col) in enumerate(df[j].iteritems()):
+                color_code = next(palette)
+                r, c = i // n, i % n
+                ax = axes[r, c] # get axis object
+                # determine whether or not to plot on log axis
+                if abs(int(np.log10(np.max(col)))-int(np.log10(np.min(col)))) >= 4:
+                    sns.distplot(col, ax=ax, hist=False, kde=True, 
+                         color = color_code, 
+                         hist_kws={'edgecolor':'black','log':True},
+                         kde_kws={'linewidth': 4})
+                else:
+                    sns.distplot(col, ax=ax, hist=False, kde=True, 
+                         color = color_code, 
+                         hist_kws={'edgecolor':'black'},
+                         kde_kws={'linewidth': 4})
+        fig.tight_layout() 
+        if save==True:
+            if title=='':
+                plt.savefig('parameter_distributions.pdf')
+            else:
+                plt.savefig(title+'.pdf')
+        return [fig, axes]
 
-def get_parameter_distributions(model_record, burn_rate, down_sample):
-    # Build dataframe
-    #   Account for burn in and down sampling
-    sample_record = model_record[int(len(model_record)*burn_rate):-1:down_sample]
-    print("Effectively sampled {} times from posterior distribution".format(len(sample_record)))
-    
-    sample_table = pd.DataFrame([[el[1] for el in r] for r in sample_record],
+    else:
+        k = len(df.columns) # total number subplots
+        n = 2 # number of chart columns
+        m = (k - 1) // n + 1 # number of chart rows
+        fig, axes = plt.subplots(m, n, figsize=(n * 5, m * 3))
+        if k % 2 == 1: # avoids extra empty subplot
+            axes[-1][n-1].set_axis_off()
+        for i, (name, col) in enumerate(df.iteritems()):
+            r, c = i // n, i % n
+            ax = axes[r, c] # get axis object
+            # determine whether or not to plot on log axis
+            if abs(int(np.log10(np.max(col)))-int(np.log10(np.min(col)))) >= 4:
+                sns.distplot(col, ax=ax, hist=True, kde=True, 
+                     color = 'darkblue', 
+                     hist_kws={'edgecolor':'black','log':True},
+                     kde_kws={'linewidth': 4})
+            else:
+                sns.distplot(col, ax=ax, hist=True, kde=True, 
+                     color = 'darkblue', 
+                     hist_kws={'edgecolor':'black'},
+                     kde_kws={'linewidth': 4})
+        fig.tight_layout() 
+        if save==True:
+            if title=='':
+                plt.savefig('parameter_distributions.pdf')
+            else:
+                plt.savefig(title+'.pdf')
+        return (fig, axes)
+
+def get_parameter_distributions(pooled_results, burn_rate, down_sample):
+    sns.palplot(sns.color_palette("GnBu_d"))
+    chain_record=[]
+    first=True
+    for chain in range(len(pooled_results)): #iterate over the chains
+        model_record = pooled_results[chain] #current chain of interest
+        # Build dataframe
+        #   Account for burn in and down sampling
+        sample_record = model_record[int(len(model_record)*burn_rate):-1:down_sample]
+        if first==True:
+            combined_samples = pd.DataFrame([[el[1] for el in r] for r in sample_record],
                                 columns=[l[0] for l in sample_record[0]])
-    # Save dataframe
-    sample_table.to_csv("posterior_samples.csv")
-    
-    # Plot parameter distributions
-    plot_parameter_distributions(sample_table)
-    
+            first=False
+        else: # otherwise add to existing DataFrame
+            combined_samples.append(pd.DataFrame([[el[1] for el in r] for r in sample_record],
+                                columns=[l[0] for l in sample_record[0]]))
+        if len(pooled_results)==1: #If there was only one chain, pass DataFrame to plot function
+            # Plot parameter distributions
+            plot_parameter_distributions(pd.DataFrame([[el[1] for el in r] for r in sample_record],
+                                columns=[l[0] for l in sample_record[0]]))
+        else: # add DataFrame to list of prepared chains to plot later
+            chain_record.append(pd.DataFrame([[el[1] for el in r] for r in sample_record],
+                                columns=[l[0] for l in sample_record[0]]))
+    # Plot multiple chains on same axes if there were multiple chains
+    if len(pooled_results)>1:
+            plot_parameter_distributions(chain_record)
+    # Save combined chains dataframe
+    combined_samples.to_csv("posterior_samples.csv")    
+    print("Effectively sampled {} times from posterior distribution".format(len(combined_samples))) 
     # Return the downsampled data frame
-    return sample_table
+    return combined_samples
 
 # =============================================================================
 # plot_parameter_aurocorrelations() plots the aurocorrelation of each parameter
@@ -327,13 +381,15 @@ def get_summary_statistics(df):
 # =============================================================================
 # Sanity checks for MCMC()    
 # =============================================================================
-def mcmcChecks(n, theta_0, beta, burn_rate, down_sample, max_attempts):
+def mcmcChecks(n, theta_0, beta, chains, burn_rate, down_sample, max_attempts):
     if burn_rate>1:
         raise ValueError('Burn rate should be in the range [0,1)')
     if down_sample > n:
         raise ValueError('Cannot thin more than there are samples')
     if type(theta_0[0][0])!=str or type(theta_0[0][3])!=str:
         raise ValueError('Order of inputs for theta_0 seems incorrect')
+    if type(chains) != int:
+        raise ValueError('Type for input "chains" must be int')
     return True
 
 # =============================================================================
@@ -345,6 +401,7 @@ def mcmcChecks(n, theta_0, beta, burn_rate, down_sample, max_attempts):
 #                   eg. [['kpa',1E-6,0.2,'log'],['R2',2E3,250,'linear',100],['gamma',4,2,'uniform',40]]
 #    beta (float) = effectively temperature, this factor controls the 
 #                   tolerance of the probabilistic parameter search
+#    chains (int) = number of unique Markov chains to simulate    
 # Optional Inputs:    
 #    burn_rate (float) = initial fraction of samples to discard as 'burn in'
 #                       default is to discard the first 10%    
@@ -354,37 +411,68 @@ def mcmcChecks(n, theta_0, beta, burn_rate, down_sample, max_attempts):
 #                           default is 6    
 #    pflag (Boolean) = plot a typical random walk for each parameter after hyperparameter selection    
 # =============================================================================
-def MCMC(n, theta_0, beta, burn_rate=0.1, down_sample=1, max_attempts=6, pflag=True):
+def mh(ID, jobs, result):
+    while True:
+        mGet = jobs.get()
+        if mGet is None:
+            break
+        hyper_theta, beta, n = mGet
+        model_record=[hyper_theta]
+        old_score = score_model(*[model_record[0][j][1] for j in range(len(model_record[0]))], beta)
+        old_index = 0
+        acceptance = 0
+        # Metropolis-Hastings algorithm
+        progress_bar = n/10
+        for i in range(n):
+            # Monitor acceptance rate            
+            if i>progress_bar:
+                progress_bar += n/10
+                print("{:.1f}% done".format(i/n*100))
+                print("Chain {} Acceptance rate = {:.1f}%".format(ID, acceptance/progress_bar*100))
+            proposal = J(model_record[old_index])
+            new_score = score_model(*[proposal[j][1] for j in range(len(proposal))], beta)
+            if new_score < old_score or np.random.rand() < np.exp(-(new_score-old_score)):
+                model_record.append(proposal)
+                old_score = new_score
+                old_index += 1
+                acceptance += 1
+        result.put(model_record)
+
+def MCMC(n, theta_0, beta, chains, burn_rate=0.1, down_sample=1, max_attempts=6, pflag=True):
     # Check input parameters
-    mcmcChecks(n, theta_0, beta, burn_rate, down_sample, max_attempts)
+    mcmcChecks(n, theta_0, beta, chains, burn_rate, down_sample, max_attempts)
     # Selecting hyperparameters
     #print("Optimizing hyperparameters")
     #hyper_theta = hyperparameter_fitting(n, theta_0, beta, max_attempts)
     #check_priors(hyper_theta, 50)
     hyper_theta=theta_0
     print("Sampling from posterior distribution")    
-    model_record=[hyper_theta]
-    old_score = score_model(*[model_record[0][j][1] for j in range(len(model_record[0]))], beta)
-    old_index = 0
-    acceptance = 0
-    # Metropolis-Hastings algorithm
-    progress_bar = n/10
-    for i in range(n):
-        # Monitor acceptance rate            
-        if i>progress_bar:
-            progress_bar += n/10
-            print("{:.1f}% done".format(i/n*100))
-            print("Acceptance rate = {:.1f}%".format(acceptance/progress_bar*100))
-        proposal = J(model_record[old_index])
-        new_score = score_model(*[proposal[j][1] for j in range(len(proposal))], beta)
-        if new_score < old_score or np.random.rand() < np.exp(-(new_score-old_score)):
-            model_record.append(proposal)
-            old_score = new_score
-            old_index += 1
-            acceptance += 1
-    
+    if chains >= cpu_count():
+        NUMBER_OF_PROCESSES = cpu_count()-1
+    else:
+        NUMBER_OF_PROCESSES = chains
+    jobs = Queue()
+    result = JoinableQueue()
+    for m in range(chains):
+        jobs.put([hyper_theta,beta,n])
+    [Process(target=mh, args=(i, jobs, result)).start()
+            for i in range(NUMBER_OF_PROCESSES)]
+    # pull in the results from each thread
+    pool_results=[]
+    for m in range(chains):
+        r = result.get()
+        pool_results.append(r)
+        result.task_done()
+    # tell the workers there are no more jobs
+    for w in range(NUMBER_OF_PROCESSES):
+        jobs.put(None)
+    # close all extra threads
+    result.join()
+    jobs.close()
+    result.close()
+
     # Perform data analysis
-    samples = get_parameter_distributions(model_record, burn_rate, down_sample)
+    samples = get_parameter_distributions(pool_results, burn_rate, down_sample)
     plot_parameter_aurocorrelations(samples)
     get_summary_statistics(samples)
     
@@ -444,7 +532,7 @@ def main():
 #     ['R1', 5224, 682, 'linear', 100],['R2', 2000., 21, 'linear', 100],
 #     ['gamma', 2.78, 2, 'uniform', 40]]    
 # =============================================================================
-    MCMC(500, p0, 75, burn_rate=0.2, down_sample=10)# n, theta, beta
+    MCMC(100, p0, 75, 2, burn_rate=0.1, down_sample=1)# n, theta, beta
     
     #testChain = pd.read_csv('test_posterior_samples.csv',index_col=0)
 
