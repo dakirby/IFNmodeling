@@ -302,6 +302,26 @@ def plot_parameter_distributions(df, title='parameter_distributions.pdf', save=T
             else:
                 plt.savefig(title+'.pdf')
         return (fig, axes)
+# =============================================================================
+# Computes the Gelman-Rubin statistic for each parameter to test for convergence
+# Inputs: chain_record (list) = list of Markov chains
+# Outputs: Gelman-Rubin_Statistics.csv file summarizing the test results
+# Returns: stats (list) = summary of test results, [['variable name', Rhat], ...]        
+# =============================================================================
+def gelman_rubin_convergence(chain_record):
+    numChains = len(chain_record)
+    column_names = list(chain_record[0].columns.values)
+    stats = []
+    for variable in column_names:
+        chain_mean = [chain_record[i][variable].mean() for i in range(numChains)]
+        W = np.mean([(chain_record[i][variable].std())**2 for i in range(numChains)])
+        B = chain_record[0].shape[0]*np.std(chain_mean, ddof=1)**2
+        Var = (1-1/chain_record[0].shape[0])*W+B/chain_record[0].shape[0]
+        Rhat = np.sqrt(Var/W)
+        stats.append([variable, Rhat])
+    df = pd.DataFrame.from_records(stats, columns=['variable','GR Statistic'])
+    df.to_csv('Gelman-Rubin_Statistics.csv')
+    return stats
 
 # =============================================================================
 # get_parameter_distributions() takes a chain or list of chains and performs
@@ -343,6 +363,8 @@ def get_parameter_distributions(pooled_results, burn_rate, down_sample):
     # Plot multiple chains on same axes if there were multiple chains
     if len(pooled_results)>1:
             plot_parameter_distributions(chain_record)
+            gelman_rubin_convergence(chain_record)
+            
     # Save combined chains dataframe
     combined_samples.to_csv("posterior_samples.csv")    
     print("Effectively sampled {} times from posterior distribution".format(len(combined_samples))) 
@@ -655,8 +677,8 @@ def main():
 #     ['R1', 5224, 682, 'linear', 100],['R2', 2000., 21, 'linear', 100],
 #     ['gamma', 2.78, 2, 'uniform', 40]]    
 # =============================================================================
-    #MCMC(100, p0, 75, 2, burn_rate=0.1, down_sample=1)# n, theta, beta
-    sims = bayesian_timecourse('posterior_samples.csv', 100E-12, 3600, 50, 95, ['TotalpSTAT'])
+    MCMC(100, p0, 25, 3, burn_rate=0.1, down_sample=1)# n, theta, beta
+    #sims = bayesian_timecourse('posterior_samples.csv', 100E-12, 3600, 50, 95, ['TotalpSTAT'])
     #testChain = pd.read_csv('test_posterior_samples.csv',index_col=0)
 
 if __name__ == '__main__':
