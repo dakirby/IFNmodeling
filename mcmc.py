@@ -37,6 +37,9 @@ import time
 
 debugging = True # global value for this script
 
+# =============================================================================
+# Designed specifically for IFN alpha and IFN beta model priors
+# =============================================================================
 def get_prior_logp(kpa, kSOCSon, kd4, k_d4, R1, R2):
     # lognorm(std dev = 1, 0, guess at reaction rate value )
     #         
@@ -65,6 +68,9 @@ def get_prior_logp(kpa, kSOCSon, kd4, k_d4, R1, R2):
         logp += ((np.log(theta[i])-P_list[i])/S_list[i])**2
     return logp
 
+# =============================================================================
+# Designed specifically for IFN alpha and IFN beta model least-squares likelihood
+# =============================================================================
 def get_likelihood_logp(kpa,kSOCSon,kd4,k_d4,R1,R2, gamma):
     q1 = 3.321155762205247e-14/1
     q2 = 4.98173364330787e-13/0.015
@@ -175,9 +181,9 @@ def J(theta):
     return new_theta
 
 # =============================================================================
-# Performs 50 samples to estimate the acceptance rate with current hyperparameters
-# Returns the acceptance rate as a percentage (eg. 24) and the theta with 
-# variances that were good enough    
+# get_acceptance_rate() performs 50 samples to estimate the acceptance rate with 
+# current hyperparameters. Returns the acceptance rate as a percentage (eg. 24)  
+# and the theta with variances that were good enough    
 # =============================================================================
 def get_acceptance_rate(theta, beta):
     old_theta=theta
@@ -192,10 +198,15 @@ def get_acceptance_rate(theta, beta):
             old_score = new_score
             acceptance += 1
     return (acceptance*2, old_theta) # = acceptance/50*100
-            
-def hyperparameter_fitting(n, theta_0, beta, max_attempts):
-    n=int(0.1*n)
-    if n<60: n=60
+
+# =============================================================================
+# hyperparameter_fitting() attempts to alter the input parameter variances
+#   to achieve a good acceptance rate during simulation
+# Inputs:
+#   theta_0 and beta - see MCMC() documentation
+#   max_attempts (int) = the max number of attempts to get a good acceptance rate
+# =============================================================================
+def hyperparameter_fitting(theta_0, beta, max_attempts):
     theta = [el for el in theta_0]
     # Try to find variances that give an good acceptance rate
     for attempt in range(max_attempts):
@@ -222,25 +233,18 @@ def hyperparameter_fitting(n, theta_0, beta, max_attempts):
                         theta[parameter][2] = theta[parameter][2]*2
                         noise = np.random.normal(loc=0,scale=theta[parameter][2]*2) #also intentionally *2
                         if theta[parameter][2]+noise > 0: theta[parameter][2] += noise
-
-# =============================================================================
-#             if attempt==max_attempts-1:
-#                 for i in range(4):
-#                     fig, ax = plt.subplots()
-#                     ax.set(xscale='linear',yscale='log')
-#                     ax.plot(range(len(new_theta)),[el[i][1] for el in new_theta]) 
-#                 for i in range(3):
-#                     fig, ax = plt.subplots()
-#                     ax.set(xscale='linear',yscale='linear')
-#                     ax.plot(range(len(new_theta)),[el[i+4][1] for el in new_theta]) 
-# =============================================================================
-    if debugging==True:
-        return theta_0                
     raise RuntimeError("Failed to optimize hyperparameters.\n\
                        Please initialise with different variances\n\
                        or check uniform prior ranges, and try again.")
 
-def plot_parameter_distributions(df, title='', save=True):
+# =============================================================================
+# plot_parameter_distributions() creates a kde plot for each parameter
+# Inputs:
+#     df (DataFrame or list of DataFrames) = the chain or chains that were simulated
+#     title (string) = default is 'parameter_distributions.pdf'
+#     save (Boolean) = whether or not to save the plot (default is True)
+# =============================================================================
+def plot_parameter_distributions(df, title='parameter_distributions.pdf', save=True):
     if type(df)==list:
         k = len(df[0].columns) # total number subplots
         n = 2 # number of chart columns
@@ -267,10 +271,7 @@ def plot_parameter_distributions(df, title='', save=True):
                          kde_kws={'linewidth': 4})
         fig.tight_layout() 
         if save==True:
-            if title=='':
-                plt.savefig('parameter_distributions.pdf')
-            else:
-                plt.savefig(title+'.pdf')
+            plt.savefig(title+'.pdf')
         return [fig, axes]
 
     else:
@@ -302,6 +303,20 @@ def plot_parameter_distributions(df, title='', save=True):
                 plt.savefig(title+'.pdf')
         return (fig, axes)
 
+# =============================================================================
+# get_parameter_distributions() takes a chain or list of chains and performs
+# data formatting such as burn in, thinning, kde plots for each parameter,
+# and statistical summaries
+# Inputs:
+#     pooled_results (list) = list of Markov chains from MCMC
+#     burn_rate (float in [0,1)) = the fraction of each chain to discard as burn in
+#     down_sample (int) = the stride length for using draws from the chain
+# Outputs:
+#     kde plot of each parameter's posterior distribution, saved as parameter_distributions.pdf
+#     posterior_samples.csv = a file containing all the independent posterior samples
+# Returns:
+#     the combined chains' posterior samples
+# =============================================================================
 def get_parameter_distributions(pooled_results, burn_rate, down_sample):
     sns.palplot(sns.color_palette("GnBu_d"))
     chain_record=[]
@@ -443,7 +458,7 @@ def MCMC(n, theta_0, beta, chains, burn_rate=0.1, down_sample=1, max_attempts=6,
     mcmcChecks(n, theta_0, beta, chains, burn_rate, down_sample, max_attempts)
     # Selecting hyperparameters
     #print("Optimizing hyperparameters")
-    #hyper_theta = hyperparameter_fitting(n, theta_0, beta, max_attempts)
+    #hyper_theta = hyperparameter_fitting(theta_0, beta, max_attempts)
     #check_priors(hyper_theta, 50)
     hyper_theta=theta_0
     print("Sampling from posterior distribution")    
@@ -502,8 +517,116 @@ def check_priors(theta, n):
         if theta[r*n+c][3]=='log':
             ax.set(xscale='linear',yscale='log')
         ax.plot(range(len(w)), w)    
+
+# =============================================================================
+# bayesian_timecourse() runs a time course for each sample from posterior parameter 
+# distribution, giving prediction intervals for all time points
+# Inputs:
+#     samplefile (str) = the name of the posterior samples file output from 
+#                         Markov Chain Monte Carlo simulations
+#     dose (float) = dose for the time course (IFN concentration in M)
+#     end_time (int) = the end time for the simulation (in seconds)
+#     sample_size (int) = the number of posterior samples to use
+#     specList (list) = list of names of species to predict intervals for
+#     percent (int) = the percentile bounds for error in model prediction 
+#                       (bounds will be 'percent' and 100-'percent') 
+#     suppress (Boolean) = whether or not to plot the time course (default is False)       
+# Returns
+#   prediction_interval (list) = two items in list, corresponding to alpha then beta predictions
+#                                 Each item of the form [mean, upper error, lower error]        
+# =============================================================================
+def bayesian_timecourse(samplefile, dose, end_time, sample_size, percent, specList, suppress=False):
+    samples = pd.DataFrame.from_csv(samplefile)
+    (nSamples, nVars) = samples.shape
+    if sample_size > nSamples:
+        print("Not enough samples in file")
+        return 1
+    variable_names = list(samples.columns.values)
+
+    import ODE_system_alpha
+    alpha_mod = ODE_system_alpha.Model()
+    import ODE_system_beta
+    beta_mod = ODE_system_beta.Model()
     
+    alpha_results=[]
+    beta_results=[]
+    for r in range(sample_size):
+        parameter_vector = samples.iloc[r]
+        pList = [[variable_names[i], parameter_vector.loc[variable_names[i]]] for i in range(nVars) if variable_names[i] != 'gamma']
+        # Build the sample model
+        if 'kd4' in variable_names:
+            q1 = 3.321155762205247e-14/1
+            q2 = 4.98173364330787e-13/0.015
+            q4 = 3.623188E-4/parameter_vector.loc['kd4']
+            q3 = q2*q4/q1
+            kd3 = 3.623188E-4/q3                
+        
+            q_1 = 4.98E-14/0.03
+            q_2 = 8.30e-13/0.002
+            q_4 = 3.623188e-4/parameter_vector.loc['k_d4']
+            q_3 = q_2*q_4/q_1
+            k_d3 = 3.623188e-4/q_3
+            pList += [['kd3', kd3],['k_d3',k_d3]]
     
+   
+        alpha_parameters=[]
+        beta_parameters=[]
+        for p in alpha_mod.parameters:
+            isInList=False
+            for y in pList:
+                if p[0]==y[0]:
+                    alpha_parameters.append(y[1])
+                    isInList=True
+                    break
+            if isInList==False:
+                alpha_parameters.append(p.value)
+        for p in beta_mod.parameters:
+            isInList=False
+            for y in pList:
+                if p[0]==y[0]:
+                    beta_parameters.append(y[1])
+                    isInList=True
+                    break
+            if isInList==False:
+                beta_parameters.append(p.value)
+        I_index_Alpha = [el[0] for el in alpha_mod.parameters].index('I')
+        I_index_Beta = [el[0] for el in beta_mod.parameters].index('I')
+        
+        NA = 6.022E23
+        volEC = 1E-5   
+        t=np.linspace(0,end_time)
+        # Run simulation
+        alpha_parameters[I_index_Alpha] = NA*volEC*dose
+        (_, sim) = alpha_mod.simulate(t, param_values=alpha_parameters)
+        alpha_results.append(sim)
+        beta_parameters[I_index_Beta] = NA*volEC*dose
+        (_, sim) = beta_mod.simulate(t, param_values=beta_parameters)
+        beta_results.append(sim)
+    prediction_intervals=[]
+    for spec in specList:
+        tcs = [j[spec] for j in alpha_results]
+        mean_prediction = np.mean(tcs, axis=0)
+        upper_error_prediction = np.percentile(tcs, max(percent, 100-percent), axis=0)
+        lower_error_prediction = np.percentile(tcs, min(percent, 100-percent), axis=0)
+        prediction_intervals.append([mean_prediction,lower_error_prediction,upper_error_prediction])
+        
+        tcs = [j[spec] for j in beta_results]
+        mean_prediction = np.mean(tcs, axis=0)
+        upper_error_prediction = np.percentile(tcs, max(percent, 100-percent), axis=0)
+        lower_error_prediction = np.percentile(tcs, min(percent, 100-percent), axis=0)
+        prediction_intervals.append([mean_prediction,lower_error_prediction,upper_error_prediction])
+    
+    if suppress==False:
+        fig, ax = plt.subplots()
+        ax.plot(t, prediction_intervals[0][0], 'r')
+        ax.plot(t, prediction_intervals[0][1], 'r--')
+        ax.plot(t, prediction_intervals[0][2], 'r--')
+        ax.plot(t, prediction_intervals[1][0], 'g')
+        ax.plot(t, prediction_intervals[1][1], 'g--')
+        ax.plot(t, prediction_intervals[1][2], 'g--')
+        plt.show()
+    return prediction_intervals
+
 def main():
     plt.close('all')
     modelfiles = ['IFN_alpha_altSOCS_ppCompatible','IFN_beta_altSOCS_ppCompatible']
@@ -524,7 +647,7 @@ def main():
 # =============================================================================
     print("Performing MCMC Analysis")
     p0=[['kpa',1E-6,0.1,'log'],['kSOCSon',1E-6,0.1,'log'],['kd4',0.3,0.2,'log'],
-        ['k_d4',0.006,0.5,'log'],['R1',2E3,250,'linear',100],['R2',2E3,250,'linear',100],
+        ['k_d4',0.006,0.5,'log'],['R1',2E3,150,'linear',100],['R2',2E3,150,'linear',100],
         ['gamma',4,2,'uniform',40]]
 # =============================================================================
 #     p1=[['kpa', 1e-06, 0.0007, 'log'],['kSOCSon', 1.e-06, 0.002, 'log'],
@@ -532,8 +655,8 @@ def main():
 #     ['R1', 5224, 682, 'linear', 100],['R2', 2000., 21, 'linear', 100],
 #     ['gamma', 2.78, 2, 'uniform', 40]]    
 # =============================================================================
-    MCMC(100, p0, 75, 2, burn_rate=0.1, down_sample=1)# n, theta, beta
-    
+    #MCMC(100, p0, 75, 2, burn_rate=0.1, down_sample=1)# n, theta, beta
+    sims = bayesian_timecourse('posterior_samples.csv', 100E-12, 3600, 50, 95, ['TotalpSTAT'])
     #testChain = pd.read_csv('test_posterior_samples.csv',index_col=0)
 
 if __name__ == '__main__':
