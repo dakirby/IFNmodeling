@@ -9,8 +9,7 @@ Complete script to generate figures for IFN paper
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
-import seaborn as sns; 
-import mcmc
+from mcmc import bayesian_timecourse, bayesian_doseresponse
 import Experimental_Data as ED 
 # Global data import since this script will be used exclusively on IFN data    
 IFN_exps = [ED.data.loc[(ED.data.loc[:,'Dose (pM)']==10) & (ED.data.loc[:,'Interferon']=="Alpha"),['0','5','15','30','60']].values[0],
@@ -27,9 +26,12 @@ IFN_sigmas =[ED.data.loc[(ED.data.loc[:,'Dose (pM)']==10) & (ED.data.loc[:,'Inte
              ED.data.loc[(ED.data.loc[:,'Dose (pM)']==600) & (ED.data.loc[:,'Interferon']=="Alpha_std"),['0','5','15','30','60']].values[0],
              ED.data.loc[(ED.data.loc[:,'Dose (pM)']==600) & (ED.data.loc[:,'Interferon']=="Beta_std"),['0','5','15','30','60']].values[0]]
 
-IFN_sims = [*mcmc.bayesian_timecourse('posterior_samples.csv', 10E-12, 3600, 50, 95, ['TotalpSTAT'], suppress=True),
-            *mcmc.bayesian_timecourse('posterior_samples.csv', 90E-12, 3600, 50, 95, ['TotalpSTAT'], suppress=True),
-            *mcmc.bayesian_timecourse('posterior_samples.csv', 600E-12, 3600, 50, 95, ['TotalpSTAT'], suppress=True)]
+IFN_sims = [*bayesian_timecourse('posterior_samples.csv', 10E-12, 3600, 50, 95, ['TotalpSTAT'], suppress=True),
+            *bayesian_timecourse('posterior_samples.csv', 90E-12, 3600, 50, 95, ['TotalpSTAT'], suppress=True),
+            *bayesian_timecourse('posterior_samples.csv', 600E-12, 3600, 50, 95, ['TotalpSTAT'], suppress=True)]
+import seaborn as sns
+sns.set_style("ticks")
+plt.close('all')
 
 import os
 script_dir = os.path.dirname(__file__)
@@ -37,8 +39,6 @@ results_dir = os.path.join(script_dir, 'Paper_Figures/')
 if not os.path.isdir(results_dir):
     os.makedirs(results_dir)
 
-plt.close('all')
-sns.set_style("ticks")
 
 fig3=False
 fig4=False
@@ -117,7 +117,7 @@ if fig4==True:
     fig, (ax1,ax2) = plt.subplots(nrows=1, ncols=2, figsize=(15,8))
     matplotlib.rcParams.update({'font.size': 18})
     
-    dr_curves = mcmc.bayesian_doseresponse('posterior_samples.csv', np.logspace(-13,np.log10(600E-12)), 3600, 50, 95, ['TotalpSTAT'])    
+    dr_curves = bayesian_doseresponse('posterior_samples.csv', np.logspace(-13,np.log10(600E-12)), 3600, 50, 95, ['TotalpSTAT'])    
     ax1.set_title("Dose Response \nTheory vs Experiment", fontsize=20)
     ax1.set_ylabel('pSTAT1 Relative MFI',fontsize=18)
     ax1.set_xlabel('IFN Dose (M)',fontsize=18)
@@ -135,15 +135,15 @@ if fig4==True:
     ax1.plot(np.logspace(-13,np.log10(600E-12)), dr_curves[1][0][1], 'g--')
     ax1.plot(np.logspace(-13,np.log10(600E-12)), dr_curves[1][0][2], 'g--')     
 
-    dr60min = mcmc.bayesian_doseresponse('posterior_samples.csv', np.logspace(-14,-2), 3600, 50, 95, ['TotalpSTAT'])    
+    dr60min = bayesian_doseresponse('posterior_samples.csv', np.logspace(-14,-2), 3600, 50, 95, ['TotalpSTAT'])    
     ax2.set_title("Dose Response at 60 minutes", fontsize=20)
     ax2.set_ylabel('Total pSTAT Count',fontsize=18)
     ax2.set_xlabel('IFN Dose (M)',fontsize=18)
     ax2.set(xscale='log',yscale='linear')    
-    ax2.plot(np.logspace(-14,-2), dr60min[0][0][0], 'r')
+    ax2.plot(np.logspace(-14,-2), dr60min[0][0][0], 'r', linewidth=2)
     #ax2.plot(np.logspace(-14,-2), dr60min[0][0][1], 'r--')
     #ax2.plot(np.logspace(-14,-2), dr60min[0][0][2], 'r--')    
-    ax2.plot(np.logspace(-14,-2), dr60min[1][0][0], 'g')
+    ax2.plot(np.logspace(-14,-2), dr60min[1][0][0], 'g', linewidth=2)
     #ax2.plot(np.logspace(-14,-2), dr60min[1][0][1], 'g--')
     #ax2.plot(np.logspace(-14,-2), dr60min[1][0][2], 'g--')
     
@@ -151,20 +151,20 @@ if fig4==True:
 
 if fig5==True:
     fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(15,8))
-   
-
-    dr60min = mcmc.bayesian_doseresponse('posterior_samples.csv', np.logspace(-14,-2), 3600, 50, 95, ['TotalpSTAT'])    
-    ax2.set_title("Dose Response at 60 minutes", fontsize=20)
-    ax2.set_ylabel('Total pSTAT Count',fontsize=18)
-    ax2.set_xlabel('IFN Dose (M)',fontsize=18)
-    ax2.set(xscale='log',yscale='linear')    
-    ax2.plot(np.logspace(-14,-2), dr60min[0][0][0], 'r')
-    #ax2.plot(np.logspace(-14,-2), dr60min[0][0][1], 'r--')
-    #ax2.plot(np.logspace(-14,-2), dr60min[0][0][2], 'r--')    
-    ax2.plot(np.logspace(-14,-2), dr60min[1][0][0], 'g')
-    #ax2.plot(np.logspace(-14,-2), dr60min[1][0][1], 'g--')
-    #ax2.plot(np.logspace(-14,-2), dr60min[1][0][2], 'g--')
-    
-    plt.savefig(results_dir+'figure4.pdf')
+    dr5min = bayesian_doseresponse('posterior_samples.csv', np.logspace(-14,-2), 5*60, 50, 95, ['TotalpSTAT'])    
+    dr15min = bayesian_doseresponse('posterior_samples.csv', np.logspace(-14,-2), 15*60, 50, 95, ['TotalpSTAT'])        
+    dr30min = bayesian_doseresponse('posterior_samples.csv', np.logspace(-14,-2), 30*60, 50, 95, ['TotalpSTAT'])    
+    ax.set_title("Dose Response at Different Times", fontsize=20)
+    ax.set_ylabel('pSTAT Normalized by Total STAT',fontsize=18)
+    ax.set_xlabel('IFN Dose (M)',fontsize=18)
+    ax.set(xscale='log',yscale='linear')    
+    ax.plot(np.logspace(-14,-2), np.divide(dr5min[0][0][0],1E4), 'r', label=r'IFN$\alpha$ 5 min', linewidth=2)
+    ax.plot(np.logspace(-14,-2), np.divide(dr5min[1][0][0],1E4), 'g', label=r'IFN$\beta$ 5 min', linewidth=2)
+    ax.plot(np.logspace(-14,-2), np.divide(dr15min[0][0][0],1E4), 'r--', label=r'IFN$\alpha$ 15 min', linewidth=2)
+    ax.plot(np.logspace(-14,-2), np.divide(dr15min[1][0][0],1E4), 'g--', label=r'IFN$\beta$ 15 min', linewidth=2)
+    ax.plot(np.logspace(-14,-2), np.divide(dr30min[0][0][0],1E4), 'r:', label=r'IFN$\alpha$ 30 min', linewidth=2)
+    ax.plot(np.logspace(-14,-2), np.divide(dr30min[1][0][0],1E4), 'g:', label=r'IFN$\beta$ 30 min', linewidth=2)
+    plt.legend()
+    plt.savefig(results_dir+'figure5.pdf')
     
 

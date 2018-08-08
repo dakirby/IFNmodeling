@@ -194,11 +194,15 @@ def J(theta):
 def get_acceptance_rate(theta, beta):
     old_theta=theta
     old_score = score_model(*[old_theta[j][1] for j in range(len(old_theta))], beta)
+    asymmetric_indices = [el[0] for el in enumerate(old_theta) if el[1][3]=='log']
     acceptance = 0    
     for i in range(50):
         proposal = J(old_theta)
         new_score = score_model(*[proposal[j][1] for j in range(len(proposal))], beta)
-        if np.random.rand() < np.exp(-(new_score-old_score)):
+        asymmetry_factor = 1 # log normal proposal distributions are asymmetric
+        for j in asymmetric_indices:
+            asymmetry_factor *= proposal[j][1]/old_theta[j][1]
+        if new_score < old_score or np.random.rand() < np.exp(-(new_score-old_score))*asymmetry_factor:
         # if rand() < probability of proposed/probability of old
             old_theta=proposal
             old_score = new_score
@@ -206,7 +210,7 @@ def get_acceptance_rate(theta, beta):
     return (acceptance*2, old_theta) # = acceptance/50*100
 
 # =============================================================================
-# hyperparameter_fitting() attempts to alter the input parameter variances
+# hyperparameter_fitting() attempts to alter the input temperature
 #   to achieve a good acceptance rate during simulation
 # Inputs:
 #   theta_0 and beta - see MCMC() documentation
@@ -221,24 +225,15 @@ def hyperparameter_fitting(theta_0, beta, max_attempts):
         
         if acceptance > 20 and acceptance < 50:
             print("Acceptance rate was {}%".format(acceptance))
-            print("Initial parameter vector will be:")
-            print(new_theta)
-            return new_theta
+            print("New temperature will be: "+str(beta))
+            return (new_theta, beta)
         else:
             if acceptance < 20:
                 print("Acceptance rate was too low")
-                for parameter in range(len(theta)):
-                    if theta[parameter][3] != 'uniform':
-                        theta[parameter][2] = theta[parameter][2]/2
-                        noise = np.random.normal(loc=0,scale=theta[parameter][2]*2) #intentionally *2
-                        if theta[parameter][2]+noise > 0: theta[parameter][2] += noise
-            if acceptance > 50:
+                beta = 2*beta
+            if acceptance > 40:
                 print("Acceptance rate was too high")
-                for parameter in range(len(theta)):
-                    if theta[parameter][3] != 'uniform':
-                        theta[parameter][2] = theta[parameter][2]*2
-                        noise = np.random.normal(loc=0,scale=theta[parameter][2]*2) #also intentionally *2
-                        if theta[parameter][2]+noise > 0: theta[parameter][2] += noise
+                beta = 0.75*beta
     raise RuntimeError("Failed to optimize hyperparameters.\n\
                        Please initialise with different variances\n\
                        or check uniform prior ranges, and try again.")
@@ -269,10 +264,9 @@ def plot_parameter_distributions(df, title='parameter_distributions.pdf', save=T
                 if abs(int(np.log10(np.max(col)))-int(np.log10(np.min(col)))) >= 4:
                     ax.set(xscale='log', yscale='linear')
                 # Plot histogram with kde for chain
-                sns.distplot(col, ax=ax, hist=True, kde=True, 
+                sns.distplot(col, ax=ax, hist=False, kde=True, 
                      color = color_code, 
-                     hist_kws={'edgecolor':'black'},
-                     kde_kws={'linewidth': 4})
+                     kde_kws={'linewidth': 4, 'cut':0})
         fig.tight_layout() 
         if save==True:
             if title=='':
@@ -298,7 +292,7 @@ def plot_parameter_distributions(df, title='parameter_distributions.pdf', save=T
             sns.distplot(col, ax=ax, hist=True, kde=True, 
                  color = 'darkblue', 
                  hist_kws={'edgecolor':'black'},
-                 kde_kws={'linewidth': 4})
+                 kde_kws={'linewidth': 4, 'cut':0})
         fig.tight_layout() 
         if save==True:
             if title=='':
@@ -415,7 +409,7 @@ def get_summary_statistics(df):
     headers = ['name', 'mean', 'std dev', '5%', '95%']
     summary=[]
     for (name, col) in df.iteritems():
-        summary.append([name, np.mean(col), np.std(col), np.percentile(col, 5), np.percentile(col, 95)])
+        summary.append([name, np.mean(col), np.std(col), np.percentile(col, 2.5), np.percentile(col, 97.5)])
     summary_df = pd.DataFrame.from_records(summary,columns=headers)
     summary_df.to_csv(results_dir+"parameter_summary.csv")
 
@@ -459,6 +453,7 @@ def mh(ID, jobs, result):
             break
         hyper_theta, beta, n = mGet
         model_record=[hyper_theta]
+        asymmetric_indices = [el[0] for el in enumerate(hyper_theta) if el[1][3]=='log']
         old_score = score_model(*[model_record[0][j][1] for j in range(len(model_record[0]))], beta)
         old_index = 0
         acceptance = 0
@@ -472,22 +467,26 @@ def mh(ID, jobs, result):
                 print("Chain {} Acceptance rate = {:.1f}%".format(ID, acceptance/progress_bar*100))
             proposal = J(model_record[old_index])
             new_score = score_model(*[proposal[j][1] for j in range(len(proposal))], beta)
-            if new_score < old_score or np.random.rand() < np.exp(-(new_score-old_score)):
+            asymmetry_factor = 1 # log normal proposal distributions are asymmetric
+            for j in asymmetric_indices:
+                asymmetry_factor *= proposal[j][1]/model_record[old_index][j][1]
+            if new_score < old_score or np.random.rand() < np.exp(-(new_score-old_score))*asymmetry_factor:
                 model_record.append(proposal)
                 old_score = new_score
                 old_index += 1
                 acceptance += 1
         result.put(model_record)
 
-def MCMC(n, theta_0, beta, chains, burn_rate=0.1, down_sample=1, max_attempts=6, pflag=True):
+def MCMC(n, theta_0, beta, chains, burn_rate=0.1, down_sample=1, max_attempts=6, pflag=False):
     # Check input parameters
     mcmcChecks(n, theta_0, beta, chains, burn_rate, down_sample, max_attempts)
     print("Performing MCMC Analysis")
     # Selecting hyperparameters
     #print("Optimizing hyperparameters")
-    #hyper_theta = hyperparameter_fitting(theta_0, beta, max_attempts)
-    #check_priors(hyper_theta, 50)
-    hyper_theta=theta_0
+    hyper_theta, beta = hyperparameter_fitting(theta_0, beta, max_attempts)
+    if pflag==True:
+        check_priors(hyper_theta, 50)
+    #hyper_theta=theta_0 # for debugging
     print("Sampling from posterior distribution")    
     if chains >= cpu_count():
         NUMBER_OF_PROCESSES = cpu_count()-1
@@ -716,7 +715,10 @@ def main():
 #     ['R1', 5224, 682, 'linear', 100],['R2', 2000., 21, 'linear', 100],
 #     ['gamma', 2.78, 2, 'uniform', 40]]    
 # =============================================================================
-    MCMC(1000, p0, 15, 3, burn_rate=0.1, down_sample=1)# n, theta, beta
+    #   (n, theta_0, beta, chains, burn_rate=0.1, down_sample=1, max_attempts=6, pflag=False)
+    MCMC(1000, p0, 11.5, 3, burn_rate=0.1, down_sample=5)# n, theta, beta
+
+# Testing functions
     #sims = bayesian_timecourse('posterior_samples.csv', 100E-12, 3600, 50, 95, ['TotalpSTAT'])
     #testChain = pd.read_csv('test_posterior_samples.csv',index_col=0)
     #bayesian_doseresponse('posterior_samples.csv', [10E-12,90E-12,600E-12], 3600, 50, 95, ['TotalpSTAT','T'])
