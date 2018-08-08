@@ -104,6 +104,7 @@ ax3.plot(np.linspace(0,3600),IFN_sims[5][0], 'k')
 ax3.plot(np.linspace(0,3600),IFN_sims[5][1], 'k:')
 ax3.plot(np.linspace(0,3600),IFN_sims[5][2], 'k:')
 
+plt.savefig('Bayes_mod_vs_exp.pdf')
 # Calculate mean coefficient of determination
 R2_sims = [[IFN_sims[0][0][0],IFN_sims[0][0][4],IFN_sims[0][0][12],IFN_sims[0][0][25],IFN_sims[0][0][49]],
            [IFN_sims[1][0][0],IFN_sims[1][0][4],IFN_sims[1][0][12],IFN_sims[1][0][25],IFN_sims[1][0][49]],

@@ -6,6 +6,12 @@ Created on Tue Jul 31 08:31:37 2018
 
 MCMC Implementation Using Metropolis Hastings algorithm
 """
+import os
+script_dir = os.path.dirname(__file__)
+results_dir = os.path.join(script_dir, 'MCMC_Results/')
+if not os.path.isdir(results_dir):
+    os.makedirs(results_dir)
+
 import Experimental_Data as ED
 # Global data import since this script will be used exclusively on IFN data    
 IFN_exps = [ED.data.loc[(ED.data.loc[:,'Dose (pM)']==10) & (ED.data.loc[:,'Interferon']=="Alpha"),['0','5','15','30','60']].values[0],
@@ -245,6 +251,7 @@ def hyperparameter_fitting(theta_0, beta, max_attempts):
 #     save (Boolean) = whether or not to save the plot (default is True)
 # =============================================================================
 def plot_parameter_distributions(df, title='parameter_distributions.pdf', save=True):
+    # different plot asthetics if multiple chains vs one chain
     if type(df)==list:
         k = len(df[0].columns) # total number subplots
         n = 2 # number of chart columns
@@ -260,18 +267,18 @@ def plot_parameter_distributions(df, title='parameter_distributions.pdf', save=T
                 ax = axes[r, c] # get axis object
                 # determine whether or not to plot on log axis
                 if abs(int(np.log10(np.max(col)))-int(np.log10(np.min(col)))) >= 4:
-                    sns.distplot(col, ax=ax, hist=False, kde=True, 
-                         color = color_code, 
-                         hist_kws={'edgecolor':'black','log':True},
-                         kde_kws={'linewidth': 4})
-                else:
-                    sns.distplot(col, ax=ax, hist=False, kde=True, 
-                         color = color_code, 
-                         hist_kws={'edgecolor':'black'},
-                         kde_kws={'linewidth': 4})
+                    ax.set(xscale='log', yscale='linear')
+                # Plot histogram with kde for chain
+                sns.distplot(col, ax=ax, hist=True, kde=True, 
+                     color = color_code, 
+                     hist_kws={'edgecolor':'black'},
+                     kde_kws={'linewidth': 4})
         fig.tight_layout() 
         if save==True:
-            plt.savefig(title+'.pdf')
+            if title=='':
+                plt.savefig(results_dir+'parameter_distributions.pdf')
+            else:
+                plt.savefig(results_dir+title+'.pdf')
         return [fig, axes]
 
     else:
@@ -286,21 +293,18 @@ def plot_parameter_distributions(df, title='parameter_distributions.pdf', save=T
             ax = axes[r, c] # get axis object
             # determine whether or not to plot on log axis
             if abs(int(np.log10(np.max(col)))-int(np.log10(np.min(col)))) >= 4:
-                sns.distplot(col, ax=ax, hist=True, kde=True, 
-                     color = 'darkblue', 
-                     hist_kws={'edgecolor':'black','log':True},
-                     kde_kws={'linewidth': 4})
-            else:
-                sns.distplot(col, ax=ax, hist=True, kde=True, 
-                     color = 'darkblue', 
-                     hist_kws={'edgecolor':'black'},
-                     kde_kws={'linewidth': 4})
+                ax.set(xscale='log', yscale='linear')
+            # Plot histogram with kde for chain
+            sns.distplot(col, ax=ax, hist=True, kde=True, 
+                 color = 'darkblue', 
+                 hist_kws={'edgecolor':'black'},
+                 kde_kws={'linewidth': 4})
         fig.tight_layout() 
         if save==True:
             if title=='':
-                plt.savefig('parameter_distributions.pdf')
+                plt.savefig(results_dir+'parameter_distributions.pdf')
             else:
-                plt.savefig(title+'.pdf')
+                plt.savefig(results_dir+title+'.pdf')
         return (fig, axes)
 # =============================================================================
 # Computes the Gelman-Rubin statistic for each parameter to test for convergence
@@ -320,7 +324,7 @@ def gelman_rubin_convergence(chain_record):
         Rhat = np.sqrt(Var/W)
         stats.append([variable, Rhat])
     df = pd.DataFrame.from_records(stats, columns=['variable','GR Statistic'])
-    df.to_csv('Gelman-Rubin_Statistics.csv')
+    df.to_csv(results_dir+'Gelman-Rubin_Statistics.csv')
     return stats
 
 # =============================================================================
@@ -366,7 +370,7 @@ def get_parameter_distributions(pooled_results, burn_rate, down_sample):
             gelman_rubin_convergence(chain_record)
             
     # Save combined chains dataframe
-    combined_samples.to_csv("posterior_samples.csv")    
+    combined_samples.to_csv(results_dir+"posterior_samples.csv")    
     print("Effectively sampled {} times from posterior distribution".format(len(combined_samples))) 
     # Return the downsampled data frame
     return combined_samples
@@ -397,7 +401,7 @@ def plot_parameter_aurocorrelations(df):
         ax.set_xlabel('Lag')
         ax.set_ylabel('Autocorrelation')
     fig.tight_layout()    
-    plt.savefig('chain_autocorrelation.pdf')
+    plt.savefig(results_dir+'chain_autocorrelation.pdf')
    
 # =============================================================================
 # get_summary_statistics() computes the summary statistics for each parameter 
@@ -413,7 +417,7 @@ def get_summary_statistics(df):
     for (name, col) in df.iteritems():
         summary.append([name, np.mean(col), np.std(col), np.percentile(col, 5), np.percentile(col, 95)])
     summary_df = pd.DataFrame.from_records(summary,columns=headers)
-    summary_df.to_csv("parameter_summary.csv")
+    summary_df.to_csv(results_dir+"parameter_summary.csv")
 
 # =============================================================================
 # Sanity checks for MCMC()    
@@ -478,6 +482,7 @@ def mh(ID, jobs, result):
 def MCMC(n, theta_0, beta, chains, burn_rate=0.1, down_sample=1, max_attempts=6, pflag=True):
     # Check input parameters
     mcmcChecks(n, theta_0, beta, chains, burn_rate, down_sample, max_attempts)
+    print("Performing MCMC Analysis")
     # Selecting hyperparameters
     #print("Optimizing hyperparameters")
     #hyper_theta = hyperparameter_fitting(theta_0, beta, max_attempts)
@@ -554,11 +559,12 @@ def check_priors(theta, n):
 #                       (bounds will be 'percent' and 100-'percent') 
 #     suppress (Boolean) = whether or not to plot the time course (default is False)       
 # Returns
-#   prediction_interval (list) = two items in list, corresponding to alpha then beta predictions
-#                                 Each item of the form [mean, upper error, lower error]        
+#   prediction_interval (list) = pairs of two lists, corresponding to alpha then beta predictions 
+#                                for each species, in order given in specList.
+#                                 Each item of the form [mean, lower error, upper error]        
 # =============================================================================
 def bayesian_timecourse(samplefile, dose, end_time, sample_size, percent, specList, suppress=False):
-    samples = pd.DataFrame.from_csv(samplefile)
+    samples = pd.read_csv(samplefile)
     (nSamples, nVars) = samples.shape
     if sample_size > nSamples:
         print("Not enough samples in file")
@@ -649,6 +655,40 @@ def bayesian_timecourse(samplefile, dose, end_time, sample_size, percent, specLi
         plt.show()
     return prediction_intervals
 
+# =============================================================================
+# bayesian_doseresponse() runs a dose response for each sample from posterior parameter 
+# distribution, giving prediction intervals for all dose points
+# Inputs:
+#     samplefile (str) = the name of the posterior samples file output from 
+#                         Markov Chain Monte Carlo simulations
+#     dose (list) = doses for the simulation (IFN concentration in M)
+#     end_time (int) = the end time for each time course (in seconds)
+#     sample_size (int) = the number of posterior samples to use
+#     specList (list) = list of names of species to predict intervals for
+#     percent (int) = the percentile bounds for error in model prediction 
+#                       (bounds will be 'percent' and 100-'percent') 
+#     suppress (Boolean) = whether or not to plot the results (default is False)       
+# Returns
+#   [alpha_responses, beta_responses] (list) = the dose response curves
+#                       alpha_responses = [[mean curve, low curve, high curve] for each species]        
+# =============================================================================
+def bayesian_doseresponse(samplefile, doses, end_time, sample_size, percent, specList, suppress=False):
+    alpha_responses = [[] for i in range(len(specList))]
+    beta_responses = [[] for i in range(len(specList))]
+    for dose in doses:
+        courses = bayesian_timecourse(samplefile, dose, end_time, sample_size, percent, specList, suppress=True)
+        # courses = [[IFNa spec 1], [IFNb spec 1], [IFNa spec 2], [IFNb spec 2]]
+        #           [IFNa spec 1] = [[mean], [low], [high]]
+        courses = [[l[-1] for l in s] for s in courses]
+        # courses = [[mean dose, low, high]_IFNaS1, [mean dose, low, high]_IFNbS1, ...
+        for i in range(len(specList)):
+            alpha_responses[i].append(courses[i*2])
+            beta_responses[i].append(courses[i*2+1])
+    alpha_responses = [[[el[0] for el in alpha_responses[s]],[el[1] for el in alpha_responses[s]],[el[2] for el in alpha_responses[s]]] for s in range(len(alpha_responses))]
+    beta_responses =  [[[el[0] for el in beta_responses[s]], [el[1] for el in beta_responses[s]], [el[2] for el in beta_responses[s]]] for s in range(len(alpha_responses))]
+    return [alpha_responses, beta_responses]
+        
+
 def main():
     plt.close('all')
     modelfiles = ['IFN_alpha_altSOCS_ppCompatible','IFN_beta_altSOCS_ppCompatible']
@@ -667,7 +707,6 @@ def main():
 #     t1 = time.time()
 #     print("time = {}".format(t1-t0))
 # =============================================================================
-    print("Performing MCMC Analysis")
     p0=[['kpa',1E-6,0.1,'log'],['kSOCSon',1E-6,0.1,'log'],['kd4',0.3,0.2,'log'],
         ['k_d4',0.006,0.5,'log'],['R1',2E3,150,'linear',100],['R2',2E3,150,'linear',100],
         ['gamma',4,2,'uniform',40]]
@@ -677,9 +716,12 @@ def main():
 #     ['R1', 5224, 682, 'linear', 100],['R2', 2000., 21, 'linear', 100],
 #     ['gamma', 2.78, 2, 'uniform', 40]]    
 # =============================================================================
-    MCMC(100, p0, 25, 3, burn_rate=0.1, down_sample=1)# n, theta, beta
+    MCMC(1000, p0, 15, 3, burn_rate=0.1, down_sample=1)# n, theta, beta
     #sims = bayesian_timecourse('posterior_samples.csv', 100E-12, 3600, 50, 95, ['TotalpSTAT'])
     #testChain = pd.read_csv('test_posterior_samples.csv',index_col=0)
-
+    #bayesian_doseresponse('posterior_samples.csv', [10E-12,90E-12,600E-12], 3600, 50, 95, ['TotalpSTAT','T'])
+    #df = pd.read_csv('posterior_samples.csv',index_col=0)
+    #plot_parameter_distributions(df, title='parameter_distributions.pdf', save=True)
+    
 if __name__ == '__main__':
     main()
