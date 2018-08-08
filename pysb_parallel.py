@@ -635,13 +635,15 @@ def p_DRparamScan(modelfile, param1, param2, testDose, t_list, spec, custom_para
 # lhc() builds an origin-centered latin hypercube for parameters to investigate
 # Inputs:
 #   parameters = these are the model parameters to fit
-#           a list of lists, each sublist of the form ['name', lower limit, upper limit]
+#           a list of lists, each sublist of the form ['name', guess, lower limit, upper limit, scale]
 #   n = number of points to generate 
 #   exp_params =  These are model parameters which are not being fitted but are needed
 #                 to replicate experimental data (ie. one item in this list per data point)    
 #               a list of lists, each sublist describing the experimental conditions 
 #               which were used to generate the corresponding ydata point.
-#               Each *sublist* is of the form [['name',value],['name',value],...]       
+#               Each *sublist* is of the form [['name',value],['name',value],...]    
+# Returns:
+#   a list of d-dimensional points (d = len(parameters)) in parameter space
 # =============================================================================
 def lhc(parameters, n, exp_params):
     d = len(parameters)
@@ -1108,7 +1110,7 @@ def fit_IFN_helper(id, jobs, result):
                 q_2 = 8.30e-13/0.002
                 q_4 = 3.62e-4/(k_d4List[i]*0.006)
                 q_3 = q_2*q_4/q_1
-                k_d3 = 2.4e-5/q_3
+                k_d3 = 3.623188e-4/q_3
                 betaK4List.append([['k_d4',k_d4List[i]*0.006],['k_d3',k_d3]])
         # run simulation
         #   load models
@@ -1298,9 +1300,8 @@ def fit_IFN_model(models, parameters, n, cpu=None):
             for i in range(1,len(key),2):
                 mod_p += '{:.3e}'.format(float(key[i]))+"    "
             outfile.write(mod_p+str(score)+"\n")
-    print(leaderboard[0][0]+": "+str(leaderboard[0][1]))
-    temp = re.split("', |\], \['", leaderboard[0][0][3:-2])
-    return [[temp[i],float(temp[i+1])] for i in range(0,len(temp),2)]
+    #print(leaderboard[0][0]+": "+str(leaderboard[0][1]))
+    return leaderboard
     
 
 
@@ -1359,7 +1360,7 @@ def fit_IFN_helper_Bayesian(id, jobs, result):
                 q_2 = 8.30e-13/0.002
                 q_4 = 3.62e-4/(k_d4List[i]*0.006)
                 q_3 = q_2*q_4/q_1
-                k_d3 = 2.4e-5/q_3
+                k_d3 = 3.623188e-5/q_3
                 betaK4List.append([['k_d4',k_d4List[i]*0.006],['k_d3',k_d3]])
         # run simulation
         #   load models
@@ -1422,7 +1423,7 @@ def fit_IFN_helper_Bayesian(id, jobs, result):
                     (_, sim) = alpha_mod.simulate([0,5*60,15*60,30*60,60*60], param_values=all_parameters_alpha)
                     sim = sim['TotalpSTAT']
                 elif typeIFN == 'Beta':
-                    all_parameters_alpha[I_index_Beta]=IFN                
+                    all_parameters_beta[I_index_Beta]=IFN                
                     (_, sim) = beta_mod.simulate([0,5*60,15*60,30*60,60*60], param_values=all_parameters_beta)
                     sim = sim['TotalpSTAT']
                 # Add to score

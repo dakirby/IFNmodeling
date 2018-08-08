@@ -182,7 +182,7 @@ def doseresponse(modelfile, dose, t, spec, axes_labels = ['',''], title = '',
         else:
             parameters = {dose[0]:d}
         simres = ScipyOdeSimulator(modelfile.model, tspan=t, 
-                                   param_values = parameters, compiler='theano').run()
+                                   param_values = parameters, compiler='python').run()
         simres = simres.all
         # Get the final time point for each dose
         if Norm==1:#No normalization
