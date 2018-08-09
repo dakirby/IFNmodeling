@@ -268,7 +268,7 @@ def get_acceptance_rate(theta, beta):
     old_score = score_model(*[old_theta[j][1] for j in range(len(old_theta))], beta)
     asymmetric_indices = [el[0] for el in enumerate(old_theta) if el[1][3]=='log']
     acceptance = 0    
-    for i in range(50):
+    for i in range(100):
         proposal = J(old_theta)
         new_score = score_model(*[proposal[j][1] for j in range(len(proposal))], beta)
         asymmetry_factor = 1 # log normal proposal distributions are asymmetric
@@ -411,6 +411,12 @@ def gelman_rubin_convergence(chain_record):
 def get_parameter_distributions(pooled_results, burn_rate, down_sample):
     sns.palplot(sns.color_palette("GnBu_d"))
     chain_record=[]
+    total_record=[]
+    for i in pooled_results:
+        total_record+=i
+    complete_samples = pd.DataFrame([[el[1] for el in r] for r in total_record],
+                                columns=[l[0] for l in total_record[0]])
+    complete_samples.to_csv(results_dir+"complete_samples.csv")
     first=True
     for chain in range(len(pooled_results)): #iterate over the chains
         model_record = pooled_results[chain] #current chain of interest
@@ -590,6 +596,8 @@ def MCMC(n, theta_0, beta, chains, burn_rate=0.1, down_sample=1, max_attempts=6,
     result.close()
 
     # Perform data analysis
+    total_samples = sum([len(i) for i in pool_results])
+    print("Average acceptance rate was {:.1f}%".format(total_samples*100/(n*chains)))
     samples = get_parameter_distributions(pool_results, burn_rate, down_sample)
     plot_parameter_aurocorrelations(samples)
     get_summary_statistics(samples)
@@ -777,7 +785,7 @@ def main():
 #     ['gamma', 2.78, 2, 'uniform', 40]]    
 # =============================================================================
     #   (n, theta_0, beta, chains, burn_rate=0.1, down_sample=1, max_attempts=6, pflag=False)
-    MCMC(1000, p0, 1, 3, burn_rate=0.1, down_sample=5)# n, theta, beta
+    MCMC(500, p0, 8, 3, burn_rate=0.1, down_sample=5)# n, theta, beta
 
 # Testing functions
     #sims = bayesian_timecourse('posterior_samples.csv', 100E-12, 3600, 50, 95, ['TotalpSTAT'])
