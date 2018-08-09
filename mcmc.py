@@ -64,11 +64,11 @@ def disperse_chains(theta_0, nChains):
                                   parameter[2],parameter[3]])
             elif parameter[0]=='kd4': # lognormal prior
                 new_theta.append([parameter[0],
-                                  np.random.lognormal(mean=np.log(0.3), sigma=2),
+                                  np.random.lognormal(mean=np.log(0.3), sigma=0.8),
                                   parameter[2],parameter[3]])
             elif parameter[0]=='k_d4': # lognormal prior
                 new_theta.append([parameter[0],
-                                  np.random.lognormal(mean=np.log(0.006), sigma=3),
+                                  np.random.lognormal(mean=np.log(0.006), sigma=0.7),
                                   parameter[2],parameter[3]])
             elif parameter[0]=='R1' or parameter[0]=='R2': # uniform on [100, 12 000]
                 new_theta.append([parameter[0],
@@ -94,10 +94,10 @@ def get_prior_logp(kpa, kSOCSon, kd4, k_d4, R1, R2):
     S_kSOCSon = 4
     
     P_kd4 = np.log(0.3)
-    S_kd4 = 2
+    S_kd4 = 0.8
     
     P_k_d4 = np.log(0.006)
-    S_k_d4 = 3
+    S_k_d4 = 0.7
     
     P_R1 = np.log(R1) # Easy way to choose non-informative prior
     S_R1 = 1
@@ -143,6 +143,7 @@ def check_proposals(theta, n):
         if theta[r*n+c][3]=='log':
             ax.set(xscale='linear',yscale='log')
         ax.plot(range(len(w)), w)    
+        ax.set_title(theta[r*n+c][0])
     plt.savefig(results_dir+'typical_priors_rw.pdf')
     
 # =============================================================================
@@ -338,7 +339,7 @@ def plot_parameter_distributions(df, title='parameter_distributions.pdf', save=T
                 # Plot histogram with kde for chain
                 sns.distplot(col, ax=ax, hist=False, kde=True, 
                      color = color_code, 
-                     kde_kws={'linewidth': 4, 'cut':0})
+                     kde_kws={'linewidth': 4})
         fig.tight_layout() 
         if save==True:
             if title=='':
@@ -364,7 +365,7 @@ def plot_parameter_distributions(df, title='parameter_distributions.pdf', save=T
             sns.distplot(col, ax=ax, hist=True, kde=True, 
                  color = 'darkblue', 
                  hist_kws={'edgecolor':'black'},
-                 kde_kws={'linewidth': 4, 'cut':0})
+                 kde_kws={'linewidth': 4})
         fig.tight_layout() 
         if save==True:
             if title=='':
@@ -607,12 +608,17 @@ def MCMC(n, theta_0, beta, chains, burn_rate=0.1, down_sample=1, max_attempts=6,
 #     percent (int) = the percentile bounds for error in model prediction 
 #                       (bounds will be 'percent' and 100-'percent') 
 #     suppress (Boolean) = whether or not to plot the time course (default is False)       
+#     dose_species (list) = any model observable can be used; second and third list itmes are 
+#                           multiplicative factors. If not needed then set to 1
+#                           default is ['I' for Interferon, NA = 6.022E23, volEC = 1E-5]
+#                           looks like ['I', 6.022E23, 1E-5]    
 # Returns
 #   prediction_interval (list) = pairs of two lists, corresponding to alpha then beta predictions 
 #                                for each species, in order given in specList.
 #                                 Each item of the form [mean, lower error, upper error]        
 # =============================================================================
-def bayesian_timecourse(samplefile, dose, end_time, sample_size, percent, specList, suppress=False):
+def bayesian_timecourse(samplefile, dose, end_time, sample_size, percent, specList, 
+                        suppress=False, dose_species=['I', 6.022E23, 1E-5]):
     samples = pd.read_csv(samplefile)
     (nSamples, nVars) = samples.shape
     if sample_size > nSamples:
@@ -666,11 +672,11 @@ def bayesian_timecourse(samplefile, dose, end_time, sample_size, percent, specLi
                     break
             if isInList==False:
                 beta_parameters.append(p.value)
-        I_index_Alpha = [el[0] for el in alpha_mod.parameters].index('I')
-        I_index_Beta = [el[0] for el in beta_mod.parameters].index('I')
+        I_index_Alpha = [el[0] for el in alpha_mod.parameters].index(dose_species[0])
+        I_index_Beta = [el[0] for el in beta_mod.parameters].index(dose_species[0])
         
-        NA = 6.022E23
-        volEC = 1E-5   
+        NA = dose_species[1] # 6.022E23
+        volEC = dose_species[2] # 1E-5   
         t=np.linspace(0,end_time)
         # Run simulation
         alpha_parameters[I_index_Alpha] = NA*volEC*dose
@@ -716,16 +722,21 @@ def bayesian_timecourse(samplefile, dose, end_time, sample_size, percent, specLi
 #     specList (list) = list of names of species to predict intervals for
 #     percent (int) = the percentile bounds for error in model prediction 
 #                       (bounds will be 'percent' and 100-'percent') 
-#     suppress (Boolean) = whether or not to plot the results (default is False)       
+#     suppress (Boolean) = whether or not to plot the results (default is False) 
+#     dr_species (list) = any model observable can be used; second and third list itmes are 
+#                           multiplicative factors. If not needed then set to 1
+#                           default is ['I' for Interferon, NA = 6.022E23, volEC = 1E-5]
+#                           looks like ['I', 6.022E23, 1E-5]          
 # Returns
 #   [alpha_responses, beta_responses] (list) = the dose response curves
 #                       alpha_responses = [[mean curve, low curve, high curve] for each species]        
 # =============================================================================
-def bayesian_doseresponse(samplefile, doses, end_time, sample_size, percent, specList, suppress=False):
+def bayesian_doseresponse(samplefile, doses, end_time, sample_size, percent, specList,
+                          suppress=False, dr_species=['I', 6.022E23, 1E-5]):
     alpha_responses = [[] for i in range(len(specList))]
     beta_responses = [[] for i in range(len(specList))]
     for dose in doses:
-        courses = bayesian_timecourse(samplefile, dose, end_time, sample_size, percent, specList, suppress=True)
+        courses = bayesian_timecourse(samplefile, dose, end_time, sample_size, percent, specList, suppress=True, dose_species=dr_species)
         # courses = [[IFNa spec 1], [IFNb spec 1], [IFNa spec 2], [IFNb spec 2]]
         #           [IFNa spec 1] = [[mean], [low], [high]]
         courses = [[l[-1] for l in s] for s in courses]

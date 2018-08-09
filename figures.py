@@ -42,7 +42,8 @@ if not os.path.isdir(results_dir):
 
 fig3=False
 fig4=False
-fig5=True
+fig5=False
+fig6=True
 gamma = 3.17
 
 
@@ -167,4 +168,162 @@ if fig5==True:
     plt.legend()
     plt.savefig(results_dir+'figure5.pdf')
     
+if fig6==True:
+    fig, ax = plt.subplots()
+    
+
+
+
+def rad_cell_point(samplefile, radius, end_time, sample_size, percent, specList, 
+                        suppress=False, dose_species=['I', 6.022E23, 1E-5]):
+    import pandas as pd
+    samples = pd.read_csv(samplefile)
+    (nSamples, nVars) = samples.shape
+    if sample_size > nSamples:
+        print("Not enough samples in file")
+        return 1
+    variable_names = list(samples.columns.values)
+
+    import ODE_system_alpha
+    alpha_mod = ODE_system_alpha.Model()
+    import ODE_system_beta
+    beta_mod = ODE_system_beta.Model()
+    
+    alpha_results=[]
+    beta_results=[]
+    for r in range(sample_size):
+        parameter_vector = samples.iloc[r]
+        pList = [[variable_names[i], parameter_vector.loc[variable_names[i]]] for i in range(nVars) if variable_names[i] != 'gamma']
+        # Build the sample model
+        if 'kd4' in variable_names:
+            q1 = 3.321155762205247e-14/1
+            q2 = 4.98173364330787e-13/0.015
+            q4 = 3.623188E-4/parameter_vector.loc['kd4']
+            q3 = q2*q4/q1
+            kd3 = 3.623188E-4/q3                
+        
+            q_1 = 4.98E-14/0.03
+            q_2 = 8.30e-13/0.002
+            q_4 = 3.623188e-4/parameter_vector.loc['k_d4']
+            q_3 = q_2*q_4/q_1
+            k_d3 = 3.623188e-4/q_3
+            pList += [['kd3', kd3],['k_d3',k_d3]]
+    
+   
+        alpha_parameters=[]
+        beta_parameters=[]
+        for p in alpha_mod.parameters:
+            isInList=False
+            for y in pList:
+                if p[0]==y[0]:
+                    if y[0]=='R1' or y[0]=='R2':
+                        alpha_parameters.append(y[1]*(2*radius**2 + radius*(8E-6)*4)/2.76e-09)
+                    alpha_parameters.append(y[1])
+                    isInList=True
+                    break
+            if isInList==False:
+                # catch S model parameter and scale it
+                if p[0]=='S':
+                    alpha_parameters.append(p.value*(2*radius**2 + radius*(8E-6)*4)/2.76e-09)
+                else:
+                    alpha_parameters.append(p.value)
+        for p in beta_mod.parameters:
+            isInList=False
+            for y in pList:
+                if p[0]==y[0]:
+                    beta_parameters.append(y[1])
+                    isInList=True
+                    break
+            if isInList==False:
+                beta_parameters.append(p.value)
+        I_index_Alpha = [el[0] for el in alpha_mod.parameters].index(dose_species[0])
+        I_index_Beta = [el[0] for el in beta_mod.parameters].index(dose_species[0])
+        
+        NA = dose_species[1] # 1
+        volEC = dose_species[2] # 1   
+        t=np.linspace(0,end_time)
+        # Run simulation
+        alpha_parameters[I_index_Alpha] = NA*volEC*radius
+        (_, sim) = alpha_mod.simulate(t, param_values=alpha_parameters)
+        alpha_results.append(sim)
+        beta_parameters[I_index_Beta] = NA*volEC*radius
+        (_, sim) = beta_mod.simulate(t, param_values=beta_parameters)
+        beta_results.append(sim)
+    prediction_intervals=[]
+    for spec in specList:
+        tcs = [j[spec] for j in alpha_results]
+        mean_prediction = np.mean(tcs, axis=0)
+        upper_error_prediction = np.percentile(tcs, max(percent, 100-percent), axis=0)
+        lower_error_prediction = np.percentile(tcs, min(percent, 100-percent), axis=0)
+        prediction_intervals.append([mean_prediction,lower_error_prediction,upper_error_prediction])
+        
+        tcs = [j[spec] for j in beta_results]
+        mean_prediction = np.mean(tcs, axis=0)
+        upper_error_prediction = np.percentile(tcs, max(percent, 100-percent), axis=0)
+        lower_error_prediction = np.percentile(tcs, min(percent, 100-percent), axis=0)
+        prediction_intervals.append([mean_prediction,lower_error_prediction,upper_error_prediction])
+    
+    if suppress==False:
+        fig, ax = plt.subplots()
+        ax.plot(t, prediction_intervals[0][0], 'r')
+        ax.plot(t, prediction_intervals[0][1], 'r--')
+        ax.plot(t, prediction_intervals[0][2], 'r--')
+        ax.plot(t, prediction_intervals[1][0], 'g')
+        ax.plot(t, prediction_intervals[1][1], 'g--')
+        ax.plot(t, prediction_intervals[1][2], 'g--')
+        plt.show()
+    return prediction_intervals
+
+# =============================================================================
+# rad_cell_dr() runs a 'dose response' curve for each sample from posterior parameter 
+# distribution, giving prediction intervals for all dose points. However, the 'dose'
+# is the cell radius and then S and R model parameters scale accordingly.    
+# Inputs:
+#     samplefile (str) = the name of the posterior samples file output from 
+#                         Markov Chain Monte Carlo simulations
+#     radii (list) = radii for the simulation (measured in meters)
+#     end_time (int) = the end time for each time course (in seconds)
+#     sample_size (int) = the number of posterior samples to use
+#     specList (list) = list of names of species to predict intervals for
+#     percent (int) = the percentile bounds for error in model prediction 
+#                       (bounds will be 'percent' and 100-'percent') 
+#     suppress (Boolean) = whether or not to plot the results (default is False) 
+#     dr_species (list) = any model observable can be used; second and third list itmes are 
+#                           multiplicative factors. If not needed then set to 1
+#                           default is ['rad_cell' for cell radius, 1, 1] 
+#     modelfiles = ['IFN_alpha_altSOCS_ppCompatible','IFN_beta_altSOCS_ppCompatible']
+# Returns
+#   [alpha_responses, beta_responses] (list) = the dose response curves
+#                       alpha_responses = [[mean curve, low curve, high curve] for each species]        
+# =============================================================================
+def rad_cell_dr(samplefile, radii, end_time, sample_size, percent, specList,
+                          suppress=False, dr_species=['rad_cell', 1,1],
+                          modelfiles = ['IFN_alpha_altSOCS_ppCompatible','IFN_beta_altSOCS_ppCompatible']):
+    from pysb.export import export
+    # Write modelfiles
+    print("Importing models")
+    alpha_model = __import__(modelfiles[0])
+    py_output = export(alpha_model.model, 'python')
+    with open('ODE_system_alpha.py','w') as f:
+        f.write(py_output)
+    beta_model = __import__(modelfiles[1])
+    py_output = export(beta_model.model, 'python')
+    with open('ODE_system_beta.py','w') as f:
+        f.write(py_output)
+    
+    alpha_responses = [[] for i in range(len(specList))]
+    beta_responses = [[] for i in range(len(specList))]
+    for r in radii:
+        courses = rad_cell_point(samplefile, r, end_time, sample_size, percent, specList, 
+                                 suppress=True, dose_species=dr_species)
+        # courses = [[IFNa spec 1], [IFNb spec 1], [IFNa spec 2], [IFNb spec 2]]
+        #           [IFNa spec 1] = [[mean], [low], [high]]
+        courses = [[l[-1] for l in s] for s in courses]
+        # courses = [[mean dose, low, high]_IFNaS1, [mean dose, low, high]_IFNbS1, ...
+        for i in range(len(specList)):
+            alpha_responses[i].append(courses[i*2])
+            beta_responses[i].append(courses[i*2+1])
+    alpha_responses = [[[el[0] for el in alpha_responses[s]],[el[1] for el in alpha_responses[s]],[el[2] for el in alpha_responses[s]]] for s in range(len(alpha_responses))]
+    beta_responses =  [[[el[0] for el in beta_responses[s]], [el[1] for el in beta_responses[s]], [el[2] for el in beta_responses[s]]] for s in range(len(alpha_responses))]
+    return [alpha_responses, beta_responses]
 
