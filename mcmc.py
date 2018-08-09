@@ -4,7 +4,9 @@ Created on Tue Jul 31 08:31:37 2018
 
 @author: Duncan
 
-MCMC Implementation Using Metropolis Hastings algorithm
+MCMC Implementation Using Metropolis Hastings algorithm, for INF alpha and IFN
+beta model. This code is not generalizeable at the moment. I intend to eventually
+do this, but for now it is pretty much only useful to me.
 """
 import os
 script_dir = os.path.dirname(__file__)
@@ -41,7 +43,43 @@ from multiprocessing import Process, Queue, JoinableQueue, cpu_count
 import itertools
 import time
 
-debugging = True # global value for this script
+# =============================================================================
+# Takes an initial condition and generates nChains randomized initial conditions
+#   from prior distributions. This is not generalized, it is designed
+#   specifically for IFN alpha and IFN beta model.
+# Inputs:
+#   theta_0 (list) = the initial parameter vector, defining priors to draw from
+#   nChains (int) = the number of unique points to start from (ie. number of chains)
+# Returns:
+#   theta_list (list) = list of parameter vectors    
+# =============================================================================
+def disperse_chains(theta_0, nChains):
+    theta_list=[]
+    for j in range(nChains):
+        new_theta=[]
+        for parameter in theta_0:
+            if parameter[0]=='kpa' or parameter[0]=='kSOCSon': # lognormal prior
+                new_theta.append([parameter[0],
+                                  np.random.lognormal(mean=np.log(1E-6), sigma=4),
+                                  parameter[2],parameter[3]])
+            elif parameter[0]=='kd4': # lognormal prior
+                new_theta.append([parameter[0],
+                                  np.random.lognormal(mean=np.log(0.3), sigma=2),
+                                  parameter[2],parameter[3]])
+            elif parameter[0]=='k_d4': # lognormal prior
+                new_theta.append([parameter[0],
+                                  np.random.lognormal(mean=np.log(0.006), sigma=3),
+                                  parameter[2],parameter[3]])
+            elif parameter[0]=='R1' or parameter[0]=='R2': # uniform on [100, 12 000]
+                new_theta.append([parameter[0],
+                                  np.random.uniform(low=100, high=12000),
+                                  parameter[2],parameter[3]])
+            elif parameter[0]=='gamma': # uniform on [2,40]
+                new_theta.append([parameter[0],
+                                  np.random.uniform(low=2, high=40),
+                                  parameter[2],parameter[3],parameter[4]])
+        theta_list.append(new_theta)
+    return theta_list
 
 # =============================================================================
 # Designed specifically for IFN alpha and IFN beta model priors
@@ -50,10 +88,10 @@ def get_prior_logp(kpa, kSOCSon, kd4, k_d4, R1, R2):
     # lognorm(std dev = 1, 0, guess at reaction rate value )
     #         
     P_kpa = np.log(1E-6)
-    S_kpa = 2
+    S_kpa = 4
     
     P_kSOCSon = np.log(1E-6)
-    S_kSOCSon = 2
+    S_kSOCSon = 4
     
     P_kd4 = np.log(0.3)
     S_kd4 = 2
@@ -72,8 +110,41 @@ def get_prior_logp(kpa, kSOCSon, kd4, k_d4, R1, R2):
     logp = 0
     for i in range(len(theta)):
         logp += ((np.log(theta[i])-P_list[i])/S_list[i])**2
-    return logp
+    
+    # Check bounds on R1 and R2
+    if R1<100 or R2<100 or R1>12000 or R2>12000:
+        return 1E6
+    else:
+        return logp
 
+
+# =============================================================================
+# check_proposals() allows the user to get a sense of what the random walk
+# for each parameter looks like with the given values
+# Inputs:
+#   theta (list) = the input parameter vector
+#   n (int) = the number of steps to take in the sample random walk
+# =============================================================================
+def check_proposals(theta, n):
+    walk=[theta]
+    for j in range(n):
+        walk.append(J(walk[j]))
+    rearrange = [[walk[i][j][1] for i in range(len(walk))] for j in range(len(theta))]
+    
+    k = len(theta) # total number subplots
+    n = 2 # number of chart columns
+    m = (k - 1) // n + 1 # number of chart rows
+    fig, axes = plt.subplots(m, n, figsize=(n * 5, m * 3))
+    if k % 2 == 1: # avoids extra empty subplot
+        axes[-1][n-1].set_axis_off()
+    for ind, w in enumerate(rearrange):
+        r, c = ind // n, ind % n
+        ax = axes[r, c] # get axis object
+        if theta[r*n+c][3]=='log':
+            ax.set(xscale='linear',yscale='log')
+        ax.plot(range(len(w)), w)    
+    plt.savefig(results_dir+'typical_priors_rw.pdf')
+    
 # =============================================================================
 # Designed specifically for IFN alpha and IFN beta model least-squares likelihood
 # =============================================================================
@@ -176,10 +247,10 @@ def J(theta):
             new_theta.append([parameter[0],
                               np.random.lognormal(mean=np.log(parameter[1]), sigma=parameter[2]),
                               parameter[2],parameter[3]])
-        elif parameter[3]=='linear': # normal random walk restricted to be greater than cutoff
+        elif parameter[3]=='linear': # normal random walk (restricted by prior to avoid unphysical values)
             new_theta.append([parameter[0],
-                              max(np.random.normal(loc=parameter[1], scale=parameter[2]),parameter[4]),
-                              parameter[2],parameter[3],parameter[4]])
+                              np.random.normal(loc=parameter[1], scale=parameter[2]),
+                              parameter[2],parameter[3]])
         elif parameter[3]=='uniform': # restricted uniform distributed random walk
             new_theta.append([parameter[0],
                               np.random.uniform(low=parameter[2], high=min(parameter[1]*1.4,parameter[4])),
@@ -217,6 +288,7 @@ def get_acceptance_rate(theta, beta):
 #   max_attempts (int) = the max number of attempts to get a good acceptance rate
 # =============================================================================
 def hyperparameter_fitting(theta_0, beta, max_attempts):
+    print("Choosing optimal temperature")
     theta = [el for el in theta_0]
     # Try to find variances that give an good acceptance rate
     for attempt in range(max_attempts):
@@ -237,7 +309,7 @@ def hyperparameter_fitting(theta_0, beta, max_attempts):
     raise RuntimeError("Failed to optimize hyperparameters.\n\
                        Please initialise with different variances\n\
                        or check uniform prior ranges, and try again.")
-
+    
 # =============================================================================
 # plot_parameter_distributions() creates a kde plot for each parameter
 # Inputs:
@@ -433,7 +505,7 @@ def mcmcChecks(n, theta_0, beta, chains, burn_rate, down_sample, max_attempts):
 #    n (int) = number of iterations to run per chain
 #    theta_0 (list) = the initial guesses and jumping distribution definitions for each parameter to fit
 #                       Order of theta_0 is [kpa, kSOCSon, kd4, k_d4, R1, R2, gamma]    
-#                   eg. [['kpa',1E-6,0.2,'log'],['R2',2E3,250,'linear',100],['gamma',4,2,'uniform',40]]
+#                   eg. [['kpa',1E-6,0.2,'log'],['R2',2E3,250,'linear'],['gamma',4,2,'uniform',40]]
 #    beta (float) = effectively temperature, this factor controls the 
 #                   tolerance of the probabilistic parameter search
 #    chains (int) = number of unique Markov chains to simulate    
@@ -477,16 +549,20 @@ def mh(ID, jobs, result):
                 acceptance += 1
         result.put(model_record)
 
-def MCMC(n, theta_0, beta, chains, burn_rate=0.1, down_sample=1, max_attempts=6, pflag=False):
+def MCMC(n, theta_0, beta, chains, burn_rate=0.1, down_sample=1, max_attempts=6, pflag=True):
     # Check input parameters
     mcmcChecks(n, theta_0, beta, chains, burn_rate, down_sample, max_attempts)
     print("Performing MCMC Analysis")
-    # Selecting hyperparameters
-    #print("Optimizing hyperparameters")
+    # Selecting optimal temperature
     hyper_theta, beta = hyperparameter_fitting(theta_0, beta, max_attempts)
     if pflag==True:
-        check_priors(hyper_theta, 50)
-    #hyper_theta=theta_0 # for debugging
+        check_proposals(hyper_theta, 50)
+    # Overdisperse chains
+    print("Dispersing chains")
+    if chains > 1:
+        chains_list = disperse_chains(hyper_theta, chains)
+    else:
+        chains_list = [hyper_theta]
     print("Sampling from posterior distribution")    
     if chains >= cpu_count():
         NUMBER_OF_PROCESSES = cpu_count()-1
@@ -495,7 +571,7 @@ def MCMC(n, theta_0, beta, chains, burn_rate=0.1, down_sample=1, max_attempts=6,
     jobs = Queue()
     result = JoinableQueue()
     for m in range(chains):
-        jobs.put([hyper_theta,beta,n])
+        jobs.put([chains_list[m],beta,n])
     [Process(target=mh, args=(i, jobs, result)).start()
             for i in range(NUMBER_OF_PROCESSES)]
     # pull in the results from each thread
@@ -518,32 +594,6 @@ def MCMC(n, theta_0, beta, chains, burn_rate=0.1, down_sample=1, max_attempts=6,
     get_summary_statistics(samples)
     
     
-# =============================================================================
-# check_priors() allows the user to get a sense of what the random walk
-# for each parameter looks like with the given values
-# Inputs:
-#   theta (list) = the input parameter vector
-#   n (int) = the number of steps to take in the sample random walk
-# =============================================================================
-def check_priors(theta, n):
-    walk=[theta]
-    for j in range(n):
-        walk.append(J(walk[j]))
-    rearrange = [[walk[i][j][1] for i in range(len(walk))] for j in range(len(theta))]
-    
-    k = len(theta) # total number subplots
-    n = 2 # number of chart columns
-    m = (k - 1) // n + 1 # number of chart rows
-    fig, axes = plt.subplots(m, n, figsize=(n * 5, m * 3))
-    if k % 2 == 1: # avoids extra empty subplot
-        axes[-1][n-1].set_axis_off()
-    for ind, w in enumerate(rearrange):
-        r, c = ind // n, ind % n
-        ax = axes[r, c] # get axis object
-        if theta[r*n+c][3]=='log':
-            ax.set(xscale='linear',yscale='log')
-        ax.plot(range(len(w)), w)    
-
 # =============================================================================
 # bayesian_timecourse() runs a time course for each sample from posterior parameter 
 # distribution, giving prediction intervals for all time points
@@ -707,7 +757,7 @@ def main():
 #     print("time = {}".format(t1-t0))
 # =============================================================================
     p0=[['kpa',1E-6,0.1,'log'],['kSOCSon',1E-6,0.1,'log'],['kd4',0.3,0.2,'log'],
-        ['k_d4',0.006,0.5,'log'],['R1',2E3,150,'linear',100],['R2',2E3,150,'linear',100],
+        ['k_d4',0.006,0.5,'log'],['R1',2E3,150,'linear'],['R2',2E3,150,'linear'],
         ['gamma',4,2,'uniform',40]]
 # =============================================================================
 #     p1=[['kpa', 1e-06, 0.0007, 'log'],['kSOCSon', 1.e-06, 0.002, 'log'],
@@ -716,7 +766,7 @@ def main():
 #     ['gamma', 2.78, 2, 'uniform', 40]]    
 # =============================================================================
     #   (n, theta_0, beta, chains, burn_rate=0.1, down_sample=1, max_attempts=6, pflag=False)
-    MCMC(1000, p0, 11.5, 3, burn_rate=0.1, down_sample=5)# n, theta, beta
+    MCMC(1000, p0, 1, 3, burn_rate=0.1, down_sample=5)# n, theta, beta
 
 # Testing functions
     #sims = bayesian_timecourse('posterior_samples.csv', 100E-12, 3600, 50, 95, ['TotalpSTAT'])
