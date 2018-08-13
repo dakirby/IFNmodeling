@@ -41,7 +41,6 @@ import pandas as pd
 from pysb.export import export
 from multiprocessing import Process, Queue, JoinableQueue, cpu_count
 import itertools
-import time
 
 # =============================================================================
 # Takes an initial condition and generates nChains randomized initial conditions
@@ -74,47 +73,55 @@ def disperse_chains(theta_0, nChains):
                 new_theta.append([parameter[0],
                                   np.random.uniform(low=100, high=12000),
                                   parameter[2],parameter[3]])
+            elif parameter[0]=='delR': #uniform on [0,1900]
+                new_theta.append([parameter[0],
+                                  np.random.uniform(low=0, high=1900),
+                                  parameter[2],parameter[3]])
             elif parameter[0]=='gamma': # uniform on [2,40]
                 new_theta.append([parameter[0],
-                                  np.random.uniform(low=2, high=40),
-                                  parameter[2],parameter[3],parameter[4]])
+                                  np.random.uniform(low=100, high=40),
+                                  parameter[2],parameter[3]])
         theta_list.append(new_theta)
     return theta_list
 
 # =============================================================================
 # Designed specifically for IFN alpha and IFN beta model priors
 # =============================================================================
-def get_prior_logp(kpa, kSOCSon, kd4, k_d4, R1, R2):
-    # lognorm(std dev = 1, 0, guess at reaction rate value )
-    #         
-    P_kpa = np.log(1E-6)
-    S_kpa = 4
-    
-    P_kSOCSon = np.log(1E-6)
-    S_kSOCSon = 4
-    
-    P_kd4 = np.log(0.3)
-    S_kd4 = 0.8
-    
-    P_k_d4 = np.log(0.006)
-    S_k_d4 = 0.7
-    
-    P_R1 = np.log(R1) # Easy way to choose non-informative prior
-    S_R1 = 1
-    P_R2 = np.log(R2) # Easy way to choose non-informative prior
-    S_R2 = 1
-    
-    theta=[kpa, kSOCSon, kd4, k_d4, R1, R2]
-    P_list = [P_kpa,P_kSOCSon,P_kd4,P_k_d4,P_R1,P_R2]
-    S_list = [S_kpa,S_kSOCSon,S_kd4,S_k_d4,S_R1,S_R2]
-    logp = 0
-    for i in range(len(theta)):
-        logp += ((np.log(theta[i])-P_list[i])/S_list[i])**2
-    
-    # Check bounds on R1 and R2
-    if R1<100 or R2<100 or R1>12000 or R2>12000:
+def get_prior_logp(kpa, kSOCSon, kd4, k_d4, R1, R2, gamma):
+    # Check bounds on parameters
+    # 100 < R1, R2 < 12 000
+    # 1E-9 < kpa, kSOCSon < 10
+    # 1E-9 < k_d4, kd4 < 50
+    # 1 < gamma < 40
+    if R1<100 or R2<100 or R1>12000 or R2>12000 or kpa<1E-9 or kSOCSon<1E-9 or k_d4<1E-9 or kpa>10 or kSOCSon>10 or k_d4>50 or kd4<1E-9 or kd4>50 or gamma<1 or gamma>40:
         return 1E6
     else:
+        # lognorm(std dev = 1, 0, guess at reaction rate value )
+        #         
+        P_kpa = np.log(1E-6)
+        S_kpa = 4
+        
+        P_kSOCSon = np.log(1E-6)
+        S_kSOCSon = 4
+        
+        P_kd4 = np.log(0.3)
+        S_kd4 = 0.8
+        
+        P_k_d4 = np.log(0.006)
+        S_k_d4 = 0.7
+        
+        P_R1 = np.log(R1) # Easy way to choose non-informative prior
+        S_R1 = 1
+        P_R2 = np.log(R2) # Easy way to choose non-informative prior
+        S_R2 = 1
+        
+        theta=[kpa, kSOCSon, kd4, k_d4, R1, R2]
+        P_list = [P_kpa,P_kSOCSon,P_kd4,P_k_d4,P_R1,P_R2]
+        S_list = [S_kpa,S_kSOCSon,S_kd4,S_k_d4,S_R1,S_R2]
+        logp = 0
+        for i in range(len(theta)):
+            logp += ((np.log(theta[i])-P_list[i])/S_list[i])**2
+        
         return logp
 
 
@@ -225,9 +232,11 @@ def get_likelihood_logp(kpa,kSOCSon,kd4,k_d4,R1,R2, gamma):
 # =============================================================================
 # Returns -log(probability of model)
 # =============================================================================
-def score_model(kpa,kSOCSon,kd4,k_d4,R1,R2, gamma, beta):
+def score_model(kpa,kSOCSon,kd4,k_d4,delR, gamma, beta):
+    R1=2E3-delR/2
+    R2=2E3+delR/2
     lk = get_likelihood_logp(kpa,kSOCSon,kd4,k_d4,R1,R2, gamma)
-    pr = get_prior_logp(kpa, kSOCSon, kd4, k_d4, R1, R2)
+    pr = get_prior_logp(kpa, kSOCSon, kd4, k_d4, R1, R2, gamma)
     return (lk+pr)/beta
 
 # =============================================================================
@@ -259,7 +268,7 @@ def J(theta):
     return new_theta
 
 # =============================================================================
-# get_acceptance_rate() performs 50 samples to estimate the acceptance rate with 
+# get_acceptance_rate() performs 100 samples to estimate the acceptance rate with 
 # current hyperparameters. Returns the acceptance rate as a percentage (eg. 24)  
 # and the theta with variances that were good enough    
 # =============================================================================
@@ -279,7 +288,7 @@ def get_acceptance_rate(theta, beta):
             old_theta=proposal
             old_score = new_score
             acceptance += 1
-    return (acceptance*2, old_theta) # = acceptance/50*100
+    return (acceptance, old_theta) # = acceptance/50*100
 
 # =============================================================================
 # hyperparameter_fitting() attempts to alter the input temperature
@@ -334,8 +343,11 @@ def plot_parameter_distributions(df, title='parameter_distributions.pdf', save=T
                 r, c = i // n, i % n
                 ax = axes[r, c] # get axis object
                 # determine whether or not to plot on log axis
-                if abs(int(np.log10(np.max(col)))-int(np.log10(np.min(col)))) >= 4:
-                    ax.set(xscale='log', yscale='linear')
+                try:
+                    if abs(int(np.log10(np.max(col)))-int(np.log10(np.min(col)))) >= 4:
+                        ax.set(xscale='log', yscale='linear')
+                except ValueError:
+                    print('Some parameters were negative-valued')
                 # Plot histogram with kde for chain
                 sns.distplot(col, ax=ax, hist=False, kde=True, 
                      color = color_code, 
@@ -412,11 +424,15 @@ def get_parameter_distributions(pooled_results, burn_rate, down_sample):
     sns.palplot(sns.color_palette("GnBu_d"))
     chain_record=[]
     total_record=[]
+    chain_Lengths=[]
     for i in pooled_results:
         total_record+=i
+        chain_Lengths.append(len(i))
     complete_samples = pd.DataFrame([[el[1] for el in r] for r in total_record],
                                 columns=[l[0] for l in total_record[0]])
     complete_samples.to_csv(results_dir+"complete_samples.csv")
+    with open(results_dir+'chain_lengths.txt', 'w') as f:
+        f.write(str(chain_Lengths)[1:-1])
     first=True
     for chain in range(len(pooled_results)): #iterate over the chains
         model_record = pooled_results[chain] #current chain of interest
@@ -470,7 +486,9 @@ def plot_parameter_aurocorrelations(df):
         r, c = i // n, i % n
         ax = axes[r, c] # get axis object
         ax.set_title(name)
-        ax.acorr(col)
+        corrLen=30
+        if len(col)<30: corrLen=len(col)-1
+        ax.acorr(col, maxlags=corrLen)
         ax.set_xlabel('Lag')
         ax.set_ylabel('Autocorrelation')
     fig.tight_layout()    
@@ -485,10 +503,10 @@ def plot_parameter_aurocorrelations(df):
 # Returns: nothing
 # =============================================================================
 def get_summary_statistics(df):
-    headers = ['name', 'mean', 'std dev', '5%', '95%']
+    headers = ['name', 'mean', 'std dev', '2.5%', '25%', '75%', '97.5%']
     summary=[]
     for (name, col) in df.iteritems():
-        summary.append([name, np.mean(col), np.std(col), np.percentile(col, 2.5), np.percentile(col, 97.5)])
+        summary.append([name, np.mean(col), np.std(col), np.percentile(col, 2.5), np.percentile(col, 25), np.percentile(col, 75), np.percentile(col, 97.5)])
     summary_df = pd.DataFrame.from_records(summary,columns=headers)
     summary_df.to_csv(results_dir+"parameter_summary.csv")
 
@@ -544,6 +562,8 @@ def mh(ID, jobs, result):
                 progress_bar += n/10
                 print("{:.1f}% done".format(i/n*100))
                 print("Chain {} Acceptance rate = {:.1f}%".format(ID, acceptance/progress_bar*100))
+                with open(results_dir+'progress.txt','a') as f:
+                    f.write("Chain {} is {:.1f}% done, currently averaging {:.1f}% acceptance.\n".format(ID, i/n*100,acceptance/progress_bar*100))
             proposal = J(model_record[old_index])
             new_score = score_model(*[proposal[j][1] for j in range(len(proposal))], beta)
             asymmetry_factor = 1 # log normal proposal distributions are asymmetric
@@ -601,6 +621,14 @@ def MCMC(n, theta_0, beta, chains, burn_rate=0.1, down_sample=1, max_attempts=6,
     samples = get_parameter_distributions(pool_results, burn_rate, down_sample)
     plot_parameter_aurocorrelations(samples)
     get_summary_statistics(samples)
+    with open(results_dir+'simulation_summary.txt','w') as f:
+        f.write('Temperature used was {}\n'.format(beta))
+        f.write('Number of chains = {}\n'.format(chains))
+        f.write("Average acceptance rate was {:.1f}%\n".format(total_samples*100/(n*chains)))
+        f.write("Initial conditions were\n")
+        for i in hyper_theta:
+            f.write(str(hyper_theta))
+            f.write("\n")
     
     
 # =============================================================================
@@ -755,8 +783,27 @@ def bayesian_doseresponse(samplefile, doses, end_time, sample_size, percent, spe
     alpha_responses = [[[el[0] for el in alpha_responses[s]],[el[1] for el in alpha_responses[s]],[el[2] for el in alpha_responses[s]]] for s in range(len(alpha_responses))]
     beta_responses =  [[[el[0] for el in beta_responses[s]], [el[1] for el in beta_responses[s]], [el[2] for el in beta_responses[s]]] for s in range(len(alpha_responses))]
     return [alpha_responses, beta_responses]
-        
 
+# =============================================================================
+# MAP() finds the maximum a posteriori model from the posterior models listed in
+# posterior_file (Input) and returns a dictionary of the model with the lowest score
+# =============================================================================
+def MAP(posterior_file):
+    df = pd.read_csv(posterior_file,index_col=0)
+    names=list(df.columns.values)
+    best_score=1E8
+    best_model={'kpa':0,'kSOCSon':0,'kd4':0,'k_d4':0,'R1':0,'R2':0,'gamma':0}
+    model={'kpa':0,'kSOCSon':0,'kd4':0,'k_d4':0,'R1':0,'R2':0,'gamma':0}
+    for i in range(len(df)):
+        for n in names:
+            model.update({n:df.iloc[i][n]})
+        new_score = score_model(model['kpa'],model['kSOCSon'],model['kd4'],model['k_d4'],
+                    model['R1'],model['R2'], model['gamma'], 1)
+        if new_score<best_score:
+            best_score=new_score
+            best_model=model.copy()
+    return best_model
+        
 def main():
     plt.close('all')
     modelfiles = ['IFN_alpha_altSOCS_ppCompatible','IFN_beta_altSOCS_ppCompatible']
@@ -776,8 +823,8 @@ def main():
 #     print("time = {}".format(t1-t0))
 # =============================================================================
     p0=[['kpa',1E-6,0.1,'log'],['kSOCSon',1E-6,0.1,'log'],['kd4',0.3,0.2,'log'],
-        ['k_d4',0.006,0.5,'log'],['R1',2E3,150,'linear'],['R2',2E3,150,'linear'],
-        ['gamma',4,2,'uniform',40]]
+        ['k_d4',0.006,0.5,'log'],['delR',0,500,'linear'],
+        ['gamma',2,0.5,'log']]
 # =============================================================================
 #     p1=[['kpa', 1e-06, 0.0007, 'log'],['kSOCSon', 1.e-06, 0.002, 'log'],
 #     ['kd4', 0.3, 0.0001, 'log'],['k_d4', 0.006, 0.033, 'log'],
@@ -785,7 +832,7 @@ def main():
 #     ['gamma', 2.78, 2, 'uniform', 40]]    
 # =============================================================================
     #   (n, theta_0, beta, chains, burn_rate=0.1, down_sample=1, max_attempts=6, pflag=False)
-    MCMC(500, p0, 8, 3, burn_rate=0.1, down_sample=5)# n, theta, beta
+    MCMC(500, p0, 8, 3, burn_rate=0.05, down_sample=2)# n, theta, beta=3.375
 
 # Testing functions
     #sims = bayesian_timecourse('posterior_samples.csv', 100E-12, 3600, 50, 95, ['TotalpSTAT'])
@@ -793,6 +840,7 @@ def main():
     #bayesian_doseresponse('posterior_samples.csv', [10E-12,90E-12,600E-12], 3600, 50, 95, ['TotalpSTAT','T'])
     #df = pd.read_csv('posterior_samples.csv',index_col=0)
     #plot_parameter_distributions(df, title='parameter_distributions.pdf', save=True)
+    #print(MAP('posterior_samples.csv'))
     
 if __name__ == '__main__':
     main()

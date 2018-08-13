@@ -11,6 +11,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 from mcmc import bayesian_timecourse, bayesian_doseresponse
 import Experimental_Data as ED 
+nPost=38
 # Global data import since this script will be used exclusively on IFN data    
 IFN_exps = [ED.data.loc[(ED.data.loc[:,'Dose (pM)']==10) & (ED.data.loc[:,'Interferon']=="Alpha"),['0','5','15','30','60']].values[0],
             ED.data.loc[(ED.data.loc[:,'Dose (pM)']==10) & (ED.data.loc[:,'Interferon']=="Beta"),['0','5','15','30','60']].values[0],
@@ -26,9 +27,9 @@ IFN_sigmas =[ED.data.loc[(ED.data.loc[:,'Dose (pM)']==10) & (ED.data.loc[:,'Inte
              ED.data.loc[(ED.data.loc[:,'Dose (pM)']==600) & (ED.data.loc[:,'Interferon']=="Alpha_std"),['0','5','15','30','60']].values[0],
              ED.data.loc[(ED.data.loc[:,'Dose (pM)']==600) & (ED.data.loc[:,'Interferon']=="Beta_std"),['0','5','15','30','60']].values[0]]
 
-IFN_sims = [*bayesian_timecourse('posterior_samples.csv', 10E-12, 3600, 50, 95, ['TotalpSTAT'], suppress=True),
-            *bayesian_timecourse('posterior_samples.csv', 90E-12, 3600, 50, 95, ['TotalpSTAT'], suppress=True),
-            *bayesian_timecourse('posterior_samples.csv', 600E-12, 3600, 50, 95, ['TotalpSTAT'], suppress=True)]
+IFN_sims = [*bayesian_timecourse('posterior_samples.csv', 10E-12, 3600, nPost, 97.5, ['TotalpSTAT'], suppress=True),
+            *bayesian_timecourse('posterior_samples.csv', 90E-12, 3600, nPost, 97.5, ['TotalpSTAT'], suppress=True),
+            *bayesian_timecourse('posterior_samples.csv', 600E-12, 3600, nPost, 97.5, ['TotalpSTAT'], suppress=True)]
 import seaborn as sns
 sns.set_style("ticks")
 plt.close('all')
@@ -40,139 +41,14 @@ if not os.path.isdir(results_dir):
     os.makedirs(results_dir)
 
 
-fig3=False
-fig4=False
-fig5=False
+fig3=True
+fig4=True
+fig5=True
 fig6=True
+fig7_1=True
+fig7_2=True
+fig8=True
 gamma = 3.17
-
-
-if fig3==True:
-    fig, (ax1,ax2,ax3) = plt.subplots(nrows=1, ncols=3, figsize=(15,8))
-    plt.ion()
-    matplotlib.rcParams.update({'font.size': 18})
-    ax1.tick_params(labelsize=14)
-    ax2.tick_params(labelsize=14)
-    ax3.tick_params(labelsize=14)
-    
-    jitter=50 # Scale the noise used to separate alpha and beta time points
-    Expt = ['0','5','15','30','60']
-    ax1.set_title("10 pM Time Course \nTheory vs Experiment", fontsize=20)
-    ax1.set_ylabel('pSTAT1 Relative MFI',fontsize=18)
-    ax1.set_xlabel('time (s)',fontsize=18)    
-    ax1.errorbar([int(el)*60+np.random.rand()*jitter for el in Expt],
-                np.divide(IFN_exps[0],gamma),
-                yerr = np.divide(IFN_sigmas[0],gamma),
-                fmt='ro', label=r"Experiment IFN$\alpha$")
-    ax1.errorbar([int(el)*60 for el in Expt],
-                np.divide(IFN_exps[1],gamma),
-                yerr = np.divide(IFN_sigmas[1],gamma),
-                fmt='go', label=r"Experiment IFN$\beta$")
-    ax1.plot(np.linspace(0,3600),IFN_sims[0][0], 'k')
-    ax1.plot(np.linspace(0,3600),IFN_sims[0][1], 'k--')
-    ax1.plot(np.linspace(0,3600),IFN_sims[0][2], 'k--')
-    ax1.plot(np.linspace(0,3600),IFN_sims[1][0], 'k')
-    ax1.plot(np.linspace(0,3600),IFN_sims[1][1], 'k:')
-    ax1.plot(np.linspace(0,3600),IFN_sims[1][2], 'k:')
-    
-    
-    
-    ax2.set_title("90 pM Time Course \nTheory vs Experiment", fontsize=20)
-    ax2.set_xlabel('time (s)',fontsize=18)
-    ax2.errorbar([int(el)*60+np.random.rand()*jitter for el in Expt],
-                np.divide(IFN_exps[2],gamma),
-                yerr = np.divide(IFN_sigmas[2],gamma),
-                fmt='ro', label=r"Experiment IFN$\alpha$")
-    ax2.errorbar([int(el)*60 for el in Expt],
-                np.divide(IFN_exps[3],gamma),
-                yerr = np.divide(IFN_sigmas[3],gamma),
-                fmt='go', label=r"Experiment IFN$\beta$")
-    ax2.plot(np.linspace(0,3600),IFN_sims[2][0], 'k')
-    ax2.plot(np.linspace(0,3600),IFN_sims[2][1], 'k--')
-    ax2.plot(np.linspace(0,3600),IFN_sims[2][2], 'k--')
-    ax2.plot(np.linspace(0,3600),IFN_sims[3][0], 'k')
-    ax2.plot(np.linspace(0,3600),IFN_sims[3][1], 'k:')
-    ax2.plot(np.linspace(0,3600),IFN_sims[3][2], 'k:')
-        
-            
-    ax3.set_title("600 pM Time Course \nTheory vs Experiment", fontsize=20)
-    ax3.set_xlabel('time (s)',fontsize=18)
-    ax3.errorbar([int(el)*60+np.random.rand()*jitter for el in Expt],
-                np.divide(IFN_exps[4],gamma),
-                yerr = np.divide(IFN_sigmas[4],gamma),
-                fmt='ro', label=r"Experiment IFN$\alpha$")
-    ax3.errorbar([int(el)*60 for el in Expt],
-                np.divide(IFN_exps[5],gamma),
-                yerr = np.divide(IFN_sigmas[5],gamma),
-                fmt='go', label=r"Experiment IFN$\beta$")
-    ax3.plot(np.linspace(0,3600),IFN_sims[4][0], 'k')
-    ax3.plot(np.linspace(0,3600),IFN_sims[4][1], 'k--')
-    ax3.plot(np.linspace(0,3600),IFN_sims[4][2], 'k--')
-    ax3.plot(np.linspace(0,3600),IFN_sims[5][0], 'k')
-    ax3.plot(np.linspace(0,3600),IFN_sims[5][1], 'k:')
-    ax3.plot(np.linspace(0,3600),IFN_sims[5][2], 'k:')
-    
-    plt.savefig(results_dir+'figure3.pdf')
-    
-if fig4==True:
-    fig, (ax1,ax2) = plt.subplots(nrows=1, ncols=2, figsize=(15,8))
-    matplotlib.rcParams.update({'font.size': 18})
-    
-    dr_curves = bayesian_doseresponse('posterior_samples.csv', np.logspace(-13,np.log10(600E-12)), 3600, 50, 95, ['TotalpSTAT'])    
-    ax1.set_title("Dose Response \nTheory vs Experiment", fontsize=20)
-    ax1.set_ylabel('pSTAT1 Relative MFI',fontsize=18)
-    ax1.set_xlabel('IFN Dose (M)',fontsize=18)
-    ax1.set(xscale='log',yscale='linear')    
-    ax1.errorbar([10*1E-12,(90+1)*1E-12,600*1E-12],np.divide([IFN_exps[el][-1] for el in [0,2,4]],gamma),
-                 yerr = np.divide([IFN_sigmas[el][-1] for el in [0,2,4]],gamma),
-                    fmt='ro', label=r"Experiment IFN$\alpha$")
-    ax1.errorbar([10*1E-12,90*1E-12,600*1E-12],np.divide([IFN_exps[el][-1] for el in [1,3,5]],gamma),
-                 yerr = np.divide([IFN_sigmas[el][-1] for el in [1,3,5]],gamma),
-                    fmt='go', label=r"Experiment IFN$\alpha$")
-    ax1.plot(np.logspace(-13,np.log10(600E-12)), dr_curves[0][0][0], 'r')
-    ax1.plot(np.logspace(-13,np.log10(600E-12)), dr_curves[0][0][1], 'r--')
-    ax1.plot(np.logspace(-13,np.log10(600E-12)), dr_curves[0][0][2], 'r--')             
-    ax1.plot(np.logspace(-13,np.log10(600E-12)), dr_curves[1][0][0], 'g')
-    ax1.plot(np.logspace(-13,np.log10(600E-12)), dr_curves[1][0][1], 'g--')
-    ax1.plot(np.logspace(-13,np.log10(600E-12)), dr_curves[1][0][2], 'g--')     
-
-    dr60min = bayesian_doseresponse('posterior_samples.csv', np.logspace(-14,-2), 3600, 50, 95, ['TotalpSTAT'])    
-    ax2.set_title("Dose Response at 60 minutes", fontsize=20)
-    ax2.set_ylabel('Total pSTAT Count',fontsize=18)
-    ax2.set_xlabel('IFN Dose (M)',fontsize=18)
-    ax2.set(xscale='log',yscale='linear')    
-    ax2.plot(np.logspace(-14,-2), dr60min[0][0][0], 'r', linewidth=2)
-    #ax2.plot(np.logspace(-14,-2), dr60min[0][0][1], 'r--')
-    #ax2.plot(np.logspace(-14,-2), dr60min[0][0][2], 'r--')    
-    ax2.plot(np.logspace(-14,-2), dr60min[1][0][0], 'g', linewidth=2)
-    #ax2.plot(np.logspace(-14,-2), dr60min[1][0][1], 'g--')
-    #ax2.plot(np.logspace(-14,-2), dr60min[1][0][2], 'g--')
-    
-    plt.savefig(results_dir+'figure4.pdf')
-
-if fig5==True:
-    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(15,8))
-    dr5min = bayesian_doseresponse('posterior_samples.csv', np.logspace(-14,-2), 5*60, 50, 95, ['TotalpSTAT'])    
-    dr15min = bayesian_doseresponse('posterior_samples.csv', np.logspace(-14,-2), 15*60, 50, 95, ['TotalpSTAT'])        
-    dr30min = bayesian_doseresponse('posterior_samples.csv', np.logspace(-14,-2), 30*60, 50, 95, ['TotalpSTAT'])    
-    ax.set_title("Dose Response at Different Times", fontsize=20)
-    ax.set_ylabel('pSTAT Normalized by Total STAT',fontsize=18)
-    ax.set_xlabel('IFN Dose (M)',fontsize=18)
-    ax.set(xscale='log',yscale='linear')    
-    ax.plot(np.logspace(-14,-2), np.divide(dr5min[0][0][0],1E4), 'r', label=r'IFN$\alpha$ 5 min', linewidth=2)
-    ax.plot(np.logspace(-14,-2), np.divide(dr5min[1][0][0],1E4), 'g', label=r'IFN$\beta$ 5 min', linewidth=2)
-    ax.plot(np.logspace(-14,-2), np.divide(dr15min[0][0][0],1E4), 'r--', label=r'IFN$\alpha$ 15 min', linewidth=2)
-    ax.plot(np.logspace(-14,-2), np.divide(dr15min[1][0][0],1E4), 'g--', label=r'IFN$\beta$ 15 min', linewidth=2)
-    ax.plot(np.logspace(-14,-2), np.divide(dr30min[0][0][0],1E4), 'r:', label=r'IFN$\alpha$ 30 min', linewidth=2)
-    ax.plot(np.logspace(-14,-2), np.divide(dr30min[1][0][0],1E4), 'g:', label=r'IFN$\beta$ 30 min', linewidth=2)
-    plt.legend()
-    plt.savefig(results_dir+'figure5.pdf')
-    
-if fig6==True:
-    fig, ax = plt.subplots()
-    
-
-
 
 def rad_cell_point(samplefile, radius, end_time, sample_size, percent, specList, 
                         suppress=False, dose_species=['I', 6.022E23, 1E-5]):
@@ -216,32 +92,44 @@ def rad_cell_point(samplefile, radius, end_time, sample_size, percent, specList,
             isInList=False
             for y in pList:
                 if p[0]==y[0]:
-                    if y[0]=='R1' or y[0]=='R2':
+                    if y[0]=='R1' or y[0]=='R2': # catch 'R1' and 'R2' and scale them
                         alpha_parameters.append(y[1]*(2*radius**2 + radius*(8E-6)*4)/2.76e-09)
-                    alpha_parameters.append(y[1])
+                    else:
+                        alpha_parameters.append(y[1])
                     isInList=True
                     break
             if isInList==False:
                 # catch S model parameter and scale it
                 if p[0]=='S':
-                    alpha_parameters.append(p.value*(2*radius**2 + radius*(8E-6)*4)/2.76e-09)
+                    alpha_parameters.append(1E4*(8E-6)*radius**2/7.2e-15)
+                elif p[0]=='I': # catch I model parameter, which should be 1.5 nM
+                    alpha_parameters.append(1.5E-9*6.022E23*1E-5)
                 else:
                     alpha_parameters.append(p.value)
         for p in beta_mod.parameters:
             isInList=False
             for y in pList:
                 if p[0]==y[0]:
-                    beta_parameters.append(y[1])
+                    if y[0]=='R1' or y[0]=='R2': # catch 'R1' and 'R2' and scale them
+                        beta_parameters.append(y[1]*(2*radius**2 + radius*(8E-6)*4)/2.76e-09)
+                    else:
+                        beta_parameters.append(y[1])
                     isInList=True
                     break
             if isInList==False:
-                beta_parameters.append(p.value)
+                # catch S model parameter and scale it
+                if p[0]=='S':
+                    beta_parameters.append(1E4*(8E-6)*radius**2/7.2e-15)
+                elif p[0]=='I': # catch I model parameter, which should be 1.5 nM
+                    beta_parameters.append(1.5E-9*6.022E23*1E-5)
+                else:
+                    beta_parameters.append(p.value)
         I_index_Alpha = [el[0] for el in alpha_mod.parameters].index(dose_species[0])
         I_index_Beta = [el[0] for el in beta_mod.parameters].index(dose_species[0])
         
         NA = dose_species[1] # 1
         volEC = dose_species[2] # 1   
-        t=np.linspace(0,end_time)
+        t=np.linspace(0,end_time, num=200)
         # Run simulation
         alpha_parameters[I_index_Alpha] = NA*volEC*radius
         (_, sim) = alpha_mod.simulate(t, param_values=alpha_parameters)
@@ -327,3 +215,374 @@ def rad_cell_dr(samplefile, radii, end_time, sample_size, percent, specList,
     beta_responses =  [[[el[0] for el in beta_responses[s]], [el[1] for el in beta_responses[s]], [el[2] for el in beta_responses[s]]] for s in range(len(alpha_responses))]
     return [alpha_responses, beta_responses]
 
+
+
+if fig3==True:
+    print("Fig 3")
+    fig, (ax1,ax2,ax3) = plt.subplots(nrows=1, ncols=3, figsize=(15,8))
+    plt.ion()
+    matplotlib.rcParams.update({'font.size': 18})
+    ax1.tick_params(labelsize=14)
+    ax2.tick_params(labelsize=14)
+    ax3.tick_params(labelsize=14)
+    
+    jitter=50 # Scale the noise used to separate alpha and beta time points
+    Expt = ['0','5','15','30','60']
+    ax1.set_title("10 pM Time Course \nTheory vs Experiment", fontsize=20)
+    ax1.set_ylabel('pSTAT1 Relative MFI',fontsize=18)
+    ax1.set_xlabel('time (s)',fontsize=18)    
+    ax1.errorbar([int(el)*60+np.random.rand()*jitter for el in Expt],
+                np.divide(IFN_exps[0],gamma),
+                yerr = np.divide(IFN_sigmas[0],gamma),
+                fmt='ro', label=r"Experiment IFN$\alpha$")
+    ax1.errorbar([int(el)*60 for el in Expt],
+                np.divide(IFN_exps[1],gamma),
+                yerr = np.divide(IFN_sigmas[1],gamma),
+                fmt='go', label=r"Experiment IFN$\beta$")
+    ax1.plot(np.linspace(0,3600,num=200),IFN_sims[0][0], 'k')
+    ax1.plot(np.linspace(0,3600,num=200),IFN_sims[0][1], 'k--')
+    ax1.plot(np.linspace(0,3600,num=200),IFN_sims[0][2], 'k--')
+    ax1.plot(np.linspace(0,3600,num=200),IFN_sims[1][0], 'k')
+    ax1.plot(np.linspace(0,3600,num=200),IFN_sims[1][1], 'k:')
+    ax1.plot(np.linspace(0,3600,num=200),IFN_sims[1][2], 'k:')
+    
+    
+    
+    ax2.set_title("90 pM Time Course \nTheory vs Experiment", fontsize=20)
+    ax2.set_xlabel('time (s)',fontsize=18)
+    ax2.errorbar([int(el)*60+np.random.rand()*jitter for el in Expt],
+                np.divide(IFN_exps[2],gamma),
+                yerr = np.divide(IFN_sigmas[2],gamma),
+                fmt='ro', label=r"Experiment IFN$\alpha$")
+    ax2.errorbar([int(el)*60 for el in Expt],
+                np.divide(IFN_exps[3],gamma),
+                yerr = np.divide(IFN_sigmas[3],gamma),
+                fmt='go', label=r"Experiment IFN$\beta$")
+    ax2.plot(np.linspace(0,3600,num=200),IFN_sims[2][0], 'k')
+    ax2.plot(np.linspace(0,3600,num=200),IFN_sims[2][1], 'k--')
+    ax2.plot(np.linspace(0,3600,num=200),IFN_sims[2][2], 'k--')
+    ax2.plot(np.linspace(0,3600,num=200),IFN_sims[3][0], 'k')
+    ax2.plot(np.linspace(0,3600,num=200),IFN_sims[3][1], 'k:')
+    ax2.plot(np.linspace(0,3600,num=200),IFN_sims[3][2], 'k:')
+        
+            
+    ax3.set_title("600 pM Time Course \nTheory vs Experiment", fontsize=20)
+    ax3.set_xlabel('time (s)',fontsize=18)
+    ax3.errorbar([int(el)*60+np.random.rand()*jitter for el in Expt],
+                np.divide(IFN_exps[4],gamma),
+                yerr = np.divide(IFN_sigmas[4],gamma),
+                fmt='ro', label=r"Experiment IFN$\alpha$")
+    ax3.errorbar([int(el)*60 for el in Expt],
+                np.divide(IFN_exps[5],gamma),
+                yerr = np.divide(IFN_sigmas[5],gamma),
+                fmt='go', label=r"Experiment IFN$\beta$")
+    ax3.plot(np.linspace(0,3600,num=200),IFN_sims[4][0], 'k')
+    ax3.plot(np.linspace(0,3600,num=200),IFN_sims[4][1], 'k--')
+    ax3.plot(np.linspace(0,3600,num=200),IFN_sims[4][2], 'k--')
+    ax3.plot(np.linspace(0,3600,num=200),IFN_sims[5][0], 'k')
+    ax3.plot(np.linspace(0,3600,num=200),IFN_sims[5][1], 'k:')
+    ax3.plot(np.linspace(0,3600,num=200),IFN_sims[5][2], 'k:')
+    
+    plt.savefig(results_dir+'figure3.pdf')
+    plt.show()	
+    
+if fig4==True:
+    print("Fig 4")
+    fig, (ax1,ax2) = plt.subplots(nrows=1, ncols=2, figsize=(15,8))
+    matplotlib.rcParams.update({'font.size': 18})
+    
+    dr_curves = bayesian_doseresponse('posterior_samples.csv', np.logspace(-13,np.log10(600E-12)), 3600, nPost, 97.5, ['TotalpSTAT'])    
+    ax1.set_title("Dose Response \nTheory vs Experiment", fontsize=20)
+    ax1.set_ylabel('pSTAT1 Relative MFI',fontsize=18)
+    ax1.set_xlabel('IFN Dose (M)',fontsize=18)
+    ax1.set(xscale='log',yscale='linear')    
+    ax1.errorbar([10*1E-12,(90+1)*1E-12,600*1E-12],np.divide([IFN_exps[el][-1] for el in [0,2,4]],gamma),
+                 yerr = np.divide([IFN_sigmas[el][-1] for el in [0,2,4]],gamma),
+                    fmt='ro', label=r"Experiment IFN$\alpha$")
+    ax1.errorbar([10*1E-12,90*1E-12,600*1E-12],np.divide([IFN_exps[el][-1] for el in [1,3,5]],gamma),
+                 yerr = np.divide([IFN_sigmas[el][-1] for el in [1,3,5]],gamma),
+                    fmt='go', label=r"Experiment IFN$\alpha$")
+    ax1.plot(np.logspace(-13,np.log10(600E-12)), dr_curves[0][0][0], 'r')
+    ax1.plot(np.logspace(-13,np.log10(600E-12)), dr_curves[0][0][1], 'r--')
+    ax1.plot(np.logspace(-13,np.log10(600E-12)), dr_curves[0][0][2], 'r--')             
+    ax1.plot(np.logspace(-13,np.log10(600E-12)), dr_curves[1][0][0], 'g')
+    ax1.plot(np.logspace(-13,np.log10(600E-12)), dr_curves[1][0][1], 'g--')
+    ax1.plot(np.logspace(-13,np.log10(600E-12)), dr_curves[1][0][2], 'g--')     
+
+    dr60min = bayesian_doseresponse('posterior_samples.csv', np.logspace(-14,-2), 3600, nPost, 97.5, ['TotalpSTAT'])    
+    ax2.set_title("Dose Response at 60 minutes", fontsize=20)
+    ax2.set_ylabel('Total pSTAT Count',fontsize=18)
+    ax2.set_xlabel('IFN Dose (M)',fontsize=18)
+    ax2.set(xscale='log',yscale='linear')    
+    ax2.plot(np.logspace(-14,-2), dr60min[0][0][0], 'r', linewidth=2)
+    #ax2.plot(np.logspace(-14,-2), dr60min[0][0][1], 'r--')
+    #ax2.plot(np.logspace(-14,-2), dr60min[0][0][2], 'r--')    
+    ax2.plot(np.logspace(-14,-2), dr60min[1][0][0], 'g', linewidth=2)
+    #ax2.plot(np.logspace(-14,-2), dr60min[1][0][1], 'g--')
+    #ax2.plot(np.logspace(-14,-2), dr60min[1][0][2], 'g--')
+    
+    plt.savefig(results_dir+'figure4.pdf')
+    plt.show()
+
+if fig5==True:
+    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(15,8))
+    dr5min = bayesian_doseresponse('posterior_samples.csv', np.logspace(-14,-2), 5*60, nPost, 97.5, ['TotalpSTAT'])    
+    dr15min = bayesian_doseresponse('posterior_samples.csv', np.logspace(-14,-2), 15*60, nPost, 97.5, ['TotalpSTAT'])        
+    dr30min = bayesian_doseresponse('posterior_samples.csv', np.logspace(-14,-2), 30*60, nPost, 97.5, ['TotalpSTAT'])    
+    ax.set_title("Dose Response at Different Times", fontsize=20)
+    ax.set_ylabel('pSTAT Normalized by Total STAT',fontsize=18)
+    ax.set_xlabel('IFN Dose (M)',fontsize=18)
+    ax.set(xscale='log',yscale='linear')    
+    ax.plot(np.logspace(-14,-2), np.divide(dr5min[0][0][0],1E4), 'r', label=r'IFN$\alpha$ 5 min', linewidth=2)
+    ax.plot(np.logspace(-14,-2), np.divide(dr5min[1][0][0],1E4), 'g', label=r'IFN$\beta$ 5 min', linewidth=2)
+    ax.plot(np.logspace(-14,-2), np.divide(dr15min[0][0][0],1E4), 'r--', label=r'IFN$\alpha$ 15 min', linewidth=2)
+    ax.plot(np.logspace(-14,-2), np.divide(dr15min[1][0][0],1E4), 'g--', label=r'IFN$\beta$ 15 min', linewidth=2)
+    ax.plot(np.logspace(-14,-2), np.divide(dr30min[0][0][0],1E4), 'r:', label=r'IFN$\alpha$ 30 min', linewidth=2)
+    ax.plot(np.logspace(-14,-2), np.divide(dr30min[1][0][0],1E4), 'g:', label=r'IFN$\beta$ 30 min', linewidth=2)
+    plt.legend()
+    plt.savefig(results_dir+'figure5.pdf')
+    plt.show()
+    
+if fig6==True:
+    fig, ax = plt.subplots()
+    radCell60min = rad_cell_dr('posterior_samples.csv', np.logspace(-8,-3), 3600, nPost, 97.5, ['TotalpSTAT'])                          
+    ax.set_title("Cell Size for 60 minute Exposure", fontsize=20)
+    ax.set_ylabel('pSTAT Normalized by Total STAT',fontsize=18)
+    ax.set_xlabel('Cell Radius (microns)',fontsize=18)
+    ax.set(xscale='log',yscale='linear')
+    Snorm = np.divide(np.multiply(1E4*8E-6,np.square(np.logspace(-8,-3))),7.2e-15)
+    normalized_alpha_response = np.divide(radCell60min[0][0][0],Snorm) 
+    normalized_beta_response = np.divide(radCell60min[1][0][0],Snorm) 
+
+    ax.plot(np.logspace(-2,3)[10:-2], normalized_alpha_response[10:-2], 'r', linewidth=2)
+    ax.plot(np.logspace(-2,3)[10:-2], normalized_beta_response[10:-2], 'g', linewidth=2)
+    
+    plt.savefig(results_dir+'figure6.pdf')
+    plt.show()
+
+if fig7_1==True:
+    import pysbplotlib as pyplt
+    import IFN_alpha_altSOCS as IFNaSOCS
+    import IFN_beta_altSOCS as IFNbSOCS
+    sample_size=nPost
+    import pandas as pd
+    samples = pd.read_csv('posterior_samples.csv', index_col=0)
+    variable_names = list(samples.columns.values)
+    (nSamples, nVars) = samples.shape
+    curve_population20 = [[],[]]
+    curve_population60 = [[],[]]    
+    for r in range(sample_size):
+        parameter_vector = samples.iloc[r]    
+        pList = [[variable_names[i], parameter_vector.loc[variable_names[i]]] for i in range(nVars) if variable_names[i] != 'gamma']
+
+        k4_dictA = {}
+        k420_dictA = {}
+        k460_dictA = {}
+
+        k4_dictB = {}
+        k420_dictB = {}
+        k460_dictB = {}
+        for p in pList:
+            if p[0]=='kd4':
+                k4_dictA.update({p[0]:p[1]})
+                k420_dictA.update({p[0]:p[1]*20})
+                k460_dictA.update({p[0]:p[1]*60})                
+            elif p[0]=='k_d4':
+                k4_dictB.update({p[0]:p[1]})
+                k420_dictB.update({p[0]:p[1]*20})
+                k460_dictB.update({p[0]:p[1]*60})                
+            else:
+                k4_dictA.update({p[0]:p[1]})
+                k420_dictA.update({p[0]:p[1]})
+                k460_dictA.update({p[0]:p[1]})  
+                
+                k4_dictB.update({p[0]:p[1]})
+                k420_dictB.update({p[0]:p[1]})
+                k460_dictB.update({p[0]:p[1]})                
+                
+        normA = pyplt.doseresponse(IFNaSOCS, ['IFN',np.logspace(-14,-2,num=50)], np.linspace(0,3600,num=200),
+                         [['TotalpSTAT',"Total pSTAT"]], parameters=k4_dictA, suppress=True)
+        normB = pyplt.doseresponse(IFNbSOCS, ['IFN',np.logspace(-14,-2,num=50)], np.linspace(0,3600,num=200),
+                         [['TotalpSTAT',"Total pSTAT"]], parameters=k4_dictB, suppress=True)
+        A20 = pyplt.doseresponse(IFNaSOCS, ['IFN',np.logspace(-14,-2,num=50)], np.linspace(0,3600,num=200),
+                         [['TotalpSTAT',"Total pSTAT"]], parameters=k420_dictA, suppress=True)
+        B20 = pyplt.doseresponse(IFNbSOCS, ['IFN',np.logspace(-14,-2,num=50)], np.linspace(0,3600,num=200),
+                         [['TotalpSTAT',"Total pSTAT"]], parameters=k420_dictB, suppress=True)
+        A60 = pyplt.doseresponse(IFNaSOCS, ['IFN',np.logspace(-14,-2,num=50)], np.linspace(0,3600,num=200),
+                         [['TotalpSTAT',"Total pSTAT"]], parameters=k460_dictA, suppress=True)
+        B60 = pyplt.doseresponse(IFNbSOCS, ['IFN',np.logspace(-14,-2,num=50)], np.linspace(0,3600,num=200),
+                         [['TotalpSTAT',"Total pSTAT"]], parameters=k460_dictB, suppress=True)
+        
+        curve_population20[0].append(np.divide(A20,normA)[0])
+        curve_population60[0].append(np.divide(A60,normA)[0])
+        curve_population20[1].append(np.divide(B20,normB)[0])
+        curve_population60[1].append(np.divide(B60,normB)[0])
+    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(15,8))
+    ax.set_title("Refractoriness by Increasing K4", fontsize=20)
+    ax.set_ylabel('pSTAT Normalized by Unprimed pSTAT Count',fontsize=18)
+    ax.set_xlabel('IFN (M)',fontsize=18)
+    ax.set(xscale='log',yscale='linear')
+    ax.plot(np.logspace(-14,-2,num=50), np.mean(curve_population20[0], axis=0), 'r', label=r'IFN$\alpha$ K4*20', linewidth=2)
+    ax.plot(np.logspace(-14,-2,num=50), np.mean(curve_population60[0], axis=0), 'r--', label=r'IFN$\alpha$ K4*60', linewidth=2)
+    ax.plot(np.logspace(-14,-2,num=50), np.mean(curve_population20[1], axis=0), 'g', label=r'IFN$\beta$ K4*20', linewidth=2)
+    ax.plot(np.logspace(-14,-2,num=50), np.mean(curve_population60[1], axis=0), 'g--', label=r'IFN$\beta$ K4*60', linewidth=2)
+    plt.legend()
+    plt.savefig(results_dir+'figure7_1.pdf')
+    plt.show()
+    
+if fig7_2==True:
+    import pysbplotlib as pyplt
+    import IFN_alpha_altSOCS as IFNaSOCS
+    import IFN_beta_altSOCS as IFNbSOCS
+    sample_size=nPost
+    import pandas as pd
+    samples = pd.read_csv('posterior_samples.csv', index_col=0)
+    variable_names = list(samples.columns.values)
+    (nSamples, nVars) = samples.shape
+    curve_population15 = [[],[]]
+    curve_population60 = [[],[]]    
+    for r in range(sample_size):
+        parameter_vector = samples.iloc[r]    
+        pList = [[variable_names[i], parameter_vector.loc[variable_names[i]]] for i in range(nVars) if variable_names[i] != 'gamma']
+
+        k4_dictA = {}
+        k415_dictA = {'fracUSP18':0.6, 'USP18modfac':15}
+        k460_dictA = {'fracUSP18':0.6, 'USP18modfac':60}
+
+        k4_dictB = {}
+        k415_dictB = {'fracUSP18':0.6, 'USP18modfac':15}
+        k460_dictB = {'fracUSP18':0.6, 'USP18modfac':60}
+        for p in pList:
+            if p[0]=='kd4':
+                k4_dictA.update({p[0]:p[1]})
+                k415_dictA.update({p[0]:p[1]})
+                k460_dictA.update({p[0]:p[1]})                
+            elif p[0]=='k_d4':
+                k4_dictB.update({p[0]:p[1]})
+                k415_dictB.update({p[0]:p[1]})
+                k460_dictB.update({p[0]:p[1]})                
+            else:
+                k4_dictA.update({p[0]:p[1]})
+                k415_dictA.update({p[0]:p[1]})
+                k460_dictA.update({p[0]:p[1]})  
+                
+                k4_dictB.update({p[0]:p[1]})
+                k415_dictB.update({p[0]:p[1]})
+                k460_dictB.update({p[0]:p[1]})                
+                
+        normA = pyplt.doseresponse(IFNaSOCS, ['IFN',np.logspace(-14,-2,num=50)], np.linspace(0,3600,num=200),
+                         [['TotalpSTAT',"Total pSTAT"]], parameters=k4_dictA, suppress=True)
+        normB = pyplt.doseresponse(IFNbSOCS, ['IFN',np.logspace(-14,-2,num=50)], np.linspace(0,3600,num=200),
+                         [['TotalpSTAT',"Total pSTAT"]], parameters=k4_dictB, suppress=True)
+        A15 = pyplt.doseresponse(IFNaSOCS, ['IFN',np.logspace(-14,-2,num=50)], np.linspace(0,3600,num=200),
+                         [['TotalpSTAT',"Total pSTAT"]], parameters=k420_dictA, suppress=True)
+        B15 = pyplt.doseresponse(IFNbSOCS, ['IFN',np.logspace(-14,-2,num=50)], np.linspace(0,3600,num=200),
+                         [['TotalpSTAT',"Total pSTAT"]], parameters=k420_dictB, suppress=True)
+        A60 = pyplt.doseresponse(IFNaSOCS, ['IFN',np.logspace(-14,-2,num=50)], np.linspace(0,3600,num=200),
+                         [['TotalpSTAT',"Total pSTAT"]], parameters=k460_dictA, suppress=True)
+        B60 = pyplt.doseresponse(IFNbSOCS, ['IFN',np.logspace(-14,-2,num=50)], np.linspace(0,3600,num=200),
+                         [['TotalpSTAT',"Total pSTAT"]], parameters=k460_dictB, suppress=True)
+        
+        curve_population15[0].append(np.divide(A20,normA)[0])
+        curve_population60[0].append(np.divide(A60,normA)[0])
+        curve_population15[1].append(np.divide(B20,normB)[0])
+        curve_population60[1].append(np.divide(B60,normB)[0])
+    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(15,8))
+    ax.set_title("Refractoriness by Modelling USP18", fontsize=20)
+    ax.set_ylabel('pSTAT Normalized by Unprimed pSTAT Count',fontsize=18)
+    ax.set_xlabel('IFN (M)',fontsize=18)
+    ax.set(xscale='log',yscale='linear')
+    ax.plot(np.logspace(-14,-2,num=50), np.mean(curve_population15[0], axis=0), 'r', label=r'IFN$\alpha$ K4*20', linewidth=2)
+    ax.plot(np.logspace(-14,-2,num=50), np.mean(curve_population60[0], axis=0), 'r--', label=r'IFN$\alpha$ K4*60', linewidth=2)
+    ax.plot(np.logspace(-14,-2,num=50), np.mean(curve_population15[1], axis=0), 'g', label=r'IFN$\beta$ K4*20', linewidth=2)
+    ax.plot(np.logspace(-14,-2,num=50), np.mean(curve_population60[1], axis=0), 'g--', label=r'IFN$\beta$ K4*60', linewidth=2)
+    plt.legend()
+    plt.savefig(results_dir+'figure7_2.pdf')
+    plt.show()
+    
+if fig8==True:
+    import pysbplotlib as pyplt
+    import IFN_alpha_altSOCS as IFNaSOCS
+    import IFN_beta_altSOCS as IFNbSOCS
+    sample_size=nPost
+    import pandas as pd
+    samples = pd.read_csv('posterior_samples.csv', index_col=0)
+    variable_names = list(samples.columns.values)
+    (nSamples, nVars) = samples.shape
+    dr_populationNoInt = [[],[]]
+    dr_populationInt = [[],[]]  
+    tc_populations = [[],[],[],[]]
+    for r in range(sample_size):
+        parameter_vector = samples.iloc[r]    
+        pList = [[variable_names[i], parameter_vector.loc[variable_names[i]]] for i in range(nVars) if variable_names[i] != 'gamma']
+
+        dictA = {}
+        dictAInt = {'Internalization_switch':1}
+
+        dictB = {}
+        dictBInt = {'Internalization_switch':1}
+
+        for p in pList:
+            if p[0]=='kd4':
+                dictA.update({p[0]:p[1]})
+                dictAInt.update({p[0]:p[1]})
+            elif p[0]=='k_d4':
+                dictB.update({p[0]:p[1]})
+                dictBInt.update({p[0]:p[1]})
+            else:
+                dictA.update({p[0]:p[1]})
+                dictAInt.update({p[0]:p[1]})
+                
+                dictB.update({p[0]:p[1]})
+                dictBInt.update({p[0]:p[1]})
+                
+        A = pyplt.doseresponse(IFNaSOCS, ['IFN',np.logspace(-14,-2,num=50)], np.linspace(0,3600,num=200),
+                         [['TotalpSTAT',"Total pSTAT"]], parameters=dictA, suppress=True)
+        AInt = pyplt.doseresponse(IFNaSOCS, ['IFN',np.logspace(-14,-2,num=50)], np.linspace(0,3600,num=200),
+                         [['TotalpSTAT',"Total pSTAT"]], parameters=dictAInt, suppress=True)
+        B = pyplt.doseresponse(IFNbSOCS, ['IFN',np.logspace(-14,-2,num=50)], np.linspace(0,3600,num=200),
+                         [['TotalpSTAT',"Total pSTAT"]], parameters=dictB, suppress=True)
+        BInt = pyplt.doseresponse(IFNbSOCS, ['IFN',np.logspace(-14,-2,num=50)], np.linspace(0,3600,num=200),
+                         [['TotalpSTAT',"Total pSTAT"]], parameters=dictBInt, suppress=True)
+        Atc = pyplt.timecourse(IFNaSOCS, np.linspace(0,3600,num=200), [['Free_R1',"Free_R1"],['Free_R1',"Free_R1"]],
+                               suppress=True, parameters=dictAInt)
+        Btc = pyplt.timecourse(IFNbSOCS, np.linspace(0,3600,num=200), [['Free_R1',"Free_R1"],['Free_R1',"Free_R1"]],
+                               suppress=True, parameters=dictBInt)
+        
+        dr_populationNoInt[0].append(A)
+        dr_populationNoInt[1].append(B)
+        dr_populationInt[0].append(AInt)
+        dr_populationInt[1].append(BInt)
+        tc_populations[0].append(Atc['Free_R1'])
+        tc_populations[1].append(Btc['Free_R1'])
+        tc_populations[2].append(Atc['Free_R2'])
+        tc_populations[3].append(Btc['Free_R2'])
+        
+        
+    fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(15,8))
+    axes[1][1].set_off()
+    axes[0][0].set_title(r"IFN$\alpha$ Receptor Internalization", fontsize=20)
+    axes[0][1].set_title(r"IFN$\beta$ Receptor Internalization", fontsize=20)    
+    axes[1][0].set_title("pSTAT Reduced by Internalization", fontsize=20)
+    axes[0][0].set_ylabel('Receptor Count',fontsize=18)
+    axes[1][0].set_ylabel('pSTAT Normalized by Total STAT',fontsize=18)
+    axes[0][0].set_xlabel('Time (s)',fontsize=18)
+    axes[0][1].set_xlabel('Time (s)',fontsize=18)    
+    axes[1][0].set_xlabel('IFN (M)', fontsize=18)
+    axes[1][0].set(xscale='log',yscale='linear')
+
+    axes[0][0].plot(np.linspace(0, 3600), np.mean(tc_populations[0], axis=0), 'xkcd:orange', label='R1', linewidth=2)
+    axes[0][1].plot(np.linspace(0, 3600), np.mean(tc_populations[1], axis=0), 'xkcd:orange', label='R1', linewidth=2)
+    axes[0][0].plot(np.linspace(0, 3600), np.mean(tc_populations[2], axis=0), 'xkcd:blue', label='R2', linewidth=2)
+    axes[0][1].plot(np.linspace(0, 3600), np.mean(tc_populations[3], axis=0), 'xkcd:blue', label='R2', linewidth=2)
+
+    axes[1][0].plot(np.logspace(-14,-2,num=50), np.mean(dr_populationNoInt[0], axis=0), 'r', label=r'IFN$\alpha$ No Int', linewidth=2)
+    axes[1][0].plot(np.logspace(-14,-2,num=50), np.mean(dr_populationNoInt[1], axis=0), 'g', label=r'IFN$\beta$ No Int', linewidth=2)
+    axes[1][0].plot(np.logspace(-14,-2,num=50), np.mean(dr_populationInt[0], axis=0), 'r--', label=r'IFN$\alpha$ Int', linewidth=2)
+    axes[1][0].plot(np.logspace(-14,-2,num=50), np.mean(dr_populationInt[1], axis=0), 'g--', label=r'IFN$\beta$ Int', linewidth=2)
+
+    plt.legend()
+    plt.savefig(results_dir+'figure8.pdf')
+    plt.show()
+
+    

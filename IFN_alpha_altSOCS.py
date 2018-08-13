@@ -47,6 +47,10 @@ Parameter('kd2', 0.015) #*10              # ligand-monomer dissociation
 Expression('ka4', 1e-12/(volPM)) #*20#e-12
 Parameter('kd4', 0.3) #*20
 
+#USP18-bound dissociation constants are higher
+Parameter('USP18modfac',15) # =15 literature
+Expression('kd4_USP18',kd4*USP18modfac)
+
 Expression('q1', (ka1/kd1))
 Expression('q2', (ka2/kd2))
 Expression('q4', (ka4/kd4))
@@ -54,6 +58,7 @@ Expression('q3', (q2*q4)/(q1))
 
 Expression('ka3', ka4)
 Expression('kd3', ka3/q3) #(ka3)/(q3)
+Expression('kd3_USP18',kd3*USP18modfac)
 
 Parameter('kpa', 1E-6)#6e-5##OLD VALUE was (1e6)/(NA*volCP)=1e-6
 Parameter('kpu', 1E-3)#1e-3
@@ -97,6 +102,7 @@ Monomer('STAT',['j','loc','fdbk'],{'j':['U','P'],'loc':['Cyt','Nuc']})
 Monomer('SOCSmRNA',['loc','reg'],{'loc':['Nuc','Cyt']})
 Monomer('SOCS',['site'])			
 
+Monomer('R2USP18',['re','ri','loc'],{'loc':['in','out']}) 
 
 # =============================================================================
 # # Seed Species
@@ -104,7 +110,12 @@ Monomer('SOCS',['site'])
 Initial(IFN_alpha2(r1=None,r2=None), Ia)
 
 Initial(IFNAR1(re=None, ri=None, loc='out'), R1)
-Initial(IFNAR2(re=None, ri=None, loc='out'), R2)
+
+Parameter('fracUSP18',0) # 0.6 is reasonable when USP18 turned on
+Expression('R2_0',(1-fracUSP18)*R2)
+Expression('R2USP18_0',fracUSP18*R2)
+Initial(IFNAR2(re=None, ri=None, loc='out'), R2_0)
+Initial(R2USP18(re=None, ri=None, loc='out'), R2USP18_0)
 
 Initial(STAT(j='U',loc='Cyt',fdbk=None), S)
 
@@ -135,6 +146,8 @@ Observable('SOCSmRNACyt', SOCSmRNA(loc='Cyt'))
 Observable('BoundSOCS', IFNAR2(re=None, ri=3, loc='out')%SOCS(site=3))
 Observable('TSOCS', IFNAR1(re=1,ri=None,loc='out')%IFN_alpha2(r1=1,r2=2)%IFNAR2(re=2, ri=3, loc='out')%SOCS(site=3))
 
+Observable('TUSP18',IFNAR1(re=1, ri=None, loc='out')%IFN_alpha2(r1=1,r2=2)%R2USP18(re=2, ri=None, loc='out'))
+
 # =============================================================================
 # # Reaction rules
 # =============================================================================
@@ -142,12 +155,19 @@ Observable('TSOCS', IFNAR1(re=1,ri=None,loc='out')%IFN_alpha2(r1=1,r2=2)%IFNAR2(
 Rule('IFN_bind_R1', IFNAR1(re=None,ri=None,loc='out') + IFN_alpha2(r1=None,r2=None) | IFNAR1(re=1,ri=None,loc='out')%IFN_alpha2(r1=1,r2=None), ka1, kd1 )
 Rule('IFN_bind_R2', IFNAR2(re=None,ri=WILD,loc='out') + IFN_alpha2(r1=None,r2=None) | IFNAR2(re=1,ri=WILD,loc='out')%IFN_alpha2(r1=1,r2=None), ka2, kd2 )
 
+Rule('IFN_bind_R2USP18', R2USP18(re=None,ri=WILD,loc='out') + IFN_alpha2(r1=None,r2=None) | R2USP18(re=1,ri=WILD,loc='out')%IFN_alpha2(r1=1,r2=None), ka2, kd2 )
+
+
 Rule('IR1_bind_R2', IFNAR1(re=1,ri=None,loc='out')%IFN_alpha2(r1=1,r2=None) + IFNAR2(re=None,ri=WILD,loc='out') | IFNAR1(re=1,ri=None,loc='out')%IFN_alpha2(r1=1,r2=2)%IFNAR2(re=2,ri=WILD,loc='out'), ka3, kd3)
 Rule('IR2_bind_R1', IFNAR2(re=1,ri=WILD,loc='out')%IFN_alpha2(r1=1,r2=None) + IFNAR1(re=None,ri=None,loc='out') | IFNAR1(re=1,ri=None,loc='out')%IFN_alpha2(r1=1,r2=2)%IFNAR2(re=2,ri=WILD,loc='out'), ka4, kd4)
+
+Rule('IR1_bind_R2USP18', IFNAR1(re=1,ri=None,loc='out')%IFN_alpha2(r1=1,r2=None) + R2USP18(re=None,ri=WILD,loc='out') | IFNAR1(re=1,ri=None,loc='out')%IFN_alpha2(r1=1,r2=2)%R2USP18(re=2,ri=WILD,loc='out'), ka3, kd3_USP18)
+Rule('IR2USP18_bind_R1', R2USP18(re=1,ri=WILD,loc='out')%IFN_alpha2(r1=1,r2=None) + IFNAR1(re=None,ri=None,loc='out') | IFNAR1(re=1,ri=None,loc='out')%IFN_alpha2(r1=1,r2=2)%R2USP18(re=2,ri=WILD,loc='out'), ka4, kd4_USP18)
 
 #  STAT Block
 # Alpha:
 Rule('activate_STAT', IFNAR1(re=1,ri=None,loc='out')%IFN_alpha2(r1=1,r2=2)%IFNAR2(re=2,ri=None,loc='out') + STAT(j='U',loc='Cyt',fdbk=None) >> IFNAR1(re=1,ri=None,loc='out')%IFN_alpha2(r1=1,r2=2)%IFNAR2(re=2,ri=None,loc='out') + STAT(j='P',loc='Cyt',fdbk=None), kpa )
+Rule('USP18activate_STAT', IFNAR1(re=1,ri=None,loc='out')%IFN_alpha2(r1=1,r2=2)%R2USP18(re=2,ri=None,loc='out') + STAT(j='U',loc='Cyt',fdbk=None) >> IFNAR1(re=1,ri=None,loc='out')%IFN_alpha2(r1=1,r2=2)%R2USP18(re=2,ri=None,loc='out') + STAT(j='P',loc='Cyt',fdbk=None), kpa )
 
 Rule('deactivate_STAT', STAT(j='P', loc='Cyt',fdbk=None) >> STAT(j='U', loc='Cyt',fdbk=None), kpu )
 
@@ -157,14 +177,17 @@ Rule('degrade_SOCS', SOCS(site=None) >> None, SOCSdeg)
 # SOCS Inhibition Feedback
 # Alpha
 Rule('SOCS_inhibition1', SOCS(site=None) + IFNAR2(re=WILD, ri=None, loc='out') | IFNAR2(re=WILD, ri=3, loc='out')%SOCS(site=3), kSOCSon, kSOCSoff)
+Rule('USP18_SOCS_inhibition', SOCS(site=None) + R2USP18(re=WILD, ri=None, loc='out') | R2USP18(re=WILD, ri=3, loc='out')%SOCS(site=3), kSOCSon, kSOCSoff)
 
 # Internalization Block
 # Basal:
-Rule('Basal_int1', IFNAR1(re=None, ri=None, loc='out') | IFNAR1(re=None, ri=None, loc='in'), kIntBasal_r1, krec_r1)
-Rule('Basal_int2', IFNAR2(re=None, ri=None, loc='out') | IFNAR2(re=None, ri=None, loc='in'), kIntBasal_r2, krec_r2)
-Rule('Basal_intT', IFNAR1(re=1, ri=None, loc='in')%IFN_alpha2(r1=1,r2=2)%IFNAR2(re=2, ri=None, loc='in') >> IFNAR1(re=None, ri=None, loc='in') + IFNAR2(re=None, ri=None, loc='in'), kdeg_a)
+Rule('Basal_int1', IFNAR1(re=WILD, ri=WILD, loc='out') | IFNAR1(re=WILD, ri=WILD, loc='in'), kIntBasal_r1, krec_r1)
+Rule('Basal_int2', IFNAR2(re=WILD, ri=WILD, loc='out') | IFNAR2(re=WILD, ri=WILD, loc='in'), kIntBasal_r2, krec_r2)
+Rule('Basal_int3', R2USP18(re=WILD, ri=WILD, loc='out') | R2USP18(re=WILD, ri=WILD, loc='in'), kIntBasal_r2, krec_r2)
 # Alpha Block:
-Rule('IFNa_intT', IFNAR1(re=1, ri=None, loc='out')%IFN_alpha2(r1=1,r2=2)%IFNAR2(re=2, ri=None, loc='out') >> IFNAR1(re=1,ri=None,loc='in')%IFN_alpha2(r1=1,r2=2)%IFNAR2(re=2,ri=None,loc='in'), kint_a)
-Rule('Rec_1', IFNAR1(re=None, ri=None, loc='in')>>IFNAR1(re=None, ri=None, loc='out'), krec_a1)
-Rule('Rec_2', IFNAR2(re=None, ri=None, loc='in')>>IFNAR2(re=None, ri=None, loc='out'), krec_a2)
+Rule('IFNb_intT', IFNAR1(re=1, ri=WILD, loc='out')%IFN_alpha2(r1=1,r2=2)%IFNAR2(re=2, ri=WILD, loc='out') >> IFNAR1(re=1,ri=None,loc='in')%IFN_alpha2(r1=1,r2=2)%IFNAR2(re=2,ri=WILD,loc='in'), kint_a)
+Rule('IFNb_intT_USP18', IFNAR1(re=1, ri=WILD, loc='out')%IFN_alpha2(r1=1,r2=2)%R2USP18(re=2, ri=WILD, loc='out') >> IFNAR1(re=1,ri=None,loc='in')%IFN_alpha2(r1=1,r2=2)%R2USP18(re=2,ri=WILD,loc='in'), kint_a)
+Rule('Rec_1', IFNAR1(re=None, ri=WILD, loc='in')>>IFNAR1(re=None, ri=WILD, loc='out'), krec_a1)
+Rule('Rec_2', IFNAR2(re=None, ri=WILD, loc='in')>>IFNAR2(re=None, ri=WILD, loc='out'), krec_a2)
+Rule('Rec_3', R2USP18(re=None, ri=WILD, loc='in')>>R2USP18(re=None, ri=WILD, loc='out'), krec_a2)
 
