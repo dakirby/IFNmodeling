@@ -11,9 +11,12 @@ do this, but for now it is pretty much only useful to me.
 import os
 script_dir = os.path.dirname(__file__)
 results_dir = os.path.join(script_dir, 'MCMC_Results/')
+chain_results_dir = results_dir+'Chain_Results/'
 if not os.path.isdir(results_dir):
     os.makedirs(results_dir)
-
+if not os.path.isdir(chain_results_dir):
+    os.makedirs(chain_results_dir)
+    
 import Experimental_Data as ED
 # Global data import since this script will be used exclusively on IFN data    
 IFN_exps = [ED.data.loc[(ED.data.loc[:,'Dose (pM)']==10) & (ED.data.loc[:,'Interferon']=="Alpha"),['0','5','15','30','60']].values[0],
@@ -41,6 +44,7 @@ import pandas as pd
 from pysb.export import export
 from multiprocessing import Process, Queue, JoinableQueue, cpu_count
 import itertools
+import time
 
 # =============================================================================
 # Takes an initial condition and generates nChains randomized initial conditions
@@ -395,11 +399,12 @@ def gelman_rubin_convergence(chain_record):
     numChains = len(chain_record)
     column_names = list(chain_record[0].columns.values)
     stats = []
+    n = min([chain_record[i].shape[0] for i in range(len(chain_record))])
     for variable in column_names:
         chain_mean = [chain_record[i][variable].mean() for i in range(numChains)]
         W = np.mean([(chain_record[i][variable].std())**2 for i in range(numChains)])
         B = chain_record[0].shape[0]*np.std(chain_mean, ddof=1)**2
-        Var = (1-1/chain_record[0].shape[0])*W+B/chain_record[0].shape[0]
+        Var = (1-1/n)*W+B/n
         Rhat = np.sqrt(Var/W)
         stats.append([variable, Rhat])
     df = pd.DataFrame.from_records(stats, columns=['variable','GR Statistic'])
@@ -465,7 +470,7 @@ def get_parameter_distributions(pooled_results, burn_rate, down_sample):
     return combined_samples
 
 # =============================================================================
-# plot_parameter_aurocorrelations() plots the aurocorrelation of each parameter
+# plot_parameter_autocorrelations() plots the autocorrelation of each parameter
 # from a given chain, to check that downsampling was sufficient to create
 # independent samples from the posterior
 # Inputs:
@@ -475,7 +480,7 @@ def get_parameter_distributions(pooled_results, burn_rate, down_sample):
 #   chain_autocorrelation.pdf (file) = the plots for the input chain, saved as a pdf
 # Returns: nothing        
 # =============================================================================
-def plot_parameter_aurocorrelations(df):
+def plot_parameter_autocorrelations(df):
     k = len(df.columns) # total number subplots
     n = 2 # number of chart columns
     m = (k - 1) // n + 1 # number of chart rows
@@ -564,6 +569,8 @@ def mh(ID, jobs, result):
                 print("Chain {} Acceptance rate = {:.1f}%".format(ID, acceptance/progress_bar*100))
                 with open(results_dir+'progress.txt','a') as f:
                     f.write("Chain {} is {:.1f}% done, currently averaging {:.1f}% acceptance.\n".format(ID, i/n*100,acceptance/progress_bar*100))
+                with open(chain_results_dir+str(ID)+'chain.txt','w') as g:
+                    g.write(str(model_record))
             proposal = J(model_record[old_index])
             new_score = score_model(*[proposal[j][1] for j in range(len(proposal))], beta)
             asymmetry_factor = 1 # log normal proposal distributions are asymmetric
@@ -576,7 +583,7 @@ def mh(ID, jobs, result):
                 acceptance += 1
         result.put(model_record)
 
-def MCMC(n, theta_0, beta, chains, burn_rate=0.1, down_sample=1, max_attempts=6, pflag=True):
+def MCMC(n, theta_0, beta, chains, burn_rate=0.1, down_sample=1, max_attempts=6, pflag=True, cpu=None):
     # Check input parameters
     mcmcChecks(n, theta_0, beta, chains, burn_rate, down_sample, max_attempts)
     print("Performing MCMC Analysis")
@@ -595,6 +602,10 @@ def MCMC(n, theta_0, beta, chains, burn_rate=0.1, down_sample=1, max_attempts=6,
         NUMBER_OF_PROCESSES = cpu_count()-1
     else:
         NUMBER_OF_PROCESSES = chains
+    if cpu != None: NUMBER_OF_PROCESSES = cpu # Manual override of core number selection
+    print("Using {} threads".format(NUMBER_OF_PROCESSES))
+    f = open('progress.txt','w')
+    f.close()
     jobs = Queue()
     result = JoinableQueue()
     for m in range(chains):
@@ -619,7 +630,7 @@ def MCMC(n, theta_0, beta, chains, burn_rate=0.1, down_sample=1, max_attempts=6,
     total_samples = sum([len(i) for i in pool_results])
     print("Average acceptance rate was {:.1f}%".format(total_samples*100/(n*chains)))
     samples = get_parameter_distributions(pool_results, burn_rate, down_sample)
-    plot_parameter_aurocorrelations(samples)
+    plot_parameter_autocorrelations(samples)
     get_summary_statistics(samples)
     with open(results_dir+'simulation_summary.txt','w') as f:
         f.write('Temperature used was {}\n'.format(beta))
@@ -803,6 +814,47 @@ def MAP(posterior_file):
             best_score=new_score
             best_model=model.copy()
     return best_model
+
+# =============================================================================
+# profile creates a speed up profile for a piece of code, in this case mcmc.py
+# It assumes that the first value in processes is 1
+# Inputs: processes (list) = a list of int values for number of threads to test with
+#                             first element must be 1 to test serial time
+# Outputs: plot of the speedup 
+# =============================================================================
+def profile(processes):
+    if processes[0]!=1:
+        print("Must test serial time. Please ensure processes[0]==1")
+        return 1
+    plt.close('all')
+    modelfiles = ['IFN_alpha_altSOCS_ppCompatible','IFN_beta_altSOCS_ppCompatible']
+    # Write modelfiles
+    alpha_model = __import__(modelfiles[0])
+    py_output = export(alpha_model.model, 'python')
+    with open('ODE_system_alpha.py','w') as f:
+        f.write(py_output)
+    beta_model = __import__(modelfiles[1])
+    py_output = export(beta_model.model, 'python')
+    with open('ODE_system_beta.py','w') as f:
+        f.write(py_output)
+    p0=[['kpa',1E-6,0.1,'log'],['kSOCSon',1E-6,0.1,'log'],['kd4',0.3,0.2,'log'],
+        ['k_d4',0.006,0.5,'log'],['delR',0,500,'linear'],
+        ['gamma',2,0.5,'log']]
+# ==========================================================
+    times = []
+    for p in processes:
+        tic = time.clock()
+        MCMC(500, p0, 8, 8, burn_rate=0.05, down_sample=2, cpu=p)
+        toc = time.clock()
+        times.append(toc - tic)
+    fig, ax = plt.subplots()
+    ax.scatter([1]+processes[1:], [1]+[times[0]/times[i] for i in range(1,len(times))], 'b', markersize=64)
+    ax.set_title('Profiling MCMC')
+    ax.set_xlabel('Number of Threads')
+    ax.set_ylabel('Speed up')
+    plt.savefig('speedup.pdf')
+    plt.show()
+
         
 def main():
     plt.close('all')
@@ -833,7 +885,7 @@ def main():
 # =============================================================================
     #   (n, theta_0, beta, chains, burn_rate=0.1, down_sample=1, max_attempts=6, pflag=False)
     MCMC(500, p0, 8, 3, burn_rate=0.05, down_sample=2)# n, theta, beta=3.375
-
+    
 # Testing functions
     #sims = bayesian_timecourse('posterior_samples.csv', 100E-12, 3600, 50, 95, ['TotalpSTAT'])
     #testChain = pd.read_csv('test_posterior_samples.csv',index_col=0)
@@ -841,6 +893,7 @@ def main():
     #df = pd.read_csv('posterior_samples.csv',index_col=0)
     #plot_parameter_distributions(df, title='parameter_distributions.pdf', save=True)
     #print(MAP('posterior_samples.csv'))
+    #profile([1,2,3])
     
 if __name__ == '__main__':
     main()

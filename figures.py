@@ -41,11 +41,11 @@ if not os.path.isdir(results_dir):
     os.makedirs(results_dir)
 
 
-fig3=True
-fig4=True
-fig5=True
-fig6=True
-fig7_1=True
+fig3=False
+fig4=False
+fig5=False
+fig6=False
+fig7_1=False
 fig7_2=True
 fig8=True
 gamma = 3.17
@@ -475,9 +475,9 @@ if fig7_2==True:
         normB = pyplt.doseresponse(IFNbSOCS, ['IFN',np.logspace(-14,-2,num=50)], np.linspace(0,3600,num=200),
                          [['TotalpSTAT',"Total pSTAT"]], parameters=k4_dictB, suppress=True)
         A15 = pyplt.doseresponse(IFNaSOCS, ['IFN',np.logspace(-14,-2,num=50)], np.linspace(0,3600,num=200),
-                         [['TotalpSTAT',"Total pSTAT"]], parameters=k420_dictA, suppress=True)
+                         [['TotalpSTAT',"Total pSTAT"]], parameters=k415_dictA, suppress=True)
         B15 = pyplt.doseresponse(IFNbSOCS, ['IFN',np.logspace(-14,-2,num=50)], np.linspace(0,3600,num=200),
-                         [['TotalpSTAT',"Total pSTAT"]], parameters=k420_dictB, suppress=True)
+                         [['TotalpSTAT',"Total pSTAT"]], parameters=k415_dictB, suppress=True)
         A60 = pyplt.doseresponse(IFNaSOCS, ['IFN',np.logspace(-14,-2,num=50)], np.linspace(0,3600,num=200),
                          [['TotalpSTAT',"Total pSTAT"]], parameters=k460_dictA, suppress=True)
         B60 = pyplt.doseresponse(IFNbSOCS, ['IFN',np.logspace(-14,-2,num=50)], np.linspace(0,3600,num=200),
