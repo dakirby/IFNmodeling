@@ -36,9 +36,8 @@ def main(timecourse=False, dose_response=False, wtimecourse=False, wdose_respons
     t=linspace(0,3600,num=100)
     testDose = ['I',6.022e18*logspace(-14,-2,num=50)]    
     if timecourse==True:
-        tc = pp.p_timecourse(simpleB, t, [['TotalpSTAT',"Total pSTAT"]],
-                             axes_labels = ['Time','pSTAT'], Norm=10000,
-                             title = 'TC_test1', suppress=False)
+        tc = pp.p_timecourse("IFN_alpha_altSOCS_ppCompatible", t, [['TotalpSTAT',"Total pSTAT"]],
+                             parameters=[['kd4',0.485],['kpa',6.69E-7],['kSOCSon',7.16-7],['I',6022000000]], suppress=False)
         tc = pp.p_timecourse(simpleB, t, [['TotalpSTAT',"Total pSTAT"]],
                              axes_labels = ['Time','pSTAT'], Norm=10000,
                              title = 'TC_test2', suppress=False, parameters = [['I',3E-12]])
@@ -116,5 +115,5 @@ def main(timecourse=False, dose_response=False, wtimecourse=False, wdose_respons
                              sigma=uncertainty, method="lhc_sampling", n=25, cpu=3)
     
 if __name__ == '__main__':
-    main(fit_IFN=True)
+    main(timecourse=True)
 

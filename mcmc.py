@@ -67,11 +67,11 @@ def disperse_chains(theta_0, nChains):
                                   parameter[2],parameter[3]])
             elif parameter[0]=='kd4': # lognormal prior
                 new_theta.append([parameter[0],
-                                  np.random.lognormal(mean=np.log(0.3), sigma=0.8),
+                                  np.random.lognormal(mean=np.log(0.3), sigma=1.8),
                                   parameter[2],parameter[3]])
             elif parameter[0]=='k_d4': # lognormal prior
                 new_theta.append([parameter[0],
-                                  np.random.lognormal(mean=np.log(0.006), sigma=0.7),
+                                  np.random.lognormal(mean=np.log(0.006), sigma=1.8),
                                   parameter[2],parameter[3]])
             elif parameter[0]=='R1' or parameter[0]=='R2': # uniform on [100, 12 000]
                 new_theta.append([parameter[0],
@@ -83,7 +83,7 @@ def disperse_chains(theta_0, nChains):
                                   parameter[2],parameter[3]])
             elif parameter[0]=='gamma': # uniform on [2,40]
                 new_theta.append([parameter[0],
-                                  np.random.uniform(low=100, high=40),
+                                  np.random.uniform(low=2, high=40),
                                   parameter[2],parameter[3]])
         theta_list.append(new_theta)
     return theta_list
@@ -97,8 +97,8 @@ def get_prior_logp(kpa, kSOCSon, kd4, k_d4, R1, R2, gamma):
     # 1E-9 < kpa, kSOCSon < 10
     # 1E-9 < k_d4, kd4 < 50
     # 1 < gamma < 40
-    if R1<100 or R2<100 or R1>12000 or R2>12000 or kpa<1E-9 or kSOCSon<1E-9 or k_d4<1E-9 or kpa>10 or kSOCSon>10 or k_d4>50 or kd4<1E-9 or kd4>50 or gamma<1 or gamma>40:
-        return 1E6
+    if R1<100 or R2<100 or R1>12000 or R2>12000 or kpa<1.5E-11 or kpa>0.07 or kSOCSon<1.5E-11 or kSOCSon>0.07 or k_d4<4E-5   or k_d4>0.9 or kd4<0.002 or kd4>44 or gamma<1 or gamma>40:
+        return 1E8
     else:
         # lognorm(std dev = 1, 0, guess at reaction rate value )
         #         
@@ -109,10 +109,10 @@ def get_prior_logp(kpa, kSOCSon, kd4, k_d4, R1, R2, gamma):
         S_kSOCSon = 4
         
         P_kd4 = np.log(0.3)
-        S_kd4 = 0.8
+        S_kd4 = 1.8
         
         P_k_d4 = np.log(0.006)
-        S_k_d4 = 0.7
+        S_k_d4 = 1.8
         
         P_R1 = np.log(R1) # Easy way to choose non-informative prior
         S_R1 = 1
@@ -236,12 +236,12 @@ def get_likelihood_logp(kpa,kSOCSon,kd4,k_d4,R1,R2, gamma):
 # =============================================================================
 # Returns -log(probability of model)
 # =============================================================================
-def score_model(kpa,kSOCSon,kd4,k_d4,delR, gamma, beta):
+def score_model(kpa,kSOCSon,kd4,k_d4,delR, gamma, beta, rho):
     R1=2E3-delR/2
     R2=2E3+delR/2
     lk = get_likelihood_logp(kpa,kSOCSon,kd4,k_d4,R1,R2, gamma)
     pr = get_prior_logp(kpa, kSOCSon, kd4, k_d4, R1, R2, gamma)
-    return (lk+pr)/beta
+    return (lk/rho+pr)/beta
 
 # =============================================================================
 # J() is the jumping distribution
@@ -276,14 +276,14 @@ def J(theta):
 # current hyperparameters. Returns the acceptance rate as a percentage (eg. 24)  
 # and the theta with variances that were good enough    
 # =============================================================================
-def get_acceptance_rate(theta, beta):
+def get_acceptance_rate(theta, beta, rho):
     old_theta=theta
-    old_score = score_model(*[old_theta[j][1] for j in range(len(old_theta))], beta)
+    old_score = score_model(*[old_theta[j][1] for j in range(len(old_theta))], beta, rho)
     asymmetric_indices = [el[0] for el in enumerate(old_theta) if el[1][3]=='log']
     acceptance = 0    
     for i in range(100):
         proposal = J(old_theta)
-        new_score = score_model(*[proposal[j][1] for j in range(len(proposal))], beta)
+        new_score = score_model(*[proposal[j][1] for j in range(len(proposal))], beta, rho)
         asymmetry_factor = 1 # log normal proposal distributions are asymmetric
         for j in asymmetric_indices:
             asymmetry_factor *= proposal[j][1]/old_theta[j][1]
@@ -301,13 +301,13 @@ def get_acceptance_rate(theta, beta):
 #   theta_0 and beta - see MCMC() documentation
 #   max_attempts (int) = the max number of attempts to get a good acceptance rate
 # =============================================================================
-def hyperparameter_fitting(theta_0, beta, max_attempts):
+def hyperparameter_fitting(theta_0, beta, rho, max_attempts):
     print("Choosing optimal temperature")
     theta = [el for el in theta_0]
     # Try to find variances that give an good acceptance rate
     for attempt in range(max_attempts):
         print("Attempt {}".format(attempt+1))
-        acceptance, new_theta = get_acceptance_rate(theta, beta)
+        acceptance, new_theta = get_acceptance_rate(theta, beta, rho)
         
         if acceptance > 20 and acceptance < 50:
             print("Acceptance rate was {}%".format(acceptance))
@@ -320,8 +320,8 @@ def hyperparameter_fitting(theta_0, beta, max_attempts):
             if acceptance > 40:
                 print("Acceptance rate was too high")
                 beta = 0.75*beta
-    raise RuntimeError("Failed to optimize hyperparameters.\n\
-                       Please initialise with different variances\n\
+    raise RuntimeError("         Failed to optimize hyperparameters.\n\
+                       Please initialise with different variances or temperatures,\n\
                        or check uniform prior ranges, and try again.")
     
 # =============================================================================
@@ -518,7 +518,7 @@ def get_summary_statistics(df):
 # =============================================================================
 # Sanity checks for MCMC()    
 # =============================================================================
-def mcmcChecks(n, theta_0, beta, chains, burn_rate, down_sample, max_attempts):
+def mcmcChecks(n, theta_0, beta, rho, chains, burn_rate, down_sample, max_attempts):
     if burn_rate>1:
         raise ValueError('Burn rate should be in the range [0,1)')
     if down_sample > n:
@@ -553,10 +553,10 @@ def mh(ID, jobs, result):
         mGet = jobs.get()
         if mGet is None:
             break
-        hyper_theta, beta, n = mGet
+        hyper_theta, beta, rho, n = mGet
         model_record=[hyper_theta]
         asymmetric_indices = [el[0] for el in enumerate(hyper_theta) if el[1][3]=='log']
-        old_score = score_model(*[model_record[0][j][1] for j in range(len(model_record[0]))], beta)
+        old_score = score_model(*[model_record[0][j][1] for j in range(len(model_record[0]))], beta, rho)
         old_index = 0
         acceptance = 0
         # Metropolis-Hastings algorithm
@@ -572,7 +572,7 @@ def mh(ID, jobs, result):
                 with open(chain_results_dir+str(ID)+'chain.txt','w') as g:
                     g.write(str(model_record))
             proposal = J(model_record[old_index])
-            new_score = score_model(*[proposal[j][1] for j in range(len(proposal))], beta)
+            new_score = score_model(*[proposal[j][1] for j in range(len(proposal))], beta, rho)
             asymmetry_factor = 1 # log normal proposal distributions are asymmetric
             for j in asymmetric_indices:
                 asymmetry_factor *= proposal[j][1]/model_record[old_index][j][1]
@@ -583,12 +583,12 @@ def mh(ID, jobs, result):
                 acceptance += 1
         result.put(model_record)
 
-def MCMC(n, theta_0, beta, chains, burn_rate=0.1, down_sample=1, max_attempts=6, pflag=True, cpu=None):
+def MCMC(n, theta_0, beta, rho, chains, burn_rate=0.1, down_sample=1, max_attempts=6, pflag=True, cpu=None):
     # Check input parameters
-    mcmcChecks(n, theta_0, beta, chains, burn_rate, down_sample, max_attempts)
+    mcmcChecks(n, theta_0, beta, rho, chains, burn_rate, down_sample, max_attempts)
     print("Performing MCMC Analysis")
     # Selecting optimal temperature
-    hyper_theta, beta = hyperparameter_fitting(theta_0, beta, max_attempts)
+    hyper_theta, beta = hyperparameter_fitting(theta_0, beta, rho, max_attempts)
     if pflag==True:
         check_proposals(hyper_theta, 50)
     # Overdisperse chains
@@ -604,12 +604,12 @@ def MCMC(n, theta_0, beta, chains, burn_rate=0.1, down_sample=1, max_attempts=6,
         NUMBER_OF_PROCESSES = chains
     if cpu != None: NUMBER_OF_PROCESSES = cpu # Manual override of core number selection
     print("Using {} threads".format(NUMBER_OF_PROCESSES))
-    f = open('progress.txt','w')
-    f.close()
-    jobs = Queue()
+    with open(results_dir+'progress.txt','w') as f: # clear previous progress report
+        f.write('')
+    jobs = Queue() # put jobs on queue
     result = JoinableQueue()
     for m in range(chains):
-        jobs.put([chains_list[m],beta,n])
+        jobs.put([chains_list[m],beta,rho,n])
     [Process(target=mh, args=(i, jobs, result)).start()
             for i in range(NUMBER_OF_PROCESSES)]
     # pull in the results from each thread
@@ -844,7 +844,7 @@ def profile(processes):
     times = []
     for p in processes:
         tic = time.clock()
-        MCMC(500, p0, 8, 8, burn_rate=0.05, down_sample=2, cpu=p)
+        MCMC(500, p0, 8, 1, 8, burn_rate=0.05, down_sample=2, cpu=p)
         toc = time.clock()
         times.append(toc - tic)
     fig, ax = plt.subplots()
@@ -855,10 +855,106 @@ def profile(processes):
     plt.savefig('speedup.pdf')
     plt.show()
 
-        
+# =============================================================================
+# continue_sampling() is intended to allow further sampling from the same chains
+# Inputs:
+#     n (int) = number of new steps to take
+#     n_old (int) = number of steps previously asked for
+#     burn_rate (float) = fraction of final chain to discard as burn in
+#     down_sample (int) = stride length for processing final chain
+#     cpu (int)(default==None) = manually override multithreading and specify number of threads to use
+# Dependencies:
+#     Must leave all output files from previous run untouched and within the results_dir directory
+# =============================================================================
+def continue_sampling(n, n_old, rho, burn_rate, down_sample, cpu=None):
+    variableNames = []
+    stdDevs = []
+    type_of_dists = []
+    extra_bounds = []
+    
+    with open(results_dir+'simulation_summary.txt','r') as f:
+        beta = float(f.readline()[21:-1])
+        numChains = int(f.readline()[19:-1])
+        f.readline()
+        f.readline()
+        distribution_descriptions = f.readline()[2:-3]
+        distribution_descriptions = distribution_descriptions.split('], [')
+        example_theta = []
+        for variable in distribution_descriptions:
+            var = variable.replace('\'','').split(', ')
+            example_theta.append(var)
+        variableNames = [el[0] for el in example_theta]
+        stdDevs = [float(el[2]) for el in example_theta]
+        type_of_dists = [el[3] for el in example_theta]
+        extra_bounds = [el[4] if len(el)==5 else [] for el in example_theta]
+    
+    with open(results_dir+'chain_lengths.txt', 'r') as f:
+        chainLengths = list(map(int,f.readline().split(', ')[:]))
+    chains = pd.read_csv(results_dir+'complete_samples.csv',index_col=0)
+    chainList = []
+    end_points = []
+    hyper_theta_valList =[]
+    readChainLengths=[0]+chainLengths+[-1]
+    for i in range(numChains):
+        chainList.append(chains.iloc[readChainLengths[i]:readChainLengths[i]+readChainLengths[i+1]-1])
+        end_points.append(chainList[-1].iloc[-1])
+        hyper_theta_valList.append(chainList[-1].iloc[0])
+    hyper_theta = [[[variableNames[i], hyper_theta_valList[c][variableNames[i]],stdDevs[i], type_of_dists[i]]+ extra_bounds[i] for i in range(len(variableNames))] for c in range(numChains)]
+    restarting_points = [[[variableNames[i], end_points[c][variableNames[i]],stdDevs[i], type_of_dists[i]]+ extra_bounds[i] for i in range(len(variableNames))] for c in range(numChains)]
+    pre_pool_results = [[] for i in range(numChains)]
+    for q in range(numChains):
+        pre_pool_results[q] = [[[variableNames[i], chainList[q].iloc[j][variableNames[i]], stdDevs[i], type_of_dists[i]]+ extra_bounds[i] for i in range(len(variableNames))] for j in range(len(chainList[q]))]
+
+    print("Continuing MCMC Analysis")
+    print("Sampling from posterior distribution")    
+    if numChains >= cpu_count():
+        NUMBER_OF_PROCESSES = cpu_count()-1
+    else:
+        NUMBER_OF_PROCESSES = numChains
+    if cpu != None: NUMBER_OF_PROCESSES = cpu # Manual override of core number selection
+    print("Using {} threads".format(NUMBER_OF_PROCESSES))
+    f = open('progress.txt','w')
+    f.close()
+    jobs = Queue()
+    result = JoinableQueue()
+    for m in range(numChains):
+        jobs.put([restarting_points[m],beta,rho,n])
+    [Process(target=mh, args=(i, jobs, result)).start()
+            for i in range(NUMBER_OF_PROCESSES)]
+    # pull in the results from each thread
+    pool_results=[]
+    for m in range(numChains):
+        r = result.get()
+        pool_results.append(r)
+        result.task_done()
+    # tell the workers there are no more jobs
+    for w in range(NUMBER_OF_PROCESSES):
+        jobs.put(None)
+    # close all extra threads
+    result.join()
+    jobs.close()
+    result.close()
+    # Combine old results with new results
+    for j in range(len(pool_results)):
+        pool_results[j] = pre_pool_results[j] + pool_results[j]
+    # Perform data analysis
+    total_samples = sum([len(i) for i in pool_results])
+    print("Average acceptance rate was {:.1f}%".format(total_samples*100/((n+n_old)*numChains)))
+    samples = get_parameter_distributions(pool_results, burn_rate, down_sample)
+    plot_parameter_autocorrelations(samples)
+    get_summary_statistics(samples)
+    with open(results_dir+'simulation_summary.txt','w') as f:
+        f.write('Temperature used was {}\n'.format(beta))
+        f.write('Number of chains = {}\n'.format(numChains))
+        f.write("Average acceptance rate was {:.1f}%\n".format(total_samples*100/((n+n_old)*numChains)))
+        f.write("Initial conditions were\n")
+        for i in hyper_theta:
+            f.write(str(hyper_theta))
+            f.write("\n")
+  
 def main():
     plt.close('all')
-    modelfiles = ['IFN_alpha_altSOCS_ppCompatible','IFN_beta_altSOCS_ppCompatible']
+    modelfiles = ['IFN_detailed_alt_SOCS_alpha_ppCompatible','IFN_detailed_alt_SOCS_beta_ppCompatible']
 # Write modelfiles
     print("Importing models")
     alpha_model = __import__(modelfiles[0])
@@ -869,24 +965,19 @@ def main():
     py_output = export(beta_model.model, 'python')
     with open('ODE_system_beta.py','w') as f:
         f.write(py_output)
-# =============================================================================
-#     t0 = time.time()
-#     t1 = time.time()
-#     print("time = {}".format(t1-t0))
-# =============================================================================
-    p0=[['kpa',1E-6,0.1,'log'],['kSOCSon',1E-6,0.1,'log'],['kd4',0.3,0.2,'log'],
-        ['k_d4',0.006,0.5,'log'],['delR',0,500,'linear'],
-        ['gamma',2,0.5,'log']]
-# =============================================================================
-#     p1=[['kpa', 1e-06, 0.0007, 'log'],['kSOCSon', 1.e-06, 0.002, 'log'],
-#     ['kd4', 0.3, 0.0001, 'log'],['k_d4', 0.006, 0.033, 'log'],
-#     ['R1', 5224, 682, 'linear', 100],['R2', 2000., 21, 'linear', 100],
-#     ['gamma', 2.78, 2, 'uniform', 40]]    
-# =============================================================================
+    p0=[['kpa',1E-5,0.1,'log'],['kSOCSon',2E-6,0.1,'log'],['kd4',0.03,0.2,'log'],
+        ['k_d4',0.06,0.5,'log'],['delR',0,500,'linear'],
+        ['gamma',4,4,'linear']]
     #   (n, theta_0, beta, chains, burn_rate=0.1, down_sample=1, max_attempts=6, pflag=False)
-    MCMC(500, p0, 8, 3, burn_rate=0.05, down_sample=2)# n, theta, beta=3.375
-    
+    MCMC(200, p0, 0.1, 80, 3, burn_rate=0.1, down_sample=2)# n, theta, beta=3.375
+    #continue_sampling(3, 500, 0.1, 1)
 # Testing functions
+    #                    1E-6, 1E-6, 0.3, 0.006, 2E3, 2E3, 4
+    #print(get_prior_logp(4E-3, 4E-3, 20, 0.1, 4E3, 1E3, 6)) 
+    #print(get_likelihood_logp(4E-3, 4E-3, 20, 0.1, 4E3, 1E3, 6))
+    #print(get_prior_logp(1E-6, 1E-6, 0.3, 0.006, 2E3, 2E3, 4)) 
+    #print(get_likelihood_logp(1E-6, 1E-5, 0.3, 0.06, 2E3, 2E3, 4))
+    
     #sims = bayesian_timecourse('posterior_samples.csv', 100E-12, 3600, 50, 95, ['TotalpSTAT'])
     #testChain = pd.read_csv('test_posterior_samples.csv',index_col=0)
     #bayesian_doseresponse('posterior_samples.csv', [10E-12,90E-12,600E-12], 3600, 50, 95, ['TotalpSTAT','T'])
@@ -897,3 +988,4 @@ def main():
     
 if __name__ == '__main__':
     main()
+

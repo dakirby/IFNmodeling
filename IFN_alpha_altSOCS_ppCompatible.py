@@ -1,5 +1,3 @@
-# Import of \IFN January 2018\Simplified SOCS model - alpha model from 
-#   Rulebender to PySB. This is just a model file - must be run from a run file
 from pysb import Model, Parameter, Expression, Initial, Monomer, Observable, Rule, WILD
 # Begin Model
 Model() 

@@ -145,6 +145,7 @@ Observable('SOCSAvail', SOCS(site=WILD))
 Observable('SOCSmRNANuc', SOCSmRNA(loc='Nuc'))
 Observable('SOCSmRNACyt', SOCSmRNA(loc='Cyt'))
 Observable('BoundSOCS', IFNAR1(re=1, ri=None, loc='out')%IFN_alpha2(r1=1,r2=2)%IFNAR2(re=2,ri=3,rs=None,loc='out')%SOCS(site=3))
+Observable('TSOCS', IFNAR1(re=1,ri=None,loc='out')%IFN_alpha2(r1=1,r2=2)%IFNAR2(re=2, ri=3, loc='out')%SOCS(site=3))
 
 # =============================================================================
 # # Reaction rules
