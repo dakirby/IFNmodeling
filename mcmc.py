@@ -241,6 +241,7 @@ def score_model(kpa,kSOCSon,kd4,k_d4,delR, gamma, beta, rho):
     R2=2E3+delR/2
     lk = get_likelihood_logp(kpa,kSOCSon,kd4,k_d4,R1,R2, gamma)
     pr = get_prior_logp(kpa, kSOCSon, kd4, k_d4, R1, R2, gamma)
+    #print(str(lk)+", "+str(pr))
     return (lk/rho+pr)/beta
 
 # =============================================================================
@@ -292,7 +293,7 @@ def get_acceptance_rate(theta, beta, rho):
             old_theta=proposal
             old_score = new_score
             acceptance += 1
-    return (acceptance, old_theta) # = acceptance/50*100
+    return (acceptance, old_theta) # = acceptance/100*100
 
 # =============================================================================
 # hyperparameter_fitting() attempts to alter the input temperature
@@ -350,8 +351,8 @@ def plot_parameter_distributions(df, title='parameter_distributions.pdf', save=T
                 try:
                     if abs(int(np.log10(np.max(col)))-int(np.log10(np.min(col)))) >= 4:
                         ax.set(xscale='log', yscale='linear')
-                except ValueError:
-                    print('Some parameters were negative-valued')
+                except ValueError or OverflowError:
+                    print('Some parameters were negative-valued or infinity')
                 # Plot histogram with kde for chain
                 sns.distplot(col, ax=ax, hist=False, kde=True, 
                      color = color_code, 
@@ -465,7 +466,7 @@ def get_parameter_distributions(pooled_results, burn_rate, down_sample):
             
     # Save combined chains dataframe
     combined_samples.to_csv(results_dir+"posterior_samples.csv")    
-    print("Effectively sampled {} times from posterior distribution".format(len(combined_samples))) 
+    print("After thinning and burn-in, you sampled {} times from the posterior distribution".format(len(combined_samples))) 
     # Return the downsampled data frame
     return combined_samples
 
@@ -532,12 +533,13 @@ def mcmcChecks(n, theta_0, beta, rho, chains, burn_rate, down_sample, max_attemp
 # =============================================================================
 # MCMC() takes an IFN model and fits it using Markov Chain Monte Carlo
 # Inputs:    
-#    n (int) = number of iterations to run per chain
+#    n (int) = number of samples to collect per chain
 #    theta_0 (list) = the initial guesses and jumping distribution definitions for each parameter to fit
 #                       Order of theta_0 is [kpa, kSOCSon, kd4, k_d4, R1, R2, gamma]    
 #                   eg. [['kpa',1E-6,0.2,'log'],['R2',2E3,250,'linear'],['gamma',4,2,'uniform',40]]
 #    beta (float) = effectively temperature, this factor controls the 
 #                   tolerance of the probabilistic parameter search
+#    rho (float) = the scale factor for Bayesian cost, to make priors more important
 #    chains (int) = number of unique Markov chains to simulate    
 # Optional Inputs:    
 #    burn_rate (float) = initial fraction of samples to discard as 'burn in'
@@ -548,7 +550,7 @@ def mcmcChecks(n, theta_0, beta, rho, chains, burn_rate, down_sample, max_attemp
 #                           default is 6    
 #    pflag (Boolean) = plot a typical random walk for each parameter after hyperparameter selection    
 # =============================================================================
-def mh(ID, jobs, result):
+def mh(ID, jobs, result, countQ):
     while True:
         mGet = jobs.get()
         if mGet is None:
@@ -559,18 +561,20 @@ def mh(ID, jobs, result):
         old_score = score_model(*[model_record[0][j][1] for j in range(len(model_record[0]))], beta, rho)
         old_index = 0
         acceptance = 0
+        attempts = 0
         # Metropolis-Hastings algorithm
         progress_bar = n/10
-        for i in range(n):
+        while acceptance<n:
+            attempts+=1
             # Monitor acceptance rate            
-            if i>progress_bar:
-                progress_bar += n/10
-                print("{:.1f}% done".format(i/n*100))
-                print("Chain {} Acceptance rate = {:.1f}%".format(ID, acceptance/progress_bar*100))
+            if acceptance>progress_bar:
+                print("{:.1f}% done".format(acceptance/n*100))
+                print("Chain {} acceptance rate = {:.1f}%".format(ID, acceptance/attempts*100))
                 with open(results_dir+'progress.txt','a') as f:
-                    f.write("Chain {} is {:.1f}% done, currently averaging {:.1f}% acceptance.\n".format(ID, i/n*100,acceptance/progress_bar*100))
+                    f.write("Chain {} is {:.1f}% done, currently averaging {:.1f}% acceptance.\n".format(ID, acceptance/n*100,acceptance/attempts*100))
                 with open(chain_results_dir+str(ID)+'chain.txt','w') as g:
                     g.write(str(model_record))
+                progress_bar += n/10                    
             proposal = J(model_record[old_index])
             new_score = score_model(*[proposal[j][1] for j in range(len(proposal))], beta, rho)
             asymmetry_factor = 1 # log normal proposal distributions are asymmetric
@@ -582,6 +586,7 @@ def mh(ID, jobs, result):
                 old_index += 1
                 acceptance += 1
         result.put(model_record)
+        countQ.put([ID,attempts])
 
 def MCMC(n, theta_0, beta, rho, chains, burn_rate=0.1, down_sample=1, max_attempts=6, pflag=True, cpu=None):
     # Check input parameters
@@ -608,16 +613,20 @@ def MCMC(n, theta_0, beta, rho, chains, burn_rate=0.1, down_sample=1, max_attemp
         f.write('')
     jobs = Queue() # put jobs on queue
     result = JoinableQueue()
+    countQ = JoinableQueue()
     for m in range(chains):
         jobs.put([chains_list[m],beta,rho,n])
-    [Process(target=mh, args=(i, jobs, result)).start()
+    [Process(target=mh, args=(i, jobs, result, countQ)).start()
             for i in range(NUMBER_OF_PROCESSES)]
     # pull in the results from each thread
     pool_results=[]
+    chain_attempts=[]
     for m in range(chains):
         r = result.get()
         pool_results.append(r)
         result.task_done()
+        a = countQ.get()
+        chain_attempts.append(a)
     # tell the workers there are no more jobs
     for w in range(NUMBER_OF_PROCESSES):
         jobs.put(None)
@@ -625,20 +634,22 @@ def MCMC(n, theta_0, beta, rho, chains, burn_rate=0.1, down_sample=1, max_attemp
     result.join()
     jobs.close()
     result.close()
+    countQ.close()
 
     # Perform data analysis
     total_samples = sum([len(i) for i in pool_results])
-    print("Average acceptance rate was {:.1f}%".format(total_samples*100/(n*chains)))
+    total_attempts = sum([el[1] for el in chain_attempts])
+    print("Average acceptance rate was {:.1f}%".format(total_samples*100/total_attempts))
     samples = get_parameter_distributions(pool_results, burn_rate, down_sample)
     plot_parameter_autocorrelations(samples)
     get_summary_statistics(samples)
     with open(results_dir+'simulation_summary.txt','w') as f:
         f.write('Temperature used was {}\n'.format(beta))
         f.write('Number of chains = {}\n'.format(chains))
-        f.write("Average acceptance rate was {:.1f}%\n".format(total_samples*100/(n*chains)))
+        f.write("Average acceptance rate was {:.1f}%\n".format(total_samples*100/total_attempts))
         f.write("Initial conditions were\n")
-        for i in hyper_theta:
-            f.write(str(hyper_theta))
+        for i in chains_list:
+            f.write(str(i))
             f.write("\n")
     
     
@@ -954,7 +965,7 @@ def continue_sampling(n, n_old, rho, burn_rate, down_sample, cpu=None):
   
 def main():
     plt.close('all')
-    modelfiles = ['IFN_detailed_alt_SOCS_alpha_ppCompatible','IFN_detailed_alt_SOCS_beta_ppCompatible']
+    modelfiles = ['IFN_alpha_altSOCS_ppCompatible','IFN_beta_altSOCS_ppCompatible']
 # Write modelfiles
     print("Importing models")
     alpha_model = __import__(modelfiles[0])
@@ -968,8 +979,8 @@ def main():
     p0=[['kpa',1E-5,0.1,'log'],['kSOCSon',2E-6,0.1,'log'],['kd4',0.03,0.2,'log'],
         ['k_d4',0.06,0.5,'log'],['delR',0,500,'linear'],
         ['gamma',4,4,'linear']]
-    #   (n, theta_0, beta, chains, burn_rate=0.1, down_sample=1, max_attempts=6, pflag=False)
-    MCMC(200, p0, 0.1, 80, 3, burn_rate=0.1, down_sample=2)# n, theta, beta=3.375
+    #   (n, theta_0, beta, rho, chains, burn_rate=0.1, down_sample=1, max_attempts=6, pflag=False)
+    MCMC(200, p0, 60, 80, 3, burn_rate=0.1, down_sample=2)# n, theta, beta=3.375
     #continue_sampling(3, 500, 0.1, 1)
 # Testing functions
     #                    1E-6, 1E-6, 0.3, 0.006, 2E3, 2E3, 4

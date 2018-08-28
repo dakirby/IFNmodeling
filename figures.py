@@ -11,7 +11,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 from mcmc import bayesian_timecourse, bayesian_doseresponse
 import Experimental_Data as ED 
-nPost=38
+nPost=40
 # Global data import since this script will be used exclusively on IFN data    
 IFN_exps = [ED.data.loc[(ED.data.loc[:,'Dose (pM)']==10) & (ED.data.loc[:,'Interferon']=="Alpha"),['0','5','15','30','60']].values[0],
             ED.data.loc[(ED.data.loc[:,'Dose (pM)']==10) & (ED.data.loc[:,'Interferon']=="Beta"),['0','5','15','30','60']].values[0],
@@ -239,12 +239,12 @@ if fig3==True:
                 np.divide(IFN_exps[1],gamma),
                 yerr = np.divide(IFN_sigmas[1],gamma),
                 fmt='go', label=r"Experiment IFN$\beta$")
-    ax1.plot(np.linspace(0,3600,num=200),IFN_sims[0][0], 'k')
-    ax1.plot(np.linspace(0,3600,num=200),IFN_sims[0][1], 'k--')
-    ax1.plot(np.linspace(0,3600,num=200),IFN_sims[0][2], 'k--')
-    ax1.plot(np.linspace(0,3600,num=200),IFN_sims[1][0], 'k')
-    ax1.plot(np.linspace(0,3600,num=200),IFN_sims[1][1], 'k:')
-    ax1.plot(np.linspace(0,3600,num=200),IFN_sims[1][2], 'k:')
+    ax1.plot(np.linspace(0,3600,num=len(IFN_sims[0][0])),IFN_sims[0][0], 'k')
+    ax1.plot(np.linspace(0,3600,num=len(IFN_sims[0][1])),IFN_sims[0][1], 'k--')
+    ax1.plot(np.linspace(0,3600,num=len(IFN_sims[0][2])),IFN_sims[0][2], 'k--')
+    ax1.plot(np.linspace(0,3600,num=len(IFN_sims[1][0])),IFN_sims[1][0], 'k')
+    ax1.plot(np.linspace(0,3600,num=len(IFN_sims[1][1])),IFN_sims[1][1], 'k:')
+    ax1.plot(np.linspace(0,3600,num=len(IFN_sims[1][2])),IFN_sims[1][2], 'k:')
     
     
     
@@ -258,12 +258,12 @@ if fig3==True:
                 np.divide(IFN_exps[3],gamma),
                 yerr = np.divide(IFN_sigmas[3],gamma),
                 fmt='go', label=r"Experiment IFN$\beta$")
-    ax2.plot(np.linspace(0,3600,num=200),IFN_sims[2][0], 'k')
-    ax2.plot(np.linspace(0,3600,num=200),IFN_sims[2][1], 'k--')
-    ax2.plot(np.linspace(0,3600,num=200),IFN_sims[2][2], 'k--')
-    ax2.plot(np.linspace(0,3600,num=200),IFN_sims[3][0], 'k')
-    ax2.plot(np.linspace(0,3600,num=200),IFN_sims[3][1], 'k:')
-    ax2.plot(np.linspace(0,3600,num=200),IFN_sims[3][2], 'k:')
+    ax2.plot(np.linspace(0,3600,num=len(IFN_sims[2][0])),IFN_sims[2][0], 'k')
+    ax2.plot(np.linspace(0,3600,num=len(IFN_sims[2][1])),IFN_sims[2][1], 'k--')
+    ax2.plot(np.linspace(0,3600,num=len(IFN_sims[2][2])),IFN_sims[2][2], 'k--')
+    ax2.plot(np.linspace(0,3600,num=len(IFN_sims[3][0])),IFN_sims[3][0], 'k')
+    ax2.plot(np.linspace(0,3600,num=len(IFN_sims[3][1])),IFN_sims[3][1], 'k:')
+    ax2.plot(np.linspace(0,3600,num=len(IFN_sims[3][2])),IFN_sims[3][2], 'k:')
         
             
     ax3.set_title("600 pM Time Course \nTheory vs Experiment", fontsize=20)
