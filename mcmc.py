@@ -311,7 +311,7 @@ def hyperparameter_fitting(theta_0, beta, rho, max_attempts):
         print("Attempt {}".format(attempt+1))
         acceptance, new_theta = get_acceptance_rate(theta, beta, rho)
         
-        if acceptance > 15 and acceptance < 50:
+        if acceptance >= 15 and acceptance =< 50:
             print("Acceptance rate was {}%".format(acceptance))
             print("New temperature will be: "+str(beta))
             return (new_theta, beta)
@@ -393,7 +393,7 @@ def plot_parameter_distributions(df, title='parameter_distributions.pdf', save=T
         return (fig, axes)
 # =============================================================================
 # Computes the Gelman-Rubin statistic for each parameter to test for convergence
-# Inputs: chain_record (list) = list of Markov chains
+# Inputs: chain_record (list of Dataframes) = list of Markov chains
 # Outputs: Gelman-Rubin_Statistics.csv file summarizing the test results
 # Returns: stats (list) = summary of test results, [['variable name', Rhat], ...]        
 # =============================================================================
@@ -432,6 +432,7 @@ def get_parameter_distributions(pooled_results, burn_rate, down_sample):
     chain_record=[]
     total_record=[]
     chain_Lengths=[]
+    GR_record = []
     for i in pooled_results:
         total_record+=i
         chain_Lengths.append(len(i))
@@ -446,6 +447,9 @@ def get_parameter_distributions(pooled_results, burn_rate, down_sample):
         # Build dataframe
         #   Account for burn in and down sampling
         sample_record = model_record[int(len(model_record)*burn_rate):-1:down_sample]
+        GR_list = model_record[int(len(model_record)*burn_rate):-1]
+        GR_record.append(pd.DataFrame([[el[1] for el in r] for r in GR_list],
+                                columns=[l[0] for l in GR_list[0]]))
         if first==True:
             combined_samples = pd.DataFrame([[el[1] for el in r] for r in sample_record],
                                 columns=[l[0] for l in sample_record[0]])
@@ -463,7 +467,7 @@ def get_parameter_distributions(pooled_results, burn_rate, down_sample):
     # Plot multiple chains on same axes if there were multiple chains
     if len(pooled_results)>1:
             plot_parameter_distributions(chain_record)
-            gelman_rubin_convergence(complete_samples) #Pretty sure I should use full chains for GR-diagnostic
+            gelman_rubin_convergence(GR_record) #Pretty sure I should use full chains for GR-diagnostic
             
     # Save combined chains dataframe
     combined_samples.to_csv(results_dir+"posterior_samples.csv")    
@@ -587,7 +591,7 @@ def mh(ID, jobs, result, countQ):
                 old_index += 1
                 acceptance += 1
         result.put(model_record)
-        countQ.put([ID,attempts])
+        countQ.put([ID,acceptance/attempts*100])
 
 def MCMC(n, theta_0, beta, rho, chains, burn_rate=0.1, down_sample=1, max_attempts=6, pflag=True, cpu=None):
     # Check input parameters
@@ -638,16 +642,15 @@ def MCMC(n, theta_0, beta, rho, chains, burn_rate=0.1, down_sample=1, max_attemp
     countQ.close()
 
     # Perform data analysis
-    total_samples = sum([len(i) for i in pool_results])
-    total_attempts = sum([el[1] for el in chain_attempts])
-    print("Average acceptance rate was {:.1f}%".format(total_samples*100/total_attempts))
+    average_acceptance = np.mean([el[1] for el in chain_attempts])
+    print("Average acceptance rate was {:.1f}%".format(average_acceptance))
     samples = get_parameter_distributions(pool_results, burn_rate, down_sample)
     plot_parameter_autocorrelations(samples)
     get_summary_statistics(samples)
     with open(results_dir+'simulation_summary.txt','w') as f:
         f.write('Temperature used was {}\n'.format(beta))
         f.write('Number of chains = {}\n'.format(chains))
-        f.write("Average acceptance rate was {:.1f}%\n".format(total_samples*100/total_attempts))
+        f.write("Average acceptance rate was {:.1f}%\n".format(average_acceptance))
         f.write("Initial conditions were\n")
         for i in chains_list:
             f.write(str(i))
@@ -1058,7 +1061,7 @@ def main():
         ['k_d4',0.06,0.5,'log'],['delR',0,500,'linear'],
         ['gamma',4,4,'linear']]
     #   (n, theta_0, beta, rho, chains, burn_rate=0.1, down_sample=1, max_attempts=6, pflag=False)
-    #MCMC(200, p0, 60, 80, 3, burn_rate=0.1, down_sample=2)# n, theta, beta=3.375
+    MCMC(20, p0, 1920, 1, 3, burn_rate=0.1, down_sample=3)# n, theta, beta=3.375
     #continue_sampling(3, 500, 0.1, 1)
 # Testing functions
     #                    1E-6, 1E-6, 0.3, 0.006, 2E3, 2E3, 4
@@ -1072,7 +1075,7 @@ def main():
     #bayesian_doseresponse('posterior_samples.csv', [10E-12,90E-12,600E-12], 3600, 50, 95, ['TotalpSTAT','T'])
     #df = pd.read_csv('posterior_samples.csv',index_col=0)
     #plot_parameter_distributions(df, title='parameter_distributions.pdf', save=True)
-    print(MAP_timecourse(MAP('posterior_samples.csv',80,80), 6.022E23*1E-5*600E-12, 'I', 3600, 'TotalpSTAT'))
+    #print(MAP_timecourse(MAP('posterior_samples.csv',80,80), 6.022E23*1E-5*600E-12, 'I', 3600, 'TotalpSTAT'))
     #profile([1,2,3])
     
 if __name__ == '__main__':
