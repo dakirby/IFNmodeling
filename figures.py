@@ -10,8 +10,17 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 from mcmc import bayesian_timecourse, bayesian_doseresponse
+import os
+script_dir = os.path.dirname(__file__)
+results_dir = os.path.join(script_dir, 'Paper_Figures/')
+if not os.path.isdir(results_dir):
+    os.makedirs(results_dir)
+import seaborn as sns
+sns.set_style("ticks")
+plt.close('all')
+
 import Experimental_Data as ED 
-nPost=40
+nPost=20
 # Global data import since this script will be used exclusively on IFN data    
 IFN_exps = [ED.data.loc[(ED.data.loc[:,'Dose (pM)']==10) & (ED.data.loc[:,'Interferon']=="Alpha"),['0','5','15','30','60']].values[0],
             ED.data.loc[(ED.data.loc[:,'Dose (pM)']==10) & (ED.data.loc[:,'Interferon']=="Beta"),['0','5','15','30','60']].values[0],
@@ -27,28 +36,20 @@ IFN_sigmas =[ED.data.loc[(ED.data.loc[:,'Dose (pM)']==10) & (ED.data.loc[:,'Inte
              ED.data.loc[(ED.data.loc[:,'Dose (pM)']==600) & (ED.data.loc[:,'Interferon']=="Alpha_std"),['0','5','15','30','60']].values[0],
              ED.data.loc[(ED.data.loc[:,'Dose (pM)']==600) & (ED.data.loc[:,'Interferon']=="Beta_std"),['0','5','15','30','60']].values[0]]
 
-IFN_sims = [*bayesian_timecourse('posterior_samples.csv', 10E-12, 3600, nPost, 97.5, ['TotalpSTAT'], suppress=True),
-            *bayesian_timecourse('posterior_samples.csv', 90E-12, 3600, nPost, 97.5, ['TotalpSTAT'], suppress=True),
-            *bayesian_timecourse('posterior_samples.csv', 600E-12, 3600, nPost, 97.5, ['TotalpSTAT'], suppress=True)]
-import seaborn as sns
-sns.set_style("ticks")
-plt.close('all')
+IFN_sims = [*bayesian_timecourse('posterior_samples.csv', 10E-12, 3600, nPost, 68, 'TotalpSTAT',80,80, suppress=True),
+            *bayesian_timecourse('posterior_samples.csv', 90E-12, 3600, nPost, 68, 'TotalpSTAT',80,80, suppress=True),
+            *bayesian_timecourse('posterior_samples.csv', 600E-12, 3600, nPost, 68, 'TotalpSTAT',80,80, suppress=True)]
+with open(results_dir+"IFN_sims.txt",'w') as f:
+    f.write(str(IFN_sims))
 
-import os
-script_dir = os.path.dirname(__file__)
-results_dir = os.path.join(script_dir, 'Paper_Figures/')
-if not os.path.isdir(results_dir):
-    os.makedirs(results_dir)
-
-
-fig3=False
+fig3=True
 fig4=False
 fig5=False
 fig6=False
 fig7_1=False
-fig7_2=True
-fig8=True
-gamma = 3.17
+fig7_2=False
+fig8=False
+gamma = 24#3.17
 
 def rad_cell_point(samplefile, radius, end_time, sample_size, percent, specList, 
                         suppress=False, dose_species=['I', 6.022E23, 1E-5]):
@@ -232,12 +233,12 @@ if fig3==True:
     ax1.set_ylabel('pSTAT1 Relative MFI',fontsize=18)
     ax1.set_xlabel('time (s)',fontsize=18)    
     ax1.errorbar([int(el)*60+np.random.rand()*jitter for el in Expt],
-                np.divide(IFN_exps[0],gamma),
-                yerr = np.divide(IFN_sigmas[0],gamma),
+                IFN_exps[0],
+                yerr = IFN_sigmas[0],
                 fmt='ro', label=r"Experiment IFN$\alpha$")
     ax1.errorbar([int(el)*60 for el in Expt],
-                np.divide(IFN_exps[1],gamma),
-                yerr = np.divide(IFN_sigmas[1],gamma),
+                IFN_exps[1],
+                yerr = IFN_sigmas[1],
                 fmt='go', label=r"Experiment IFN$\beta$")
     ax1.plot(np.linspace(0,3600,num=len(IFN_sims[0][0])),IFN_sims[0][0], 'k')
     ax1.plot(np.linspace(0,3600,num=len(IFN_sims[0][1])),IFN_sims[0][1], 'k--')
@@ -246,17 +247,15 @@ if fig3==True:
     ax1.plot(np.linspace(0,3600,num=len(IFN_sims[1][1])),IFN_sims[1][1], 'k:')
     ax1.plot(np.linspace(0,3600,num=len(IFN_sims[1][2])),IFN_sims[1][2], 'k:')
     
-    
-    
     ax2.set_title("90 pM Time Course \nTheory vs Experiment", fontsize=20)
     ax2.set_xlabel('time (s)',fontsize=18)
     ax2.errorbar([int(el)*60+np.random.rand()*jitter for el in Expt],
-                np.divide(IFN_exps[2],gamma),
-                yerr = np.divide(IFN_sigmas[2],gamma),
+                IFN_exps[2],
+                yerr = IFN_sigmas[2],
                 fmt='ro', label=r"Experiment IFN$\alpha$")
     ax2.errorbar([int(el)*60 for el in Expt],
-                np.divide(IFN_exps[3],gamma),
-                yerr = np.divide(IFN_sigmas[3],gamma),
+                IFN_exps[3],
+                yerr = IFN_sigmas[3],
                 fmt='go', label=r"Experiment IFN$\beta$")
     ax2.plot(np.linspace(0,3600,num=len(IFN_sims[2][0])),IFN_sims[2][0], 'k')
     ax2.plot(np.linspace(0,3600,num=len(IFN_sims[2][1])),IFN_sims[2][1], 'k--')
@@ -264,24 +263,23 @@ if fig3==True:
     ax2.plot(np.linspace(0,3600,num=len(IFN_sims[3][0])),IFN_sims[3][0], 'k')
     ax2.plot(np.linspace(0,3600,num=len(IFN_sims[3][1])),IFN_sims[3][1], 'k:')
     ax2.plot(np.linspace(0,3600,num=len(IFN_sims[3][2])),IFN_sims[3][2], 'k:')
-        
-            
+                  
     ax3.set_title("600 pM Time Course \nTheory vs Experiment", fontsize=20)
     ax3.set_xlabel('time (s)',fontsize=18)
     ax3.errorbar([int(el)*60+np.random.rand()*jitter for el in Expt],
-                np.divide(IFN_exps[4],gamma),
-                yerr = np.divide(IFN_sigmas[4],gamma),
+                IFN_exps[4],
+                yerr = IFN_sigmas[4],
                 fmt='ro', label=r"Experiment IFN$\alpha$")
     ax3.errorbar([int(el)*60 for el in Expt],
-                np.divide(IFN_exps[5],gamma),
-                yerr = np.divide(IFN_sigmas[5],gamma),
+               IFN_exps[5],
+                yerr = IFN_sigmas[5],
                 fmt='go', label=r"Experiment IFN$\beta$")
-    ax3.plot(np.linspace(0,3600,num=200),IFN_sims[4][0], 'k')
-    ax3.plot(np.linspace(0,3600,num=200),IFN_sims[4][1], 'k--')
-    ax3.plot(np.linspace(0,3600,num=200),IFN_sims[4][2], 'k--')
-    ax3.plot(np.linspace(0,3600,num=200),IFN_sims[5][0], 'k')
-    ax3.plot(np.linspace(0,3600,num=200),IFN_sims[5][1], 'k:')
-    ax3.plot(np.linspace(0,3600,num=200),IFN_sims[5][2], 'k:')
+    ax3.plot(np.linspace(0,3600,num=len(IFN_sims[4][0])),IFN_sims[4][0], 'k')
+    ax3.plot(np.linspace(0,3600,num=len(IFN_sims[4][1])),IFN_sims[4][1], 'k--')
+    ax3.plot(np.linspace(0,3600,num=len(IFN_sims[4][2])),IFN_sims[4][2], 'k--')
+    ax3.plot(np.linspace(0,3600,num=len(IFN_sims[5][0])),IFN_sims[5][0], 'k')
+    ax3.plot(np.linspace(0,3600,num=len(IFN_sims[5][1])),IFN_sims[5][1], 'k:')
+    ax3.plot(np.linspace(0,3600,num=len(IFN_sims[5][2])),IFN_sims[5][2], 'k:')
     
     plt.savefig(results_dir+'figure3.pdf')
     plt.show()	
@@ -296,11 +294,11 @@ if fig4==True:
     ax1.set_ylabel('pSTAT1 Relative MFI',fontsize=18)
     ax1.set_xlabel('IFN Dose (M)',fontsize=18)
     ax1.set(xscale='log',yscale='linear')    
-    ax1.errorbar([10*1E-12,(90+1)*1E-12,600*1E-12],np.divide([IFN_exps[el][-1] for el in [0,2,4]],gamma),
-                 yerr = np.divide([IFN_sigmas[el][-1] for el in [0,2,4]],gamma),
+    ax1.errorbar([10*1E-12,(90+1)*1E-12,600*1E-12],[IFN_exps[el][-1] for el in [0,2,4]],
+                 yerr = [IFN_sigmas[el][-1] for el in [0,2,4]],
                     fmt='ro', label=r"Experiment IFN$\alpha$")
-    ax1.errorbar([10*1E-12,90*1E-12,600*1E-12],np.divide([IFN_exps[el][-1] for el in [1,3,5]],gamma),
-                 yerr = np.divide([IFN_sigmas[el][-1] for el in [1,3,5]],gamma),
+    ax1.errorbar([10*1E-12,90*1E-12,600*1E-12],[IFN_exps[el][-1] for el in [1,3,5]],
+                 yerr = [IFN_sigmas[el][-1] for el in [1,3,5]],
                     fmt='go', label=r"Experiment IFN$\alpha$")
     ax1.plot(np.logspace(-13,np.log10(600E-12)), dr_curves[0][0][0], 'r')
     ax1.plot(np.logspace(-13,np.log10(600E-12)), dr_curves[0][0][1], 'r--')
@@ -501,6 +499,7 @@ if fig7_2==True:
     plt.show()
     
 if fig8==True:
+    print("Fig 8")
     import pysbplotlib as pyplt
     import IFN_alpha_altSOCS as IFNaSOCS
     import IFN_beta_altSOCS as IFNbSOCS
