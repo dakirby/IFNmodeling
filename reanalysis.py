@@ -6,10 +6,14 @@ Created on Sun Aug 12 19:07:02 2018
 
 Autocorrelation re-analysis
 Gelman-Rubin re-analysis
+Re-plot parameter autocorrelations
+Plot trace
+Compute pairwise correlations
+Score posterior models
 """
 import os
 script_dir = os.path.dirname(__file__)
-results_dir = os.path.join(script_dir, 'MCMC_Results/')
+results_dir = os.path.join(script_dir, 'MCMC_Results-30-08-2018/')
 chain_results_dir = results_dir+'Chain_Results/'
 if not os.path.isdir(results_dir):
     os.makedirs(results_dir)
@@ -25,13 +29,14 @@ sns.set(color_codes=True)
 sns.set_style("ticks")
 import pandas as pd
 chainLengths=[0]
-with open('chain_lengths.txt', 'r') as f:
+with open(results_dir+'chain_lengths.txt', 'r') as f:
     chainLengths += map(int,f.readline().split(', '))
 chainLengths.append(-1)
-chains = pd.read_csv('complete_samples.csv',index_col=0)
+chains = pd.read_csv(results_dir+'complete_samples.csv',index_col=0)
 chainList = []
 for i in range(0,len(chainLengths)-2):
-    chainList.append(chains.iloc[chainLengths[i]:chainLengths[i]+chainLengths[i+1]])
+    chainList.append(chains.iloc[sum(chainLengths[0:i+1]):sum(chainLengths[0:i+2])])
+import mcmc
 
 def gelman_rubin_reanalysis(chain_record):
     numChains = len(chain_record)
@@ -96,11 +101,28 @@ def pairwise_correlations(chain):
         correl = np.corrcoef([chain.loc[:,varnames[pair[0]]].values.tolist(), chain.loc[:,varnames[pair[1]]].values.tolist()])
         results.loc[varnames[pair[0]], varnames[pair[1]]] = correl[0][1]
     return results
+
+def score_posterior(filename,beta,rho):
+    samples = pd.read_csv(filename,index_col=0)
+    s=[]
+    for i in range(len(samples)):
+        model = zip(samples.columns.values,samples.iloc[i])
+        model_dict = {key: value for (key, value) in model}
+        s.append(mcmc.score_model(model_dict['kpa'],model_dict['kSOCSon'],model_dict['kd4'],
+                             model_dict['k_d4'],model_dict['delR'],model_dict['gamma'],
+                             beta, rho))
+    samples['score']=s
+    samples = samples.sort_values('score')
+    samples.to_csv(results_dir+'posterior_scores.csv')
     
+        
+
     
-    
-#gelman_rubin_reanalysis(chainList)
-#thinned_chain = pd.concat([chainList[j][1000:-1:1000] for j in range(len(chainList))])
-#replot_parameter_autocorrelations(thinned_chain, 30, 'total')
+gelman_rubin_reanalysis(chainList)
+thinned_chain = [chainList[j].iloc[1000:-1:1000] for j in range(len(chainList))]
+thinned_chain = pd.concat(thinned_chain)
+thinned_chain.to_csv(results_dir+'posterior_reanalysis.csv')
+replot_parameter_autocorrelations(thinned_chain, 30, 'total')
 #plot_trace(chainList[1], 2000)
-print(pairwise_correlations(chainList[1]))
+#print(pairwise_correlations(chainList[1]))
+score_posterior(results_dir+'posterior_reanalysis.csv',1950,1)

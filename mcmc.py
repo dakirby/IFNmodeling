@@ -228,7 +228,6 @@ def get_likelihood_logp(kpa,kSOCSon,kd4,k_d4,R1,R2, gamma):
     beta_parameters[I_index_Beta] = NA*volEC*600E-12
     (_, sim) = beta_mod.simulate(t, param_values=beta_parameters)
     all_sims.append(sim['TotalpSTAT'])
-    
     logp = 0
     for i in range(len(all_sims)):
         logp += np.sum(np.square(np.divide(np.subtract(np.multiply(gamma,all_sims[i]),IFN_exps[i]),IFN_sigmas[i])))
@@ -311,7 +310,7 @@ def hyperparameter_fitting(theta_0, beta, rho, max_attempts):
         print("Attempt {}".format(attempt+1))
         acceptance, new_theta = get_acceptance_rate(theta, beta, rho)
         
-        if acceptance >= 15 and acceptance =< 50:
+        if acceptance >= 15 and acceptance <= 50:
             print("Acceptance rate was {}%".format(acceptance))
             print("New temperature will be: "+str(beta))
             return (new_theta, beta)
@@ -434,6 +433,7 @@ def get_parameter_distributions(pooled_results, burn_rate, down_sample):
     chain_Lengths=[]
     GR_record = []
     for i in pooled_results:
+        print(i)
         total_record+=i
         chain_Lengths.append(len(i))
     complete_samples = pd.DataFrame([[el[1] for el in r] for r in total_record],
@@ -448,6 +448,7 @@ def get_parameter_distributions(pooled_results, burn_rate, down_sample):
         #   Account for burn in and down sampling
         sample_record = model_record[int(len(model_record)*burn_rate):-1:down_sample]
         GR_list = model_record[int(len(model_record)*burn_rate):-1]
+
         GR_record.append(pd.DataFrame([[el[1] for el in r] for r in GR_list],
                                 columns=[l[0] for l in GR_list[0]]))
         if first==True:
@@ -670,10 +671,7 @@ def MAP(posterior_file, beta, rho):
         for n in names:
             model.update({n:df.iloc[i][n]})
         new_score = score_model(*[model[j] for j in names], beta,rho)
-        print(model)
-        print(new_score)
         if new_score<best_score:
-            print(new_score)
             best_score=new_score
             best_model=model.copy()
     print("The best model was")
@@ -844,19 +842,19 @@ def bayesian_timecourse(samplefile, dose, end_time, sample_size, percent, spec, 
         alpha_results.append(np.multiply(gamma,sim[spec]))
         beta_parameters[I_index_Beta] = NA*volEC*dose
         (_, sim) = beta_mod.simulate(t, param_values=beta_parameters)
-        beta_results.append(np.multiply(gamma,sim[spec]))
+        beta_results.append(np.multiply(gamma,sim[spec]))     
     prediction_intervals=[]
     #mean_prediction = np.mean(alpha_results, axis=0)
     map_prediction = MAP_timecourse(MAP('posterior_samples.csv',rho,beta), dose_species[1], dose_species[0], end_time, spec)
-    upper_error_prediction = np.percentile(alpha_results, max(percent, 100-percent), axis=0)
-    lower_error_prediction = np.percentile(alpha_results, min(percent, 100-percent), axis=0)
-    prediction_intervals.append([map_prediction[0],lower_error_prediction,upper_error_prediction])
+    upper_error_prediction = np.percentile(alpha_results, percent, axis=0)
+    lower_error_prediction = np.percentile(alpha_results, 100-percent, axis=0)
+    prediction_intervals.append([map_prediction[0],lower_error_prediction,upper_error_prediction,alpha_results])
     
     #mean_prediction = np.mean(beta_results, axis=0)
-    upper_error_prediction = np.percentile(beta_results, max(percent, 100-percent), axis=0)
-    lower_error_prediction = np.percentile(beta_results, min(percent, 100-percent), axis=0)
-    prediction_intervals.append([map_prediction[1],lower_error_prediction,upper_error_prediction])
-    
+    upper_error_prediction = np.percentile(beta_results, percent, axis=0)
+    lower_error_prediction = np.percentile(beta_results, 100-percent, axis=0)
+    prediction_intervals.append([map_prediction[1],lower_error_prediction,upper_error_prediction,beta_results])
+
     if suppress==False:
         fig, ax = plt.subplots()
         ax.plot(t, prediction_intervals[0][0], 'r')
@@ -1061,7 +1059,7 @@ def main():
         ['k_d4',0.06,0.5,'log'],['delR',0,500,'linear'],
         ['gamma',4,4,'linear']]
     #   (n, theta_0, beta, rho, chains, burn_rate=0.1, down_sample=1, max_attempts=6, pflag=False)
-    MCMC(20, p0, 1920, 1, 3, burn_rate=0.1, down_sample=3)# n, theta, beta=3.375
+    MCMC(20, p0, 1950, 1, 3, burn_rate=0.1, down_sample=2)# n, theta, beta=3.375
     #continue_sampling(3, 500, 0.1, 1)
 # Testing functions
     #                    1E-6, 1E-6, 0.3, 0.006, 2E3, 2E3, 4

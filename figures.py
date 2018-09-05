@@ -20,7 +20,9 @@ sns.set_style("ticks")
 plt.close('all')
 
 import Experimental_Data as ED 
-nPost=20
+nPost=15
+pLimit=75
+posterior_filename = 'MCMC_Results-30-08-2018/posterior_samples.csv'
 # Global data import since this script will be used exclusively on IFN data    
 IFN_exps = [ED.data.loc[(ED.data.loc[:,'Dose (pM)']==10) & (ED.data.loc[:,'Interferon']=="Alpha"),['0','5','15','30','60']].values[0],
             ED.data.loc[(ED.data.loc[:,'Dose (pM)']==10) & (ED.data.loc[:,'Interferon']=="Beta"),['0','5','15','30','60']].values[0],
@@ -36,11 +38,11 @@ IFN_sigmas =[ED.data.loc[(ED.data.loc[:,'Dose (pM)']==10) & (ED.data.loc[:,'Inte
              ED.data.loc[(ED.data.loc[:,'Dose (pM)']==600) & (ED.data.loc[:,'Interferon']=="Alpha_std"),['0','5','15','30','60']].values[0],
              ED.data.loc[(ED.data.loc[:,'Dose (pM)']==600) & (ED.data.loc[:,'Interferon']=="Beta_std"),['0','5','15','30','60']].values[0]]
 
-IFN_sims = [*bayesian_timecourse('posterior_samples.csv', 10E-12, 3600, nPost, 68, 'TotalpSTAT',80,80, suppress=True),
-            *bayesian_timecourse('posterior_samples.csv', 90E-12, 3600, nPost, 68, 'TotalpSTAT',80,80, suppress=True),
-            *bayesian_timecourse('posterior_samples.csv', 600E-12, 3600, nPost, 68, 'TotalpSTAT',80,80, suppress=True)]
+IFN_sims = [*bayesian_timecourse(posterior_filename, 10E-12, 3600, nPost, pLimit, 'TotalpSTAT',1950,1, suppress=True),
+            *bayesian_timecourse(posterior_filename, 90E-12, 3600, nPost, pLimit, 'TotalpSTAT',1950,1, suppress=True),
+            *bayesian_timecourse(posterior_filename, 600E-12, 3600, nPost, pLimit, 'TotalpSTAT',1950,1, suppress=True)]
 with open(results_dir+"IFN_sims.txt",'w') as f:
-    f.write(str(IFN_sims))
+    f.write(str([IFN_sims[i][3] for i in range(len(IFN_sims))]))
 
 fig3=True
 fig4=False
@@ -49,7 +51,7 @@ fig6=False
 fig7_1=False
 fig7_2=False
 fig8=False
-gamma = 24#3.17
+gamma2 = 24#3.17
 
 def rad_cell_point(samplefile, radius, end_time, sample_size, percent, specList, 
                         suppress=False, dose_species=['I', 6.022E23, 1E-5]):
@@ -289,7 +291,7 @@ if fig4==True:
     fig, (ax1,ax2) = plt.subplots(nrows=1, ncols=2, figsize=(15,8))
     matplotlib.rcParams.update({'font.size': 18})
     
-    dr_curves = bayesian_doseresponse('posterior_samples.csv', np.logspace(-13,np.log10(600E-12)), 3600, nPost, 97.5, ['TotalpSTAT'])    
+    dr_curves = bayesian_doseresponse(posterior_filename, np.logspace(-13,np.log10(600E-12)), 3600, nPost, 97.5, ['TotalpSTAT'])    
     ax1.set_title("Dose Response \nTheory vs Experiment", fontsize=20)
     ax1.set_ylabel('pSTAT1 Relative MFI',fontsize=18)
     ax1.set_xlabel('IFN Dose (M)',fontsize=18)
@@ -307,7 +309,7 @@ if fig4==True:
     ax1.plot(np.logspace(-13,np.log10(600E-12)), dr_curves[1][0][1], 'g--')
     ax1.plot(np.logspace(-13,np.log10(600E-12)), dr_curves[1][0][2], 'g--')     
 
-    dr60min = bayesian_doseresponse('posterior_samples.csv', np.logspace(-14,-2), 3600, nPost, 97.5, ['TotalpSTAT'])    
+    dr60min = bayesian_doseresponse(posterior_filename, np.logspace(-14,-2), 3600, nPost, 97.5, ['TotalpSTAT'])    
     ax2.set_title("Dose Response at 60 minutes", fontsize=20)
     ax2.set_ylabel('Total pSTAT Count',fontsize=18)
     ax2.set_xlabel('IFN Dose (M)',fontsize=18)
@@ -324,9 +326,9 @@ if fig4==True:
 
 if fig5==True:
     fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(15,8))
-    dr5min = bayesian_doseresponse('posterior_samples.csv', np.logspace(-14,-2), 5*60, nPost, 97.5, ['TotalpSTAT'])    
-    dr15min = bayesian_doseresponse('posterior_samples.csv', np.logspace(-14,-2), 15*60, nPost, 97.5, ['TotalpSTAT'])        
-    dr30min = bayesian_doseresponse('posterior_samples.csv', np.logspace(-14,-2), 30*60, nPost, 97.5, ['TotalpSTAT'])    
+    dr5min = bayesian_doseresponse(posterior_filename, np.logspace(-14,-2), 5*60, nPost, 97.5, ['TotalpSTAT'])    
+    dr15min = bayesian_doseresponse(posterior_filename, np.logspace(-14,-2), 15*60, nPost, 97.5, ['TotalpSTAT'])        
+    dr30min = bayesian_doseresponse(posterior_filename, np.logspace(-14,-2), 30*60, nPost, 97.5, ['TotalpSTAT'])    
     ax.set_title("Dose Response at Different Times", fontsize=20)
     ax.set_ylabel('pSTAT Normalized by Total STAT',fontsize=18)
     ax.set_xlabel('IFN Dose (M)',fontsize=18)
@@ -343,7 +345,7 @@ if fig5==True:
     
 if fig6==True:
     fig, ax = plt.subplots()
-    radCell60min = rad_cell_dr('posterior_samples.csv', np.logspace(-8,-3), 3600, nPost, 97.5, ['TotalpSTAT'])                          
+    radCell60min = rad_cell_dr(posterior_filename, np.logspace(-8,-3), 3600, nPost, 97.5, ['TotalpSTAT'])                          
     ax.set_title("Cell Size for 60 minute Exposure", fontsize=20)
     ax.set_ylabel('pSTAT Normalized by Total STAT',fontsize=18)
     ax.set_xlabel('Cell Radius (microns)',fontsize=18)
@@ -364,7 +366,7 @@ if fig7_1==True:
     import IFN_beta_altSOCS as IFNbSOCS
     sample_size=nPost
     import pandas as pd
-    samples = pd.read_csv('posterior_samples.csv', index_col=0)
+    samples = pd.read_csv(posterior_filename, index_col=0)
     variable_names = list(samples.columns.values)
     (nSamples, nVars) = samples.shape
     curve_population20 = [[],[]]
@@ -434,7 +436,7 @@ if fig7_2==True:
     import IFN_beta_altSOCS as IFNbSOCS
     sample_size=nPost
     import pandas as pd
-    samples = pd.read_csv('posterior_samples.csv', index_col=0)
+    samples = pd.read_csv(posterior_filename, index_col=0)
     variable_names = list(samples.columns.values)
     (nSamples, nVars) = samples.shape
     curve_population15 = [[],[]]
@@ -505,7 +507,7 @@ if fig8==True:
     import IFN_beta_altSOCS as IFNbSOCS
     sample_size=nPost
     import pandas as pd
-    samples = pd.read_csv('posterior_samples.csv', index_col=0)
+    samples = pd.read_csv(posterior_filename, index_col=0)
     variable_names = list(samples.columns.values)
     (nSamples, nVars) = samples.shape
     dr_populationNoInt = [[],[]]
