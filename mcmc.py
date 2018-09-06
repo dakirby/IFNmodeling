@@ -268,7 +268,6 @@ def get_acceptance_rate(theta, beta, rho):
     asymmetric_indices = [el[0] for el in enumerate(old_theta) if el[1][3]=='log']
     acceptance = 0    
     for i in range(100):
-        print(i)
         proposal = J(old_theta)
         [new_score, new_gamma] = score_model(*[proposal[j][1] for j in range(len(proposal))], beta, rho)
         asymmetry_factor = 1 # log normal proposal distributions are asymmetric
@@ -292,6 +291,8 @@ def get_acceptance_rate(theta, beta, rho):
 def hyperparameter_fitting(theta_0, beta, rho, max_attempts):
     print("Choosing optimal temperature")
     theta = [el for el in theta_0]
+    if max_attempts==0:
+        return (theta_0, beta)
     # Try to find variances that give an good acceptance rate
     for attempt in range(max_attempts):
         print("Attempt {}".format(attempt+1))
@@ -415,12 +416,11 @@ def gelman_rubin_convergence(chain_record):
 # =============================================================================
 def get_parameter_distributions(pooled_results, burn_rate, down_sample):
     sns.palplot(sns.color_palette("GnBu_d"))
-    chain_record=[]
-    total_record=[]
-    chain_Lengths=[]
-    GR_record = []
+    chain_record=[] # for plotting chain histograms
+    total_record=[] # to save all results to allow reanalysis
+    chain_Lengths=[] # list of ints, each a chain's length; used in reanalysis
+    GR_record = [] # record of chains after burn-in but before thinning, used in GR diagnostic
     for i in pooled_results:
-        print(i)
         total_record+=i
         chain_Lengths.append(len(i))
     complete_samples = pd.DataFrame([[el[1] for el in r] for r in total_record],
@@ -550,6 +550,8 @@ def mcmcChecks(n, theta_0, beta, rho, chains, burn_rate, down_sample, max_attemp
         raise ValueError('Order of inputs for theta_0 seems incorrect')
     if type(chains) != int:
         raise ValueError('Type for input "chains" must be int')
+    if max_attempts < 0:
+        raise ValueError('max_attempts must be positive')
     return True
 
 # =============================================================================
@@ -578,9 +580,10 @@ def mh(ID, jobs, result, countQ):
         if mGet is None:
             break
         hyper_theta, beta, rho, n = mGet
-        model_record=[hyper_theta.append(['gamma',1])]
+        model_record=[hyper_theta]
         asymmetric_indices = [el[0] for el in enumerate(hyper_theta) if el[1][3]=='log']
         [old_score, old_gamma] = score_model(*[model_record[0][j][1] for j in range(len(model_record[0]))], beta, rho)
+        gamma_list=[old_gamma]
         old_index = 0
         acceptance = 0
         attempts = 0
@@ -603,10 +606,13 @@ def mh(ID, jobs, result, countQ):
             for j in asymmetric_indices:
                 asymmetry_factor *= proposal[j][1]/model_record[old_index][j][1]
             if new_score < old_score or np.random.rand() < np.exp(-(new_score-old_score))*asymmetry_factor:
-                model_record.append(proposal.append(['gamma',new_gamma]))
+                model_record.append(proposal)
+                gamma_list.append(new_gamma)                
                 old_score = new_score
                 old_index += 1
                 acceptance += 1
+        for i in range(len(model_record)):
+            model_record[i].append(['gamma',gamma_list[i]])
         result.put(model_record)
         countQ.put([ID,acceptance/attempts*100])
 
@@ -662,8 +668,8 @@ def MCMC(n, theta_0, beta, rho, chains, burn_rate=0.1, down_sample=1, max_attemp
     average_acceptance = np.mean([el[1] for el in chain_attempts])
     print("Average acceptance rate was {:.1f}%".format(average_acceptance))
     samples = get_parameter_distributions(pool_results, burn_rate, down_sample)
-    plot_parameter_autocorrelations(samples)
-    get_summary_statistics(samples)
+    plot_parameter_autocorrelations(samples.drop('gamma',axis=1))
+    get_summary_statistics(samples.drop('gamma',axis=1))
     with open(results_dir+'simulation_summary.txt','w') as f:
         f.write('Temperature used was {}\n'.format(beta))
         f.write('Number of chains = {}\n'.format(chains))
@@ -1073,7 +1079,7 @@ def main():
     p0=[['kpa',1E-5,0.1,'log'],['kSOCSon',2E-6,0.1,'log'],['kd4',0.03,0.2,'log'],
         ['k_d4',0.06,0.5,'log'],['delR',0,500,'linear']]
     #   (n, theta_0, beta, rho, chains, burn_rate=0.1, down_sample=1, max_attempts=6, pflag=False)
-    MCMC(20, p0, 1, 1, 3, burn_rate=0.1, down_sample=2)# n, theta, beta=3.375
+    MCMC(20, p0, 1, 1, 3, burn_rate=0.1, down_sample=2, max_attempts=0)# n, theta, beta=3.375
     #continue_sampling(3, 500, 0.1, 1)
 # Testing functions
     #                    1E-6, 1E-6, 0.3, 0.006, 2E3, 2E3, 4
