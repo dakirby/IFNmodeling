@@ -35,6 +35,7 @@ IFN_sigmas =[ED.data.loc[(ED.data.loc[:,'Dose (pM)']==10) & (ED.data.loc[:,'Inte
 
 
 import numpy as np
+from scipy.optimize import minimize
 import matplotlib.pyplot as plt
 import seaborn as sns; 
 sns.set(color_codes=True)
@@ -81,23 +82,18 @@ def disperse_chains(theta_0, nChains):
                 new_theta.append([parameter[0],
                                   np.random.uniform(low=0, high=1900),
                                   parameter[2],parameter[3]])
-            elif parameter[0]=='gamma': # uniform on [2,40]
-                new_theta.append([parameter[0],
-                                  np.random.uniform(low=2, high=40),
-                                  parameter[2],parameter[3]])
         theta_list.append(new_theta)
     return theta_list
 
 # =============================================================================
 # Designed specifically for IFN alpha and IFN beta model priors
 # =============================================================================
-def get_prior_logp(kpa, kSOCSon, kd4, k_d4, R1, R2, gamma):
+def get_prior_logp(kpa, kSOCSon, kd4, k_d4, R1, R2):
     # Check bounds on parameters
     # 100 < R1, R2 < 12 000
     # 1E-9 < kpa, kSOCSon < 10
     # 1E-9 < k_d4, kd4 < 50
-    # 1 < gamma < 40
-    if R1<100 or R2<100 or R1>12000 or R2>12000 or kpa<1.5E-11 or kpa>0.07 or kSOCSon<1.5E-11 or kSOCSon>0.07 or k_d4<4E-5   or k_d4>0.9 or kd4<0.002 or kd4>44 or gamma<1 or gamma>40:
+    if R1<100 or R2<100 or R1>12000 or R2>12000 or kpa<1.5E-11 or kpa>0.07 or kSOCSon<1.5E-11 or kSOCSon>0.07 or k_d4<4E-5   or k_d4>0.9 or kd4<0.002 or kd4>44:
         return 1E8
     else:
         # lognorm(std dev = 1, 0, guess at reaction rate value )
@@ -127,87 +123,22 @@ def get_prior_logp(kpa, kSOCSon, kd4, k_d4, R1, R2, gamma):
             logp += ((np.log(theta[i])-P_list[i])/S_list[i])**2
         
         return logp
-
-
-# =============================================================================
-# check_proposals() allows the user to get a sense of what the random walk
-# for each parameter looks like with the given values
-# Inputs:
-#   theta (list) = the input parameter vector
-#   n (int) = the number of steps to take in the sample random walk
-# =============================================================================
-def check_proposals(theta, n):
-    walk=[theta]
-    for j in range(n):
-        walk.append(J(walk[j]))
-    rearrange = [[walk[i][j][1] for i in range(len(walk))] for j in range(len(theta))]
-    
-    k = len(theta) # total number subplots
-    n = 2 # number of chart columns
-    m = (k - 1) // n + 1 # number of chart rows
-    fig, axes = plt.subplots(m, n, figsize=(n * 5, m * 3))
-    if k % 2 == 1: # avoids extra empty subplot
-        axes[-1][n-1].set_axis_off()
-    for ind, w in enumerate(rearrange):
-        r, c = ind // n, ind % n
-        ax = axes[r, c] # get axis object
-        if theta[r*n+c][3]=='log':
-            ax.set(xscale='linear',yscale='log')
-        ax.plot(range(len(w)), w)    
-        ax.set_title(theta[r*n+c][0])
-    plt.savefig(results_dir+'typical_priors_rw.pdf')
     
 # =============================================================================
-# Designed specifically for IFN alpha and IFN beta model least-squares likelihood
+# logp_helper() is a target function for scipy optimization of scale factor gamma
 # =============================================================================
-def get_likelihood_logp(kpa,kSOCSon,kd4,k_d4,R1,R2, gamma):
-    q1 = 3.321155762205247e-14/1
-    q2 = 4.98173364330787e-13/0.015
-    q4 = 3.623188E-4/kd4
-    q3 = q2*q4/q1
-    kd3 = 3.623188E-4/q3                
-
-    q_1 = 4.98E-14/0.03
-    q_2 = 8.30e-13/0.002
-    q_4 = 3.623188e-4/k_d4
-    q_3 = q_2*q_4/q_1
-    k_d3 = 3.623188e-4/q_3
-    fit_list = [['kpa',kpa],['kSOCSon',kSOCSon],['kd4',kd4],['k_d4',k_d4],
-                ['R1',R1],['R2',R2],['kd3',kd3],['k_d3',k_d3]]
-    
+def logp_helper(gamma, alpha_parameters, beta_parameters, I_index_Alpha, I_index_Beta):
+    # import models
     import ODE_system_alpha
     alpha_mod = ODE_system_alpha.Model()
     import ODE_system_beta
     beta_mod = ODE_system_beta.Model()
-   
-    alpha_parameters=[]
-    beta_parameters=[]
-    for p in alpha_mod.parameters:
-        isInList=False
-        for y in fit_list:
-            if p[0]==y[0]:
-                alpha_parameters.append(y[1])
-                isInList=True
-                break
-        if isInList==False:
-            alpha_parameters.append(p.value)
-    for p in beta_mod.parameters:
-        isInList=False
-        for y in fit_list:
-            if p[0]==y[0]:
-                beta_parameters.append(y[1])
-                isInList=True
-                break
-        if isInList==False:
-            beta_parameters.append(p.value)
-    I_index_Alpha = [el[0] for el in alpha_mod.parameters].index('I')
-    I_index_Beta = [el[0] for el in beta_mod.parameters].index('I')
-    
+    # set constants
     NA = 6.022E23
     volEC = 1E-5   
     t=[0,5*60,15*60,30*60,60*60]
     all_sims=[]         
-    # fit this model to the data, finding the best values of kd4 and k_d4 if called for
+    # run simulations under experimental conditions
     alpha_parameters[I_index_Alpha] = NA*volEC*10E-12
     (_, sim) = alpha_mod.simulate(t, param_values=alpha_parameters)
     all_sims.append(sim['TotalpSTAT'])
@@ -233,16 +164,70 @@ def get_likelihood_logp(kpa,kSOCSon,kd4,k_d4,R1,R2, gamma):
         logp += np.sum(np.square(np.divide(np.subtract(np.multiply(gamma,all_sims[i]),IFN_exps[i]),IFN_sigmas[i])))
     return logp
 # =============================================================================
+# get_likelihood_logp() is designed specifically for IFN alpha and IFN beta model 
+#   least-squares likelihood with data used in paper
+# =============================================================================
+def get_likelihood_logp(kpa,kSOCSon,kd4,k_d4,R1,R2):
+    # import models
+    import ODE_system_alpha
+    alpha_mod = ODE_system_alpha.Model()
+    import ODE_system_beta
+    beta_mod = ODE_system_beta.Model()
+    # Build parameter lists
+    q1 = 3.321155762205247e-14/1
+    q2 = 4.98173364330787e-13/0.015
+    q4 = 3.623188E-4/kd4
+    q3 = q2*q4/q1
+    kd3 = 3.623188E-4/q3                
+
+    q_1 = 4.98E-14/0.03
+    q_2 = 8.30e-13/0.002
+    q_4 = 3.623188e-4/k_d4
+    q_3 = q_2*q_4/q_1
+    k_d3 = 3.623188e-4/q_3
+    fit_list = [['kpa',kpa],['kSOCSon',kSOCSon],['kd4',kd4],['k_d4',k_d4],
+                ['R1',R1],['R2',R2],['kd3',kd3],['k_d3',k_d3]]
+   
+    alpha_parameters=[]
+    beta_parameters=[]
+    for p in alpha_mod.parameters:
+        isInList=False
+        for y in fit_list:
+            if p[0]==y[0]:
+                alpha_parameters.append(y[1])
+                isInList=True
+                break
+        if isInList==False:
+            alpha_parameters.append(p.value)
+    for p in beta_mod.parameters:
+        isInList=False
+        for y in fit_list:
+            if p[0]==y[0]:
+                beta_parameters.append(y[1])
+                isInList=True
+                break
+        if isInList==False:
+            beta_parameters.append(p.value)
+    I_index_Alpha = [el[0] for el in alpha_mod.parameters].index('I')
+    I_index_Beta = [el[0] for el in beta_mod.parameters].index('I')
+    # optimize choice of scale factor gamma:
+    #   set initial guess for gamma at 40 to ensure we get the largest local minimum in the optimization
+    opt = minimize(logp_helper,[40],args=(alpha_parameters, beta_parameters, I_index_Alpha, I_index_Beta))
+    gamma = opt['x'].item()
+    logp = opt['fun']
+    return [logp, gamma]
+    
+# =============================================================================
 # Returns -log(probability of model)
 # =============================================================================
-def score_model(kpa,kSOCSon,kd4,k_d4,delR, gamma, beta, rho, debugging=False):
+def score_model(kpa,kSOCSon,kd4,k_d4,delR, beta, rho, debugging=False):
     R1=2E3-delR/2
     R2=2E3+delR/2
-    lk = get_likelihood_logp(kpa,kSOCSon,kd4,k_d4,R1,R2, gamma)
-    pr = get_prior_logp(kpa, kSOCSon, kd4, k_d4, R1, R2, gamma)
+    [lk,gamma] = get_likelihood_logp(kpa,kSOCSon,kd4,k_d4,R1,R2)
+    pr = get_prior_logp(kpa, kSOCSon, kd4, k_d4, R1, R2)
     if debugging==True:
         print(str(lk)+", "+str(pr))
-    return (lk/rho+pr)/beta
+    return [(lk/rho+pr)/beta, gamma]
 
 # =============================================================================
 # J() is the jumping distribution
@@ -279,12 +264,13 @@ def J(theta):
 # =============================================================================
 def get_acceptance_rate(theta, beta, rho):
     old_theta=theta
-    old_score = score_model(*[old_theta[j][1] for j in range(len(old_theta))], beta, rho)
+    [old_score, old_gamma] = score_model(*[old_theta[j][1] for j in range(len(old_theta))], beta, rho)
     asymmetric_indices = [el[0] for el in enumerate(old_theta) if el[1][3]=='log']
     acceptance = 0    
     for i in range(100):
+        print(i)
         proposal = J(old_theta)
-        new_score = score_model(*[proposal[j][1] for j in range(len(proposal))], beta, rho)
+        [new_score, new_gamma] = score_model(*[proposal[j][1] for j in range(len(proposal))], beta, rho)
         asymmetry_factor = 1 # log normal proposal distributions are asymmetric
         for j in asymmetric_indices:
             asymmetry_factor *= proposal[j][1]/old_theta[j][1]
@@ -292,8 +278,9 @@ def get_acceptance_rate(theta, beta, rho):
         # if rand() < probability of proposed/probability of old
             old_theta=proposal
             old_score = new_score
+            old_gamma = new_gamma
             acceptance += 1
-    return (acceptance, old_theta) # = acceptance/100*100
+    return (acceptance, old_theta, old_gamma) # = acceptance/100*100
 
 # =============================================================================
 # hyperparameter_fitting() attempts to alter the input temperature
@@ -308,7 +295,7 @@ def hyperparameter_fitting(theta_0, beta, rho, max_attempts):
     # Try to find variances that give an good acceptance rate
     for attempt in range(max_attempts):
         print("Attempt {}".format(attempt+1))
-        acceptance, new_theta = get_acceptance_rate(theta, beta, rho)
+        acceptance, new_theta, new_gamma = get_acceptance_rate(theta, beta, rho)
         
         if acceptance >= 15 and acceptance <= 50:
             print("Acceptance rate was {}%".format(acceptance))
@@ -316,10 +303,10 @@ def hyperparameter_fitting(theta_0, beta, rho, max_attempts):
             return (new_theta, beta)
         else:
             if acceptance < 15:
-                print("Acceptance rate was too low")
+                print("Acceptance rate was too low: {}%".format(acceptance))
                 beta = 2*beta
             if acceptance > 50:
-                print("Acceptance rate was too high")
+                print("Acceptance rate was too high: {}%".format(acceptance))
                 beta = 0.75*beta
     raise RuntimeError("         Failed to optimize hyperparameters.\n\
                        Please initialise with different variances or temperatures,\n\
@@ -522,6 +509,35 @@ def get_summary_statistics(df):
     summary_df = pd.DataFrame.from_records(summary,columns=headers)
     summary_df.to_csv(results_dir+"parameter_summary.csv")
 
+
+# =============================================================================
+# check_proposals() allows the user to get a sense of what the random walk
+# for each parameter looks like with the given values
+# Inputs:
+#   theta (list) = the input parameter vector
+#   n (int) = the number of steps to take in the sample random walk
+# =============================================================================
+def check_proposals(theta, n):
+    walk=[theta]
+    for j in range(n):
+        walk.append(J(walk[j]))
+    rearrange = [[walk[i][j][1] for i in range(len(walk))] for j in range(len(theta))]
+    
+    k = len(theta) # total number subplots
+    n = 2 # number of chart columns
+    m = (k - 1) // n + 1 # number of chart rows
+    fig, axes = plt.subplots(m, n, figsize=(n * 5, m * 3))
+    if k % 2 == 1: # avoids extra empty subplot
+        axes[-1][n-1].set_axis_off()
+    for ind, w in enumerate(rearrange):
+        r, c = ind // n, ind % n
+        ax = axes[r, c] # get axis object
+        if theta[r*n+c][3]=='log':
+            ax.set(xscale='linear',yscale='log')
+        ax.plot(range(len(w)), w)    
+        ax.set_title(theta[r*n+c][0])
+    plt.savefig(results_dir+'typical_priors_rw.pdf')
+
 # =============================================================================
 # Sanity checks for MCMC()    
 # =============================================================================
@@ -541,8 +557,8 @@ def mcmcChecks(n, theta_0, beta, rho, chains, burn_rate, down_sample, max_attemp
 # Inputs:    
 #    n (int) = number of samples to collect per chain
 #    theta_0 (list) = the initial guesses and jumping distribution definitions for each parameter to fit
-#                       Order of theta_0 is [kpa, kSOCSon, kd4, k_d4, R1, R2, gamma]    
-#                   eg. [['kpa',1E-6,0.2,'log'],['R2',2E3,250,'linear'],['gamma',4,2,'uniform',40]]
+#                       Order of theta_0 is [kpa, kSOCSon, kd4, k_d4, R1, R2]    
+#                   eg. [['kpa',1E-6,0.2,'log'],['R2',2E3,250,'linear'],['kSOCSon',4,2,'uniform',40]]
 #    beta (float) = effectively temperature, this factor controls the 
 #                   tolerance of the probabilistic parameter search
 #    rho (float) = the scale factor for Bayesian cost, to make priors more important
@@ -562,9 +578,9 @@ def mh(ID, jobs, result, countQ):
         if mGet is None:
             break
         hyper_theta, beta, rho, n = mGet
-        model_record=[hyper_theta]
+        model_record=[hyper_theta.append(['gamma',1])]
         asymmetric_indices = [el[0] for el in enumerate(hyper_theta) if el[1][3]=='log']
-        old_score = score_model(*[model_record[0][j][1] for j in range(len(model_record[0]))], beta, rho)
+        [old_score, old_gamma] = score_model(*[model_record[0][j][1] for j in range(len(model_record[0]))], beta, rho)
         old_index = 0
         acceptance = 0
         attempts = 0
@@ -582,12 +598,12 @@ def mh(ID, jobs, result, countQ):
                     g.write(str(model_record))
                 progress_bar += n/10                    
             proposal = J(model_record[old_index])
-            new_score = score_model(*[proposal[j][1] for j in range(len(proposal))], beta, rho)
+            [new_score, new_gamma] = score_model(*[proposal[j][1] for j in range(len(proposal))], beta, rho)
             asymmetry_factor = 1 # log normal proposal distributions are asymmetric
             for j in asymmetric_indices:
                 asymmetry_factor *= proposal[j][1]/model_record[old_index][j][1]
             if new_score < old_score or np.random.rand() < np.exp(-(new_score-old_score))*asymmetry_factor:
-                model_record.append(proposal)
+                model_record.append(proposal.append(['gamma',new_gamma]))
                 old_score = new_score
                 old_index += 1
                 acceptance += 1
@@ -666,18 +682,18 @@ def MAP(posterior_file, beta, rho):
     names=list(df.columns.values)
     best_score=1E8
     best_model=dict((key, 0) for key in names)
-    model=dict((key, 0) for key in names)
+    model=dict((key, 0) for key in names if key != 'gamma')
     for i in range(len(df)):
         for n in names:
             model.update({n:df.iloc[i][n]})
-        new_score = score_model(*[model[j] for j in names], beta,rho)
+        [new_score,new_gamma] = score_model(*[model[j] for j in names if j!='gamma'], beta,rho)
         if new_score<best_score:
             best_score=new_score
             best_model=model.copy()
     print("The best model was")
     print(best_model)
     print("with as score of")
-    score_model(*[best_model[j] for j in names], beta,rho,debugging=True)
+    score_model(*[best_model[j] for j in names if j!='gamma'], beta,rho,debugging=True)
     return best_model
 
 # =============================================================================
@@ -789,7 +805,7 @@ def bayesian_timecourse(samplefile, dose, end_time, sample_size, percent, spec, 
     beta_results=[]
     for r in range(sample_size):
         parameter_vector = samples.iloc[r]
-        pList = [[variable_names[i], parameter_vector.loc[variable_names[i]]] for i in range(nVars) if variable_names[i] != 'gamma']
+        pList = [[variable_names[i], parameter_vector.loc[variable_names[i]]] for i in range(nVars)]# if variable_names[i] != 'gamma']
         for item in range(len(pList)):
             if pList[item][0]=='delR':
                 R1=2E3-pList[item][1]/2
@@ -928,8 +944,7 @@ def profile(processes):
     with open('ODE_system_beta.py','w') as f:
         f.write(py_output)
     p0=[['kpa',1E-6,0.1,'log'],['kSOCSon',1E-6,0.1,'log'],['kd4',0.3,0.2,'log'],
-        ['k_d4',0.006,0.5,'log'],['delR',0,500,'linear'],
-        ['gamma',2,0.5,'log']]
+        ['k_d4',0.006,0.5,'log'],['delR',0,500,'linear']]
 # ==========================================================
     times = []
     for p in processes:
@@ -1056,10 +1071,9 @@ def main():
     with open('ODE_system_beta.py','w') as f:
         f.write(py_output)
     p0=[['kpa',1E-5,0.1,'log'],['kSOCSon',2E-6,0.1,'log'],['kd4',0.03,0.2,'log'],
-        ['k_d4',0.06,0.5,'log'],['delR',0,500,'linear'],
-        ['gamma',4,4,'linear']]
+        ['k_d4',0.06,0.5,'log'],['delR',0,500,'linear']]
     #   (n, theta_0, beta, rho, chains, burn_rate=0.1, down_sample=1, max_attempts=6, pflag=False)
-    MCMC(20, p0, 1950, 1, 3, burn_rate=0.1, down_sample=2)# n, theta, beta=3.375
+    MCMC(20, p0, 1, 1, 3, burn_rate=0.1, down_sample=2)# n, theta, beta=3.375
     #continue_sampling(3, 500, 0.1, 1)
 # Testing functions
     #                    1E-6, 1E-6, 0.3, 0.006, 2E3, 2E3, 4
