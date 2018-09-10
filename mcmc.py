@@ -598,7 +598,10 @@ def mh(ID, jobs, result, countQ):
                 with open(results_dir+'progress.txt','a') as f:
                     f.write("Chain {} is {:.1f}% done, currently averaging {:.1f}% acceptance.\n".format(ID, acceptance/n*100,acceptance/attempts*100))
                 with open(chain_results_dir+str(ID)+'chain.txt','w') as g:
-                    g.write(str(model_record))
+                    temp_record = []
+                    for i in range(len(model_record)):
+                        temp_record.append(model_record[i]+[['gamma',gamma_list[i]]])
+                    g.write(str(temp_record))
                 progress_bar += n/10                    
             proposal = J(model_record[old_index])
             [new_score, new_gamma] = score_model(*[proposal[j][1] for j in range(len(proposal))], beta, rho)
@@ -681,13 +684,15 @@ def MCMC(n, theta_0, beta, rho, chains, burn_rate=0.1, down_sample=1, max_attemp
     
 # =============================================================================
 # MAP() finds the maximum a posteriori model from the posterior models listed in
-# posterior_file (Input) and returns a dictionary of the model with the lowest score
+# posterior_file (Input) and returns a tuple containing a 
+# dictionary of the model with the lowest score and its value for gamma
 # =============================================================================
-def MAP(posterior_file, beta, rho):
+def MAP(posterior_file, beta, rho, debugging=False):
     df = pd.read_csv(posterior_file,index_col=0)
-    names=list(df.columns.values)
+    names=list(df.drop('gamma',axis=1).columns.values)
     best_score=1E8
-    best_model=dict((key, 0) for key in names)
+    best_model=dict((key, 0) for key in names if key != 'gamma')
+    best_gamma=1
     model=dict((key, 0) for key in names if key != 'gamma')
     for i in range(len(df)):
         for n in names:
@@ -695,19 +700,22 @@ def MAP(posterior_file, beta, rho):
         [new_score,new_gamma] = score_model(*[model[j] for j in names if j!='gamma'], beta,rho)
         if new_score<best_score:
             best_score=new_score
+            best_gamma=new_gamma
             best_model=model.copy()
-    print("The best model was")
-    print(best_model)
-    print("with as score of")
-    score_model(*[best_model[j] for j in names if j!='gamma'], beta,rho,debugging=True)
-    return best_model
+    if debugging==True:
+        print("The best model was")
+        print(best_model)
+        print('and gamma = '+str(best_gamma))
+        print("with as score of")
+        score_model(*[best_model[j] for j in names if j!='gamma'], beta,rho,debugging=True)
+    return (best_model, best_gamma)
 
 # =============================================================================
-# MAP_timecourse() takes the MAP model from MAP() as well as dose_spec species 
-# concentration, end time, and output species (Input), and returns a prediction 
-# for the output species as a list
+# MAP_timecourse() takes the MAP model from MAP() as well as gamma, dose_spec 
+# species concentration, end time, and output species (Input), and returns a 
+# prediction for the output species as a list
 # =============================================================================
-def MAP_timecourse(model, dose, dose_spec, end_time, spec):
+def MAP_timecourse(model, gamma, dose, dose_spec, end_time, spec):
     import ODE_system_alpha
     alpha_mod = ODE_system_alpha.Model()
     import ODE_system_beta
@@ -765,7 +773,7 @@ def MAP_timecourse(model, dose, dose_spec, end_time, spec):
     beta_pvec[I_index_Beta] = dose
     (_, sim) = beta_mod.simulate(t, param_values=beta_pvec)
     beta_result = sim[spec]
-    return [np.multiply(model['gamma'],alpha_result), np.multiply(model['gamma'],beta_result)]
+    return [np.multiply(gamma,alpha_result), np.multiply(gamma,beta_result)]
 
           
     
@@ -795,44 +803,59 @@ def MAP_timecourse(model, dose, dose_spec, end_time, spec):
 # =============================================================================
 def bayesian_timecourse(samplefile, dose, end_time, sample_size, percent, spec, rho, beta, 
                         suppress=False, dose_species=['I', 6.022E23, 1E-5]):
+    # Read samples
     samples = pd.read_csv(samplefile,index_col=0)
+    # Check that function inputs are valid
     (nSamples, nVars) = samples.shape
     if sample_size > nSamples:
         print("Not enough samples in file")
         return 1
+    # Get variables that were sampled
     variable_names = list(samples.columns.values)
-
+    # Import models
     import ODE_system_alpha
     alpha_mod = ODE_system_alpha.Model()
     import ODE_system_beta
     beta_mod = ODE_system_beta.Model()
-    
-    alpha_results=[]
-    beta_results=[]
+    # Choose 'global' best model (fits complete data optimally, not just dose-response data points)
+    (best_model,best_gamma) = MAP(samplefile, beta, rho)#best_model is a dict with parameter values and best_gamma is a float
+    # Make best_model into a list to compare to all model later
+    best_model_list = [[variable_names[i], best_model[variable_names[i]]] for i in range(nVars) if variable_names[i] != 'gamma']
+
+    alpha_curves=[]
+    beta_curves=[]
+    best_curves=[]
+    # Simulate each model
     for r in range(sample_size):
-        parameter_vector = samples.iloc[r]
-        pList = [[variable_names[i], parameter_vector.loc[variable_names[i]]] for i in range(nVars)]# if variable_names[i] != 'gamma']
+        MAP_bool=False #Flag to identify the MAP model
+        parameter_vector = samples.iloc[r]#Pandas Series of variables and values, including gamma
+        # Create list format excluding gamma:
+        pList = [[variable_names[i], parameter_vector.loc[variable_names[i]]] for i in range(nVars) if variable_names[i] != 'gamma']
+        # Check if this model is the MAP model:
+        if best_model_list == pList:
+            MAP_bool=True
+        # Convert any combined quantities
         for item in range(len(pList)):
             if pList[item][0]=='delR':
                 R1=2E3-pList[item][1]/2
                 R2=2E3+pList[item][1]/2
                 pList=pList[0:item]+[['R1',R1],['R2',R2]]+pList[item+1:len(pList)]
-        gamma = parameter_vector.loc['gamma']
-        # Build the sample model
+        gamma = parameter_vector.loc['gamma']#of type numpy.float64
+        # Maintain detailed balance
         if 'kd4' in variable_names:
             q1 = 3.321155762205247e-14/1
             q2 = 4.98173364330787e-13/0.015
             q4 = 3.623188E-4/parameter_vector.loc['kd4']
             q3 = q2*q4/q1
             kd3 = 3.623188E-4/q3                
-        
+
             q_1 = 4.98E-14/0.03
             q_2 = 8.30e-13/0.002
             q_4 = 3.623188e-4/parameter_vector.loc['k_d4']
             q_3 = q_2*q_4/q_1
             k_d3 = 3.623188e-4/q_3
             pList += [['kd3', kd3],['k_d3',k_d3]]
-
+        # Now create an ordered list of ALL model parameters to use in PySB sim
         alpha_parameters=[]
         beta_parameters=[]
         for p in alpha_mod.parameters:
@@ -853,29 +876,38 @@ def bayesian_timecourse(samplefile, dose, end_time, sample_size, percent, spec, 
                     break
             if isInList==False:
                 beta_parameters.append(p.value)
+        # Prepare for dose-response curve simulation
         I_index_Alpha = [el[0] for el in alpha_mod.parameters].index(dose_species[0])
         I_index_Beta = [el[0] for el in beta_mod.parameters].index(dose_species[0])
         NA = dose_species[1] # 6.022E23
         volEC = dose_species[2] # 1E-5   
         t=np.linspace(0,end_time)
-        # Run simulation
+        # Run simulation for each dose
+        alpha_results=[]
+        beta_results=[]
+
         alpha_parameters[I_index_Alpha] = NA*volEC*dose
         (_, sim) = alpha_mod.simulate(t, param_values=alpha_parameters)
-        alpha_results.append(np.multiply(gamma,sim[spec]))
+        alpha_results.append(gamma*sim[spec])
         beta_parameters[I_index_Beta] = NA*volEC*dose
         (_, sim) = beta_mod.simulate(t, param_values=beta_parameters)
-        beta_results.append(np.multiply(gamma,sim[spec]))     
+        beta_results.append(gamma*sim[spec])     
+
+        alpha_curves.append(alpha_results)
+        beta_curves.append(beta_results)
+        if MAP_bool==True:
+            best_curves = [alpha_results,beta_results]
+    # Prepare function return
     prediction_intervals=[]
-    #mean_prediction = np.mean(alpha_results, axis=0)
-    map_prediction = MAP_timecourse(MAP('posterior_samples.csv',rho,beta), dose_species[1], dose_species[0], end_time, spec)
-    upper_error_prediction = np.percentile(alpha_results, percent, axis=0)
-    lower_error_prediction = np.percentile(alpha_results, 100-percent, axis=0)
-    prediction_intervals.append([map_prediction[0],lower_error_prediction,upper_error_prediction,alpha_results])
+    #   Alpha results
+    upper_error_prediction = np.percentile(alpha_curves, percent, axis=0)
+    lower_error_prediction = np.percentile(alpha_curves, 100-percent, axis=0)
+    prediction_intervals.append([best_curves[0],lower_error_prediction,upper_error_prediction,alpha_curves])
     
-    #mean_prediction = np.mean(beta_results, axis=0)
-    upper_error_prediction = np.percentile(beta_results, percent, axis=0)
-    lower_error_prediction = np.percentile(beta_results, 100-percent, axis=0)
-    prediction_intervals.append([map_prediction[1],lower_error_prediction,upper_error_prediction,beta_results])
+    #   Beta results
+    upper_error_prediction = np.percentile(beta_curves, percent, axis=0)
+    lower_error_prediction = np.percentile(beta_curves, 100-percent, axis=0)
+    prediction_intervals.append([best_curves[1],lower_error_prediction,upper_error_prediction,beta_results])
 
     if suppress==False:
         fig, ax = plt.subplots()
@@ -897,7 +929,8 @@ def bayesian_timecourse(samplefile, dose, end_time, sample_size, percent, spec, 
 #     dose (list) = doses for the simulation (IFN concentration in M)
 #     end_time (int) = the end time for each time course (in seconds)
 #     sample_size (int) = the number of posterior samples to use
-#     specList (list) = list of names of species to predict intervals for
+#     spec (str) = name of species to predict intervals for
+#     rho, beta (floats) = the values of rho and beta used in the sampling MCMC
 #     percent (int) = the percentile bounds for error in model prediction 
 #                       (bounds will be 'percent' and 100-'percent') 
 #     suppress (Boolean) = whether or not to plot the results (default is False) 
@@ -909,23 +942,124 @@ def bayesian_timecourse(samplefile, dose, end_time, sample_size, percent, spec, 
 #   [alpha_responses, beta_responses] (list) = the dose response curves
 #                       alpha_responses = [[mean curve, low curve, high curve] for each species]        
 # =============================================================================
-def bayesian_doseresponse(samplefile, doses, end_time, sample_size, percent, specList,
+def bayesian_doseresponse(samplefile, doses, end_time, sample_size, percent, spec, rho,beta,
                           suppress=False, dr_species=['I', 6.022E23, 1E-5]):
-    alpha_responses = [[] for i in range(len(specList))]
-    beta_responses = [[] for i in range(len(specList))]
-    for dose in doses:
-        courses = bayesian_timecourse(samplefile, dose, end_time, sample_size, percent, specList, suppress=True, dose_species=dr_species)
-        # courses = [[IFNa spec 1], [IFNb spec 1], [IFNa spec 2], [IFNb spec 2]]
-        #           [IFNa spec 1] = [[mean], [low], [high]]
-        courses = [[l[-1] for l in s] for s in courses]
-        # courses = [[mean dose, low, high]_IFNaS1, [mean dose, low, high]_IFNbS1, ...
-        for i in range(len(specList)):
-            alpha_responses[i].append(courses[i*2])
-            beta_responses[i].append(courses[i*2+1])
-    alpha_responses = [[[el[0] for el in alpha_responses[s]],[el[1] for el in alpha_responses[s]],[el[2] for el in alpha_responses[s]]] for s in range(len(alpha_responses))]
-    beta_responses =  [[[el[0] for el in beta_responses[s]], [el[1] for el in beta_responses[s]], [el[2] for el in beta_responses[s]]] for s in range(len(alpha_responses))]
-    return [alpha_responses, beta_responses]
+    # Read samples
+    samples = pd.read_csv(samplefile,index_col=0)
+    # Check that function inputs are valid
+    (nSamples, nVars) = samples.shape
+    if sample_size > nSamples:
+        print("Not enough samples in file")
+        return 1
+    # Get variables that were sampled
+    variable_names = list(samples.columns.values)
+    # Import models
+    import ODE_system_alpha
+    alpha_mod = ODE_system_alpha.Model()
+    import ODE_system_beta
+    beta_mod = ODE_system_beta.Model()
+    # Choose 'global' best model (fits complete data optimally, not just dose-response data points)
+    (best_model,best_gamma) = MAP(samplefile, beta, rho)#best_model is a dict with parameter values and best_gamma is a float
+    # Make best_model into a list to compare to all model later
+    best_model_list = [[variable_names[i], best_model[variable_names[i]]] for i in range(nVars) if variable_names[i] != 'gamma']
 
+    alpha_curves=[]
+    beta_curves=[]
+    best_curves=[]
+    # Simulate each model
+    for r in range(sample_size):
+        MAP_bool=False #Flag to identify the MAP model
+        parameter_vector = samples.iloc[r]#Pandas Series of variables and values, including gamma
+        # Create list format excluding gamma:
+        pList = [[variable_names[i], parameter_vector.loc[variable_names[i]]] for i in range(nVars) if variable_names[i] != 'gamma']
+        # Check if this model is the MAP model:
+        if best_model_list == pList:
+            MAP_bool=True
+        # Convert any combined quantities
+        for item in range(len(pList)):
+            if pList[item][0]=='delR':
+                R1=2E3-pList[item][1]/2
+                R2=2E3+pList[item][1]/2
+                pList=pList[0:item]+[['R1',R1],['R2',R2]]+pList[item+1:len(pList)]
+        gamma = parameter_vector.loc['gamma']#of type numpy.float64
+        # Maintain detailed balance
+        if 'kd4' in variable_names:
+            q1 = 3.321155762205247e-14/1
+            q2 = 4.98173364330787e-13/0.015
+            q4 = 3.623188E-4/parameter_vector.loc['kd4']
+            q3 = q2*q4/q1
+            kd3 = 3.623188E-4/q3                
+
+            q_1 = 4.98E-14/0.03
+            q_2 = 8.30e-13/0.002
+            q_4 = 3.623188e-4/parameter_vector.loc['k_d4']
+            q_3 = q_2*q_4/q_1
+            k_d3 = 3.623188e-4/q_3
+            pList += [['kd3', kd3],['k_d3',k_d3]]
+        # Now create an ordered list of ALL model parameters to use in PySB sim
+        alpha_parameters=[]
+        beta_parameters=[]
+        for p in alpha_mod.parameters:
+            isInList=False
+            for y in pList:
+                if p[0]==y[0]:
+                    alpha_parameters.append(y[1])
+                    isInList=True
+                    break
+            if isInList==False:
+                alpha_parameters.append(p.value)
+        for p in beta_mod.parameters:
+            isInList=False
+            for y in pList:
+                if p[0]==y[0]:
+                    beta_parameters.append(y[1])
+                    isInList=True
+                    break
+            if isInList==False:
+                beta_parameters.append(p.value)
+        # Prepare for dose-response curve simulation
+        I_index_Alpha = [el[0] for el in alpha_mod.parameters].index(dr_species[0])
+        I_index_Beta = [el[0] for el in beta_mod.parameters].index(dr_species[0])
+        NA = dr_species[1] # 6.022E23
+        volEC = dr_species[2] # 1E-5   
+        t=np.linspace(0,end_time)
+        # Run simulation for each dose
+        alpha_results=[]
+        beta_results=[]
+        for dose in doses:
+            alpha_parameters[I_index_Alpha] = NA*volEC*dose
+            (_, sim) = alpha_mod.simulate(t, param_values=alpha_parameters)
+            alpha_results.append(gamma*sim[spec][-1])
+            beta_parameters[I_index_Beta] = NA*volEC*dose
+            (_, sim) = beta_mod.simulate(t, param_values=beta_parameters)
+            beta_results.append(gamma*sim[spec][-1])     
+        alpha_curves.append(alpha_results)
+        beta_curves.append(beta_results)
+        if MAP_bool==True:
+            best_curves = [alpha_results,beta_results]
+    # Prepare function return
+    prediction_intervals=[]
+    #   Alpha results
+    upper_error_prediction = np.percentile(alpha_curves, percent, axis=0)
+    lower_error_prediction = np.percentile(alpha_curves, 100-percent, axis=0)
+    prediction_intervals.append([best_curves[0],lower_error_prediction,upper_error_prediction,alpha_curves])
+    
+    #   Beta results
+    upper_error_prediction = np.percentile(beta_curves, percent, axis=0)
+    lower_error_prediction = np.percentile(beta_curves, 100-percent, axis=0)
+    prediction_intervals.append([best_curves[1],lower_error_prediction,upper_error_prediction,beta_results])
+
+    if suppress==False:
+        fig, ax = plt.subplots()
+        ax.set(xscale='log',yscale='linear') 
+        ax.plot(doses, prediction_intervals[0][0], 'r')
+        ax.plot(doses, prediction_intervals[0][1], 'r--')
+        ax.plot(doses, prediction_intervals[0][2], 'r--')
+        ax.plot(doses, prediction_intervals[1][0], 'g')
+        ax.plot(doses, prediction_intervals[1][1], 'g--')
+        ax.plot(doses, prediction_intervals[1][2], 'g--')
+        plt.show()
+    return prediction_intervals
 
 # =============================================================================
 # profile creates a speed up profile for a piece of code, in this case mcmc.py
@@ -1079,7 +1213,7 @@ def main():
     p0=[['kpa',1E-5,0.1,'log'],['kSOCSon',2E-6,0.1,'log'],['kd4',0.03,0.2,'log'],
         ['k_d4',0.06,0.5,'log'],['delR',0,500,'linear']]
     #   (n, theta_0, beta, rho, chains, burn_rate=0.1, down_sample=1, max_attempts=6, pflag=False)
-    MCMC(20, p0, 1, 1, 3, burn_rate=0.1, down_sample=2, max_attempts=0)# n, theta, beta=3.375
+    MCMC(300, p0, 8, 1, 3, burn_rate=0.166, down_sample=25, max_attempts=0)# n, theta, beta=3.375
     #continue_sampling(3, 500, 0.1, 1)
 # Testing functions
     #                    1E-6, 1E-6, 0.3, 0.006, 2E3, 2E3, 4
@@ -1090,10 +1224,11 @@ def main():
     
     #sims = bayesian_timecourse('posterior_samples.csv', 100E-12, 3600, 50, 95, ['TotalpSTAT'])
     #testChain = pd.read_csv('test_posterior_samples.csv',index_col=0)
-    #bayesian_doseresponse('posterior_samples.csv', [10E-12,90E-12,600E-12], 3600, 50, 95, ['TotalpSTAT','T'])
+    #bayesian_doseresponse('MCMC_Results/posterior_samples.csv', [10E-12,90E-12,600E-12], 3600, 15, 95, 'TotalpSTAT',1,1)
     #df = pd.read_csv('posterior_samples.csv',index_col=0)
     #plot_parameter_distributions(df, title='parameter_distributions.pdf', save=True)
-    #print(MAP_timecourse(MAP('posterior_samples.csv',80,80), 6.022E23*1E-5*600E-12, 'I', 3600, 'TotalpSTAT'))
+    #(mod, g) = MAP('posterior_samples.csv',80,80)
+    #print(MAP_timecourse(mod, g, 6.022E23*1E-5*600E-12, 'I', 3600, 'TotalpSTAT'))
     #profile([1,2,3])
     
 if __name__ == '__main__':

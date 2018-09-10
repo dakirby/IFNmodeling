@@ -113,16 +113,35 @@ def score_posterior(filename,beta,rho):
                              beta, rho))
     samples['score']=s
     samples = samples.sort_values('score')
-    samples.to_csv(results_dir+'posterior_scores.csv')
-    
-        
+    samples.to_csv(script_dir+'posterior_scores.csv')
 
+# =============================================================================
+# import ast    
+# s = os.path.join(script_dir, 'MCMC_Results/plot_results.txt')
+# with open(s,'r') as f:
+#     l = "["+f.read().rstrip().replace("]]","]],")
+#     l=l[0:-1]+"]"
+#     myList = ast.literal_eval(l)
+#     alpha_curve = [el[0][0] for el in myList]
+#     print(alpha_curve)
+#     plt.figure()
+#     plt.plot(range(len(alpha_curve)),alpha_curve)
+# =============================================================================
+import ast    
+s = os.path.join(script_dir, 'MCMC_Results/')
+with open(s+'2chain.txt','r') as f:
+    l = f.read().rstrip()
+    myList = ast.literal_eval(l)[100:452:20]
+    post = [[el[1] for el in sample] for sample in myList]
+    postLabels = [el[0] for el in myList[0]]
+    df = pd.DataFrame.from_records(post,columns=postLabels)
+    df.to_csv(s+'chain2posterior.csv')
     
-gelman_rubin_reanalysis(chainList)
-thinned_chain = [chainList[j].iloc[1000:-1:1000] for j in range(len(chainList))]
-thinned_chain = pd.concat(thinned_chain)
-thinned_chain.to_csv(results_dir+'posterior_reanalysis.csv')
-replot_parameter_autocorrelations(thinned_chain, 30, 'total')
+#gelman_rubin_reanalysis(chainList)
+#thinned_chain = [chainList[j].iloc[1000:-1:1000] for j in range(len(chainList))]
+#thinned_chain = pd.concat(thinned_chain)
+#thinned_chain.to_csv(results_dir+'posterior_reanalysis.csv')
+#replot_parameter_autocorrelations(thinned_chain, 30, 'total')
 #plot_trace(chainList[1], 2000)
 #print(pairwise_correlations(chainList[1]))
-score_posterior(results_dir+'posterior_reanalysis.csv',1950,1)
+#score_posterior(results_dir+'posterior_reanalysis.csv',1950,1)
