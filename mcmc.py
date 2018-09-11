@@ -826,6 +826,7 @@ def bayesian_timecourse(samplefile, dose, end_time, sample_size, percent, spec, 
     beta_curves=[]
     best_curves=[]
     # Simulate each model
+    found_MAP_bool=False
     for r in range(sample_size):
         MAP_bool=False #Flag to identify the MAP model
         parameter_vector = samples.iloc[r]#Pandas Series of variables and values, including gamma
@@ -834,6 +835,7 @@ def bayesian_timecourse(samplefile, dose, end_time, sample_size, percent, spec, 
         # Check if this model is the MAP model:
         if best_model_list == pList:
             MAP_bool=True
+            found_MAP_bool=True
         # Convert any combined quantities
         for item in range(len(pList)):
             if pList[item][0]=='delR':
@@ -888,27 +890,95 @@ def bayesian_timecourse(samplefile, dose, end_time, sample_size, percent, spec, 
 
         alpha_parameters[I_index_Alpha] = NA*volEC*dose
         (_, sim) = alpha_mod.simulate(t, param_values=alpha_parameters)
-        alpha_results.append(gamma*sim[spec])
+        alpha_results = gamma*sim[spec]
         beta_parameters[I_index_Beta] = NA*volEC*dose
         (_, sim) = beta_mod.simulate(t, param_values=beta_parameters)
-        beta_results.append(gamma*sim[spec])     
+        beta_results = gamma*sim[spec]
 
         alpha_curves.append(alpha_results)
         beta_curves.append(beta_results)
         if MAP_bool==True:
             best_curves = [alpha_results,beta_results]
+
+
+    # If this was the last model and MAP wasn't looked at, include MAP:
+    if found_MAP_bool==False:
+        pList = best_model_list 
+        # Convert any combined quantities
+        for item in range(len(pList)):
+            if pList[item][0]=='delR':
+                R1=2E3-pList[item][1]/2
+                R2=2E3+pList[item][1]/2
+                pList=pList[0:item]+[['R1',R1],['R2',R2]]+pList[item+1:len(pList)]
+        gamma = parameter_vector.loc['gamma']#of type numpy.float64
+        # Maintain detailed balance
+        if 'kd4' in variable_names:
+            q1 = 3.321155762205247e-14/1
+            q2 = 4.98173364330787e-13/0.015
+            q4 = 3.623188E-4/parameter_vector.loc['kd4']
+            q3 = q2*q4/q1
+            kd3 = 3.623188E-4/q3                
+
+            q_1 = 4.98E-14/0.03
+            q_2 = 8.30e-13/0.002
+            q_4 = 3.623188e-4/parameter_vector.loc['k_d4']
+            q_3 = q_2*q_4/q_1
+            k_d3 = 3.623188e-4/q_3
+            pList += [['kd3', kd3],['k_d3',k_d3]]
+        # Now create an ordered list of ALL model parameters to use in PySB sim
+        alpha_parameters=[]
+        beta_parameters=[]
+        for p in alpha_mod.parameters:
+            isInList=False
+            for y in pList:
+                if p[0]==y[0]:
+                    alpha_parameters.append(y[1])
+                    isInList=True
+                    break
+            if isInList==False:
+                alpha_parameters.append(p.value)
+        for p in beta_mod.parameters:
+            isInList=False
+            for y in pList:
+                if p[0]==y[0]:
+                    beta_parameters.append(y[1])
+                    isInList=True
+                    break
+            if isInList==False:
+                beta_parameters.append(p.value)
+        # Prepare for dose-response curve simulation
+        I_index_Alpha = [el[0] for el in alpha_mod.parameters].index(dose_species[0])
+        I_index_Beta = [el[0] for el in beta_mod.parameters].index(dose_species[0])
+        NA = dose_species[1] # 6.022E23
+        volEC = dose_species[2] # 1E-5   
+        t=np.linspace(0,end_time)
+        # Run simulation for each dose
+        alpha_results=[]
+        beta_results=[]
+
+        alpha_parameters[I_index_Alpha] = NA*volEC*dose
+        (_, sim) = alpha_mod.simulate(t, param_values=alpha_parameters)
+        alpha_results = gamma*sim[spec]
+        beta_parameters[I_index_Beta] = NA*volEC*dose
+        (_, sim) = beta_mod.simulate(t, param_values=beta_parameters)
+        beta_results = gamma*sim[spec]
+
+        alpha_curves.append(alpha_results)
+        beta_curves.append(beta_results)
+        best_curves = [alpha_results,beta_results]
+
+    
     # Prepare function return
     prediction_intervals=[]
     #   Alpha results
     upper_error_prediction = np.percentile(alpha_curves, percent, axis=0)
     lower_error_prediction = np.percentile(alpha_curves, 100-percent, axis=0)
     prediction_intervals.append([best_curves[0],lower_error_prediction,upper_error_prediction,alpha_curves])
-    
+
     #   Beta results
     upper_error_prediction = np.percentile(beta_curves, percent, axis=0)
     lower_error_prediction = np.percentile(beta_curves, 100-percent, axis=0)
     prediction_intervals.append([best_curves[1],lower_error_prediction,upper_error_prediction,beta_results])
-
     if suppress==False:
         fig, ax = plt.subplots()
         ax.plot(t, prediction_intervals[0][0], 'r')
@@ -967,6 +1037,7 @@ def bayesian_doseresponse(samplefile, doses, end_time, sample_size, percent, spe
     beta_curves=[]
     best_curves=[]
     # Simulate each model
+    found_MAP_bool=False
     for r in range(sample_size):
         MAP_bool=False #Flag to identify the MAP model
         parameter_vector = samples.iloc[r]#Pandas Series of variables and values, including gamma
@@ -975,6 +1046,7 @@ def bayesian_doseresponse(samplefile, doses, end_time, sample_size, percent, spe
         # Check if this model is the MAP model:
         if best_model_list == pList:
             MAP_bool=True
+            found_MAP_bool=True
         # Convert any combined quantities
         for item in range(len(pList)):
             if pList[item][0]=='delR':
@@ -1037,6 +1109,73 @@ def bayesian_doseresponse(samplefile, doses, end_time, sample_size, percent, spe
         beta_curves.append(beta_results)
         if MAP_bool==True:
             best_curves = [alpha_results,beta_results]
+
+
+    # If this was the last model and MAP wasn't looked at, include MAP:
+    if found_MAP_bool==False:
+        pList = best_model_list 
+        # Convert any combined quantities
+        for item in range(len(pList)):
+            if pList[item][0]=='delR':
+                R1=2E3-pList[item][1]/2
+                R2=2E3+pList[item][1]/2
+                pList=pList[0:item]+[['R1',R1],['R2',R2]]+pList[item+1:len(pList)]
+        gamma = parameter_vector.loc['gamma']#of type numpy.float64
+        # Maintain detailed balance
+        if 'kd4' in variable_names:
+            q1 = 3.321155762205247e-14/1
+            q2 = 4.98173364330787e-13/0.015
+            q4 = 3.623188E-4/parameter_vector.loc['kd4']
+            q3 = q2*q4/q1
+            kd3 = 3.623188E-4/q3                
+
+            q_1 = 4.98E-14/0.03
+            q_2 = 8.30e-13/0.002
+            q_4 = 3.623188e-4/parameter_vector.loc['k_d4']
+            q_3 = q_2*q_4/q_1
+            k_d3 = 3.623188e-4/q_3
+            pList += [['kd3', kd3],['k_d3',k_d3]]
+        # Now create an ordered list of ALL model parameters to use in PySB sim
+        alpha_parameters=[]
+        beta_parameters=[]
+        for p in alpha_mod.parameters:
+            isInList=False
+            for y in pList:
+                if p[0]==y[0]:
+                    alpha_parameters.append(y[1])
+                    isInList=True
+                    break
+            if isInList==False:
+                alpha_parameters.append(p.value)
+        for p in beta_mod.parameters:
+            isInList=False
+            for y in pList:
+                if p[0]==y[0]:
+                    beta_parameters.append(y[1])
+                    isInList=True
+                    break
+            if isInList==False:
+                beta_parameters.append(p.value)
+        # Prepare for dose-response curve simulation
+        I_index_Alpha = [el[0] for el in alpha_mod.parameters].index(dr_species[0])
+        I_index_Beta = [el[0] for el in beta_mod.parameters].index(dr_species[0])
+        NA = dr_species[1] # 6.022E23
+        volEC = dr_species[2] # 1E-5   
+        t=np.linspace(0,end_time)
+        # Run simulation for each dose
+        alpha_results=[]
+        beta_results=[]
+        for dose in doses:
+            alpha_parameters[I_index_Alpha] = NA*volEC*dose
+            (_, sim) = alpha_mod.simulate(t, param_values=alpha_parameters)
+            alpha_results.append(gamma*sim[spec][-1])
+            beta_parameters[I_index_Beta] = NA*volEC*dose
+            (_, sim) = beta_mod.simulate(t, param_values=beta_parameters)
+            beta_results.append(gamma*sim[spec][-1])     
+        alpha_curves.append(alpha_results)
+        beta_curves.append(beta_results)    
+        best_curves = [alpha_results,beta_results]
+
     # Prepare function return
     prediction_intervals=[]
     #   Alpha results
@@ -1213,7 +1352,7 @@ def main():
     p0=[['kpa',1E-5,0.1,'log'],['kSOCSon',2E-6,0.1,'log'],['kd4',0.03,0.2,'log'],
         ['k_d4',0.06,0.5,'log'],['delR',0,500,'linear']]
     #   (n, theta_0, beta, rho, chains, burn_rate=0.1, down_sample=1, max_attempts=6, pflag=False)
-    MCMC(300, p0, 8, 1, 3, burn_rate=0.166, down_sample=25, max_attempts=0)# n, theta, beta=3.375
+    #MCMC(900, p0, 5, 1, 3, burn_rate=0.333, down_sample=20, max_attempts=0)# n, theta, beta=3.375
     #continue_sampling(3, 500, 0.1, 1)
 # Testing functions
     #                    1E-6, 1E-6, 0.3, 0.006, 2E3, 2E3, 4
@@ -1222,7 +1361,7 @@ def main():
     #print(get_prior_logp(1E-6, 1E-6, 0.3, 0.006, 2E3, 2E3, 4)) 
     #print(get_likelihood_logp(1E-6, 1E-5, 0.3, 0.06, 2E3, 2E3, 4))
     
-    #sims = bayesian_timecourse('posterior_samples.csv', 100E-12, 3600, 50, 95, ['TotalpSTAT'])
+    sims = bayesian_timecourse('posterior_samples.csv', 100E-12, 3600, 11, 97.5, 'TotalpSTAT', 1, 1)
     #testChain = pd.read_csv('test_posterior_samples.csv',index_col=0)
     #bayesian_doseresponse('MCMC_Results/posterior_samples.csv', [10E-12,90E-12,600E-12], 3600, 15, 95, 'TotalpSTAT',1,1)
     #df = pd.read_csv('posterior_samples.csv',index_col=0)

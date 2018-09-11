@@ -20,7 +20,7 @@ sns.set_style("ticks")
 plt.close('all')
 
 import Experimental_Data as ED 
-nPost=11
+nPost=30
 pLimit=97.5
 posterior_filename = 'MCMC_Results/posterior_samples.csv'
 # Global data import since this script will be used exclusively on IFN data    
@@ -41,16 +41,13 @@ IFN_sigmas =[ED.data.loc[(ED.data.loc[:,'Dose (pM)']==10) & (ED.data.loc[:,'Inte
 IFN_sims = [*bayesian_timecourse(posterior_filename, 10E-12, 3600, nPost, pLimit, 'TotalpSTAT',8,1, suppress=True),
             *bayesian_timecourse(posterior_filename, 90E-12, 3600, nPost, pLimit, 'TotalpSTAT',8,1, suppress=True),
             *bayesian_timecourse(posterior_filename, 600E-12, 3600, nPost, pLimit, 'TotalpSTAT',8,1, suppress=True)]
-for it in range(len(IFN_sims)):
-    print(len(IFN_sims[it]))
-    for each in range(len(IFN_sims[it])):
-        IFN_sims[it][each]=IFN_sims[it][each][0]
+
 with open(results_dir+"IFN_sims.txt",'w') as f:
     f.write(str([IFN_sims[i][3] for i in range(len(IFN_sims))]))
 
-fig3=True
+fig3=False
 fig4=False
-fig5=False
+fig5=True
 fig6=False
 fig7_1=False
 fig7_2=False
@@ -78,7 +75,7 @@ if fig3==True:
                 IFN_exps[1],
                 yerr = IFN_sigmas[1],
                 fmt='go', label=r"Experiment IFN$\beta$")
-    print(IFN_sims[0][0])
+
     ax1.plot(np.linspace(0,3600,num=len(IFN_sims[0][0])),IFN_sims[0][0], 'k')
     ax1.plot(np.linspace(0,3600,num=len(IFN_sims[0][1])),IFN_sims[0][1], 'k--')
     ax1.plot(np.linspace(0,3600,num=len(IFN_sims[0][2])),IFN_sims[0][2], 'k--')
