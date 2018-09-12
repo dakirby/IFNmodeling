@@ -22,7 +22,7 @@ plt.close('all')
 import Experimental_Data as ED 
 nPost=30
 pLimit=97.5
-posterior_filename = 'MCMC_Results/posterior_samples.csv'
+posterior_filename = 'MCMC_Results-11-09-2018/posterior_samples.csv'
 # Global data import since this script will be used exclusively on IFN data    
 IFN_exps = [ED.data.loc[(ED.data.loc[:,'Dose (pM)']==10) & (ED.data.loc[:,'Interferon']=="Alpha"),['0','5','15','30','60']].values[0],
             ED.data.loc[(ED.data.loc[:,'Dose (pM)']==10) & (ED.data.loc[:,'Interferon']=="Beta"),['0','5','15','30','60']].values[0],
@@ -45,9 +45,9 @@ IFN_sims = [*bayesian_timecourse(posterior_filename, 10E-12, 3600, nPost, pLimit
 with open(results_dir+"IFN_sims.txt",'w') as f:
     f.write(str([IFN_sims[i][3] for i in range(len(IFN_sims))]))
 
-fig3=False
+fig3=True
 fig4=False
-fig5=True
+fig5=False
 fig6=False
 fig7_1=False
 fig7_2=False
@@ -167,12 +167,12 @@ if fig5==True:
     ax.set_ylabel('pSTAT Normalized by Total STAT',fontsize=18)
     ax.set_xlabel('IFN Dose (M)',fontsize=18)
     ax.set(xscale='log',yscale='linear')    
-    ax.plot(np.logspace(-14,-2), np.divide(dr5min[0][0][0],1E4), 'r', label=r'IFN$\alpha$ 5 min', linewidth=2)
-    ax.plot(np.logspace(-14,-2), np.divide(dr5min[1][0][0],1E4), 'g', label=r'IFN$\beta$ 5 min', linewidth=2)
-    ax.plot(np.logspace(-14,-2), np.divide(dr15min[0][0][0],1E4), 'r--', label=r'IFN$\alpha$ 15 min', linewidth=2)
-    ax.plot(np.logspace(-14,-2), np.divide(dr15min[1][0][0],1E4), 'g--', label=r'IFN$\beta$ 15 min', linewidth=2)
-    ax.plot(np.logspace(-14,-2), np.divide(dr30min[0][0][0],1E4), 'r:', label=r'IFN$\alpha$ 30 min', linewidth=2)
-    ax.plot(np.logspace(-14,-2), np.divide(dr30min[1][0][0],1E4), 'g:', label=r'IFN$\beta$ 30 min', linewidth=2)
+    ax.plot(np.logspace(-14,-2), np.divide(dr5min[0][0],1E4), 'r', label=r'IFN$\alpha$ 5 min', linewidth=2)
+    ax.plot(np.logspace(-14,-2), np.divide(dr5min[1][0],1E4), 'g', label=r'IFN$\beta$ 5 min', linewidth=2)
+    ax.plot(np.logspace(-14,-2), np.divide(dr15min[0][0],1E4), 'r--', label=r'IFN$\alpha$ 15 min', linewidth=2)
+    ax.plot(np.logspace(-14,-2), np.divide(dr15min[1][0],1E4), 'g--', label=r'IFN$\beta$ 15 min', linewidth=2)
+    ax.plot(np.logspace(-14,-2), np.divide(dr30min[0][0],1E4), 'r:', label=r'IFN$\alpha$ 30 min', linewidth=2)
+    ax.plot(np.logspace(-14,-2), np.divide(dr30min[1][0],1E4), 'g:', label=r'IFN$\beta$ 30 min', linewidth=2)
     plt.legend()
     plt.savefig(results_dir+'figure5.pdf')
     plt.show()
