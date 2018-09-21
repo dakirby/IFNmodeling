@@ -78,10 +78,15 @@ def disperse_chains(theta_0, nChains):
                 new_theta.append([parameter[0],
                                   np.random.uniform(low=100, high=12000),
                                   parameter[2],parameter[3]])
-            elif parameter[0]=='delR': #uniform on [0,1900]
+            elif parameter[0]=='delR': #uniform on [0,8000]
                 new_theta.append([parameter[0],
-                                  np.random.uniform(low=0, high=1900),
+                                  np.random.uniform(low=0, high=8000),
                                   parameter[2],parameter[3]])
+            elif parameter[0]=='meanR': #uniform on [100,10000]
+                new_theta.append([parameter[0],
+                                  np.random.uniform(low=100, high=10000),
+                                  parameter[2],parameter[3]])
+    
         theta_list.append(new_theta)
     return theta_list
 
@@ -218,11 +223,31 @@ def get_likelihood_logp(kpa,kSOCSon,kd4,k_d4,R1,R2):
     return [logp, gamma]
     
 # =============================================================================
+# variables (list) = list of variables in the form [['name',value],...]
+# beta, rho (floats) = values of beta and rho used in simulation
 # Returns -log(probability of model)
 # =============================================================================
-def score_model(kpa,kSOCSon,kd4,k_d4,delR, beta, rho, debugging=False):
-    R1=2E3-delR/2
-    R2=2E3+delR/2
+def score_model(variables, beta, rho, debugging=False):
+    meanR=2E3
+    for el in variables:
+        if el[0]=='kpa':
+            kpa=el[1]
+        elif el[0]=='kSOCSon':
+            kSOCSon=el[1]
+        elif el[0]=='kd4':
+            kd4=el[1]
+        elif el[0]=='k_d4':
+            k_d4=el[1]
+        elif el[0]=='R1':
+            R1=el[1]
+        elif el[0]=='R2':
+            R2=el[1]
+        elif el[0]=='meanR':
+            meanR=el[1]
+        elif el[0]=='delR':
+            delR=el[1]
+    R1=meanR-delR/2
+    R2=meanR+delR/2
     [lk,gamma] = get_likelihood_logp(kpa,kSOCSon,kd4,k_d4,R1,R2)
     pr = get_prior_logp(kpa, kSOCSon, kd4, k_d4, R1, R2)
     if debugging==True:
@@ -264,12 +289,12 @@ def J(theta):
 # =============================================================================
 def get_acceptance_rate(theta, beta, rho):
     old_theta=theta
-    [old_score, old_gamma] = score_model(*[old_theta[j][1] for j in range(len(old_theta))], beta, rho)
+    [old_score, old_gamma] = score_model([[old_theta[j][0],old_theta[j][1]] for j in range(len(old_theta))], beta, rho)
     asymmetric_indices = [el[0] for el in enumerate(old_theta) if el[1][3]=='log']
     acceptance = 0    
     for i in range(100):
         proposal = J(old_theta)
-        [new_score, new_gamma] = score_model(*[proposal[j][1] for j in range(len(proposal))], beta, rho)
+        [new_score, new_gamma] = score_model([[proposal[j][0],proposal[j][1]] for j in range(len(proposal))], beta, rho)
         asymmetry_factor = 1 # log normal proposal distributions are asymmetric
         for j in asymmetric_indices:
             asymmetry_factor *= proposal[j][1]/old_theta[j][1]
@@ -552,6 +577,8 @@ def mcmcChecks(n, theta_0, beta, rho, chains, burn_rate, down_sample, max_attemp
         raise ValueError('Type for input "chains" must be int')
     if max_attempts < 0:
         raise ValueError('max_attempts must be positive')
+    lenPost = np.floor([chains*(n+1)*(1-burn_rate)/down_sample])
+    print("It's estimated this simulation will produce {} posterior samples.".format(lenPost))
     return True
 
 # =============================================================================
@@ -582,7 +609,7 @@ def mh(ID, jobs, result, countQ):
         hyper_theta, beta, rho, n = mGet
         model_record=[hyper_theta]
         asymmetric_indices = [el[0] for el in enumerate(hyper_theta) if el[1][3]=='log']
-        [old_score, old_gamma] = score_model(*[model_record[0][j][1] for j in range(len(model_record[0]))], beta, rho)
+        [old_score, old_gamma] = score_model([[model_record[0][j][0],model_record[0][j][1]] for j in range(len(model_record[0]))], beta, rho)
         gamma_list=[old_gamma]
         old_index = 0
         acceptance = 0
@@ -604,7 +631,7 @@ def mh(ID, jobs, result, countQ):
                     g.write(str(temp_record))
                 progress_bar += n/10                    
             proposal = J(model_record[old_index])
-            [new_score, new_gamma] = score_model(*[proposal[j][1] for j in range(len(proposal))], beta, rho)
+            [new_score, new_gamma] = score_model([[proposal[j][0],proposal[j][1]] for j in range(len(proposal))], beta, rho)
             asymmetry_factor = 1 # log normal proposal distributions are asymmetric
             for j in asymmetric_indices:
                 asymmetry_factor *= proposal[j][1]/model_record[old_index][j][1]
@@ -697,7 +724,7 @@ def MAP(posterior_file, beta, rho, debugging=False):
     for i in range(len(df)):
         for n in names:
             model.update({n:df.iloc[i][n]})
-        [new_score,new_gamma] = score_model(*[model[j] for j in names if j!='gamma'], beta,rho)
+        [new_score,new_gamma] = score_model([[j,model[j]] for j in names if j!='gamma'], beta,rho)
         if new_score<best_score:
             best_score=new_score
             best_gamma=new_gamma
@@ -707,7 +734,7 @@ def MAP(posterior_file, beta, rho, debugging=False):
         print(best_model)
         print('and gamma = '+str(best_gamma))
         print("with as score of")
-        score_model(*[best_model[j] for j in names if j!='gamma'], beta,rho,debugging=True)
+        score_model([[j,best_model[j]] for j in names if j!='gamma'], beta,rho,debugging=True)
     return (best_model, best_gamma)
 
 # =============================================================================
@@ -721,19 +748,22 @@ def MAP_timecourse(model, gamma, dose, dose_spec, end_time, spec):
     import ODE_system_beta
     beta_mod = ODE_system_beta.Model()
     key_list = []
+    meanR=2E3
     for key in model:
         if key=='delR':
             key_list.append('R1')
             key_list.append('R2')
+        elif key=='meanR':
+            meanR=model['meanR']
         else:
             key_list.append(key)
     alpha_pvec=[]
     for p in alpha_mod.parameters:
         if p.name in key_list:
             if p.name=='R1':
-                alpha_pvec.append(2E3-model['delR']/2)
+                alpha_pvec.append(meanR-model['delR']/2)
             elif p.name=='R2':
-                alpha_pvec.append(2E3+model['delR']/2)
+                alpha_pvec.append(meanR+model['delR']/2)
             else:
                 alpha_pvec.append(model[p.name])
         elif p[0]=='kd3':
@@ -749,9 +779,9 @@ def MAP_timecourse(model, gamma, dose, dose_spec, end_time, spec):
     for p in beta_mod.parameters:
         if p[0] in key_list:
             if p.name=='R1':
-                beta_pvec.append(2E3-model['delR']/2)
+                beta_pvec.append(meanR-model['delR']/2)
             elif p.name=='R2':
-                beta_pvec.append(2E3+model['delR']/2)
+                beta_pvec.append(meanR+model['delR']/2)
             else:
                 beta_pvec.append(model[p.name])
         elif p[0]=='k_d3':
@@ -836,11 +866,15 @@ def bayesian_timecourse(samplefile, dose, end_time, sample_size, percent, spec, 
         if best_model_list == pList:
             MAP_bool=True
             found_MAP_bool=True
+        if 'meanR' in [var[0] for var in pList]:
+            meanR = pList[[var[0] for var in pList].index('meanR')][1]
+        else:
+            meanR = 2E3
         # Convert any combined quantities
         for item in range(len(pList)):
             if pList[item][0]=='delR':
-                R1=2E3-pList[item][1]/2
-                R2=2E3+pList[item][1]/2
+                R1=meanR-pList[item][1]/2
+                R2=meanR+pList[item][1]/2
                 pList=pList[0:item]+[['R1',R1],['R2',R2]]+pList[item+1:len(pList)]
         gamma = parameter_vector.loc['gamma']#of type numpy.float64
         # Maintain detailed balance
@@ -904,11 +938,15 @@ def bayesian_timecourse(samplefile, dose, end_time, sample_size, percent, spec, 
     # If this was the last model and MAP wasn't looked at, include MAP:
     if found_MAP_bool==False:
         pList = best_model_list 
+        if 'meanR' in [var[0] for var in pList]:
+            meanR = pList[[var[0] for var in pList].index('meanR')][1]
+        else:
+            meanR = 2E3
         # Convert any combined quantities
         for item in range(len(pList)):
             if pList[item][0]=='delR':
-                R1=2E3-pList[item][1]/2
-                R2=2E3+pList[item][1]/2
+                R1=meanR-pList[item][1]/2
+                R2=meanR+pList[item][1]/2
                 pList=pList[0:item]+[['R1',R1],['R2',R2]]+pList[item+1:len(pList)]
         gamma = parameter_vector.loc['gamma']#of type numpy.float64
         # Maintain detailed balance
@@ -1047,11 +1085,15 @@ def bayesian_doseresponse(samplefile, doses, end_time, sample_size, percent, spe
         if best_model_list == pList:
             MAP_bool=True
             found_MAP_bool=True
+        if 'meanR' in [var[0] for var in pList]:
+            meanR = pList[[var[0] for var in pList].index('meanR')][1]
+        else:
+            meanR = 2E3
         # Convert any combined quantities
         for item in range(len(pList)):
             if pList[item][0]=='delR':
-                R1=2E3-pList[item][1]/2
-                R2=2E3+pList[item][1]/2
+                R1=meanR-pList[item][1]/2
+                R2=meanR+pList[item][1]/2
                 pList=pList[0:item]+[['R1',R1],['R2',R2]]+pList[item+1:len(pList)]
         gamma = parameter_vector.loc['gamma']#of type numpy.float64
         # Maintain detailed balance
@@ -1113,12 +1155,16 @@ def bayesian_doseresponse(samplefile, doses, end_time, sample_size, percent, spe
 
     # If this was the last model and MAP wasn't looked at, include MAP:
     if found_MAP_bool==False:
-        pList = best_model_list 
+        pList = best_model_list
+        if 'meanR' in [var[0] for var in pList]:
+            meanR = pList[[var[0] for var in pList].index('meanR')][1]
+        else:
+            meanR = 2E3
         # Convert any combined quantities
         for item in range(len(pList)):
             if pList[item][0]=='delR':
-                R1=2E3-pList[item][1]/2
-                R2=2E3+pList[item][1]/2
+                R1=meanR-pList[item][1]/2
+                R2=meanR+pList[item][1]/2
                 pList=pList[0:item]+[['R1',R1],['R2',R2]]+pList[item+1:len(pList)]
         gamma = parameter_vector.loc['gamma']#of type numpy.float64
         # Maintain detailed balance
@@ -1223,7 +1269,7 @@ def profile(processes):
     with open('ODE_system_beta.py','w') as f:
         f.write(py_output)
     p0=[['kpa',1E-6,0.1,'log'],['kSOCSon',1E-6,0.1,'log'],['kd4',0.3,0.2,'log'],
-        ['k_d4',0.006,0.5,'log'],['delR',0,500,'linear']]
+        ['k_d4',0.006,0.5,'log'],['delR',0,500,'linear'],['meanR',2000,300,'linear']]
 # ==========================================================
     times = []
     for p in processes:
@@ -1350,9 +1396,9 @@ def main():
     with open('ODE_system_beta.py','w') as f:
         f.write(py_output)
     p0=[['kpa',1E-5,0.1,'log'],['kSOCSon',2E-6,0.1,'log'],['kd4',0.03,0.2,'log'],
-        ['k_d4',0.06,0.5,'log'],['delR',0,500,'linear']]
+        ['k_d4',0.06,0.5,'log'],['delR',0,500,'linear'],['meanR',2000,300,'linear']]
     #   (n, theta_0, beta, rho, chains, burn_rate=0.1, down_sample=1, max_attempts=6, pflag=False)
-    #MCMC(900, p0, 5, 1, 3, burn_rate=0.333, down_sample=20, max_attempts=0)# n, theta, beta=3.375
+    MCMC(500, p0, 2, 1, 3, burn_rate=0.2, down_sample=40)# n, theta, beta=3.375
     #continue_sampling(3, 500, 0.1, 1)
 # Testing functions
     #                    1E-6, 1E-6, 0.3, 0.006, 2E3, 2E3, 4
@@ -1361,7 +1407,7 @@ def main():
     #print(get_prior_logp(1E-6, 1E-6, 0.3, 0.006, 2E3, 2E3, 4)) 
     #print(get_likelihood_logp(1E-6, 1E-5, 0.3, 0.06, 2E3, 2E3, 4))
     
-    sims = bayesian_timecourse('posterior_samples.csv', 100E-12, 3600, 11, 97.5, 'TotalpSTAT', 1, 1)
+    #sims = bayesian_timecourse(results_dir+'posterior_samples.csv', 100E-12, 3600, 11, 97.5, 'TotalpSTAT', 5, 1)
     #testChain = pd.read_csv('test_posterior_samples.csv',index_col=0)
     #bayesian_doseresponse('MCMC_Results/posterior_samples.csv', [10E-12,90E-12,600E-12], 3600, 15, 95, 'TotalpSTAT',1,1)
     #df = pd.read_csv('posterior_samples.csv',index_col=0)
