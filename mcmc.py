@@ -223,9 +223,29 @@ def get_likelihood_logp(kpa,kSOCSon,kd4,k_d4,R1,R2):
     return [logp, gamma]
     
 # =============================================================================
+# variables (list) = list of variables in the form [['name',value],...]
+# beta, rho (floats) = values of beta and rho used in simulation
 # Returns -log(probability of model)
 # =============================================================================
-def score_model(kpa,kSOCSon,kd4,k_d4,delR,meanR, beta, rho, debugging=False):
+def score_model(variables, beta, rho, debugging=False):
+    meanR=2E3
+    for el in variables:
+        if el[0]=='kpa':
+            kpa=el[1]
+        elif el[0]=='kSOCSon':
+            kSOCSon=el[1]
+        elif el[0]=='kd4':
+            kd4=el[1]
+        elif el[0]=='k_d4':
+            k_d4=el[1]
+        elif el[0]=='R1':
+            R1=el[1]
+        elif el[0]=='R2':
+            R2=el[1]
+        elif el[0]=='meanR':
+            meanR=el[1]
+        elif el[0]=='delR':
+            delR=el[1]
     R1=meanR-delR/2
     R2=meanR+delR/2
     [lk,gamma] = get_likelihood_logp(kpa,kSOCSon,kd4,k_d4,R1,R2)
@@ -269,12 +289,12 @@ def J(theta):
 # =============================================================================
 def get_acceptance_rate(theta, beta, rho):
     old_theta=theta
-    [old_score, old_gamma] = score_model(*[old_theta[j][1] for j in range(len(old_theta))], beta, rho)
+    [old_score, old_gamma] = score_model([[old_theta[j][0],old_theta[j][1]] for j in range(len(old_theta))], beta, rho)
     asymmetric_indices = [el[0] for el in enumerate(old_theta) if el[1][3]=='log']
     acceptance = 0    
     for i in range(100):
         proposal = J(old_theta)
-        [new_score, new_gamma] = score_model(*[proposal[j][1] for j in range(len(proposal))], beta, rho)
+        [new_score, new_gamma] = score_model([[proposal[j][0],proposal[j][1]] for j in range(len(proposal))], beta, rho)
         asymmetry_factor = 1 # log normal proposal distributions are asymmetric
         for j in asymmetric_indices:
             asymmetry_factor *= proposal[j][1]/old_theta[j][1]
@@ -557,6 +577,8 @@ def mcmcChecks(n, theta_0, beta, rho, chains, burn_rate, down_sample, max_attemp
         raise ValueError('Type for input "chains" must be int')
     if max_attempts < 0:
         raise ValueError('max_attempts must be positive')
+    lenPost = np.floor([chains*(n+1)*(1-burn_rate)/down_sample])
+    print("It's estimated this simulation will produce {} posterior samples.".format(lenPost))
     return True
 
 # =============================================================================
@@ -587,7 +609,7 @@ def mh(ID, jobs, result, countQ):
         hyper_theta, beta, rho, n = mGet
         model_record=[hyper_theta]
         asymmetric_indices = [el[0] for el in enumerate(hyper_theta) if el[1][3]=='log']
-        [old_score, old_gamma] = score_model(*[model_record[0][j][1] for j in range(len(model_record[0]))], beta, rho)
+        [old_score, old_gamma] = score_model([[model_record[0][j][0],model_record[0][j][1]] for j in range(len(model_record[0]))], beta, rho)
         gamma_list=[old_gamma]
         old_index = 0
         acceptance = 0
@@ -609,7 +631,7 @@ def mh(ID, jobs, result, countQ):
                     g.write(str(temp_record))
                 progress_bar += n/10                    
             proposal = J(model_record[old_index])
-            [new_score, new_gamma] = score_model(*[proposal[j][1] for j in range(len(proposal))], beta, rho)
+            [new_score, new_gamma] = score_model([[proposal[j][0],proposal[j][1]] for j in range(len(proposal))], beta, rho)
             asymmetry_factor = 1 # log normal proposal distributions are asymmetric
             for j in asymmetric_indices:
                 asymmetry_factor *= proposal[j][1]/model_record[old_index][j][1]
@@ -702,7 +724,7 @@ def MAP(posterior_file, beta, rho, debugging=False):
     for i in range(len(df)):
         for n in names:
             model.update({n:df.iloc[i][n]})
-        [new_score,new_gamma] = score_model(*[model[j] for j in names if j!='gamma'], beta,rho)
+        [new_score,new_gamma] = score_model([[j,model[j]] for j in names if j!='gamma'], beta,rho)
         if new_score<best_score:
             best_score=new_score
             best_gamma=new_gamma
@@ -712,7 +734,7 @@ def MAP(posterior_file, beta, rho, debugging=False):
         print(best_model)
         print('and gamma = '+str(best_gamma))
         print("with as score of")
-        score_model(*[best_model[j] for j in names if j!='gamma'], beta,rho,debugging=True)
+        score_model([[j,best_model[j]] for j in names if j!='gamma'], beta,rho,debugging=True)
     return (best_model, best_gamma)
 
 # =============================================================================
@@ -1376,7 +1398,7 @@ def main():
     p0=[['kpa',1E-5,0.1,'log'],['kSOCSon',2E-6,0.1,'log'],['kd4',0.03,0.2,'log'],
         ['k_d4',0.06,0.5,'log'],['delR',0,500,'linear'],['meanR',2000,300,'linear']]
     #   (n, theta_0, beta, rho, chains, burn_rate=0.1, down_sample=1, max_attempts=6, pflag=False)
-    MCMC(500, p0, 1, 1, 3, burn_rate=0.2, down_sample=40)# n, theta, beta=3.375
+    MCMC(500, p0, 2, 1, 3, burn_rate=0.2, down_sample=40)# n, theta, beta=3.375
     #continue_sampling(3, 500, 0.1, 1)
 # Testing functions
     #                    1E-6, 1E-6, 0.3, 0.006, 2E3, 2E3, 4

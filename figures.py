@@ -20,7 +20,7 @@ sns.set_style("ticks")
 plt.close('all')
 
 import Experimental_Data as ED 
-nPost=30
+nPost=10
 pLimit=97.5
 posterior_filename = 'MCMC_Results-11-09-2018/posterior_samples.csv'
 # Global data import since this script will be used exclusively on IFN data    
