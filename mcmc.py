@@ -708,7 +708,117 @@ def MCMC(n, theta_0, beta, rho, chains, burn_rate=0.1, down_sample=1, max_attemp
         for i in chains_list:
             f.write(str(i))
             f.write("\n")
+# =============================================================================
+# mutual_info() returns the mutual information of the model and gamma input
+# model: the dictionary of model parameters 
+# gamma: the value of gamma to scale predictions by for scoring
+# Returns: corr (float) = the Pearson correlation coefficient            
+# =============================================================================
+def mutual_info(mod, gamma):
+    # Unpack variables
+    R1Exists=False
+    meanRExists=False
+    for key in mod.keys():
+        if key=='kpa':
+            kpa=mod[key]
+        elif key=='kSOCSon':
+            kSOCSon=mod[key]
+        elif key=='kd4':
+            kd4=mod[key]
+        elif key=='k_d4':
+            k_d4=mod[key]
+        elif key=='R1':
+            R1Exists=True
+            R1=mod[key]
+        elif key=='R2':
+            R2=mod[key]
+        elif key=='meanR':
+            meanRExists=True
+            meanR=mod[key]
+        elif key=='delR':
+            delR=mod[key]
+    if R1Exists==False:
+        if meanRExists==False:
+            meanR=2E3
+        R1=meanR-delR/2
+        R2=meanR+delR/2
+
+    # Build parameter list
+    import ODE_system_alpha
+    alpha_mod = ODE_system_alpha.Model()
+    import ODE_system_beta
+    beta_mod = ODE_system_beta.Model()
+    # Build parameter lists
+    q1 = 3.321155762205247e-14/1
+    q2 = 4.98173364330787e-13/0.015
+    q4 = 3.623188E-4/kd4
+    q3 = q2*q4/q1
+    kd3 = 3.623188E-4/q3                
+
+    q_1 = 4.98E-14/0.03
+    q_2 = 8.30e-13/0.002
+    q_4 = 3.623188e-4/k_d4
+    q_3 = q_2*q_4/q_1
+    k_d3 = 3.623188e-4/q_3
+    fit_list = [['kpa',kpa],['kSOCSon',kSOCSon],['kd4',kd4],['k_d4',k_d4],
+                ['R1',R1],['R2',R2],['kd3',kd3],['k_d3',k_d3]]
+   
+    alpha_parameters=[]
+    beta_parameters=[]
+    for p in alpha_mod.parameters:
+        isInList=False
+        for y in fit_list:
+            if p[0]==y[0]:
+                alpha_parameters.append(y[1])
+                isInList=True
+                break
+        if isInList==False:
+            alpha_parameters.append(p.value)
+    for p in beta_mod.parameters:
+        isInList=False
+        for y in fit_list:
+            if p[0]==y[0]:
+                beta_parameters.append(y[1])
+                isInList=True
+                break
+        if isInList==False:
+            beta_parameters.append(p.value)
+    I_index_Alpha = [el[0] for el in alpha_mod.parameters].index('I')
+    I_index_Beta = [el[0] for el in beta_mod.parameters].index('I')
     
+    NA = 6.022E23
+    volEC = 1E-5   
+    t=[0,5*60,15*60,30*60,60*60]
+    all_sims=[]         
+    # run simulations under experimental conditions
+    alpha_parameters[I_index_Alpha] = NA*volEC*10E-12
+    (_, sim) = alpha_mod.simulate(t, param_values=alpha_parameters)
+    all_sims.append(sim['TotalpSTAT'])
+    beta_parameters[I_index_Beta] = NA*volEC*10E-12
+    (_, sim) = beta_mod.simulate(t, param_values=beta_parameters)
+    all_sims.append(sim['TotalpSTAT'])
+    
+    alpha_parameters[I_index_Alpha] = NA*volEC*90E-12
+    (_, sim) = alpha_mod.simulate(t, param_values=alpha_parameters)
+    all_sims.append(sim['TotalpSTAT'])
+    beta_parameters[I_index_Beta] = NA*volEC*90E-12
+    (_, sim) = beta_mod.simulate(t, param_values=beta_parameters)
+    all_sims.append(sim['TotalpSTAT'])
+
+    alpha_parameters[I_index_Alpha] = NA*volEC*600E-12
+    (_, sim) = alpha_mod.simulate(t, param_values=alpha_parameters)
+    all_sims.append(sim['TotalpSTAT'])
+    beta_parameters[I_index_Beta] = NA*volEC*600E-12
+    (_, sim) = beta_mod.simulate(t, param_values=beta_parameters)
+    all_sims.append(sim['TotalpSTAT'])
+    
+    # Calculate SSres:
+    SSres = 0
+    SStot = 0
+    for i in range(len(all_sims)):
+        SSres += np.sum(np.square(np.subtract(np.multiply(gamma,all_sims[i]),IFN_exps[i])))
+        SStot += np.sum(np.square(np.subtract(np.multiply(gamma,IFN_exps[i]),np.mean(np.multiply(gamma,IFN_exps[i])))))
+    return 1-SSres/SStot
 # =============================================================================
 # MAP() finds the maximum a posteriori model from the posterior models listed in
 # posterior_file (Input) and returns a tuple containing a 
@@ -735,6 +845,8 @@ def MAP(posterior_file, beta, rho, debugging=False):
         print('and gamma = '+str(best_gamma))
         print("with as score of")
         score_model([[j,best_model[j]] for j in names if j!='gamma'], beta,rho,debugging=True)
+    corr = mutual_info(best_model, best_gamma)
+    print("The MAP model and the data have a MI score of {}".format(corr))
     return (best_model, best_gamma)
 
 # =============================================================================
@@ -838,8 +950,7 @@ def bayesian_timecourse(samplefile, dose, end_time, sample_size, percent, spec, 
     # Check that function inputs are valid
     (nSamples, nVars) = samples.shape
     if sample_size > nSamples:
-        print("Not enough samples in file")
-        return 1
+        raise ValueError("Not enough samples in the posterior file for nPost chosen")
     # Get variables that were sampled
     variable_names = list(samples.columns.values)
     # Import models

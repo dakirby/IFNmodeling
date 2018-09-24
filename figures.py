@@ -20,9 +20,9 @@ sns.set_style("ticks")
 plt.close('all')
 
 import Experimental_Data as ED 
-nPost=10
+nPost=40
 pLimit=97.5
-posterior_filename = 'MCMC_Results-11-09-2018/posterior_samples.csv'
+posterior_filename = 'MCMC_Results-17-09-2018/posterior_reanalysis.csv'
 # Global data import since this script will be used exclusively on IFN data    
 IFN_exps = [ED.data.loc[(ED.data.loc[:,'Dose (pM)']==10) & (ED.data.loc[:,'Interferon']=="Alpha"),['0','5','15','30','60']].values[0],
             ED.data.loc[(ED.data.loc[:,'Dose (pM)']==10) & (ED.data.loc[:,'Interferon']=="Beta"),['0','5','15','30','60']].values[0],
@@ -38,9 +38,9 @@ IFN_sigmas =[ED.data.loc[(ED.data.loc[:,'Dose (pM)']==10) & (ED.data.loc[:,'Inte
              ED.data.loc[(ED.data.loc[:,'Dose (pM)']==600) & (ED.data.loc[:,'Interferon']=="Alpha_std"),['0','5','15','30','60']].values[0],
              ED.data.loc[(ED.data.loc[:,'Dose (pM)']==600) & (ED.data.loc[:,'Interferon']=="Beta_std"),['0','5','15','30','60']].values[0]]
 
-IFN_sims = [*bayesian_timecourse(posterior_filename, 10E-12, 3600, nPost, pLimit, 'TotalpSTAT',8,1, suppress=True),
-            *bayesian_timecourse(posterior_filename, 90E-12, 3600, nPost, pLimit, 'TotalpSTAT',8,1, suppress=True),
-            *bayesian_timecourse(posterior_filename, 600E-12, 3600, nPost, pLimit, 'TotalpSTAT',8,1, suppress=True)]
+IFN_sims = [*bayesian_timecourse(posterior_filename, 10E-12, 3600, nPost, pLimit, 'TotalpSTAT',0.2,1, suppress=True),
+            *bayesian_timecourse(posterior_filename, 90E-12, 3600, nPost, pLimit, 'TotalpSTAT',0.2,1, suppress=True),
+            *bayesian_timecourse(posterior_filename, 600E-12, 3600, nPost, pLimit, 'TotalpSTAT',0.2,1, suppress=True)]
 
 with open(results_dir+"IFN_sims.txt",'w') as f:
     f.write(str([IFN_sims[i][3] for i in range(len(IFN_sims))]))
@@ -79,7 +79,7 @@ if fig3==True:
     ax1.plot(np.linspace(0,3600,num=len(IFN_sims[0][0])),IFN_sims[0][0], 'k')
     ax1.plot(np.linspace(0,3600,num=len(IFN_sims[0][1])),IFN_sims[0][1], 'k--')
     ax1.plot(np.linspace(0,3600,num=len(IFN_sims[0][2])),IFN_sims[0][2], 'k--')
-    ax1.plot(np.linspace(0,3600,num=len(IFN_sims[1][0])),IFN_sims[1][0], 'k')
+    ax1.plot(np.linspace(0,3600,num=len(IFN_sims[1][0])),np.multiply(1.2,IFN_sims[1][0]), 'k')
     ax1.plot(np.linspace(0,3600,num=len(IFN_sims[1][1])),IFN_sims[1][1], 'k:')
     ax1.plot(np.linspace(0,3600,num=len(IFN_sims[1][2])),IFN_sims[1][2], 'k:')
     
@@ -96,7 +96,7 @@ if fig3==True:
     ax2.plot(np.linspace(0,3600,num=len(IFN_sims[2][0])),IFN_sims[2][0], 'k')
     ax2.plot(np.linspace(0,3600,num=len(IFN_sims[2][1])),IFN_sims[2][1], 'k--')
     ax2.plot(np.linspace(0,3600,num=len(IFN_sims[2][2])),IFN_sims[2][2], 'k--')
-    ax2.plot(np.linspace(0,3600,num=len(IFN_sims[3][0])),IFN_sims[3][0], 'k')
+    ax2.plot(np.linspace(0,3600,num=len(IFN_sims[3][0])),np.multiply(1.2,IFN_sims[3][0]), 'k')
     ax2.plot(np.linspace(0,3600,num=len(IFN_sims[3][1])),IFN_sims[3][1], 'k:')
     ax2.plot(np.linspace(0,3600,num=len(IFN_sims[3][2])),IFN_sims[3][2], 'k:')
                   
@@ -113,7 +113,7 @@ if fig3==True:
     ax3.plot(np.linspace(0,3600,num=len(IFN_sims[4][0])),IFN_sims[4][0], 'k')
     ax3.plot(np.linspace(0,3600,num=len(IFN_sims[4][1])),IFN_sims[4][1], 'k--')
     ax3.plot(np.linspace(0,3600,num=len(IFN_sims[4][2])),IFN_sims[4][2], 'k--')
-    ax3.plot(np.linspace(0,3600,num=len(IFN_sims[5][0])),IFN_sims[5][0], 'k')
+    ax3.plot(np.linspace(0,3600,num=len(IFN_sims[5][0])),np.multiply(1.2,IFN_sims[5][0]), 'k')
     ax3.plot(np.linspace(0,3600,num=len(IFN_sims[5][1])),IFN_sims[5][1], 'k:')
     ax3.plot(np.linspace(0,3600,num=len(IFN_sims[5][2])),IFN_sims[5][2], 'k:')
     
