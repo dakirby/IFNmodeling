@@ -9,7 +9,7 @@ Complete script to generate figures for IFN paper
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
-from mcmc import bayesian_timecourse, bayesian_doseresponse
+from MCMC_plotting import bayesian_timecourse, bayesian_doseresponse
 import os
 script_dir = os.path.dirname(__file__)
 results_dir = os.path.join(script_dir, 'Paper_Figures/')
@@ -20,9 +20,10 @@ sns.set_style("ticks")
 plt.close('all')
 
 import Experimental_Data as ED 
-nPost=40
+nPost=25
 pLimit=97.5
-posterior_filename = 'MCMC_Results-17-09-2018/posterior_reanalysis.csv'
+posterior_filename = 'MCMC_Results-11-09-2018/posterior_samples.csv'
+#posterior_filename = 'MCMC_Results-17-09-2018/posterior_reanalysis.csv'
 # Global data import since this script will be used exclusively on IFN data    
 IFN_exps = [ED.data.loc[(ED.data.loc[:,'Dose (pM)']==10) & (ED.data.loc[:,'Interferon']=="Alpha"),['0','5','15','30','60']].values[0],
             ED.data.loc[(ED.data.loc[:,'Dose (pM)']==10) & (ED.data.loc[:,'Interferon']=="Beta"),['0','5','15','30','60']].values[0],
@@ -38,14 +39,15 @@ IFN_sigmas =[ED.data.loc[(ED.data.loc[:,'Dose (pM)']==10) & (ED.data.loc[:,'Inte
              ED.data.loc[(ED.data.loc[:,'Dose (pM)']==600) & (ED.data.loc[:,'Interferon']=="Alpha_std"),['0','5','15','30','60']].values[0],
              ED.data.loc[(ED.data.loc[:,'Dose (pM)']==600) & (ED.data.loc[:,'Interferon']=="Beta_std"),['0','5','15','30','60']].values[0]]
 
-IFN_sims = [*bayesian_timecourse(posterior_filename, 10E-12, 3600, nPost, pLimit, 'TotalpSTAT',0.2,1, suppress=True),
+IFN_sims = [*bayesian_timecourse(posterior_filename, 10E-12, 3600, nPost, pLimit, 'TotalpSTAT',0.2,1, suppress=True, corr_flag=True),
             *bayesian_timecourse(posterior_filename, 90E-12, 3600, nPost, pLimit, 'TotalpSTAT',0.2,1, suppress=True),
             *bayesian_timecourse(posterior_filename, 600E-12, 3600, nPost, pLimit, 'TotalpSTAT',0.2,1, suppress=True)]
 
 with open(results_dir+"IFN_sims.txt",'w') as f:
-    f.write(str([IFN_sims[i][3] for i in range(len(IFN_sims))]))
+    f.write(str([IFN_sims[i][5] for i in range(len(IFN_sims))]))
 
 fig3=True
+altFig3=False
 fig4=False
 fig5=False
 fig6=False
@@ -79,7 +81,7 @@ if fig3==True:
     ax1.plot(np.linspace(0,3600,num=len(IFN_sims[0][0])),IFN_sims[0][0], 'k')
     ax1.plot(np.linspace(0,3600,num=len(IFN_sims[0][1])),IFN_sims[0][1], 'k--')
     ax1.plot(np.linspace(0,3600,num=len(IFN_sims[0][2])),IFN_sims[0][2], 'k--')
-    ax1.plot(np.linspace(0,3600,num=len(IFN_sims[1][0])),np.multiply(1.2,IFN_sims[1][0]), 'k')
+    ax1.plot(np.linspace(0,3600,num=len(IFN_sims[1][0])),IFN_sims[1][0], 'k')
     ax1.plot(np.linspace(0,3600,num=len(IFN_sims[1][1])),IFN_sims[1][1], 'k:')
     ax1.plot(np.linspace(0,3600,num=len(IFN_sims[1][2])),IFN_sims[1][2], 'k:')
     
@@ -96,7 +98,7 @@ if fig3==True:
     ax2.plot(np.linspace(0,3600,num=len(IFN_sims[2][0])),IFN_sims[2][0], 'k')
     ax2.plot(np.linspace(0,3600,num=len(IFN_sims[2][1])),IFN_sims[2][1], 'k--')
     ax2.plot(np.linspace(0,3600,num=len(IFN_sims[2][2])),IFN_sims[2][2], 'k--')
-    ax2.plot(np.linspace(0,3600,num=len(IFN_sims[3][0])),np.multiply(1.2,IFN_sims[3][0]), 'k')
+    ax2.plot(np.linspace(0,3600,num=len(IFN_sims[3][0])),IFN_sims[3][0], 'k')
     ax2.plot(np.linspace(0,3600,num=len(IFN_sims[3][1])),IFN_sims[3][1], 'k:')
     ax2.plot(np.linspace(0,3600,num=len(IFN_sims[3][2])),IFN_sims[3][2], 'k:')
                   
@@ -113,7 +115,7 @@ if fig3==True:
     ax3.plot(np.linspace(0,3600,num=len(IFN_sims[4][0])),IFN_sims[4][0], 'k')
     ax3.plot(np.linspace(0,3600,num=len(IFN_sims[4][1])),IFN_sims[4][1], 'k--')
     ax3.plot(np.linspace(0,3600,num=len(IFN_sims[4][2])),IFN_sims[4][2], 'k--')
-    ax3.plot(np.linspace(0,3600,num=len(IFN_sims[5][0])),np.multiply(1.2,IFN_sims[5][0]), 'k')
+    ax3.plot(np.linspace(0,3600,num=len(IFN_sims[5][0])),IFN_sims[5][0], 'k')
     ax3.plot(np.linspace(0,3600,num=len(IFN_sims[5][1])),IFN_sims[5][1], 'k:')
     ax3.plot(np.linspace(0,3600,num=len(IFN_sims[5][2])),IFN_sims[5][2], 'k:')
     
@@ -585,4 +587,75 @@ if fig6==True:
     
     plt.savefig(results_dir+'figure6.pdf')
     plt.show()
+    
+if altFig3==True:
+    print("Fig 3")
+    fig, ((ax1,ax2,ax3),(ax4,ax5,ax6)) = plt.subplots(nrows=2, ncols=3, figsize=(15,8))
+    plt.ion()
+    matplotlib.rcParams.update({'font.size': 18})
+    ax1.tick_params(labelsize=14)
+    ax2.tick_params(labelsize=14)
+    ax3.tick_params(labelsize=14)
+    ax4.tick_params(labelsize=14)
+    ax5.tick_params(labelsize=14)
+    ax6.tick_params(labelsize=14)
+    
+    
+    jitter=50 # Scale the noise used to separate alpha and beta time points
+    Expt = ['0','5','15','30','60']
+    ax1.set_title("10 pM Time Course \nTheory vs Experiment", fontsize=20)
+    ax1.set_ylabel('pSTAT1 Relative MFI',fontsize=18)
+    ax1.set_xlabel('time (s)',fontsize=18)    
+    ax1.errorbar([int(el)*60+np.random.rand()*jitter for el in Expt],
+                IFN_exps[0],
+                yerr = IFN_sigmas[0],
+                fmt='ro', label=r"Experiment IFN$\alpha$")
+    ax4.errorbar([int(el)*60 for el in Expt],
+                IFN_exps[1],
+                yerr = IFN_sigmas[1],
+                fmt='go', label=r"Experiment IFN$\beta$")
+
+    ax1.plot(np.linspace(0,3600,num=len(IFN_sims[0][0])),IFN_sims[0][0], 'k')
+    ax1.plot(np.linspace(0,3600,num=len(IFN_sims[0][1])),IFN_sims[0][1], 'k--')
+    ax1.plot(np.linspace(0,3600,num=len(IFN_sims[0][2])),IFN_sims[0][2], 'k--')
+    ax4.plot(np.linspace(0,3600,num=len(IFN_sims[1][0])),IFN_sims[1][0], 'k')
+    ax4.plot(np.linspace(0,3600,num=len(IFN_sims[1][1])),IFN_sims[1][1], 'k:')
+    ax4.plot(np.linspace(0,3600,num=len(IFN_sims[1][2])),IFN_sims[1][2], 'k:')
+    
+    ax2.set_title("90 pM Time Course \nTheory vs Experiment", fontsize=20)
+    ax2.set_xlabel('time (s)',fontsize=18)
+    ax2.errorbar([int(el)*60+np.random.rand()*jitter for el in Expt],
+                IFN_exps[2],
+                yerr = IFN_sigmas[2],
+                fmt='ro', label=r"Experiment IFN$\alpha$")
+    ax5.errorbar([int(el)*60 for el in Expt],
+                IFN_exps[3],
+                yerr = IFN_sigmas[3],
+                fmt='go', label=r"Experiment IFN$\beta$")
+    ax2.plot(np.linspace(0,3600,num=len(IFN_sims[2][0])),IFN_sims[2][0], 'k')
+    ax2.plot(np.linspace(0,3600,num=len(IFN_sims[2][1])),IFN_sims[2][1], 'k--')
+    ax2.plot(np.linspace(0,3600,num=len(IFN_sims[2][2])),IFN_sims[2][2], 'k--')
+    ax5.plot(np.linspace(0,3600,num=len(IFN_sims[3][0])),IFN_sims[3][0], 'k')
+    ax5.plot(np.linspace(0,3600,num=len(IFN_sims[3][1])),IFN_sims[3][1], 'k:')
+    ax5.plot(np.linspace(0,3600,num=len(IFN_sims[3][2])),IFN_sims[3][2], 'k:')
+                  
+    ax3.set_title("600 pM Time Course \nTheory vs Experiment", fontsize=20)
+    ax3.set_xlabel('time (s)',fontsize=18)
+    ax3.errorbar([int(el)*60+np.random.rand()*jitter for el in Expt],
+                IFN_exps[4],
+                yerr = IFN_sigmas[4],
+                fmt='ro', label=r"Experiment IFN$\alpha$")
+    ax6.errorbar([int(el)*60 for el in Expt],
+               IFN_exps[5],
+                yerr = IFN_sigmas[5],
+                fmt='go', label=r"Experiment IFN$\beta$")
+    ax3.plot(np.linspace(0,3600,num=len(IFN_sims[4][0])),IFN_sims[4][0], 'k')
+    ax3.plot(np.linspace(0,3600,num=len(IFN_sims[4][1])),IFN_sims[4][1], 'k--')
+    ax3.plot(np.linspace(0,3600,num=len(IFN_sims[4][2])),IFN_sims[4][2], 'k--')
+    ax6.plot(np.linspace(0,3600,num=len(IFN_sims[5][0])),IFN_sims[5][0], 'k')
+    ax6.plot(np.linspace(0,3600,num=len(IFN_sims[5][1])),IFN_sims[5][1], 'k:')
+    ax6.plot(np.linspace(0,3600,num=len(IFN_sims[5][2])),IFN_sims[5][2], 'k:')
+    
+    plt.savefig(results_dir+'altFigure3.pdf')
+    plt.show()	
     
