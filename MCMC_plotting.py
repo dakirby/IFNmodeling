@@ -305,9 +305,12 @@ def bayesian_timecourse(samplefile, dose, end_time, sample_size, percent, spec, 
     (best_model,best_gamma) = MAP(samplefile, beta, rho)#best_model is a dict with parameter values and best_gamma is a float
     if corr_flag==True:
         corr = ppc(samplefile,sample_size)
-        print("The MAP model and the data has a Chi2 score of {}".format(corr[0]))
+        print("The MAP model has a Chi2 score of {}".format(corr[0]))
         pval = 1 - stats.chi2.cdf(corr[0], corr[1])
         print("A Chi2 p-value for {} degrees of freedom is {}".format(corr[1],pval))
+        print("The MAP model is:")
+        print(best_model)
+        print("gamma: {}".format(best_gamma))
         
 
     # Make best_model into a list to compare to all model later

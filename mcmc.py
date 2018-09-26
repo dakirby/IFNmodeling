@@ -577,7 +577,7 @@ def mcmcChecks(n, theta_0, beta, rho, chains, burn_rate, down_sample, max_attemp
         raise ValueError('Type for input "chains" must be int')
     if max_attempts < 0:
         raise ValueError('max_attempts must be positive')
-    lenPost = np.floor([chains*(n+1)*(1-burn_rate)/down_sample])
+    lenPost = int(np.floor([chains*(n+1)*(1-burn_rate)/down_sample])[0])
     print("It's estimated this simulation will produce {} posterior samples.".format(lenPost))
     return True
 
@@ -646,7 +646,8 @@ def mh(ID, jobs, result, countQ):
         result.put(model_record)
         countQ.put([ID,acceptance/attempts*100])
 
-def MCMC(n, theta_0, beta, rho, chains, burn_rate=0.1, down_sample=1, max_attempts=6, pflag=True, cpu=None):
+def MCMC(n, theta_0, beta, rho, chains, burn_rate=0.1, down_sample=1, max_attempts=6, 
+         pflag=True, cpu=None, randomize=True):
     # Check input parameters
     mcmcChecks(n, theta_0, beta, rho, chains, burn_rate, down_sample, max_attempts)
     print("Performing MCMC Analysis")
@@ -655,11 +656,15 @@ def MCMC(n, theta_0, beta, rho, chains, burn_rate=0.1, down_sample=1, max_attemp
     if pflag==True:
         check_proposals(hyper_theta, 50)
     # Overdisperse chains
-    print("Dispersing chains")
-    if chains > 1:
-        chains_list = disperse_chains(hyper_theta, chains)
+    if randomize==True:
+        print("Dispersing chains")
+        if chains > 1:
+            chains_list = disperse_chains(hyper_theta, chains)
+        else:
+            chains_list = [hyper_theta]
     else:
-        chains_list = [hyper_theta]
+        chains_list = [hyper_theta for i in range(chains)]
+    # Sample using MCMC    
     print("Sampling from posterior distribution")    
     if chains >= cpu_count():
         NUMBER_OF_PROCESSES = cpu_count()-1
@@ -860,8 +865,9 @@ def main():
         f.write(py_output)
     p0=[['kpa',1E-5,0.1,'log'],['kSOCSon',2E-6,0.1,'log'],['kd4',0.03,0.2,'log'],
         ['k_d4',0.06,0.5,'log'],['delR',0,500,'linear'],['meanR',2000,300,'linear']]
-    #   (n, theta_0, beta, rho, chains, burn_rate=0.1, down_sample=1, max_attempts=6, pflag=False)
-    MCMC(500, p0, 2, 1, 3, burn_rate=0.2, down_sample=40)# n, theta, beta=3.375
+    #   (n, theta_0, beta, rho, chains, burn_rate=0.1, down_sample=1, max_attempts=6,
+    #    pflag=True, cpu=None, randomize=True)
+    MCMC(500, p0, 2, 1, 3, burn_rate=0.2, down_sample=30, max_attempts=6, randomize=False)
     #continue_sampling(3, 500, 0.1, 1)
 # Testing functions
     #                    1E-6, 1E-6, 0.3, 0.006, 2E3, 2E3, 4
@@ -870,13 +876,7 @@ def main():
     #print(get_prior_logp(1E-6, 1E-6, 0.3, 0.006, 2E3, 2E3, 4)) 
     #print(get_likelihood_logp(1E-6, 1E-5, 0.3, 0.06, 2E3, 2E3, 4))
     
-    #sims = bayesian_timecourse(results_dir+'posterior_samples.csv', 100E-12, 3600, 11, 97.5, 'TotalpSTAT', 5, 1)
-    #testChain = pd.read_csv('test_posterior_samples.csv',index_col=0)
-    #bayesian_doseresponse('MCMC_Results/posterior_samples.csv', [10E-12,90E-12,600E-12], 3600, 15, 95, 'TotalpSTAT',1,1)
-    #df = pd.read_csv('posterior_samples.csv',index_col=0)
     #plot_parameter_distributions(df, title='parameter_distributions.pdf', save=True)
-    #(mod, g) = MAP('posterior_samples.csv',80,80)
-    #print(MAP_timecourse(mod, g, 6.022E23*1E-5*600E-12, 'I', 3600, 'TotalpSTAT'))
     #profile([1,2,3])
     
 if __name__ == '__main__':

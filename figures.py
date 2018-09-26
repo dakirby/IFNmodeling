@@ -22,8 +22,8 @@ plt.close('all')
 import Experimental_Data as ED 
 nPost=25
 pLimit=97.5
-posterior_filename = 'MCMC_Results-11-09-2018/posterior_samples.csv'
-#posterior_filename = 'MCMC_Results-17-09-2018/posterior_reanalysis.csv'
+#posterior_filename = 'MCMC_Results-11-09-2018/posterior_samples.csv'
+posterior_filename = 'MCMC_Results-17-09-2018/posterior_reanalysis.csv'
 # Global data import since this script will be used exclusively on IFN data    
 IFN_exps = [ED.data.loc[(ED.data.loc[:,'Dose (pM)']==10) & (ED.data.loc[:,'Interferon']=="Alpha"),['0','5','15','30','60']].values[0],
             ED.data.loc[(ED.data.loc[:,'Dose (pM)']==10) & (ED.data.loc[:,'Interferon']=="Beta"),['0','5','15','30','60']].values[0],
@@ -46,8 +46,8 @@ IFN_sims = [*bayesian_timecourse(posterior_filename, 10E-12, 3600, nPost, pLimit
 with open(results_dir+"IFN_sims.txt",'w') as f:
     f.write(str([IFN_sims[i][5] for i in range(len(IFN_sims))]))
 
-fig3=True
-altFig3=False
+fig3=False
+altFig3=True
 fig4=False
 fig5=False
 fig6=False
