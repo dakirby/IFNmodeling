@@ -17,10 +17,10 @@ Created on Thu Jun  7 12:03:19 2018
 #   the first model used from pycache). This is not an issue with the 
 #   multi-threaded functions fit_model() and p_DRparamScan(). 
 # =============================================================================
-simpleA = "IFN_simplified_model_alpha_ppCompatible"
-simpleB = "IFN_simplified_model_beta_ppCompatible"
-detailedA = "IFN_detailed_model_alpha_ppCompatible"
-detailedB = "IFN_detailed_model_beta_ppCompatible"
+simpleA = "IFN_Models/IFN_simplified_model_alpha_ppCompatible"
+simpleB = "IFN_Models/IFN_simplified_model_beta_ppCompatible"
+detailedA = "IFN_Models/IFN_detailed_model_alpha_ppCompatible"
+detailedB = "IFN_Models/IFN_detailed_model_beta_ppCompatible"
 
 import pysb_parallel as pp
 import Experimental_Data as ED

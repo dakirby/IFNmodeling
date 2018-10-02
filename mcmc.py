@@ -863,8 +863,9 @@ def main():
     py_output = export(beta_model.model, 'python')
     with open('ODE_system_beta.py','w') as f:
         f.write(py_output)
-    p0=[['kpa',1E-5,0.1,'log'],['kSOCSon',2E-6,0.1,'log'],['kd4',0.03,0.2,'log'],
-        ['k_d4',0.06,0.5,'log'],['delR',0,500,'linear'],['meanR',2000,300,'linear']]
+    p0=[['kpa',1.79E-5,0.1,'log'],['kSOCSon',1.70E-6,0.1,'log'],['kd4',0.87,0.2,'log'],
+        ['k_d4',0.86,0.5,'log'],['delR',-1878,500,'linear'],['meanR',2000,300,'linear']]
+
     #   (n, theta_0, beta, rho, chains, burn_rate=0.1, down_sample=1, max_attempts=6,
     #    pflag=True, cpu=None, randomize=True)
     MCMC(500, p0, 2, 1, 3, burn_rate=0.2, down_sample=30, max_attempts=6, randomize=False)

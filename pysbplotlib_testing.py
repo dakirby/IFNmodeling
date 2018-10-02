@@ -6,10 +6,10 @@ Created on Wed May 16 14:39:42 2018
 
 Used to test functions in pysbplotlib.py as I develop them.
 """
-import IFN_simplified_model_alpha as IFNaModel
-import IFN_simplified_model_beta as IFNbModel
-import IFN_detailed_model_alpha as IFNaModel_d
-import IFN_detailed_model_beta as IFNbModel_d
+from IFN_Models import IFN_simplified_model_alpha as IFNaModel
+from IFN_Models import IFN_simplified_model_beta as IFNbModel
+from IFN_Models import IFN_detailed_model_alpha as IFNaModel_d
+from IFN_Models import IFN_detailed_model_beta as IFNbModel_d
 import pysbplotlib as pyplt
 import matplotlib.pyplot as plt
 import numpy as np
@@ -111,7 +111,7 @@ def main(tc=False, dr=False, multi_dr=False, multi_tc=False,
         kSOCSmRNA = 2.575e-03
         kSOCS = 1.288e-02        
 
-        import IFN_detailed_model_beta_ppCompatible as IFNbModel_dpp
+        from IFN_Models import IFN_detailed_model_beta_ppCompatible as IFNbModel_dpp
         dtc_pp = pyplt.timecourse(IFNbModel_dpp, t, [['TotalpSTAT',"Total pSTAT"],['BoundSOCS',"Bound SOCS"]],
                          ['Time (s)','Molecules/cell'],title='IFNb Time Course',
                          parameters={'I':500E-12*6.022E23*1E-5})
