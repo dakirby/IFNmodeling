@@ -573,6 +573,8 @@ def mcmcChecks(n, theta_0, beta, rho, chains, burn_rate, down_sample, max_attemp
 #    theta_0 (list) = the initial guesses and jumping distribution definitions for each parameter to fit
 #                       Order of theta_0 is [kpa, kSOCSon, kd4, k_d4, R1, R2]    
 #                   eg. [['kpa',1E-6,0.2,'log'],['R2',2E3,250,'linear'],['kSOCSon',4,2,'uniform',40]]
+#    priors_dict (dict) = dictionary defining priors for variables
+#                       priors_dict={'variable_name':[minval,maxval,logmean,logstd]}            
 #    beta (float) = effectively temperature, this factor controls the 
 #                   tolerance of the probabilistic parameter search
 #    rho (float) = the scale factor for Bayesian cost, to make priors more important
@@ -750,7 +752,7 @@ def profile(processes):
 # Dependencies:
 #     Must leave all output files from previous run untouched and within the results_dir directory
 # =============================================================================
-def continue_sampling(n, n_old, rho, burn_rate, down_sample, cpu=None):
+def continue_sampling(n, n_old, priors_dict, rho, burn_rate, down_sample, cpu=None):
     variableNames = []
     stdDevs = []
     type_of_dists = []
@@ -802,7 +804,7 @@ def continue_sampling(n, n_old, rho, burn_rate, down_sample, cpu=None):
     jobs = Queue()
     result = JoinableQueue()
     for m in range(numChains):
-        jobs.put([restarting_points[m],beta,rho,n])
+        jobs.put([restarting_points[m],beta,rho,n,priors_dict])
     [Process(target=mh, args=(i, jobs, result)).start()
             for i in range(NUMBER_OF_PROCESSES)]
     # pull in the results from each thread
@@ -838,7 +840,7 @@ def continue_sampling(n, n_old, rho, burn_rate, down_sample, cpu=None):
   
 def main():
     plt.close('all')
-    modelfiles = ['IFN_alpha_altSOCS_ppCompatible','IFN_beta_altSOCS_ppCompatible']
+    modelfiles = ['IFN_Models.IFN_alpha_altSOCS_ppCompatible','IFN_Models.IFN_beta_altSOCS_ppCompatible']
 # Write modelfiles
     print("Importing models")
     alpha_model = __import__(modelfiles[0])
@@ -852,9 +854,12 @@ def main():
     p0=[['kpa',1.79E-5,0.1,'log'],['kSOCSon',1.70E-6,0.1,'log'],['kd4',0.87,0.2,'log'],
         ['k_d4',0.86,0.5,'log'],['delR',-1878,500,'linear'],['meanR',2000,300,'linear']]
 
+    our_priors_dict={'R1':[100,12000,None,None],'R2':[100,12000,None,None],
+             'kpa':[1.5E-9,1,np.log(1),4],'kSOCSon':[1.5E-11,0.07,np.log(1E-6),4],
+             'k_d4':[4E-5,0.9,np.log(0.006),1.8],'kd4':[0.002,44,np.log(0.3),1.8]}
     #   (n, theta_0, beta, rho, chains, burn_rate=0.1, down_sample=1, max_attempts=6,
     #    pflag=True, cpu=None, randomize=True)
-    MCMC(500, p0, 2, 1, 3, burn_rate=0.2, down_sample=30, max_attempts=6, randomize=False)
+    MCMC(500, p0, our_priors_dict, 2, 1, 3, burn_rate=0.2, down_sample=30, max_attempts=6, randomize=False)
     #continue_sampling(3, 500, 0.1, 1)
 # Testing functions
     #                    1E-6, 1E-6, 0.3, 0.006, 2E3, 2E3, 4

@@ -575,6 +575,8 @@ def mcmcChecks(n, theta_0, beta, rho, chains, burn_rate, down_sample, max_attemp
 #    theta_0 (list) = the initial guesses and jumping distribution definitions for each parameter to fit
 #                       Order of theta_0 is [kpa, kSOCSon, kd4, k_d4, R1, R2]    
 #                   eg. [['kpa',1E-6,0.2,'log'],['R2',2E3,250,'linear'],['kSOCSon',4,2,'uniform',40]]
+#    priors_dict (dict) = dictionary defining priors for variables
+#                       priors_dict={'variable_name':[minval,maxval,logmean,logstd]}        
 #    beta (float) = effectively temperature, this factor controls the 
 #                   tolerance of the probabilistic parameter search
 #    rho (float) = the scale factor for Bayesian cost, to make priors more important
@@ -705,7 +707,7 @@ def MCMC(n, theta_0, priors_dict, beta, rho, chains, burn_rate=0.1, down_sample=
 
 def main():
     plt.close('all')
-    modelfiles = ["IFN_Models.IFN_alpha_altSOCS_ppCompatible","IFN_Models.IFN_beta_altSOCS_ppCompatible"]
+    modelfiles = ["IFN_Models.IFN_detailed_model_alpha_ppCompatible","IFN_Models.IFN_detailed_model_beta_ppCompatible"]
 # Write modelfiles
     print("Importing models")
     alpha_model = __import__(modelfiles[0],fromlist=['IFN_Models'])
@@ -716,14 +718,23 @@ def main():
     py_output = export(beta_model.model, 'python')
     with open('ODE_system_beta.py','w') as f:
         f.write(py_output)
-    p0=[['kpa',1.79E-5,0.1,'log'],['kSOCSon',1.70E-6,0.1,'log'],['kd4',0.87,0.2,'log'],
-        ['k_d4',0.86,0.5,'log'],['delR',-1878,500,'linear'],['meanR',2000,300,'linear']]
+        
+    p0=[['kpa',1,0.1,'log'],['kSTATbinding',1E-6,0.4,'log'],
+        ['kSOCSon',1.70E-6,0.1,'log'],['kd4',0.87,0.2,'log'],
+        ['k_d4',0.86,0.5,'log'],['delR',-1878,500,'linear'],['meanR',2000,300,'linear'],
+        ['kloc',1.23E-3,0.1,'log'],['kSOCSmRNA',1E-3,0.1,'log'],['mRNAdeg',5E-4,0.1,'log'],
+        ['mRNAtrans',1E-3,0.1,'log'],['kSOCS',5E-3,0.1,'log']]
+    
     our_priors_dict={'R1':[100,12000,None,None],'R2':[100,12000,None,None],
-             'kpa':[1.5E-11,0.07,np.log(1E-6),4],'kSOCSon':[1.5E-11,0.07,np.log(1E-6),4],
-             'k_d4':[4E-5,0.9,np.log(0.006),1.8],'kd4':[0.002,44,np.log(0.3),1.8]}
+             'kpa':[1.5E-8,10,np.log(1),4],'kSOCSon':[1.5E-11,0.07,np.log(1E-6),4],
+             'k_d4':[4E-5,0.9,np.log(0.006),1.8],'kd4':[0.002,44,np.log(0.3),1.8],
+             'kSTATbinding':[1E-11,1,np.log(1E-6),4],'kloc':[1E-5,10,np.log(1.25E-3),4],
+             'kSOCSmRNA':[1E-7,10,np.log(1E-3),4],'mRNAdeg':[5E-8,10,np.log(5E-4),4],
+             'mRNAtrans':[1E-7,10,np.log(1E-3),4],'kSOCS':[5E-7,10,np.log(5E-3),4]}
+    
     #   (n, theta_0, beta, rho, chains, burn_rate=0.1, down_sample=1, max_attempts=6,
     #    pflag=True, cpu=None, randomize=True)
-    MCMC(500, p0, our_priors_dict, 2, 1, 3, burn_rate=0.2, down_sample=30, max_attempts=6)
+    MCMC(1000, p0, our_priors_dict, 2, 1, 5, burn_rate=0.2, down_sample=40, max_attempts=6)
 
     
 if __name__ == '__main__':
