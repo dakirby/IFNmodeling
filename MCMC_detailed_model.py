@@ -65,7 +65,9 @@ def disperse_chains(theta_0, priors_dict, nChains):
     for j in range(nChains):
         new_theta=[]
         for parameter in theta_0:
-            if priors_dict[parameter[0]][2]!=None:
+            if parameter[0] not in priors_dict.keys():#Can't disperse variables without priors
+                new_theta.append(parameter)
+            elif priors_dict[parameter[0]][2]!=None:
                 new_theta.append([parameter[0],
                                   np.random.lognormal(mean=priors_dict[parameter[0]][2], 
                                   sigma=priors_dict[parameter[0]][3]),
@@ -86,19 +88,21 @@ def disperse_chains(theta_0, priors_dict, nChains):
 # =============================================================================
 def get_prior_logp(variables, priors_dict):
     # Check bounds on parameters
-    if True:
-        for variable in variables:
+    for variable in variables:
+        # Make an exception for variables not in priors_dict (usually kd3, k_d3)
             name=variable[0]
             val=variable[1]
-            if val<priors_dict[name][0] or val>priors_dict[name][1]:
-                return 1E8
+            if name in priors_dict.keys():  
+                if val<priors_dict[name][0] or val>priors_dict[name][1]:
+                    return 1E8
     # Otherwise calculate log probability of parameter values
-    else:
-        logp = 0
-        for i in range(len(variables)):
-            if variables[i][2]!=None:
-                logp += ((np.log(variables[i][1])-priors_dict[variables[i]][2])/priors_dict[variables[i]][3])**2  
-        return logp
+    logp = 0
+    for i in range(len(variables)):
+        name=variables[i][0]    
+        val=variables[i][1]            
+        if name in priors_dict.keys() and priors_dict[name][2]!=None:
+            logp += ((np.log(val)-priors_dict[name][2])/priors_dict[name][3])**2  
+    return logp
     
 # =============================================================================
 # logp_helper() is a target function for scipy optimization of scale factor gamma
@@ -218,18 +222,18 @@ def score_model(variables, priors_dict, beta, rho, debugging=False):
     R1=meanR-delR/2
     R2=meanR+delR/2
     if remove_meanR==True and remove_delR==True:
-        del variables[delRIndex]
-        del variables[meanRIndex]
+        del variables[min(meanRIndex,delRIndex)]
+        del variables[max(meanRIndex,delRIndex)-1]
+        variables.insert(meanRIndex,['R1',R1])        
         variables.insert(meanRIndex,['R2',R2])
-        variables.insert(meanRIndex,['R1',R1])
     elif remove_meanR==True:
         del variables[meanRIndex]
         variables.insert(meanRIndex,['R2',R2])
         variables.insert(meanRIndex,['R1',R1])
     elif remove_delR==True:
         del variables[delRIndex]
-        variables.insert(meanRIndex,['R2',R2])
-        variables.insert(meanRIndex,['R1',R1])
+        variables.insert(delRIndex,['R2',R2])
+        variables.insert(delRIndex,['R1',R1])
         
     [lk,gamma] = get_likelihood_logp(variables)
     pr = get_prior_logp(variables, priors_dict)
@@ -698,102 +702,6 @@ def MCMC(n, theta_0, priors_dict, beta, rho, chains, burn_rate=0.1, down_sample=
             f.write("\n")
 
 
-# =============================================================================
-# continue_sampling() is intended to allow further sampling from the same chains
-# Inputs:
-#     n (int) = number of new steps to take
-#     n_old (int) = number of steps previously asked for
-#     burn_rate (float) = fraction of final chain to discard as burn in
-#     down_sample (int) = stride length for processing final chain
-#     cpu (int)(default==None) = manually override multithreading and specify number of threads to use
-# Dependencies:
-#     Must leave all output files from previous run untouched and within the results_dir directory
-# =============================================================================
-def continue_sampling(n, n_old, rho, burn_rate, down_sample, cpu=None):
-    variableNames = []
-    stdDevs = []
-    type_of_dists = []
-    extra_bounds = []
-    
-    with open(results_dir+'simulation_summary.txt','r') as f:
-        beta = float(f.readline()[21:-1])
-        numChains = int(f.readline()[19:-1])
-        f.readline()
-        f.readline()
-        distribution_descriptions = f.readline()[2:-3]
-        distribution_descriptions = distribution_descriptions.split('], [')
-        example_theta = []
-        for variable in distribution_descriptions:
-            var = variable.replace('\'','').split(', ')
-            example_theta.append(var)
-        variableNames = [el[0] for el in example_theta]
-        stdDevs = [float(el[2]) for el in example_theta]
-        type_of_dists = [el[3] for el in example_theta]
-        extra_bounds = [el[4] if len(el)==5 else [] for el in example_theta]
-    
-    with open(results_dir+'chain_lengths.txt', 'r') as f:
-        chainLengths = list(map(int,f.readline().split(', ')[:]))
-    chains = pd.read_csv(results_dir+'complete_samples.csv',index_col=0)
-    chainList = []
-    end_points = []
-    hyper_theta_valList =[]
-    readChainLengths=[0]+chainLengths+[-1]
-    for i in range(numChains):
-        chainList.append(chains.iloc[readChainLengths[i]:readChainLengths[i]+readChainLengths[i+1]-1])
-        end_points.append(chainList[-1].iloc[-1])
-        hyper_theta_valList.append(chainList[-1].iloc[0])
-    hyper_theta = [[[variableNames[i], hyper_theta_valList[c][variableNames[i]],stdDevs[i], type_of_dists[i]]+ extra_bounds[i] for i in range(len(variableNames))] for c in range(numChains)]
-    restarting_points = [[[variableNames[i], end_points[c][variableNames[i]],stdDevs[i], type_of_dists[i]]+ extra_bounds[i] for i in range(len(variableNames))] for c in range(numChains)]
-    pre_pool_results = [[] for i in range(numChains)]
-    for q in range(numChains):
-        pre_pool_results[q] = [[[variableNames[i], chainList[q].iloc[j][variableNames[i]], stdDevs[i], type_of_dists[i]]+ extra_bounds[i] for i in range(len(variableNames))] for j in range(len(chainList[q]))]
-
-    print("Continuing MCMC Analysis")
-    print("Sampling from posterior distribution")    
-    if numChains >= cpu_count():
-        NUMBER_OF_PROCESSES = cpu_count()-1
-    else:
-        NUMBER_OF_PROCESSES = numChains
-    if cpu != None: NUMBER_OF_PROCESSES = cpu # Manual override of core number selection
-    print("Using {} threads".format(NUMBER_OF_PROCESSES))
-    f = open('progress.txt','w')
-    f.close()
-    jobs = Queue()
-    result = JoinableQueue()
-    for m in range(numChains):
-        jobs.put([restarting_points[m],beta,rho,n])
-    [Process(target=mh, args=(i, jobs, result)).start()
-            for i in range(NUMBER_OF_PROCESSES)]
-    # pull in the results from each thread
-    pool_results=[]
-    for m in range(numChains):
-        r = result.get()
-        pool_results.append(r)
-        result.task_done()
-    # tell the workers there are no more jobs
-    for w in range(NUMBER_OF_PROCESSES):
-        jobs.put(None)
-    # close all extra threads
-    result.join()
-    jobs.close()
-    result.close()
-    # Combine old results with new results
-    for j in range(len(pool_results)):
-        pool_results[j] = pre_pool_results[j] + pool_results[j]
-    # Perform data analysis
-    total_samples = sum([len(i) for i in pool_results])
-    print("Average acceptance rate was {:.1f}%".format(total_samples*100/((n+n_old)*numChains)))
-    samples = get_parameter_distributions(pool_results, burn_rate, down_sample)
-    plot_parameter_autocorrelations(samples)
-    get_summary_statistics(samples)
-    with open(results_dir+'simulation_summary.txt','w') as f:
-        f.write('Temperature used was {}\n'.format(beta))
-        f.write('Number of chains = {}\n'.format(numChains))
-        f.write("Average acceptance rate was {:.1f}%\n".format(total_samples*100/((n+n_old)*numChains)))
-        f.write("Initial conditions were\n")
-        for i in hyper_theta:
-            f.write(str(hyper_theta))
-            f.write("\n")
 
 def main():
     plt.close('all')
@@ -816,16 +724,7 @@ def main():
     #   (n, theta_0, beta, rho, chains, burn_rate=0.1, down_sample=1, max_attempts=6,
     #    pflag=True, cpu=None, randomize=True)
     MCMC(500, p0, our_priors_dict, 2, 1, 3, burn_rate=0.2, down_sample=30, max_attempts=6)
-    #continue_sampling(3, 500, 0.1, 1)
-# Testing functions
-    #                    1E-6, 1E-6, 0.3, 0.006, 2E3, 2E3, 4
-    #print(get_prior_logp(4E-3, 4E-3, 20, 0.1, 4E3, 1E3, 6)) 
-    #print(get_likelihood_logp(4E-3, 4E-3, 20, 0.1, 4E3, 1E3, 6))
-    #print(get_prior_logp(1E-6, 1E-6, 0.3, 0.006, 2E3, 2E3, 4)) 
-    #print(get_likelihood_logp(1E-6, 1E-5, 0.3, 0.06, 2E3, 2E3, 4))
-    
-    #plot_parameter_distributions(df, title='parameter_distributions.pdf', save=True)
-    #profile([1,2,3])
+
     
 if __name__ == '__main__':
     main()

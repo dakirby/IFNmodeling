@@ -53,81 +53,54 @@ import time
 #   specifically for IFN alpha and IFN beta model.
 # Inputs:
 #   theta_0 (list) = the initial parameter vector, defining priors to draw from
+#  priors_dict={'variable_name':[minval,maxval,logmean,logstd]}
 #   nChains (int) = the number of unique points to start from (ie. number of chains)
 # Returns:
 #   theta_list (list) = list of parameter vectors    
 # =============================================================================
-def disperse_chains(theta_0, nChains):
+def disperse_chains(theta_0, priors_dict, nChains):
     theta_list=[]
     for j in range(nChains):
         new_theta=[]
         for parameter in theta_0:
-            if parameter[0]=='kpa' or parameter[0]=='kSOCSon': # lognormal prior
+            if parameter[0] not in priors_dict.keys():#Can't disperse variables without priors
+                new_theta.append(parameter)
+            elif priors_dict[parameter[0]][2]!=None:
                 new_theta.append([parameter[0],
-                                  np.random.lognormal(mean=np.log(1E-6), sigma=4),
+                                  np.random.lognormal(mean=priors_dict[parameter[0]][2], 
+                                  sigma=priors_dict[parameter[0]][3]),
                                   parameter[2],parameter[3]])
-            elif parameter[0]=='kd4': # lognormal prior
+            else:
                 new_theta.append([parameter[0],
-                                  np.random.lognormal(mean=np.log(0.3), sigma=1.8),
-                                  parameter[2],parameter[3]])
-            elif parameter[0]=='k_d4': # lognormal prior
-                new_theta.append([parameter[0],
-                                  np.random.lognormal(mean=np.log(0.006), sigma=1.8),
-                                  parameter[2],parameter[3]])
-            elif parameter[0]=='R1' or parameter[0]=='R2': # uniform on [100, 12 000]
-                new_theta.append([parameter[0],
-                                  np.random.uniform(low=100, high=12000),
-                                  parameter[2],parameter[3]])
-            elif parameter[0]=='delR': #uniform on [0,8000]
-                new_theta.append([parameter[0],
-                                  np.random.uniform(low=0, high=8000),
-                                  parameter[2],parameter[3]])
-            elif parameter[0]=='meanR': #uniform on [100,10000]
-                new_theta.append([parameter[0],
-                                  np.random.uniform(low=100, high=10000),
-                                  parameter[2],parameter[3]])
-    
+                                  np.random.uniform(low=priors_dict[parameter[0]][0], 
+                                                    high=priors_dict[parameter[0]][1]),
+                                  parameter[2],parameter[3]])   
         theta_list.append(new_theta)
     return theta_list
 
+
 # =============================================================================
-# Designed specifically for IFN alpha and IFN beta model priors
+# get_prior_logp() scores the variables against the prior distribution given    
+#  variables = [['name',value],['name',value]....]
+#  priors_dict={'variable_name':[minval,maxval,logmean,logstd]}
 # =============================================================================
-def get_prior_logp(kpa, kSOCSon, kd4, k_d4, R1, R2):
+def get_prior_logp(variables, priors_dict):
     # Check bounds on parameters
-    # 100 < R1, R2 < 12 000
-    # 1E-9 < kpa, kSOCSon < 10
-    # 1E-9 < k_d4, kd4 < 50
-    if R1<100 or R2<100 or R1>12000 or R2>12000 or kpa<1.5E-11 or kpa>0.07 or kSOCSon<1.5E-11 or kSOCSon>0.07 or k_d4<4E-5   or k_d4>0.9 or kd4<0.002 or kd4>44:
-        return 1E8
-    else:
-        # lognorm(std dev = 1, 0, guess at reaction rate value )
-        #         
-        P_kpa = np.log(1E-6)
-        S_kpa = 4
-        
-        P_kSOCSon = np.log(1E-6)
-        S_kSOCSon = 4
-        
-        P_kd4 = np.log(0.3)
-        S_kd4 = 1.8
-        
-        P_k_d4 = np.log(0.006)
-        S_k_d4 = 1.8
-        
-        P_R1 = np.log(R1) # Easy way to choose non-informative prior
-        S_R1 = 1
-        P_R2 = np.log(R2) # Easy way to choose non-informative prior
-        S_R2 = 1
-        
-        theta=[kpa, kSOCSon, kd4, k_d4, R1, R2]
-        P_list = [P_kpa,P_kSOCSon,P_kd4,P_k_d4,P_R1,P_R2]
-        S_list = [S_kpa,S_kSOCSon,S_kd4,S_k_d4,S_R1,S_R2]
-        logp = 0
-        for i in range(len(theta)):
-            logp += ((np.log(theta[i])-P_list[i])/S_list[i])**2
-        
-        return logp
+    for variable in variables:
+        # Make an exception for variables not in priors_dict (usually kd3, k_d3)
+            name=variable[0]
+            val=variable[1]
+            if name in priors_dict.keys():  
+                if val<priors_dict[name][0] or val>priors_dict[name][1]:
+                    return 1E8
+    # Otherwise calculate log probability of parameter values
+    logp = 0
+    for i in range(len(variables)):
+        name=variables[i][0]    
+        val=variables[i][1]            
+        if name in priors_dict.keys() and priors_dict[name][2]!=None:
+            logp += ((np.log(val)-priors_dict[name][2])/priors_dict[name][3])**2  
+    return logp
     
 # =============================================================================
 # logp_helper() is a target function for scipy optimization of scale factor gamma
@@ -172,27 +145,29 @@ def logp_helper(gamma, alpha_parameters, beta_parameters, I_index_Alpha, I_index
 # get_likelihood_logp() is designed specifically for IFN alpha and IFN beta model 
 #   least-squares likelihood with data used in paper
 # =============================================================================
-def get_likelihood_logp(kpa,kSOCSon,kd4,k_d4,R1,R2):
+def get_likelihood_logp(fit_list):
     # import models
     import ODE_system_alpha
     alpha_mod = ODE_system_alpha.Model()
     import ODE_system_beta
     beta_mod = ODE_system_beta.Model()
     # Build parameter lists
-    q1 = 3.321155762205247e-14/1
-    q2 = 4.98173364330787e-13/0.015
-    q4 = 3.623188E-4/kd4
-    q3 = q2*q4/q1
-    kd3 = 3.623188E-4/q3                
-
-    q_1 = 4.98E-14/0.03
-    q_2 = 8.30e-13/0.002
-    q_4 = 3.623188e-4/k_d4
-    q_3 = q_2*q_4/q_1
-    k_d3 = 3.623188e-4/q_3
-    fit_list = [['kpa',kpa],['kSOCSon',kSOCSon],['kd4',kd4],['k_d4',k_d4],
-                ['R1',R1],['R2',R2],['kd3',kd3],['k_d3',k_d3]]
-   
+    if 'kd4' in [el[0] for el in fit_list]:
+        kd4Index=[el[0] for el in fit_list].index('kd4')
+        q1 = 3.321155762205247e-14/1
+        q2 = 4.98173364330787e-13/0.015
+        q4 = 3.623188E-4/fit_list[kd4Index][1]
+        q3 = q2*q4/q1
+        kd3 = 3.623188E-4/q3 
+        fit_list.insert(kd4Index+1,['kd3',kd3])               
+    if 'k_d4' in [el[0] for el in fit_list]:
+        k_d4Index = [el[0] for el in fit_list].index('k_d4')
+        q_1 = 4.98E-14/0.03
+        q_2 = 8.30e-13/0.002
+        q_4 = 3.623188e-4/fit_list[k_d4Index][1]
+        q_3 = q_2*q_4/q_1
+        k_d3 = 3.623188e-4/q_3
+        fit_list.insert(k_d4Index+1,['k_d3',k_d3])               
     alpha_parameters=[]
     beta_parameters=[]
     for p in alpha_mod.parameters:
@@ -224,32 +199,42 @@ def get_likelihood_logp(kpa,kSOCSon,kd4,k_d4,R1,R2):
     
 # =============================================================================
 # variables (list) = list of variables in the form [['name',value],...]
+# priors_dict (dict) = dictionary defining priors for variables    
 # beta, rho (floats) = values of beta and rho used in simulation
 # Returns -log(probability of model)
 # =============================================================================
-def score_model(variables, beta, rho, debugging=False):
+def score_model(variables, priors_dict, beta, rho, debugging=False):
     meanR=2E3
+    delR=0
+    remove_meanR=False
+    remove_delR=False
     for el in variables:
-        if el[0]=='kpa':
-            kpa=el[1]
-        elif el[0]=='kSOCSon':
-            kSOCSon=el[1]
-        elif el[0]=='kd4':
-            kd4=el[1]
-        elif el[0]=='k_d4':
-            k_d4=el[1]
-        elif el[0]=='R1':
-            R1=el[1]
-        elif el[0]=='R2':
-            R2=el[1]
-        elif el[0]=='meanR':
+        if el[0]=='meanR':
             meanR=el[1]
+            meanRIndex=[el[0] for el in variables].index('meanR')
+            remove_meanR=True            
         elif el[0]=='delR':
             delR=el[1]
+            delRIndex=[el[0] for el in variables].index('delR')
+            remove_delR=True
     R1=meanR-delR/2
     R2=meanR+delR/2
-    [lk,gamma] = get_likelihood_logp(kpa,kSOCSon,kd4,k_d4,R1,R2)
-    pr = get_prior_logp(kpa, kSOCSon, kd4, k_d4, R1, R2)
+    if remove_meanR==True and remove_delR==True:
+        del variables[min(meanRIndex,delRIndex)]
+        del variables[max(meanRIndex,delRIndex)-1]
+        variables.insert(meanRIndex,['R1',R1])        
+        variables.insert(meanRIndex,['R2',R2])
+    elif remove_meanR==True:
+        del variables[meanRIndex]
+        variables.insert(meanRIndex,['R2',R2])
+        variables.insert(meanRIndex,['R1',R1])
+    elif remove_delR==True:
+        del variables[delRIndex]
+        variables.insert(delRIndex,['R2',R2])
+        variables.insert(delRIndex,['R1',R1])
+        
+    [lk,gamma] = get_likelihood_logp(variables)
+    pr = get_prior_logp(variables, priors_dict)
     if debugging==True:
         print(str(lk)+", "+str(pr))
     return [(lk/rho+pr)/beta, gamma]
@@ -287,14 +272,14 @@ def J(theta):
 # current hyperparameters. Returns the acceptance rate as a percentage (eg. 24)  
 # and the theta with variances that were good enough    
 # =============================================================================
-def get_acceptance_rate(theta, beta, rho):
+def get_acceptance_rate(theta, priors_dict, beta, rho):
     old_theta=theta
-    [old_score, old_gamma] = score_model([[old_theta[j][0],old_theta[j][1]] for j in range(len(old_theta))], beta, rho)
+    [old_score, old_gamma] = score_model([[old_theta[j][0],old_theta[j][1]] for j in range(len(old_theta))], priors_dict, beta, rho)
     asymmetric_indices = [el[0] for el in enumerate(old_theta) if el[1][3]=='log']
     acceptance = 0    
     for i in range(100):
         proposal = J(old_theta)
-        [new_score, new_gamma] = score_model([[proposal[j][0],proposal[j][1]] for j in range(len(proposal))], beta, rho)
+        [new_score, new_gamma] = score_model([[proposal[j][0],proposal[j][1]] for j in range(len(proposal))], priors_dict, beta, rho)
         asymmetry_factor = 1 # log normal proposal distributions are asymmetric
         for j in asymmetric_indices:
             asymmetry_factor *= proposal[j][1]/old_theta[j][1]
@@ -313,7 +298,7 @@ def get_acceptance_rate(theta, beta, rho):
 #   theta_0 and beta - see MCMC() documentation
 #   max_attempts (int) = the max number of attempts to get a good acceptance rate
 # =============================================================================
-def hyperparameter_fitting(theta_0, beta, rho, max_attempts):
+def hyperparameter_fitting(theta_0, priors_dict, beta, rho, max_attempts):
     print("Choosing optimal temperature")
     theta = [el for el in theta_0]
     if max_attempts==0:
@@ -321,7 +306,7 @@ def hyperparameter_fitting(theta_0, beta, rho, max_attempts):
     # Try to find variances that give an good acceptance rate
     for attempt in range(max_attempts):
         print("Attempt {}".format(attempt+1))
-        acceptance, new_theta, new_gamma = get_acceptance_rate(theta, beta, rho)
+        acceptance, new_theta, new_gamma = get_acceptance_rate(theta, priors_dict, beta, rho)
         
         if acceptance >= 15 and acceptance <= 50:
             print("Acceptance rate was {}%".format(acceptance))
@@ -337,7 +322,7 @@ def hyperparameter_fitting(theta_0, beta, rho, max_attempts):
     raise RuntimeError("         Failed to optimize hyperparameters.\n\
                        Please initialise with different variances or temperatures,\n\
                        or check uniform prior ranges, and try again.")
-    
+      
 # =============================================================================
 # plot_parameter_distributions() creates a kde plot for each parameter
 # Inputs:
@@ -606,10 +591,10 @@ def mh(ID, jobs, result, countQ):
         mGet = jobs.get()
         if mGet is None:
             break
-        hyper_theta, beta, rho, n = mGet
+        hyper_theta, beta, rho, n, priors_dict = mGet
         model_record=[hyper_theta]
         asymmetric_indices = [el[0] for el in enumerate(hyper_theta) if el[1][3]=='log']
-        [old_score, old_gamma] = score_model([[model_record[0][j][0],model_record[0][j][1]] for j in range(len(model_record[0]))], beta, rho)
+        [old_score, old_gamma] = score_model([[model_record[0][j][0],model_record[0][j][1]] for j in range(len(model_record[0]))], priors_dict, beta, rho)
         gamma_list=[old_gamma]
         old_index = 0
         acceptance = 0
@@ -631,7 +616,7 @@ def mh(ID, jobs, result, countQ):
                     g.write(str(temp_record))
                 progress_bar += n/10                    
             proposal = J(model_record[old_index])
-            [new_score, new_gamma] = score_model([[proposal[j][0],proposal[j][1]] for j in range(len(proposal))], beta, rho)
+            [new_score, new_gamma] = score_model([[proposal[j][0],proposal[j][1]] for j in range(len(proposal))], priors_dict, beta, rho)
             asymmetry_factor = 1 # log normal proposal distributions are asymmetric
             for j in asymmetric_indices:
                 asymmetry_factor *= proposal[j][1]/model_record[old_index][j][1]
@@ -646,20 +631,20 @@ def mh(ID, jobs, result, countQ):
         result.put(model_record)
         countQ.put([ID,acceptance/attempts*100])
 
-def MCMC(n, theta_0, beta, rho, chains, burn_rate=0.1, down_sample=1, max_attempts=6, 
+def MCMC(n, theta_0, priors_dict, beta, rho, chains, burn_rate=0.1, down_sample=1, max_attempts=6, 
          pflag=True, cpu=None, randomize=True):
     # Check input parameters
     mcmcChecks(n, theta_0, beta, rho, chains, burn_rate, down_sample, max_attempts)
     print("Performing MCMC Analysis")
     # Selecting optimal temperature
-    hyper_theta, beta = hyperparameter_fitting(theta_0, beta, rho, max_attempts)
+    hyper_theta, beta = hyperparameter_fitting(theta_0, priors_dict, beta, rho, max_attempts)
     if pflag==True:
         check_proposals(hyper_theta, 50)
     # Overdisperse chains
     if randomize==True:
         print("Dispersing chains")
         if chains > 1:
-            chains_list = disperse_chains(hyper_theta, chains)
+            chains_list = disperse_chains(hyper_theta, priors_dict, chains)
         else:
             chains_list = [hyper_theta]
     else:
@@ -678,7 +663,7 @@ def MCMC(n, theta_0, beta, rho, chains, burn_rate=0.1, down_sample=1, max_attemp
     result = JoinableQueue()
     countQ = JoinableQueue()
     for m in range(chains):
-        jobs.put([chains_list[m],beta,rho,n])
+        jobs.put([chains_list[m],beta,rho,n,priors_dict])
     [Process(target=mh, args=(i, jobs, result, countQ)).start()
             for i in range(NUMBER_OF_PROCESSES)]
     # pull in the results from each thread
@@ -713,6 +698,7 @@ def MCMC(n, theta_0, beta, rho, chains, burn_rate=0.1, down_sample=1, max_attemp
         for i in chains_list:
             f.write(str(i))
             f.write("\n")
+
 
 # =============================================================================
 # profile creates a speed up profile for a piece of code, in this case mcmc.py
