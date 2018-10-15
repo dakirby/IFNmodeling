@@ -92,7 +92,7 @@ def get_prior_logp(variables, priors_dict):
             val=variable[1]
             if name in priors_dict.keys():  
                 if val<priors_dict[name][0] or val>priors_dict[name][1]:
-                    return 1E8
+                    return None
     # Otherwise calculate log probability of parameter values
     logp = 0
     for i in range(len(variables)):
@@ -144,6 +144,7 @@ def logp_helper(gamma, alpha_parameters, beta_parameters, I_index_Alpha, I_index
 # =============================================================================
 # get_likelihood_logp() is designed specifically for IFN alpha and IFN beta model 
 #   least-squares likelihood with data used in paper
+# fit_list (list) = list of variables in the form [['name',value],...]    
 # =============================================================================
 def get_likelihood_logp(fit_list):
     # import models
@@ -232,12 +233,14 @@ def score_model(variables, priors_dict, beta, rho, debugging=False):
         del variables[delRIndex]
         variables.insert(delRIndex,['R2',R2])
         variables.insert(delRIndex,['R1',R1])
-        
     [lk,gamma] = get_likelihood_logp(variables)
     pr = get_prior_logp(variables, priors_dict)
     if debugging==True:
         print(str(lk)+", "+str(pr))
-    return [(lk/rho+pr)/beta, gamma]
+    if pr==None: # Truncate probability distribution by hand
+        return [None, gamma]
+    else: 
+        return [(lk/rho+pr)/beta, gamma]
 
 # =============================================================================
 # J() is the jumping distribution
@@ -283,7 +286,7 @@ def get_acceptance_rate(theta, priors_dict, beta, rho):
         asymmetry_factor = 1 # log normal proposal distributions are asymmetric
         for j in asymmetric_indices:
             asymmetry_factor *= proposal[j][1]/old_theta[j][1]
-        if new_score < old_score or np.random.rand() < np.exp(-(new_score-old_score))*asymmetry_factor:
+        if new_score!=None and (new_score < old_score or np.random.rand() < np.exp(-(new_score-old_score))*asymmetry_factor):
         # if rand() < probability of proposed/probability of old
             old_theta=proposal
             old_score = new_score
@@ -622,7 +625,7 @@ def mh(ID, jobs, result, countQ):
             asymmetry_factor = 1 # log normal proposal distributions are asymmetric
             for j in asymmetric_indices:
                 asymmetry_factor *= proposal[j][1]/model_record[old_index][j][1]
-            if new_score < old_score or np.random.rand() < np.exp(-(new_score-old_score))*asymmetry_factor:
+            if new_score!=None and (new_score < old_score or np.random.rand() < np.exp(-(new_score-old_score))*asymmetry_factor):
                 model_record.append(proposal)
                 gamma_list.append(new_gamma)                
                 old_score = new_score
@@ -664,10 +667,14 @@ def MCMC(n, theta_0, priors_dict, beta, rho, chains, burn_rate=0.1, down_sample=
     jobs = Queue() # put jobs on queue
     result = JoinableQueue()
     countQ = JoinableQueue()
-    for m in range(chains):
-        jobs.put([chains_list[m],beta,rho,n,priors_dict])
-    [Process(target=mh, args=(i, jobs, result, countQ)).start()
-            for i in range(NUMBER_OF_PROCESSES)]
+    if NUMBER_OF_PROCESSES==1:
+        jobs.put([chains_list[0],beta,rho,n,priors_dict])
+        mh(0, jobs, result, countQ)
+    else:
+        for m in range(chains):
+            jobs.put([chains_list[m],beta,rho,n,priors_dict])
+        [Process(target=mh, args=(i, jobs, result, countQ)).start()
+                for i in range(NUMBER_OF_PROCESSES)]
     # pull in the results from each thread
     pool_results=[]
     chain_attempts=[]
@@ -713,14 +720,17 @@ def profile(processes):
     if processes[0]!=1:
         print("Must test serial time. Please ensure processes[0]==1")
         return 1
+    test_priors = {'kpa':[1.5E-9,1,np.log(1),4],'kSOCSon':[1.5E-11,0.07,np.log(1E-6),4],
+              'k_d4':[4E-5,0.9,np.log(0.006),1.8],'kd4':[0.002,44,np.log(0.3),1.8],
+              'R1':[100,12000,None,None],'R2':[100,12000,None,None]}		
     plt.close('all')
-    modelfiles = ['IFN_alpha_altSOCS_ppCompatible','IFN_beta_altSOCS_ppCompatible']
+    modelfiles = ['IFN_Models.IFN_alpha_altSOCS_ppCompatible','IFN_Models.IFN_beta_altSOCS_ppCompatible']
     # Write modelfiles
-    alpha_model = __import__(modelfiles[0])
+    alpha_model = __import__(modelfiles[0],fromlist=['IFN_Models'])
     py_output = export(alpha_model.model, 'python')
     with open('ODE_system_alpha.py','w') as f:
         f.write(py_output)
-    beta_model = __import__(modelfiles[1])
+    beta_model = __import__(modelfiles[1],fromlist=['IFN_Models'])
     py_output = export(beta_model.model, 'python')
     with open('ODE_system_beta.py','w') as f:
         f.write(py_output)
@@ -730,7 +740,7 @@ def profile(processes):
     times = []
     for p in processes:
         tic = time.clock()
-        MCMC(500, p0, 8, 1, 8, burn_rate=0.05, down_sample=2, cpu=p)
+        MCMC(50, p0, test_priors, 8, 1, 8, burn_rate=0.1, down_sample=2, cpu=p)
         toc = time.clock()
         times.append(toc - tic)
     fig, ax = plt.subplots()
@@ -840,26 +850,45 @@ def continue_sampling(n, n_old, priors_dict, rho, burn_rate, down_sample, cpu=No
   
 def main():
     plt.close('all')
-    modelfiles = ['IFN_Models.IFN_alpha_altSOCS_ppCompatible','IFN_Models.IFN_beta_altSOCS_ppCompatible']
+#    modelfiles = ['IFN_Models.IFN_alpha_altSOCS_ppCompatible','IFN_Models.IFN_beta_altSOCS_ppCompatible']
+    modelfiles = ['IFN_Models.IFN_alpha_altSOCS_Internalization_ppCompatible','IFN_Models.IFN_beta_altSOCS_Internalization_ppCompatible']
 # Write modelfiles
     print("Importing models")
-    alpha_model = __import__(modelfiles[0])
+    alpha_model = __import__(modelfiles[0],fromlist=['IFN_Models'])
     py_output = export(alpha_model.model, 'python')
     with open('ODE_system_alpha.py','w') as f:
         f.write(py_output)
-    beta_model = __import__(modelfiles[1])
+    beta_model = __import__(modelfiles[1],fromlist=['IFN_Models'])
     py_output = export(beta_model.model, 'python')
     with open('ODE_system_beta.py','w') as f:
         f.write(py_output)
-    p0=[['kpa',1.79E-5,0.1,'log'],['kSOCSon',1.70E-6,0.1,'log'],['kd4',0.87,0.2,'log'],
-        ['k_d4',0.86,0.5,'log'],['delR',-1878,500,'linear'],['meanR',2000,300,'linear']]
+# =============================================================================
+#   altSOCS model:        
+#     p0=[['kpa',1.79E-5,0.1,'log'],['kSOCSon',1.70E-6,0.1,'log'],['kd4',0.87,0.2,'log'],
+#         ['k_d4',0.86,0.5,'log'],['delR',-1878,500,'linear'],['meanR',2000,300,'linear']]
+# 
+#     our_priors_dict={'R1':[100,12000,None,None],'R2':[100,12000,None,None],
+#              'kpa':[1.5E-9,1,np.log(1),4],'kSOCSon':[1.5E-11,0.07,np.log(1E-6),4],
+#              'k_d4':[4E-5,0.9,np.log(0.006),1.8],'kd4':[0.002,44,np.log(0.3),1.8]}
+# =============================================================================
 
-    our_priors_dict={'R1':[100,12000,None,None],'R2':[100,12000,None,None],
+#   altSOCS model with internalization        
+    p0_int=[['kpa',1.79E-5,0.1,'log'],['kSOCSon',1.70E-6,0.2,'log'],['kd4',0.87,0.2,'log'],
+        ['k_d4',0.86,0.5,'log'],['delR',-1878,500,'linear'],['meanR',2000,300,'linear'],
+        ['kIntBasal_r1',1E-4,0.1,'log'],['kIntBasal_r2',2E-4,0.1,'log'],
+        ['kint_IFN',5E-4,0.1,'log'],['krec_a1',3E-4,0.1,'log'],['krec_a2',5E-3,0.1,'log'],
+        ['krec_b1',1E-4,0.1,'log'],['krec_b2',1E-3,0.1,'log']]
+
+    int_priors_dict={'R1':[100,12000,None,None],'R2':[100,12000,None,None],
              'kpa':[1.5E-9,1,np.log(1),4],'kSOCSon':[1.5E-11,0.07,np.log(1E-6),4],
-             'k_d4':[4E-5,0.9,np.log(0.006),1.8],'kd4':[0.002,44,np.log(0.3),1.8]}
+             'k_d4':[4E-5,0.9,np.log(0.006),1.8],'kd4':[0.002,44,np.log(0.3),1.8],
+             'kIntBasal_r1':[1E-7,1E-1,None,None],'kIntBasal_r2':[2E-7,2E-1,None,None],
+        'kint_IFN':[5E-7,5E-1,None,None],'krec_a1':[3E-7,3E-1,None,None],'krec_a2':[5E-6,5E0,None,None],
+        'krec_b1':[1E-7,1E-1,None,None],'krec_b2':[1E-6,1E0,None,None]}
+        
     #   (n, theta_0, beta, rho, chains, burn_rate=0.1, down_sample=1, max_attempts=6,
     #    pflag=True, cpu=None, randomize=True)
-    MCMC(500, p0, our_priors_dict, 2, 1, 3, burn_rate=0.2, down_sample=30, max_attempts=6, randomize=False)
+    MCMC(100, p0_int, int_priors_dict, 5, 1, 1, burn_rate=0.0, down_sample=1, max_attempts=0, cpu=1)
     #continue_sampling(3, 500, 0.1, 1)
 # Testing functions
     #                    1E-6, 1E-6, 0.3, 0.006, 2E3, 2E3, 4
