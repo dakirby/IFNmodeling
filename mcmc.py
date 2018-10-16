@@ -8,6 +8,7 @@ MCMC Implementation Using Metropolis Hastings algorithm, for INF alpha and IFN
 beta model. This code is not generalizeable at the moment. I intend to eventually
 do this, but for now it is pretty much only useful to me.
 """
+import init_multiprocessing
 import os
 script_dir = os.path.dirname(__file__)
 results_dir = os.path.join(script_dir, 'MCMC_Results/')
@@ -888,7 +889,7 @@ def main():
         
     #   (n, theta_0, beta, rho, chains, burn_rate=0.1, down_sample=1, max_attempts=6,
     #    pflag=True, cpu=None, randomize=True)
-    MCMC(100, p0_int, int_priors_dict, 5, 1, 1, burn_rate=0.0, down_sample=1, max_attempts=0, cpu=1)
+    MCMC(50, p0_int, int_priors_dict, 5, 1, 3, burn_rate=0.0, down_sample=1, max_attempts=0)
     #continue_sampling(3, 500, 0.1, 1)
 # Testing functions
     #                    1E-6, 1E-6, 0.3, 0.006, 2E3, 2E3, 4
