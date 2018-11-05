@@ -55,16 +55,16 @@ Parameter('kpu', 1E-3)#1e-3
 
 #Internalization: 
 # Basal:
-#Parameter('kIntBasal_r1', 0.0001)#0.0002
-#Parameter('kIntBasal_r2', 0.00002)#0.000012
-#Parameter('krec_r1', 0.0001)
-#Parameter('krec_r2', 0.0001)
+Parameter('kIntBasal_r1', 0.0001)#0.0002
+Parameter('kIntBasal_r2', 0.00002)#0.000012
+Parameter('krec_r1', 0.0001)
+Parameter('krec_r2', 0.0001)
 # Beta:
 # Asymmetric:
-#Parameter('kint_b', 0.0002)
-#Parameter('kdeg_b', 0.0008)
-#Parameter('krec_b1', 0.0001)
-#Parameter('krec_b2', 0.001)
+Parameter('kint_IFN', 0.0002)
+Parameter('kdeg_IFN', 0.0008)
+Parameter('krec_b1', 0.0001)
+Parameter('krec_b2', 0.001)
 
 #SOCS Feedback Inhibition
 Parameter('kSOCS', 4E-3) # 4e-3 was old value #Should sufficiently separate peak pSTAT from peak SOCS
@@ -148,11 +148,11 @@ Rule('degrade_SOCS', SOCS(site=None) >> None, SOCSdeg)
 Rule('SOCS_inhibition1', SOCS(site=None) + IFNAR2(re=WILD, ri=None, loc='out') | IFNAR2(re=WILD, ri=3, loc='out')%SOCS(site=3), kSOCSon, kSOCSoff)
 # Internalization Block
 # Basal:
-#Rule('Basal_int1', IFNAR1(re=None, ri=None, loc='out') | IFNAR1(re=None, ri=None, loc='in'), kIntBasal_r1, krec_r1)
-#Rule('Basal_int2', IFNAR2(re=None, ri=None, loc='out') | IFNAR2(re=None, ri=None, loc='in'), kIntBasal_r2, krec_r2)
-#Rule('Basal_intT', IFNAR1(re=1, ri=None, loc='in')%IFN_beta(r1=1,r2=2)%IFNAR2(re=2, ri=None, loc='in') >> IFNAR1(re=None, ri=None, loc='in') + IFNAR2(re=None, ri=None, loc='in'), kdeg_b)
-# Alpha Block:
-#Rule('IFNa_intT', IFNAR1(re=1, ri=None, loc='out')%IFN_beta(r1=1,r2=2)%IFNAR2(re=2, ri=None, loc='out') >> IFNAR1(re=1,ri=None,loc='in')%IFN_beta(r1=1,r2=2)%IFNAR2(re=2,ri=None,loc='in'), kint_b)
-#Rule('Rec_1', IFNAR1(re=None, ri=None, loc='in')>>IFNAR1(re=None, ri=None, loc='out'), krec_b1)
-#Rule('Rec_2', IFNAR2(re=None, ri=None, loc='in')>>IFNAR2(re=None, ri=None, loc='out'), krec_b2)
+Rule('Basal_int1', IFNAR1(re=None, ri=None, loc='out') | IFNAR1(re=None, ri=None, loc='in'), kIntBasal_r1, krec_r1)
+Rule('Basal_int2', IFNAR2(re=None, ri=None, loc='out') | IFNAR2(re=None, ri=None, loc='in'), kIntBasal_r2, krec_r2)
+Rule('Basal_intT', IFNAR1(re=1, ri=None, loc='in')%IFN_beta(r1=1,r2=2)%IFNAR2(re=2, ri=None, loc='in') >> IFNAR1(re=None, ri=None, loc='in') + IFNAR2(re=None, ri=None, loc='in'), kdeg_IFN)
+# IFN Block:
+Rule('IFN_intT', IFNAR1(re=1, ri=None, loc='out')%IFN_beta(r1=1,r2=2)%IFNAR2(re=2, ri=None, loc='out') >> IFNAR1(re=1,ri=None,loc='in')%IFN_beta(r1=1,r2=2)%IFNAR2(re=2,ri=None,loc='in'), kint_IFN)
+Rule('Rec_1', IFNAR1(re=None, ri=None, loc='in')>>IFNAR1(re=None, ri=None, loc='out'), krec_b1)
+Rule('Rec_2', IFNAR2(re=None, ri=None, loc='in')>>IFNAR2(re=None, ri=None, loc='out'), krec_b2)
 

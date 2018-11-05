@@ -127,7 +127,7 @@ Observable('TSOCS', IFNAR1(re=1,ri=None,loc='out')%IFN_beta(r1=1,r2=2)%IFNAR2(re
 # =============================================================================
 # # Reaction rules
 # =============================================================================
-# Alpha block
+# Beta block
 Rule('IFN_bind_R1', IFNAR1(re=None,ri=None,loc='out') + IFN_beta(r1=None,r2=None) | IFNAR1(re=1,ri=None,loc='out')%IFN_beta(r1=1,r2=None), k_a1, k_d1 )
 Rule('IFN_bind_R2', IFNAR2(re=None,ri=WILD,loc='out') + IFN_beta(r1=None,r2=None) | IFNAR2(re=1,ri=WILD,loc='out')%IFN_beta(r1=1,r2=None), k_a2, k_d2 )
 
@@ -135,7 +135,6 @@ Rule('IR1_bind_R2', IFNAR1(re=1,ri=None,loc='out')%IFN_beta(r1=1,r2=None) + IFNA
 Rule('IR2_bind_R1', IFNAR2(re=1,ri=WILD,loc='out')%IFN_beta(r1=1,r2=None) + IFNAR1(re=None,ri=None,loc='out') | IFNAR1(re=1,ri=None,loc='out')%IFN_beta(r1=1,r2=2)%IFNAR2(re=2,ri=WILD,loc='out'), k_a4, k_d4)
 
 #  STAT Block
-# Alpha:
 Rule('activate_STAT', IFNAR1(re=1,ri=None,loc='out')%IFN_beta(r1=1,r2=2)%IFNAR2(re=2,ri=None,loc='out') + STAT(j='U',loc='Cyt',fdbk=None) >> IFNAR1(re=1,ri=None,loc='out')%IFN_beta(r1=1,r2=2)%IFNAR2(re=2,ri=None,loc='out') + STAT(j='P',loc='Cyt',fdbk=None), kpa )
 
 Rule('deactivate_STAT', STAT(j='P', loc='Cyt',fdbk=None) >> STAT(j='U', loc='Cyt',fdbk=None), kpu )

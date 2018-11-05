@@ -36,7 +36,7 @@ sns.set_style("ticks")
 #    Model class object, as defined in pysb/export
 # =============================================================================
 def get_ODE_model(modelfile):
-    imported_model = __import__(modelfile)
+    imported_model = __import__(modelfile,fromlist=['IFN_Models'])
     py_output = export(imported_model.model, 'python')
     with open('ODE_system.py','w') as f:
         f.write(py_output)

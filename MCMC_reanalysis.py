@@ -101,6 +101,9 @@ def pairwise_correlations(chain):
 
 def resample_simulation(results_dir, burn_in, down_sample, 
                         check_convergence=False, plot_autocorr=False, check_corr=False):
+    if burn_in >1 or burn_in <0:
+        print("burn_in should be between 0 and 1")
+        return 0
     # Find the last save point from the simulation
     chain_results_dir = results_dir+'Chain_Results/'
     if not os.path.isdir(results_dir):
@@ -125,6 +128,7 @@ def resample_simulation(results_dir, burn_in, down_sample,
     # Thin the chains and combine to produce posterior sample
     thinned_chain_list = [chainList[j].iloc[int(burn_in*len(chainList[j])):-1:down_sample] for j in range(len(chainList))]
     thinned_chain = pd.concat(thinned_chain_list)
+    print("There are now {} samples in from the posterior distribution".format(len(thinned_chain)))
     thinned_chain.to_csv(reanalysis_dir+'posterior_sample_reanalysis.csv')
     print("Wrote posterior samples to posterior_sample_reanalysis.csv in directory Reanalysis/")
     if check_convergence==True:

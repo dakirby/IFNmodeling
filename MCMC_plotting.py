@@ -51,6 +51,7 @@ IFN_sigmas =[ED.data.loc[(ED.data.loc[:,'Dose (pM)']==10) & (ED.data.loc[:,'Inte
 def ppc(modelfile, samplesize):
     model_samples = pd.read_csv(modelfile, index_col=0)
     dof = 0
+   
     for i in range(samplesize):
         model = model_samples.iloc[i]
         mod = model.to_dict()
@@ -167,8 +168,9 @@ def ppc(modelfile, samplesize):
 # MAP() finds the maximum a posteriori model from the posterior models listed in
 # posterior_file (Input) and returns a tuple containing a 
 # dictionary of the model with the lowest score and its value for gamma
+# prior_dict (dict) = dictionary defining priors for variables        
 # =============================================================================
-def MAP(posterior_file, beta, rho, debugging=False):
+def MAP(posterior_file, prior_dict, beta, rho, debugging=False):
     df = pd.read_csv(posterior_file,index_col=0)
     names=list(df.drop('gamma',axis=1).columns.values)
     best_score=1E8
@@ -178,7 +180,7 @@ def MAP(posterior_file, beta, rho, debugging=False):
     for i in range(len(df)):
         for n in names:
             model.update({n:df.iloc[i][n]})
-        [new_score,new_gamma] = score_model([[j,model[j]] for j in names if j!='gamma'], beta,rho)
+        [new_score,new_gamma] = score_model([[j,model[j]] for j in names], prior_dict, beta,rho)
         if new_score<best_score:
             best_score=new_score
             best_gamma=new_gamma
@@ -188,7 +190,7 @@ def MAP(posterior_file, beta, rho, debugging=False):
         print(best_model)
         print('and gamma = '+str(best_gamma))
         print("with as score of")
-        score_model([[j,best_model[j]] for j in names if j!='gamma'], beta,rho,debugging=True)
+        score_model([[j,best_model[j]] for j in names], prior_dict, beta,rho,debugging=True)
     return (best_model, best_gamma)
 
 # =============================================================================
@@ -209,42 +211,107 @@ def MAP_timecourse(model, gamma, dose, dose_spec, end_time, spec):
             key_list.append('R2')
         elif key=='meanR':
             meanR=model['meanR']
+        elif key=='kd4':
+            key_list.append('kd4')
+            key_list.append('kd3')
+        elif key=='k_d4':
+            key_list.append('k_d4')
+            key_list.append('k_d3')
         else:
             key_list.append(key)
     alpha_pvec=[]
     for p in alpha_mod.parameters:
         if p.name in key_list:
+            # parse special variables
             if p.name=='R1':
                 alpha_pvec.append(meanR-model['delR']/2)
             elif p.name=='R2':
                 alpha_pvec.append(meanR+model['delR']/2)
+            # maintain detailed balance
+            elif p.name=='kd3':
+                if 'kd1' in key_list:
+                    kd1=model['kd1']
+                else:
+                    kd1=1
+                if 'ka1' in key_list:
+                    ka1=model['ka1']
+                else:
+                    ka1=3.321155762205247e-14
+    
+                if 'kd2' in key_list:
+                    kd2=model['kd2']
+                else:
+                    kd2=0.015
+                if 'ka2' in key_list:
+                    ka2=model['ka2']
+                else:
+                    ka2=4.98173364330787e-13
+                
+                if 'ka4' in key_list:
+                    ka4=model['ka4']
+                else:
+                    ka4=3.623188E-4
+                
+                if 'ka3' in key_list:
+                    ka3=model['ka3']
+                else:
+                    ka3=3.623188E-4
+                
+                q1 = ka1/kd1                
+                q2 = ka2/kd2                
+                q4 = ka4/model['kd4']
+                q3 = q2*q4/q1
+                kd3 = ka3/q3   
+                alpha_pvec.append(kd3) 
             else:
-                alpha_pvec.append(model[p.name])
-        elif p[0]=='kd3':
-            q1 = 3.321155762205247e-14/1
-            q2 = 4.98173364330787e-13/0.015
-            q4 = 3.623188E-4/model['kd4']
-            q3 = q2*q4/q1
-            kd3 = 3.623188E-4/q3   
-            alpha_pvec.append(kd3)            
+                alpha_pvec.append(model[p.name])                                
         else:
             alpha_pvec.append(p.value)
     beta_pvec=[]
     for p in beta_mod.parameters:
-        if p[0] in key_list:
+        if p.name in key_list:
             if p.name=='R1':
                 beta_pvec.append(meanR-model['delR']/2)
             elif p.name=='R2':
                 beta_pvec.append(meanR+model['delR']/2)
+            elif p.name=='k_d3' and 'k_d3' in key_list:
+                if 'k_d1' in key_list:
+                    k_d1=model['k_d1']
+                else:
+                    k_d1=0.03
+                if 'k_a1' in key_list:
+                    k_a1=model['k_a1']
+                else:
+                    k_a1=4.98E-14
+                q1 = ka1/kd1
+    
+                if 'k_d2' in key_list:
+                    k_d2=model['k_d2']
+                else:
+                    k_d2=0.002
+                if 'k_a2' in key_list:
+                    k_a2=model['k_a2']
+                else:
+                    k_a2=8.30e-13
+                
+                if 'k_a4' in key_list:
+                    k_a4=model['k_a4']
+                else:
+                    k_a4=3.623188e-4
+                
+                if 'k_a3' in key_list:
+                    k_a3=model['k_a3']
+                else:
+                    k_a3=3.623188e-4
+                
+                q_1 = k_a1/k_d1
+                q_2 = k_a2/k_d2
+                q_4 = k_a4/model['k_d4']
+                q_3 = q_2*q_4/q_1
+                k_d3 = k_a3/q_3
+                beta_pvec.append(k_d3)
             else:
-                beta_pvec.append(model[p.name])
-        elif p[0]=='k_d3':
-            q_1 = 4.98E-14/0.03
-            q_2 = 8.30e-13/0.002
-            q_4 = 3.623188e-4/model['k_d4']
-            q_3 = q_2*q_4/q_1
-            k_d3 = 3.623188e-4/q_3
-            beta_pvec.append(k_d3)
+                beta_pvec.append(model[p.name])                
         else:
             beta_pvec.append(p.value)
     I_index_Alpha = [el[0] for el in alpha_mod.parameters].index(dose_spec)
@@ -257,9 +324,23 @@ def MAP_timecourse(model, gamma, dose, dose_spec, end_time, spec):
     beta_pvec[I_index_Beta] = dose
     (_, sim) = beta_mod.simulate(t, param_values=beta_pvec)
     beta_result = sim[spec]
+    print(list(zip([p[0] for p in alpha_mod.parameters],alpha_pvec)))
+    print(list(zip([p[0] for p in beta_mod.parameters],beta_pvec)))
     return [np.multiply(gamma,alpha_result), np.multiply(gamma,beta_result)]
 
-          
+# =============================================================================
+# MAP_doseresponse() takes the MAP model from MAP() as well as gamma, dose_spec 
+# doses, end time, and output species (Input), and returns a 
+# prediction for the output species as a list
+# =============================================================================
+def MAP_doseresponse(model, gamma, doses, dose_spec, end_time, spec):
+    alpha_dr_curve = []
+    beta_dr_curve = []
+    for dose in doses:
+        (a,b) = MAP_timecourse(model,gamma, dose, dose_spec, end_time, spec)
+        alpha_dr_curve.append(a[-1])
+        beta_dr_curve.append(b[-1])
+    return [alpha_dr_curve, beta_dr_curve]
     
 # =============================================================================
 # bayesian_timecourse() runs a time course for each sample from posterior parameter 
@@ -273,6 +354,7 @@ def MAP_timecourse(model, gamma, dose, dose_spec, end_time, spec):
 #     percent (int) = the percentile bounds for error in model prediction 
 #                       (bounds will be 'percent' and 100-'percent') 
 #     spec (string) = name of species to predict intervals for
+#     priors (dict) = dictionary defining priors used for simulation
 #     beta (float) = the value of beta to use for the MAP solution    
 #     rho (float) = the value of rho to use for the MAP solution    
 #     suppress (Boolean) = whether or not to plot the time course (default is False)       
@@ -286,7 +368,7 @@ def MAP_timecourse(model, gamma, dose, dose_spec, end_time, spec):
 #                                for each species, in order given in specList.
 #                                 Each item of the form [mean, lower error, upper error]        
 # =============================================================================
-def bayesian_timecourse(samplefile, dose, end_time, sample_size, percent, spec, rho, beta, 
+def bayesian_timecourse(samplefile, dose, end_time, sample_size, percent, spec, priors, rho, beta, 
                         suppress=False, dose_species=['I', 6.022E23, 1E-5], corr_flag=False):
     # Read samples
     samples = pd.read_csv(samplefile,index_col=0)
@@ -302,7 +384,7 @@ def bayesian_timecourse(samplefile, dose, end_time, sample_size, percent, spec, 
     import ODE_system_beta
     beta_mod = ODE_system_beta.Model()
     # Choose 'global' best model (fits complete data optimally, not just dose-response data points)
-    (best_model,best_gamma) = MAP(samplefile, beta, rho)#best_model is a dict with parameter values and best_gamma is a float
+    (best_model,best_gamma) = MAP(samplefile, priors, beta, rho)#best_model is a dict with parameter values and best_gamma is a float
     if corr_flag==True:
         corr = ppc(samplefile,sample_size)
         print("The MAP model has a Chi2 score of {}".format(corr[0]))
@@ -509,6 +591,7 @@ def bayesian_timecourse(samplefile, dose, end_time, sample_size, percent, spec, 
 #     end_time (int) = the end time for each time course (in seconds)
 #     sample_size (int) = the number of posterior samples to use
 #     spec (str) = name of species to predict intervals for
+#     priors (dict) = dictionary defining priors used for simulation    
 #     rho, beta (floats) = the values of rho and beta used in the sampling MCMC
 #     percent (int) = the percentile bounds for error in model prediction 
 #                       (bounds will be 'percent' and 100-'percent') 
@@ -521,8 +604,8 @@ def bayesian_timecourse(samplefile, dose, end_time, sample_size, percent, spec, 
 #   [alpha_responses, beta_responses] (list) = the dose response curves
 #                       alpha_responses = [[mean curve, low curve, high curve] for each species]        
 # =============================================================================
-def bayesian_doseresponse(samplefile, doses, end_time, sample_size, percent, spec, rho,beta,
-                          suppress=False, dr_species=['I', 6.022E23, 1E-5]):
+def bayesian_doseresponse(samplefile, doses, end_time, sample_size, percent, spec, priors, 
+                          rho, beta, suppress=False, dr_species=['I', 6.022E23, 1E-5]):
     # Read samples
     samples = pd.read_csv(samplefile,index_col=0)
     # Check that function inputs are valid
@@ -538,7 +621,7 @@ def bayesian_doseresponse(samplefile, doses, end_time, sample_size, percent, spe
     import ODE_system_beta
     beta_mod = ODE_system_beta.Model()
     # Choose 'global' best model (fits complete data optimally, not just dose-response data points)
-    (best_model,best_gamma) = MAP(samplefile, beta, rho)#best_model is a dict with parameter values and best_gamma is a float
+    (best_model,best_gamma) = MAP(samplefile, priors, beta, rho)#best_model is a dict with parameter values and best_gamma is a float
     # Make best_model into a list to compare to all model later
     best_model_list = [[variable_names[i], best_model[variable_names[i]]] for i in range(nVars) if variable_names[i] != 'gamma']
 

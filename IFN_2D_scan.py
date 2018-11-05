@@ -21,6 +21,8 @@ from pysb.export import export
 from numpy import divide, subtract, abs, reshape, flipud, flip
 import numpy as np
 from operator import itemgetter # for sorting results after processes return
+from scipy.optimize import minimize 
+import pandas as pd
 
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -117,7 +119,7 @@ def image_builder(results, doseNorm, shape):
 #			[x-axis value, y-axis value, z_value]
 # =============================================================================
 def IFN_2Dscan(modelfile, param1, param2, t_list, spec, custom_params=None,
-                  cpu=None, doseNorm=1, suppress=False):
+                  cpu=None, doseNorm=1, suppress=False, verbose=1):
     # initialization
     jobs = Queue()
     result = JoinableQueue()
@@ -125,10 +127,10 @@ def IFN_2Dscan(modelfile, param1, param2, t_list, spec, custom_params=None,
         NUMBER_OF_PROCESSES = cpu_count()-1
     else:
         NUMBER_OF_PROCESSES = cpu
-    print("Using {} threads".format(NUMBER_OF_PROCESSES))
+    if verbose != 0: print("Using {} threads".format(NUMBER_OF_PROCESSES))
     # build task list
     params=[]
-    print("Building tasks")
+    if verbose != 0: print("Building tasks")
     if custom_params == None:
         for val1 in param1[1]:
             for val2 in param2[1]:
@@ -146,13 +148,13 @@ def IFN_2Dscan(modelfile, param1, param2, t_list, spec, custom_params=None,
 				
     tasks = [[modelfile, t_list, spec, p] for p in params]
     # put jobs on the queue
-    print("There are {} tasks to compute".format(len(params)))
-    print("Putting tasks on the queue")
+    if verbose != 0: print("There are {} tasks to compute".format(len(params)))
+    if verbose != 0: print("Putting tasks on the queue")
 	
     for w in tasks:
         jobs.put(w)
 		
-    print("Computing scan")
+    if verbose != 0: print("Computing scan")
 	
     # start up the workers
     [Process(target=IFN_2Dscan_helper, args=(i, jobs, result)).start()
@@ -171,7 +173,7 @@ def IFN_2Dscan(modelfile, param1, param2, t_list, spec, custom_params=None,
     result.join()
     jobs.close()
     result.close()
-    print("Done scan")
+    if verbose != 0: print("Done scan")
     response_image = image_builder(pool_results, doseNorm, (len(param1[1]),len(param2[1])))
     # plot heatmap if suppress==False
     if suppress==False:
@@ -179,22 +181,59 @@ def IFN_2Dscan(modelfile, param1, param2, t_list, spec, custom_params=None,
     #return the scan 
     return response_image
 
-def main():
-    res = IFN_2Dscan("IFN_Models.Mixed_IFN_ppCompatible",
-               ["Ib",np.multiply([0,0.36,0.32,1.6,8,40,200,1000],1E-12*6.022E23*1E-5)],
-               ["Ia",np.multiply([0,0.36,0.32,1.6,8,40,200,1000],1E-12*6.022E23*1E-5)],
-               [0,300,900,1800,3600],
-               ['TotalpSTAT','pSTAT1'],
-               doseNorm=6.022E23*1E-5,
-               custom_params=[['R2',500]],
-               suppress=True) 
-    arcsinh_response = []
-    for row in res:
-        new_row = []
-        for item in row:
-            new_row.append([item[0]/1E-12,item[1]/1E-12,np.arcsinh(item[2])])
-        arcsinh_response.append(new_row)
-    IFN_heatmap(arcsinh_response, "R2-500 arcsinh - {}".format('Ib (pM)'), 'Ia (pM)')
-if __name__ == '__main__':
-    main()
+def MSE(simulated_scan, experimental_scan):
+    def score(sf, simulated_scan, experimental_scan):
+        return np.sum(np.square(np.subtract(np.multiply(simulated_scan,sf), experimental_scan)))
+    optimal_score = minimize(score,[40],args=(simulated_scan, experimental_scan))['fun']
+    return optimal_score
+
+
+# =============================================================================
+# def main():
+#     data = pd.read_csv("20181031_pSTAT1_Table.csv")
+#     experimental_Tcell = data.drop([8]).loc[:,"T cells"].values.reshape(8,8)
+#     experimental_NKcell = data.drop([8]).loc[:,"NK cells"].values.reshape(8,8)
+#     experimental_Bcell = data.drop([8]).loc[:,"B cells"].values.reshape(8,8)
+# 
+#     def score_parameter(p,experimental_scan):
+#          res = IFN_2Dscan("IFN_Models.Mixed_IFN_ppCompatible",
+#                 ["Ib",np.multiply([0,0.06,0.32,1.6,8,40,200,1000],1E-12*6.022E23*1E-5)],
+#                 ["Ia",np.multiply([0,0.06,0.32,1.6,8,40,200,1000],1E-12*6.022E23*1E-5)],
+#                 [0,300,900,1800,3600],
+#                 ['TotalpSTAT','pSTAT1'],
+#                 doseNorm=6.022E23*1E-5,
+#                 custom_params=[['R2',p]],
+#                 suppress=True, verbose=0)
+#          scan = [[el[2] for el in r] for r in res]
+#          score = MSE(scan,experimental_scan)
+#          return score
+#      
+#     Tcell_R2 = minimize(score_parameter,[2000],args=(experimental_Tcell))['x']
+#     Bcell_R2 = minimize(score_parameter,[2000],args=(experimental_Bcell))['x']
+#     NKcell_R2 = minimize(score_parameter,[2000],args=(experimental_NKcell))['x']
+# 
+#     print("The optimal value of R2 for Tcell data was {}".format(Tcell_R2))
+#     print("The optimal value of R2 for Tcell data was {}".format(Bcell_R2))
+#     print("The optimal value of R2 for Tcell data was {}".format(NKcell_R2))
+#     
+# # =============================================================================
+# #     res = IFN_2Dscan("IFN_Models.Mixed_IFN_ppCompatible",
+# #                ["Ib",np.multiply([0,0.36,0.32,1.6,8,40,200,1000],1E-12*6.022E23*1E-5)],
+# #                ["Ia",np.multiply([0,0.36,0.32,1.6,8,40,200,1000],1E-12*6.022E23*1E-5)],
+# #                [0,300,900,1800,3600],
+# #                ['TotalpSTAT','pSTAT1'],
+# #                doseNorm=6.022E23*1E-5,
+# #                custom_params=[['R2',500]],
+# #                suppress=True) 
+# #     arcsinh_response = []
+# #     for row in res:
+# #         new_row = []
+# #         for item in row:
+# #             new_row.append([item[0]/1E-12,item[1]/1E-12,np.arcsinh(item[2])])
+# #         arcsinh_response.append(new_row)
+# #     IFN_heatmap(arcsinh_response, "R2-500 arcsinh - {}".format('Ib (pM)'), 'Ia (pM)')
+# # =============================================================================
+# if __name__ == '__main__':
+#     main()
+# =============================================================================
     

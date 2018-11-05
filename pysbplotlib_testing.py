@@ -6,7 +6,7 @@ Created on Wed May 16 14:39:42 2018
 
 Used to test functions in pysbplotlib.py as I develop them.
 """
-from IFN_Models import IFN_simplified_model_alpha as IFNaModel
+from IFN_Models import IFN_alpha_altSOCS_Internalization_ppCompatible as IFNaModel
 from IFN_Models import IFN_simplified_model_beta as IFNbModel
 from IFN_Models import IFN_detailed_model_alpha as IFNaModel_d
 from IFN_Models import IFN_detailed_model_beta as IFNbModel_d
@@ -30,18 +30,15 @@ def main(tc=False, dr=False, multi_dr=False, multi_tc=False,
                                         ['BoundSOCS',"Bound SOCS"]],
                          ['Time (s)','Molecules/cell'],title='IFNb Time Course')
     if multi_tc==True:
-        pyplt.compare_timecourse([IFNaModel, IFNbModel], 
-                                 [{'IFN':10E-12},{'IFN':100E-12},{'IFN':500E-12}],
+        pyplt.compare_timecourse([IFNaModel], 
+                                 [{'I':10E-12*6.022E23*1E-5},{'I':90E-12*6.022E23*1E-5},{'I':600E-12*6.022E23*1E-5}],
                                  t, ['TotalpSTAT',"Total pSTAT"], 
                                  ['r','r--','r:','g','g--','g:'],
                                  axes_labels=['Time (s)','Molecules/cell'],
                                  title=r"IFN$\alpha$ and IFN$\beta$ Time Course",
                                  custom_legend=[r"IFN$\alpha$ 10 pM",
-                                                r"IFN$\alpha$ 100 pM",
-                                                r"IFN$\alpha$ 500 pM",
-                                                r"IFN$\beta$ 10 pM",
-                                                r"IFN$\beta$ 100 pM",
-                                                r"IFN$\beta$ 500 pM",])
+                                                r"IFN$\alpha$ 90 pM",
+                                                r"IFN$\alpha$ 600 pM"])
     if dr==True:
         # For profiling
         tic = timeit.default_timer()
@@ -152,5 +149,5 @@ def main(tc=False, dr=False, multi_dr=False, multi_tc=False,
 
 
 if __name__ == "__main__":
-   main(detailed_tc=True)
+   main(multi_tc=True)
    

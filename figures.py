@@ -20,10 +20,60 @@ sns.set_style("ticks")
 plt.close('all')
 
 import Experimental_Data as ED 
-nPost=14
+nPost=35
 pLimit=97.5
-#posterior_filename = 'MCMC_Results-11-09-2018/posterior_samples.csv'
-posterior_filename = 'MCMC_Results-25-09-2018/posterior_samples.csv'
+# =============================================================================
+# # Test sim 25-09-2018
+# posterior_filename = 'MCMC_Results-25-09-2018/posterior_samples.csv'
+# priors_dict={'R1':[100,12000,None,None],'R2':[100,12000,None,None],
+#               'kpa':[1.5E-8,10,np.log(1),4],'kSOCSon':[1.5E-11,0.07,np.log(1E-6),4],
+#               'k_d4':[4E-5,0.9,np.log(0.006),1.8],'kd4':[0.002,44,np.log(0.3),1.8]}
+# modelfiles = ['IFN_Models.IFN_alpha_altSOCS_ppCompatible','IFN_Models.IFN_beta_altSOCS_ppCompatible']
+# =============================================================================
+# =============================================================================
+# # Detailed model
+# posterior_filename = 'MCMC_Results-03-10-2018/posterior_samples.csv'
+# priors_dict={'R1':[100,12000,None,None],'R2':[100,12000,None,None],
+#              'kpa':[1.5E-8,10,np.log(1),4],'kSOCSon':[1.5E-11,0.07,np.log(1E-6),4],
+#              'k_d4':[4E-5,0.9,np.log(0.006),1.8],'kd4':[0.002,44,np.log(0.3),1.8],
+#              'kSTATbinding':[1E-11,1,np.log(1E-6),4],'kloc':[1E-5,10,np.log(1.25E-3),4],
+#              'kSOCSmRNA':[1E-7,10,np.log(1E-3),4],'mRNAdeg':[5E-8,10,np.log(5E-4),4],
+#              'mRNAtrans':[1E-7,10,np.log(1E-3),4],'kSOCS':[5E-7,10,np.log(5E-3),4]}
+# modelfiles = ['IFN_Models.IFN_detailed_model_alpha_ppCompatible','IFN_Models.IFN_detailed_model_beta_ppCompatible']
+# =============================================================================
+# =============================================================================
+# # Internalization sim
+# posterior_filename = 'MCMC_Results-15-10-2018/posterior_samples.csv' 
+# priors_dict={'R1':[100,12000,None,None],'R2':[100,12000,None,None],
+#              'kpa':[1.5E-9,1,np.log(1),4],'kSOCSon':[1.5E-11,0.07,np.log(1E-6),4],
+#              'k_d4':[4E-5,0.9,np.log(0.006),1.8],'kd4':[0.002,44,np.log(0.3),1.8],
+#              'kIntBasal_r1':[1E-7,1E-1,None,None],'kIntBasal_r2':[2E-7,2E-1,None,None],
+#         'kint_IFN':[5E-7,5E-1,None,None],'krec_a1':[3E-7,3E-1,None,None],'krec_a2':[5E-6,5E0,None,None],
+#         'krec_b1':[1E-7,1E-1,None,None],'krec_b2':[1E-6,1E0,None,None]}
+# modelfiles = ['IFN_Models.IFN_alpha_altSOCS_Internalization_ppCompatible','IFN_Models.IFN_beta_altSOCS_Internalization_ppCompatible']
+# =============================================================================
+# Limited Internalization Sim
+posterior_filename = 'MCMC_Results-03-11-2018\\Reanalysis\\posterior_sample_reanalysis.csv'
+priors_dict={'R1':[100,12000,None,None],'R2':[100,12000,None,None],
+             'kSOCSon':[1.5E-11,0.07,np.log(1E-6),4],
+             'k_d4':[4E-5,0.9,np.log(0.006),1.8],
+             'krec_a1':[3E-7,3E-1,None,None],'krec_a2':[5E-6,5E0,None,None],
+             'krec_b1':[1E-7,1E-1,None,None],'krec_b2':[1E-6,1E0,None,None]}
+modelfiles = ['IFN_Models.IFN_alpha_altSOCS_Internalization_ppCompatible','IFN_Models.IFN_beta_altSOCS_Internalization_ppCompatible']
+
+
+# Make sure modelfile is up to date
+# Write modelfiles
+from pysb.export import export
+alpha_model = __import__(modelfiles[0],fromlist=['IFN_Models'])
+py_output = export(alpha_model.model, 'python')
+with open('ODE_system_alpha.py','w') as f:
+    f.write(py_output)
+beta_model = __import__(modelfiles[1],fromlist=['IFN_Models'])
+py_output = export(beta_model.model, 'python')
+with open('ODE_system_beta.py','w') as f:
+    f.write(py_output)
+    
 # Global data import since this script will be used exclusively on IFN data    
 IFN_exps = [ED.data.loc[(ED.data.loc[:,'Dose (pM)']==10) & (ED.data.loc[:,'Interferon']=="Alpha"),['0','5','15','30','60']].values[0],
             ED.data.loc[(ED.data.loc[:,'Dose (pM)']==10) & (ED.data.loc[:,'Interferon']=="Beta"),['0','5','15','30','60']].values[0],
@@ -39,16 +89,17 @@ IFN_sigmas =[ED.data.loc[(ED.data.loc[:,'Dose (pM)']==10) & (ED.data.loc[:,'Inte
              ED.data.loc[(ED.data.loc[:,'Dose (pM)']==600) & (ED.data.loc[:,'Interferon']=="Alpha_std"),['0','5','15','30','60']].values[0],
              ED.data.loc[(ED.data.loc[:,'Dose (pM)']==600) & (ED.data.loc[:,'Interferon']=="Beta_std"),['0','5','15','30','60']].values[0]]
 
-IFN_sims = [*bayesian_timecourse(posterior_filename, 10E-12, 3600, nPost, pLimit, 'TotalpSTAT',0.2,1, suppress=True, corr_flag=True),
-            *bayesian_timecourse(posterior_filename, 90E-12, 3600, nPost, pLimit, 'TotalpSTAT',0.2,1, suppress=True),
-            *bayesian_timecourse(posterior_filename, 600E-12, 3600, nPost, pLimit, 'TotalpSTAT',0.2,1, suppress=True)]
+IFN_sims = [*bayesian_timecourse(posterior_filename, 10E-12, 3600, nPost, pLimit, 'TotalpSTAT',priors_dict,8,1, suppress=True),
+            *bayesian_timecourse(posterior_filename, 90E-12, 3600, nPost, pLimit, 'TotalpSTAT',priors_dict,8,1, suppress=True),
+            *bayesian_timecourse(posterior_filename, 600E-12, 3600, nPost, pLimit, 'TotalpSTAT',priors_dict,8,1, suppress=True)]
 
 with open(results_dir+"IFN_sims.txt",'w') as f:
     f.write(str([IFN_sims[i][5] for i in range(len(IFN_sims))]))
 
 fig3=False
 altFig3=False
-fig4=True
+fig4=False
+altfig4=True
 fig5=False
 fig6=False
 fig7_1=False
@@ -127,7 +178,7 @@ if fig4==True:
     fig, (ax1,ax2) = plt.subplots(nrows=1, ncols=2, figsize=(15,8))
     matplotlib.rcParams.update({'font.size': 18})
 
-    dr_curves = bayesian_doseresponse(posterior_filename, np.logspace(-13,np.log10(600E-12)), 3600, nPost, pLimit, 'TotalpSTAT',8,1,suppress=True)    
+    dr_curves = bayesian_doseresponse(posterior_filename, np.logspace(-13,np.log10(600E-12)), 3600, nPost, pLimit, 'TotalpSTAT',priors_dict,8,1,suppress=True)    
     ax1.set_title("Dose Response \nTheory vs Experiment", fontsize=20)
     ax1.set_ylabel('pSTAT1 Relative MFI',fontsize=18)
     ax1.set_xlabel('IFN Dose (M)',fontsize=18)
@@ -145,7 +196,7 @@ if fig4==True:
     ax1.plot(np.logspace(-13,np.log10(600E-12)), dr_curves[1][1], 'g--')
     ax1.plot(np.logspace(-13,np.log10(600E-12)), dr_curves[1][2], 'g--')     
 
-    dr60min = bayesian_doseresponse(posterior_filename, np.logspace(-14,-2), 3600, nPost, pLimit, 'TotalpSTAT',8,1,suppress=True)    
+    dr60min = bayesian_doseresponse(posterior_filename, np.logspace(-14,-2), 3600, nPost, pLimit, 'TotalpSTAT',priors_dict,8,1,suppress=True)    
     ax2.set_title("Dose Response at 60 minutes", fontsize=20)
     ax2.set_ylabel('Total pSTAT Count',fontsize=18)
     ax2.set_xlabel('IFN Dose (M)',fontsize=18)
@@ -159,12 +210,13 @@ if fig4==True:
     
     plt.savefig(results_dir+'figure4.pdf')
     plt.show()
+    
 
 if fig5==True:
     fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(15,8))
-    dr5min = bayesian_doseresponse(posterior_filename, np.logspace(-14,-2), 5*60, nPost,pLimit, 'TotalpSTAT',8,1,suppress=True)    
-    dr15min = bayesian_doseresponse(posterior_filename, np.logspace(-14,-2), 15*60, nPost, pLimit, 'TotalpSTAT',8,1,suppress=True)        
-    dr30min = bayesian_doseresponse(posterior_filename, np.logspace(-14,-2), 30*60, nPost, pLimit, 'TotalpSTAT',8,1,suppress=True)    
+    dr5min = bayesian_doseresponse(posterior_filename, np.logspace(-14,-2), 5*60, nPost,pLimit, 'TotalpSTAT',priors_dict,8,1,suppress=True)    
+    dr15min = bayesian_doseresponse(posterior_filename, np.logspace(-14,-2), 15*60, nPost, pLimit, 'TotalpSTAT',priors_dict,8,1,suppress=True)        
+    dr30min = bayesian_doseresponse(posterior_filename, np.logspace(-14,-2), 30*60, nPost, pLimit, 'TotalpSTAT',priors_dict,8,1,suppress=True)    
     ax.set_title("Dose Response at Different Times", fontsize=20)
     ax.set_ylabel('pSTAT Normalized by Total STAT',fontsize=18)
     ax.set_xlabel('IFN Dose (M)',fontsize=18)
@@ -658,4 +710,42 @@ if altFig3==True:
     
     plt.savefig(results_dir+'altFigure3.pdf')
     plt.show()	
+    
+if altfig4==True:
+    for end_time_plot in [15*60,30*60,60*60]:
+        fig, (ax1,ax2) = plt.subplots(nrows=1, ncols=2, figsize=(15,8))
+        matplotlib.rcParams.update({'font.size': 18})
+    
+        dr_curves = bayesian_doseresponse(posterior_filename, np.logspace(-13,np.log10(600E-12)), end_time_plot, nPost, pLimit, 'TotalpSTAT',priors_dict,8,1,suppress=True)    
+        ax1.set_title("Dose Response \nTheory vs Experiment", fontsize=20)
+        ax1.set_ylabel('pSTAT1 Relative MFI',fontsize=18)
+        ax1.set_xlabel('IFN Dose (M)',fontsize=18)
+        ax1.set(xscale='log',yscale='linear')    
+        ax1.errorbar([10E-12,(90+1)*1E-12,600E-12],[IFN_exps[el][-1] for el in [0,2,4]],
+                     yerr = [IFN_sigmas[el][-1] for el in [0,2,4]],
+                        fmt='ro', label=r"Experiment IFN$\alpha$")
+        ax1.errorbar([10E-12,90E-12,600E-12],[IFN_exps[el][-1] for el in [1,3,5]],
+                     yerr = [IFN_sigmas[el][-1] for el in [1,3,5]],
+                        fmt='go', label=r"Experiment IFN$\alpha$")
+        ax1.plot(np.logspace(-13,np.log10(600E-12)), dr_curves[0][0], 'r')
+        ax1.plot(np.logspace(-13,np.log10(600E-12)), dr_curves[0][1], 'r--')
+        ax1.plot(np.logspace(-13,np.log10(600E-12)), dr_curves[0][2], 'r--')             
+        ax1.plot(np.logspace(-13,np.log10(600E-12)), dr_curves[1][0], 'g')
+        ax1.plot(np.logspace(-13,np.log10(600E-12)), dr_curves[1][1], 'g--')
+        ax1.plot(np.logspace(-13,np.log10(600E-12)), dr_curves[1][2], 'g--')     
+    
+        dr60min = bayesian_doseresponse(posterior_filename, np.logspace(-14,-2), end_time_plot, nPost, pLimit, 'TotalpSTAT',priors_dict,8,1,suppress=True)    
+        ax2.set_title("Best Fit Dose Response at 60 minutes", fontsize=20)
+        ax2.set_ylabel('Total pSTAT Count',fontsize=18)
+        ax2.set_xlabel('IFN Dose (M)',fontsize=18)
+        ax2.set(xscale='log',yscale='linear')    
+        ax2.plot(np.logspace(-14,-2), dr60min[0][0], 'r', linewidth=2)
+        #ax2.plot(np.logspace(-14,-2), dr60min[0][1], 'r--')
+        #ax2.plot(np.logspace(-14,-2), dr60min[0][2], 'r--')    
+        ax2.plot(np.logspace(-14,-2), dr60min[1][0], 'g', linewidth=2)
+        #ax2.plot(np.logspace(-14,-2), dr60min[1][1], 'g--')
+        #ax2.plot(np.logspace(-14,-2), dr60min[1][2], 'g--')
+    
+        plt.savefig(results_dir+'altfig4_{}.pdf'.format(str(end_time_plot)))
+    plt.show()    
     
