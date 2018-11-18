@@ -20,16 +20,14 @@ sns.set_style("ticks")
 plt.close('all')
 
 import Experimental_Data as ED 
-nPost=35
+nPost=14#35
 pLimit=97.5
-# =============================================================================
-# # Test sim 25-09-2018
-# posterior_filename = 'MCMC_Results-25-09-2018/posterior_samples.csv'
-# priors_dict={'R1':[100,12000,None,None],'R2':[100,12000,None,None],
-#               'kpa':[1.5E-8,10,np.log(1),4],'kSOCSon':[1.5E-11,0.07,np.log(1E-6),4],
-#               'k_d4':[4E-5,0.9,np.log(0.006),1.8],'kd4':[0.002,44,np.log(0.3),1.8]}
-# modelfiles = ['IFN_Models.IFN_alpha_altSOCS_ppCompatible','IFN_Models.IFN_beta_altSOCS_ppCompatible']
-# =============================================================================
+# Best fit to Sagar's data: 25-09-2018
+posterior_filename = 'MCMC_Results-25-09-2018/posterior_samples.csv'
+priors_dict={'R1':[100,12000,None,None],'R2':[100,12000,None,None],
+              'kpa':[1.5E-8,10,np.log(1),4],'kSOCSon':[1.5E-11,0.07,np.log(1E-6),4],
+              'k_d4':[4E-5,0.9,np.log(0.006),1.8],'kd4':[0.002,44,np.log(0.3),1.8]}
+modelfiles = ['IFN_Models.IFN_alpha_altSOCS_ppCompatible','IFN_Models.IFN_beta_altSOCS_ppCompatible']
 # =============================================================================
 # # Detailed model
 # posterior_filename = 'MCMC_Results-03-10-2018/posterior_samples.csv'
@@ -52,14 +50,16 @@ pLimit=97.5
 #         'krec_b1':[1E-7,1E-1,None,None],'krec_b2':[1E-6,1E0,None,None]}
 # modelfiles = ['IFN_Models.IFN_alpha_altSOCS_Internalization_ppCompatible','IFN_Models.IFN_beta_altSOCS_Internalization_ppCompatible']
 # =============================================================================
-# Limited Internalization Sim
-posterior_filename = 'MCMC_Results-03-11-2018\\Reanalysis\\posterior_sample_reanalysis.csv'
-priors_dict={'R1':[100,12000,None,None],'R2':[100,12000,None,None],
-             'kSOCSon':[1.5E-11,0.07,np.log(1E-6),4],
-             'k_d4':[4E-5,0.9,np.log(0.006),1.8],
-             'krec_a1':[3E-7,3E-1,None,None],'krec_a2':[5E-6,5E0,None,None],
-             'krec_b1':[1E-7,1E-1,None,None],'krec_b2':[1E-6,1E0,None,None]}
-modelfiles = ['IFN_Models.IFN_alpha_altSOCS_Internalization_ppCompatible','IFN_Models.IFN_beta_altSOCS_Internalization_ppCompatible']
+# =============================================================================
+# # Limited Internalization Sim
+# posterior_filename = 'MCMC_Results-03-11-2018\\Reanalysis\\posterior_sample_reanalysis.csv'
+# priors_dict={'R1':[100,12000,None,None],'R2':[100,12000,None,None],
+#              'kSOCSon':[1.5E-11,0.07,np.log(1E-6),4],
+#              'k_d4':[4E-5,0.9,np.log(0.006),1.8],
+#              'krec_a1':[3E-7,3E-1,None,None],'krec_a2':[5E-6,5E0,None,None],
+#              'krec_b1':[1E-7,1E-1,None,None],'krec_b2':[1E-6,1E0,None,None]}
+# modelfiles = ['IFN_Models.IFN_alpha_altSOCS_Internalization_ppCompatible','IFN_Models.IFN_beta_altSOCS_Internalization_ppCompatible']
+# =============================================================================
 
 
 # Make sure modelfile is up to date
@@ -735,7 +735,7 @@ if altfig4==True:
         ax1.plot(np.logspace(-13,np.log10(600E-12)), dr_curves[1][2], 'g--')     
     
         dr60min = bayesian_doseresponse(posterior_filename, np.logspace(-14,-2), end_time_plot, nPost, pLimit, 'TotalpSTAT',priors_dict,8,1,suppress=True)    
-        ax2.set_title("Best Fit Dose Response at 60 minutes", fontsize=20)
+        ax2.set_title("Best Fit Dose Response at {} minutes".format(end_time_plot/60), fontsize=20)
         ax2.set_ylabel('Total pSTAT Count',fontsize=18)
         ax2.set_xlabel('IFN Dose (M)',fontsize=18)
         ax2.set(xscale='log',yscale='linear')    

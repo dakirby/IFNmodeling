@@ -6,7 +6,7 @@ Created on Wed May 16 14:39:42 2018
 
 Used to test functions in pysbplotlib.py as I develop them.
 """
-from IFN_Models import IFN_alpha_altSOCS_Internalization_ppCompatible as IFNaModel
+from IFN_Models import IFN_simplified_model_alpha as IFNaModel
 from IFN_Models import IFN_simplified_model_beta as IFNbModel
 from IFN_Models import IFN_detailed_model_alpha as IFNaModel_d
 from IFN_Models import IFN_detailed_model_beta as IFNbModel_d
@@ -44,8 +44,9 @@ def main(tc=False, dr=False, multi_dr=False, multi_tc=False,
         tic = timeit.default_timer()
         # Plot dose-response
         pyplt.doseresponse(IFNaModel, ['IFN',np.logspace(-14,-2,num=50)], t,
-                                       [['T',"Ta"],['TotalpSTAT',"Total pSTAT"]],
-                         ['Dose (M)','Molecules/cell'],title='IFNa Dose-response', Norm=10000)
+                                       [['T',"Ta"]],
+                         ['Dose (M)','Molecules/cell'],title='IFNa Dose-response', Norm=1,
+                         parameters={'kSOCSon':0})
         pyplt.doseresponse(IFNbModel, ['IFN',np.logspace(-14,-2,num=50)], t,
                                        [['T',"Tb"],['TotalpSTAT',"Total pSTAT"]],
                          ['Dose (M)','Molecules/cell'],title='IFNb Dose-response',
@@ -149,5 +150,5 @@ def main(tc=False, dr=False, multi_dr=False, multi_tc=False,
 
 
 if __name__ == "__main__":
-   main(multi_tc=True)
+   main(dr=True)
    

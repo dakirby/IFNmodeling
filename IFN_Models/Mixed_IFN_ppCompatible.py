@@ -29,7 +29,7 @@ Parameter('R1', 2000) #(2000/7.2e-15)*volCP#(8000/2.76e-9)*volPM#R -r#
 Parameter('R2', 2000)#(2000/7.2e-15)*volCP#(8000/2.76e-9)*volPM#(8000/2.76e-9)*volPM#R +r#
 
 Parameter('S', 1E4)#(1e4/7.2e-15)*volCP#
-
+Parameter('pS',0)
 # Rate constants
 # Divide by NA*V to convert bimolecular rate constants
 # from /M/sec to /(molecule/cell)/sec
@@ -112,7 +112,7 @@ Initial(IFNAR1(re=None, ri=None, loc='out'), R1)
 Initial(IFNAR2(re=None, ri=None, loc='out'), R2)
 
 Initial(STAT(j='U',loc='Cyt',fdbk=None), S)
-
+Initial(STAT(j='P',loc='Cyt',fdbk=None), pS)
 # =============================================================================
 # # Observables
 # Use 'WILD' for ?, use 'ANY' for +
