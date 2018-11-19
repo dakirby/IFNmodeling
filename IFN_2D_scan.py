@@ -274,15 +274,17 @@ def main():
     experimental_Tcell = np.flipud([[el for el in row] for row in experimental_Tcell])
     experimental_NKcell = np.flipud([[el for el in row] for row in experimental_NKcell])
     experimental_Bcell = np.flipud([[el for el in row] for row in experimental_Bcell])
-    # Normalize by max response in dataset
-    normfac = max([np.max(experimental_Tcell),np.max(experimental_Bcell),np.max(experimental_NKcell)])
-    experimental_Tcell = np.divide(experimental_Tcell, normfac)
-    experimental_Bcell = np.divide(experimental_Bcell, normfac)
-    experimental_NKcell = np.divide(experimental_NKcell, normfac)
     # Subtract background located in H1
     experimental_Tcell = np.subtract(experimental_Tcell, experimental_Tcell[0][0])
     experimental_Bcell = np.subtract(experimental_Bcell, experimental_Bcell[0][0])
     experimental_NKcell = np.subtract(experimental_NKcell, experimental_NKcell[0][0])
+    # Normalize by max response in dataset
+    normfac = max([np.max([[r[0] for r in experimental_Tcell],experimental_Tcell[0]]),
+                   np.max([[r[0] for r in experimental_Bcell],experimental_Bcell[0]]),
+                   np.max([[r[0] for r in experimental_NKcell],experimental_NKcell[0]])])
+    experimental_Tcell = np.divide(experimental_Tcell, normfac)
+    experimental_Bcell = np.divide(experimental_Bcell, normfac)
+    experimental_NKcell = np.divide(experimental_NKcell, normfac)
     
 
     # Load test data
@@ -290,7 +292,6 @@ def main():
     test_times = [2.5,5,7.5,10,20,60] # in minutes
     test_doses_alpha = [0, 5, 50, 250, 500, 5000, 25000, 50000] # in pM
     test_doses_beta = [0, 0.1, 1, 5, 10, 100, 200, 1000] # in pM
-    normfac2 = np.max([[el[1],el[2],el[3]] for el in testdata.values])
     
     test_Bcell = testdata.loc[:,"Lymphocytes/B cells | Geometric Mean (Comp-APC-A)"].values.reshape(8,12)
     test_Bcell_alpha = [[concentration[time] for time in [0,2,4,6,8,10]] for concentration in test_Bcell]
@@ -303,23 +304,24 @@ def main():
     test_NKcell = testdata.loc[:,"Lymphocytes/NonT, nonB | Geometric Mean (Comp-APC-A)"].values.reshape(8,12)
     test_NKcell_alpha = [[concentration[time] for time in [0,2,4,6,8,10]] for concentration in test_NKcell]
     test_NKcell_beta = [[concentration[time] for time in [1,3,5,7,9,11]] for concentration in test_NKcell]
+    
+    # Subtract background
+    test_Tcell_alpha = np.subtract(test_Tcell_alpha,np.mean(test_Tcell_alpha[0]))
+    test_Tcell_beta = np.subtract(test_Tcell_beta,np.mean(test_Tcell_beta[0]))
+    test_Bcell_alpha = np.subtract(test_Bcell_alpha,np.mean(test_Bcell_alpha[0]))
+    test_Bcell_beta = np.subtract(test_Bcell_beta,np.mean(test_Bcell_beta[0]))
+    test_NKcell_alpha = np.subtract(test_NKcell_alpha,np.mean(test_NKcell_alpha[0]))
+    test_NKcell_beta = np.subtract(test_NKcell_beta,np.mean(test_NKcell_beta[0]))
 
     # Normalize all data by globally maximal response
+    normfac2 = np.max([np.max(test_Tcell_alpha),np.max(test_Tcell_beta),np.max(test_Bcell_alpha),np.max(test_Bcell_beta),np.max(test_NKcell_alpha),np.max(test_NKcell_beta)])
+    #normfac2 = np.max(test_Bcell_beta)
     test_Tcell_alpha = np.divide(test_Tcell_alpha,normfac2)
     test_Tcell_beta = np.divide(test_Tcell_beta,normfac2)
     test_Bcell_alpha = np.divide(test_Bcell_alpha,normfac2)
     test_Bcell_beta = np.divide(test_Bcell_beta,normfac2)
     test_NKcell_alpha = np.divide(test_NKcell_alpha,normfac2)
     test_NKcell_beta = np.divide(test_NKcell_beta,normfac2)
-
-    # Subtract background
-    test_Tcell_alpha = np.subtract(test_Tcell_alpha,test_Tcell_alpha[0][0])
-    test_Tcell_beta = np.subtract(test_Tcell_beta,test_Tcell_beta[0][0])
-    test_Bcell_alpha = np.subtract(test_Bcell_alpha,test_Bcell_alpha[0][0])
-    test_Bcell_beta = np.subtract(test_Bcell_beta,test_Bcell_beta[0][0])
-    test_NKcell_alpha = np.subtract(test_NKcell_alpha,test_NKcell_alpha[0][0])
-    test_NKcell_beta = np.subtract(test_NKcell_beta,test_NKcell_beta[0][0])
-
 
     #plot_experimental_dr_curves(test_Tcell_alpha,test_Tcell_beta,test_times,test_doses_alpha,test_doses_beta,"Experimental_Tcell_DR")
     #plot_experimental_dr_curves(test_Bcell_alpha,test_Bcell_beta,test_times,test_doses_alpha,test_doses_beta,"Experimental_Bcell_DR")
@@ -328,16 +330,16 @@ def main():
 
 # T cells
     # Fit model to mixed IFN data
-    #best_params_list = stepwise_fit([['R2',200,12000],['R1',200,12000],['kSOCSon',1E-7,1E-4],['kpa',1E-7,1E-4]],experimental_Tcell,12)
-    best_params_list = [['R1', 200.0], ['R2', 3418.181818181818], ['kSOCSon', 9.9999999999999995e-08], ['kpa', 9.9999999999999995e-08]]
-    #best_params_list = [['kpa', 0.0001], ['pS', 1000.0], ['R1', 1272.7272727272727], ['R2', 2345.4545454545455], ['kSOCSon', 9.181818181818184e-06]]
-    # old values #best_params_list = [['R2', 5257.1428571428569], ['R1', 1042.8571428571429], ['kpa', 8.0714285714285719e-07], ['kSOCSon', 9.9999999999999995e-08]]
+    #Tbest_params_list = stepwise_fit([['R2',200,12000],['R1',200,12000],['kSOCSon',1E-7,1E-4],['kpa',1E-7,1E-4]],experimental_Tcell,12)
+    Tbest_params_list = [['R1', 200.0], ['R2', 3418.181818181818], ['kSOCSon', 9.9999999999999995e-08], ['kpa', 9.9999999999999995e-08]]
+    #Tbest_params_list = [['kpa', 0.0001], ['pS', 1000.0], ['R1', 1272.7272727272727], ['R2', 2345.4545454545455], ['kSOCSon', 9.181818181818184e-06]]
+    # old values #Tbest_params_list = [['R2', 5257.1428571428569], ['R1', 1042.8571428571429], ['kpa', 8.0714285714285719e-07], ['kSOCSon', 9.9999999999999995e-08]]
 
     print("The best fit for T cells was")
-    print(best_params_list)
+    print(Tbest_params_list)
     with open('stepwise_results.txt','w') as f:
         f.write("T cell fit:\n")
-        f.write(str(best_params_list))
+        f.write(str(Tbest_params_list))
     
     # Plot best fit model as arcsinh heatmap
     res = IFN_2Dscan("IFN_Models.Mixed_IFN_ppCompatible",
@@ -346,10 +348,10 @@ def main():
                [0,300,600,900,1200],
                ['TotalpSTAT','pSTAT1'],
                doseNorm=6.022E23*1E-5,
-               custom_params=best_params_list,
+               custom_params=Tbest_params_list,
                suppress=True) 
     
-    sf = score_parameter(best_params_list,experimental_Tcell,sf_flag=True)[0]
+    sf = score_parameter(Tbest_params_list,experimental_Tcell,sf_flag=True)[0]
     res = np.multiply(res,sf)
     arcsinh_response = []
     for row in res:
@@ -372,55 +374,20 @@ def main():
     max_doseA = np.log10(50000) 
     min_doseB = np.log10(0.01) 
     max_doseB = np.log10(50000) 
-    model_doseA = np.multiply([0]+list(np.logspace(min_doseA,max_doseA,30)),6.022E23*1E-5*1E-12)
-    model_doseB = np.multiply([0]+list(np.logspace(min_doseB,max_doseB,30)),6.022E23*1E-5*1E-12)
+    model_doseA = np.multiply([0]+list(np.logspace(min_doseA,max_doseA,20)),6.022E23*1E-5*1E-12)
+    model_doseB = np.multiply([0]+list(np.logspace(min_doseB,max_doseB,20)),6.022E23*1E-5*1E-12)
 # =============================================================================
 #     a_dr = np.multiply(sf,p_doseresponse("IFN_Models.Mixed_IFN_ppCompatible", ['Ia',model_doseA], 
 #                                          np.multiply(test_times,60), [['TotalpSTAT','pSTAT1']],
 #                                          axes_labels = ['',''], title = '', suppress=True, 
-#                                          Norm=None, parameters=best_params_list+[['Ib',0]], 
+#                                          Norm=None, parameters=Tbest_params_list+[['Ib',0]], 
 #                                          dose_axis_norm=False, scan=0)[0])
 #     b_dr = np.multiply(sf,p_doseresponse("IFN_Models.Mixed_IFN_ppCompatible", ['Ib',model_doseB], 
 #                                          np.multiply(test_times,60), [['TotalpSTAT','pSTAT1']],
 #                                          axes_labels = ['',''], title = '', suppress=True, 
-#                                          Norm=None, parameters=best_params_list+[['Ia',0]], 
+#                                          Norm=None, parameters=Tbest_params_list+[['Ia',0]], 
 #                                          dose_axis_norm=False, scan=0)[0])
 # =============================================================================
-
-    # Plot the comparison
-    simfig, [axes1,axes2,axes3] = plt.subplots(nrows=3,ncols=2,figsize=(8,8.5))
-    simfig.suptitle("Compare fit to out-of-sample data")
-    ntimes = 3
-    alpha_palette = sns.color_palette("Reds",ntimes)
-    beta_palette = sns.color_palette("Greens",ntimes)
-    axes1[0].set(xscale='log',yscale='linear')
-    axes1[0].set_xlabel('IFN (pM)')
-    axes1[0].set_ylabel('pSTAT')
-    axes1[0].set_title('T cells with IFNa')
-    axes1[1].set(xscale='log',yscale='linear')
-    axes1[1].set_xlabel('IFN (pM)')
-    axes1[1].set_ylabel('pSTAT')
-    axes1[1].set_title('T cells with IFNb')
-    # Plot the training data
-    sns.scatterplot(x=train_doses[1:],y=[r[0] for r in experimental_Tcell[1:]], ax=axes1[0], legend="full", label="Training Data", color=alpha_palette[0])
-    sns.scatterplot(x=train_doses[1:],y=experimental_Tcell[0][1:], ax=axes1[1], legend="full", label="Training Data", color=beta_palette[0])
-    # Plot the model
-    model_res = IFN_2Dscan("IFN_Models.Mixed_IFN_ppCompatible",
-               ["Ib",model_doseA],
-               ["Ia",model_doseB],
-               [0,300,600,900,1200],
-               ['TotalpSTAT','pSTAT1'],
-               doseNorm=6.022E23*1E-5,
-               custom_params=best_params_list,
-               suppress=True) 
-    model_sim = [[sf*el[2] for el in row] for row in model_res]
-    sns.lineplot(x=np.divide(model_doseA,6.022E23*1E-5*1E-12)[1:],y=[el[0] for el in model_sim[1:]], ax=axes1[0], legend="full",label="Model",color=alpha_palette[1])
-    sns.lineplot(x=np.divide(model_doseB,6.022E23*1E-5*1E-12)[1:],y=model_sim[0][1:],ax=axes1[1], legend="full",label="Model",color=beta_palette[1]) 
-    # Plot the testing data    
-    data_sf=1
-    sns.scatterplot(x=test_doses_alpha[1::], y=np.multiply(data_sf,test_alpha_dose_response[1::]), ax=axes1[0], legend="full", label="Testing Data", color=alpha_palette[2])
-    sns.scatterplot(x=test_doses_beta[1::], y=np.multiply(data_sf,test_beta_dose_response[1::]), ax=axes1[1], legend="full", label="Testing Data", color=beta_palette[2])
-    #plt.savefig(cwd+"\\Mixed_IFN_Figures\\"+"Tcell_out_of_sample.pdf")
     
     # Plot isolated IFN trajectories
     simulated_response = [[el[2] for el in row] for row in res]
@@ -441,7 +408,7 @@ def main():
     ax2.plot(train_doses[1:],simulated_response[0][1:],'g')  
     
     props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
-    textstr = '\n'.join([r'{}={:.2E}'.format(r[0],r[1]) for r in best_params_list])
+    textstr = '\n'.join([r'{}={:.2E}'.format(r[0],r[1]) for r in Tbest_params_list])
     ax1.text(0.05, 0.95, textstr, transform=ax1.transAxes, fontsize=14,
         verticalalignment='top', bbox=props)
     ax2.text(0.05, 0.95, textstr, transform=ax2.transAxes, fontsize=14,
@@ -449,15 +416,15 @@ def main():
     
 # =============================================================================
 # B cells    
-    #best_params_list = stepwise_fit([['R2',200,12000],['R1',200,12000],['kSOCSon',1E-7,1E-4],['kpa',1E-7,1E-4]],experimental_Bcell,12)
-    best_params_list = [['R1', 200.0], ['R2', 2345.4545454545455], ['kSOCSon', 9.9999999999999995e-08], ['kpa', 9.9999999999999995e-08]]
-    #best_params_list = [['kpa', 2.7345454545454546e-05], ['pS', 1000.0], ['R1', 200.0], ['kSOCSon', 1.8263636363636365e-05], ['R2', 2345.4545454545455]]
+    #Bbest_params_list = stepwise_fit([['R2',200,12000],['R1',200,12000],['kSOCSon',1E-7,1E-4],['kpa',1E-7,1E-4]],experimental_Bcell,12)
+    Bbest_params_list = [['R1', 200.0], ['R2', 2345.4545454545455], ['kSOCSon', 9.9999999999999995e-08], ['kpa', 9.9999999999999995e-08]]
+    #Bbest_params_list = [['kpa', 2.7345454545454546e-05], ['pS', 1000.0], ['R1', 200.0], ['kSOCSon', 1.8263636363636365e-05], ['R2', 2345.4545454545455]]
     # old values #[['R1', 200.0], ['R2', 2728.5714285714284], ['kpa', 8.0714285714285719e-07], ['kSOCSon', 9.9999999999999995e-08]]
     print("The best fit for B cells was")
-    print(best_params_list)
+    print(Bbest_params_list)
     with open('stepwise_results.txt','a') as f:
         f.write("\nB cell fit:\n")
-        f.write(str(best_params_list))
+        f.write(str(Bbest_params_list))
     
     res = IFN_2Dscan("IFN_Models.Mixed_IFN_ppCompatible",
                ["Ib",np.multiply([0,0.06,0.32,1.6,8,40,200,1000],1E-12*6.022E23*1E-5)],
@@ -465,10 +432,10 @@ def main():
                [0,300,600,900,1200],
                ['TotalpSTAT','pSTAT1'],
                doseNorm=6.022E23*1E-5,
-               custom_params=best_params_list,
+               custom_params=Bbest_params_list,
                suppress=True) 
     
-    sf = score_parameter(best_params_list,experimental_Bcell,sf_flag=True)[0]
+    sf = score_parameter(Bbest_params_list,experimental_Bcell,sf_flag=True)[0]
     res = np.multiply(res,sf)
     arcsinh_response = []
     for row in res:
@@ -481,42 +448,7 @@ def main():
     # Plot quality of fit
     percent_error = np.divide(np.subtract([[el[2] for el in row] for row in res],experimental_Bcell),experimental_Bcell)
     labelled_perecent_error = [[[res[i][j][0]/(1E-12), res[i][j][1]/(1E-12), abs(percent_error[i][j])] for j in range(8)] for i in range(8)]
-    IFN_heatmap(labelled_perecent_error, "Bcell Stepwise Percent error - Ib (pM)", "Ia (pM)")
-
-    # Test best fit model on test data
-    test_alpha_dose_response = [dose[4] for dose in test_Bcell_alpha]
-    test_beta_dose_response = [dose[4] for dose in test_Bcell_beta]        
-
-    # Plot the comparison
-    axes2[0].set(xscale='log',yscale='linear')
-    axes2[0].set_xlabel('IFN (pM)')
-    axes2[0].set_ylabel('pSTAT')
-    axes2[0].set_title('B cells with IFNa')
-    axes2[1].set(xscale='log',yscale='linear')
-    axes2[1].set_xlabel('IFN (pM)')
-    axes2[1].set_ylabel('pSTAT')
-    axes2[1].set_title('B cells with IFNb')
-    # Plot the training data
-    sns.scatterplot(x=train_doses[1:],y=[r[0] for r in experimental_Bcell[1:]], ax=axes2[0], legend="full", label="Training Data", color=alpha_palette[0])
-    sns.scatterplot(x=train_doses[1:],y=experimental_Bcell[0][1:], ax=axes2[1], legend="full", label="Training Data", color=beta_palette[0])
-    # Plot the model
-    model_res = IFN_2Dscan("IFN_Models.Mixed_IFN_ppCompatible",
-               ["Ib",model_doseA],
-               ["Ia",model_doseB],
-               [0,300,600,900,1200],
-               ['TotalpSTAT','pSTAT1'],
-               doseNorm=6.022E23*1E-5,
-               custom_params=best_params_list,
-               suppress=True) 
-    model_sim = [[sf*el[2] for el in row] for row in model_res]
-    sns.lineplot(x=np.divide(model_doseA,6.022E23*1E-5*1E-12)[1:],y=[el[0] for el in model_sim[1:]], ax=axes2[0], legend="full",label="Model",color=alpha_palette[1])
-    sns.lineplot(x=np.divide(model_doseB,6.022E23*1E-5*1E-12)[1:],y=model_sim[0][1:],ax=axes2[1], legend="full",label="Model",color=beta_palette[1]) 
-    # Plot the testing data    
-    data_sf=1
-    sns.scatterplot(x=test_doses_alpha[1::], y=np.multiply(data_sf,test_alpha_dose_response[1::]), ax=axes2[0], legend="full", label="Testing Data", color=alpha_palette[2])
-    sns.scatterplot(x=test_doses_beta[1::], y=np.multiply(data_sf,test_beta_dose_response[1::]), ax=axes2[1], legend="full", label="Testing Data", color=beta_palette[2])
-    #plt.savefig(cwd+"\\Mixed_IFN_Figures\\"+"Bcell_out_of_sample.pdf")
-    
+    IFN_heatmap(labelled_perecent_error, "Bcell Stepwise Percent error - Ib (pM)", "Ia (pM)") 
     
     simulated_response = [[el[2] for el in row] for row in res]
     ax3.set_title('B cell')
@@ -527,26 +459,204 @@ def main():
     ax4.plot([0.06,0.32,1.6,8,40,200,1000],simulated_response[0][1:],'g')  
 
     props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
-    textstr = '\n'.join([r'{}={:.2E}'.format(r[0],r[1]) for r in best_params_list])
+    textstr = '\n'.join([r'{}={:.2E}'.format(r[0],r[1]) for r in Bbest_params_list])
     ax3.text(0.05, 0.95, textstr, transform=ax3.transAxes, fontsize=14,
         verticalalignment='top', bbox=props)
     ax4.text(0.05, 0.95, textstr, transform=ax4.transAxes, fontsize=14,
         verticalalignment='top', bbox=props)
     
+   
+# Create plot of best fit model vs data
+    simfig, [axes1,axes2,axes3] = plt.subplots(nrows=3,ncols=2,figsize=(8,8.5))
+    simfig.suptitle("Compare fit to experimental data")
+    ntimes = 3
+    alpha_palette = sns.color_palette("Reds",ntimes)
+    beta_palette = sns.color_palette("Greens",ntimes)
+    
+# Prepare all experimental data curves    
+    Ttest_alpha_DR5 = [dose[1] for dose in test_Tcell_alpha]
+    Ttest_beta_DR5 = [dose[1] for dose in test_Tcell_beta]            
+    Ttest_alpha_DR20 = [dose[4] for dose in test_Tcell_alpha]
+    Ttest_beta_DR20 = [dose[4] for dose in test_Tcell_beta]        
+    Ttest_alpha_DR60 = [dose[5] for dose in test_Tcell_alpha]
+    Ttest_beta_DR60 = [dose[5] for dose in test_Tcell_beta]        
+
+    Btest_alpha_DR5 = [dose[1] for dose in test_Bcell_alpha]
+    Btest_beta_DR5 = [dose[1] for dose in test_Bcell_beta]            
+    Btest_alpha_DR20 = [dose[4] for dose in test_Bcell_alpha]
+    Btest_beta_DR20 = [dose[4] for dose in test_Bcell_beta]        
+    Btest_alpha_DR60 = [dose[5] for dose in test_Bcell_alpha]
+    Btest_beta_DR60 = [dose[5] for dose in test_Bcell_beta]     
+    
+# Compute all necessary model simulations for smooth plotting model vs data
+    Tmodel_res5 = IFN_2Dscan("IFN_Models.Mixed_IFN_ppCompatible",
+               ["Ib",model_doseA],
+               ["Ia",model_doseB],
+               [0,120,300],
+               ['TotalpSTAT','pSTAT1'],
+               doseNorm=6.022E23*1E-5,
+               custom_params=Tbest_params_list,
+               suppress=True) 
+    
+    Tmodel_res20 = IFN_2Dscan("IFN_Models.Mixed_IFN_ppCompatible",
+               ["Ib",model_doseA],
+               ["Ia",model_doseB],
+               [0,300,1200],
+               ['TotalpSTAT','pSTAT1'],
+               doseNorm=6.022E23*1E-5,
+               custom_params=Tbest_params_list,
+               suppress=True) 
+    Tmodel_res60 = IFN_2Dscan("IFN_Models.Mixed_IFN_ppCompatible",
+               ["Ib",model_doseA],
+               ["Ia",model_doseB],
+               [0,300,3600],
+               ['TotalpSTAT','pSTAT1'],
+               doseNorm=6.022E23*1E-5,
+               custom_params=Tbest_params_list,
+               suppress=True) 
+    
+    Bmodel_res5 = IFN_2Dscan("IFN_Models.Mixed_IFN_ppCompatible",
+               ["Ib",model_doseA],
+               ["Ia",model_doseB],
+               [0,120,300],
+               ['TotalpSTAT','pSTAT1'],
+               doseNorm=6.022E23*1E-5,
+               custom_params=Bbest_params_list,
+               suppress=True) 
+    Bmodel_res20 = IFN_2Dscan("IFN_Models.Mixed_IFN_ppCompatible",
+               ["Ib",model_doseA],
+               ["Ia",model_doseB],
+               [0,300,1200],
+               ['TotalpSTAT','pSTAT1'],
+               doseNorm=6.022E23*1E-5,
+               custom_params=Bbest_params_list,
+               suppress=True) 
+    Bmodel_res60 = IFN_2Dscan("IFN_Models.Mixed_IFN_ppCompatible",
+               ["Ib",model_doseA],
+               ["Ia",model_doseB],
+               [0,300,3600],
+               ['TotalpSTAT','pSTAT1'],
+               doseNorm=6.022E23*1E-5,
+               custom_params=Bbest_params_list,
+               suppress=True) 
+    Tmodel_sim5 = [[sf*el[2] for el in row] for row in Tmodel_res5]
+    Tmodel_sim20 = [[sf*el[2] for el in row] for row in Tmodel_res20]
+    Tmodel_sim60 = [[sf*el[2] for el in row] for row in Tmodel_res60]
+    Bmodel_sim5 = [[sf*el[2] for el in row] for row in Bmodel_res5]
+    Bmodel_sim20 = [[sf*el[2] for el in row] for row in Bmodel_res20]
+    Bmodel_sim60 = [[sf*el[2] for el in row] for row in Bmodel_res60]
+
+    # Plot T cell specific fits
+    axes1[0].set(xscale='log',yscale='linear')
+    axes1[0].set_xlabel('IFN (pM)')
+    axes1[0].set_ylabel('pSTAT')
+    axes1[0].set_title('T cells with IFNa')
+    axes1[1].set(xscale='log',yscale='linear')
+    axes1[1].set_xlabel('IFN (pM)')
+    axes1[1].set_ylabel('pSTAT')
+    axes1[1].set_title('T cells with IFNb')
+    # Plot the training data
+    sns.scatterplot(x=train_doses[1:],y=[r[0] for r in experimental_Tcell[1:]], ax=axes1[0], legend="full", label="Training Data", color=alpha_palette[0])
+    sns.scatterplot(x=train_doses[1:],y=experimental_Tcell[0][1:], ax=axes1[1], legend="full", label="Training Data", color=beta_palette[0])
+    # Plot the model at 20 min
+    sns.lineplot(x=np.divide(model_doseA,6.022E23*1E-5*1E-12)[1:],y=[el[0] for el in Tmodel_sim20[1:]], ax=axes1[0], legend="full",label="Model",color=alpha_palette[1])
+    sns.lineplot(x=np.divide(model_doseB,6.022E23*1E-5*1E-12)[1:],y=Tmodel_sim20[0][1:],ax=axes1[1], legend="full",label="Model",color=beta_palette[1]) 
+    # Plot the testing data at 20 min    
+    sns.scatterplot(x=test_doses_alpha[1::], y=Ttest_alpha_DR20[1::], ax=axes1[0], legend="full", label="Testing Data", color=alpha_palette[2])
+    sns.scatterplot(x=test_doses_beta[1::], y=Ttest_beta_DR20[1::], ax=axes1[1], legend="full", label="Testing Data", color=beta_palette[2])
+     
+# Plot B cell specific fits
+    axes2[0].set(xscale='log',yscale='linear')
+    axes2[0].set_xlabel('IFN (pM)')
+    axes2[0].set_ylabel('pSTAT')
+    axes2[0].set_title('B cells with IFNa')
+    axes2[1].set(xscale='log',yscale='linear')
+    axes2[1].set_xlabel('IFN (pM)')
+    axes2[1].set_ylabel('pSTAT')
+    axes2[1].set_title('B cells with IFNb')
+    # Plot the training data at 20 min
+    sns.scatterplot(x=train_doses[1:],y=[r[0] for r in experimental_Bcell[1:]], ax=axes2[0], legend="full", label="Training Data", color=alpha_palette[0])
+    sns.scatterplot(x=train_doses[1:],y=experimental_Bcell[0][1:], ax=axes2[1], legend="full", label="Training Data", color=beta_palette[0])
+    # Plot the model at 20 min
+    sns.lineplot(x=np.divide(model_doseA,6.022E23*1E-5*1E-12)[1:],y=[el[0] for el in Bmodel_sim20[1:]], ax=axes2[0], legend="full",label="Model",color=alpha_palette[1])
+    sns.lineplot(x=np.divide(model_doseB,6.022E23*1E-5*1E-12)[1:],y=Bmodel_sim20[0][1:],ax=axes2[1], legend="full",label="Model",color=beta_palette[1]) 
+    # Plot the testing data at 20 min    
+    sns.scatterplot(x=test_doses_alpha[1::], y=Btest_alpha_DR20[1::], ax=axes2[0], legend="full", label="Testing Data", color=alpha_palette[2])
+    sns.scatterplot(x=test_doses_beta[1::], y=Btest_beta_DR20[1::], ax=axes2[1], legend="full", label="Testing Data", color=beta_palette[2])
+    
+# Plot 5, 20 and 60 minute simulated response and data for IFNa and IFNb
+    alpha_palette = sns.color_palette("Reds",5)
+    beta_palette = sns.color_palette("Greens",5)
+    
+    # Plot the comparison
+    axes3[0].set(xscale='log',yscale='linear')
+    axes3[0].set_xlabel('IFN (pM)')
+    axes3[0].set_ylabel('pSTAT')
+    axes3[0].set_title('T cells')
+    axes3[1].set(xscale='log',yscale='linear')
+    axes3[1].set_xlabel('IFN (pM)')
+    axes3[1].set_ylabel('pSTAT')
+    axes3[1].set_title('B cells')
+    # Plot the training data for each cell type
+    sns.scatterplot(x=train_doses[1:],y=[r[0] for r in experimental_Tcell[1:]], ax=axes3[0], legend=False, label="Training Data", color=alpha_palette[0])
+    sns.scatterplot(x=train_doses[1:],y=experimental_Tcell[0][1:], ax=axes3[0], legend=False, label="Training Data", color=beta_palette[0])
+    
+    sns.scatterplot(x=train_doses[1:],y=[r[0] for r in experimental_Bcell[1:]], ax=axes3[1], legend=False, label="Training Data", color=alpha_palette[0])
+    sns.scatterplot(x=train_doses[1:],y=experimental_Bcell[0][1:], ax=axes3[1], legend=False, label="Training Data", color=beta_palette[0])
+    
+    # Plot the models for T cell   
+    sns.lineplot(x=np.divide(model_doseA,6.022E23*1E-5*1E-12)[1:],y=[el[0] for el in Tmodel_sim5[1:]], ax=axes3[0], legend=False,label="5 min",color=alpha_palette[1])
+    sns.lineplot(x=np.divide(model_doseB,6.022E23*1E-5*1E-12)[1:],y=Tmodel_sim5[0][1:],ax=axes3[0], legend=False,label="5 min",color=beta_palette[1]) 
+    sns.lineplot(x=np.divide(model_doseA,6.022E23*1E-5*1E-12)[1:],y=[el[0] for el in Tmodel_sim20[1:]], ax=axes3[0], legend=False,label="20 min",color=alpha_palette[2])
+    sns.lineplot(x=np.divide(model_doseB,6.022E23*1E-5*1E-12)[1:],y=Tmodel_sim20[0][1:],ax=axes3[0], legend=False,label="20 min",color=beta_palette[2]) 
+    sns.lineplot(x=np.divide(model_doseA,6.022E23*1E-5*1E-12)[1:],y=[el[0] for el in Tmodel_sim60[1:]], ax=axes3[0], legend=False,label="60 min",color=alpha_palette[3])
+    sns.lineplot(x=np.divide(model_doseB,6.022E23*1E-5*1E-12)[1:],y=Tmodel_sim60[0][1:],ax=axes3[0], legend=False,label="60 min",color=beta_palette[3]) 
+    
+    # Plot the testing data for T cells
+    #sns.scatterplot(x=test_doses_alpha[1::], y=Ttest_alpha_DR5[1::], ax=axes3[0], legend=False, label="Testing Data 5 min", color=alpha_palette[4],marker='s')
+    #sns.scatterplot(x=test_doses_beta[1::], y=Ttest_beta_DR5[1::], ax=axes3[0], legend=False, label="Testing Data 5 min", color=beta_palette[4],marker='s')    
+    #sns.scatterplot(x=test_doses_alpha[1::], y=Ttest_alpha_DR20[1::], ax=axes3[0], legend=False, label="Testing Data 20 min", color=alpha_palette[4])
+    #sns.scatterplot(x=test_doses_beta[1::], y=Ttest_beta_DR20[1::], ax=axes3[0], legend=False, label="Testing Data 20 min", color=beta_palette[4])
+    #sns.scatterplot(x=test_doses_alpha[1::], y=Ttest_alpha_DR60[1::], ax=axes3[0], legend=False, label="Testing Data 60 min", color=alpha_palette[4],marker='v')
+    #sns.scatterplot(x=test_doses_beta[1::], y=Ttest_beta_DR60[1::], ax=axes3[0], legend=False, label="Testing Data 60 min", color=beta_palette[4],marker='v')
+
+    # Plot the model sims for B cells
+    sns.lineplot(x=np.divide(model_doseA,6.022E23*1E-5*1E-12)[1:],y=[el[0] for el in Bmodel_sim5[1:]], ax=axes3[1], legend=False,label="5 min",color=alpha_palette[1])
+    sns.lineplot(x=np.divide(model_doseB,6.022E23*1E-5*1E-12)[1:],y=Bmodel_sim5[0][1:],ax=axes3[1], legend=False,label="5 min",color=beta_palette[1]) 
+    sns.lineplot(x=np.divide(model_doseA,6.022E23*1E-5*1E-12)[1:],y=[el[0] for el in Bmodel_sim20[1:]], ax=axes3[1], legend=False,label="20 min",color=alpha_palette[2])
+    sns.lineplot(x=np.divide(model_doseB,6.022E23*1E-5*1E-12)[1:],y=Bmodel_sim20[0][1:],ax=axes3[1], legend=False,label="20 min",color=beta_palette[2]) 
+    sns.lineplot(x=np.divide(model_doseA,6.022E23*1E-5*1E-12)[1:],y=[el[0] for el in Bmodel_sim60[1:]], ax=axes3[1], legend=False,label="60 min",color=alpha_palette[3])
+    sns.lineplot(x=np.divide(model_doseB,6.022E23*1E-5*1E-12)[1:],y=Bmodel_sim60[0][1:],ax=axes3[1], legend=False,label="60 min",color=beta_palette[3]) 
+
+    # Plot the testing data for B cells
+    #sns.scatterplot(x=test_doses_alpha[1::], y=Btest_alpha_DR5[1::], ax=axes3[1], legend=False, label="Testing Data 5 min", color=alpha_palette[4],marker='s')
+    #sns.scatterplot(x=test_doses_beta[1::], y=Btest_beta_DR5[1::], ax=axes3[1], legend=False, label="Testing Data 5 min", color=beta_palette[4],marker='s')    
+    #sns.scatterplot(x=test_doses_alpha[1::], y=Btest_alpha_DR20[1::], ax=axes3[1], legend=False, label="Testing Data 20 min", color=alpha_palette[4])
+    #sns.scatterplot(x=test_doses_beta[1::], y=Btest_beta_DR20[1::], ax=axes3[1], legend=False, label="Testing Data 20 min", color=beta_palette[4])
+    #sns.scatterplot(x=test_doses_alpha[1::], y=Btest_alpha_DR60[1::], ax=axes3[1], legend=False, label="Testing Data 60 min", color=alpha_palette[4],marker='v')
+    #sns.scatterplot(x=test_doses_beta[1::], y=Btest_beta_DR60[1::], ax=axes3[1], legend=False, label="Testing Data 60 min", color=beta_palette[4],marker='v')
+    
+    #axes3[0].legend(loc='center right', bbox_to_anchor=(1, 0.5))
+    #axes3[1].legend(loc='center left', bbox_to_anchor=(1, 0.5))
+
     simfig.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0)
     simfig.savefig(cwd+"\\Mixed_IFN_Figures\\"+"Out_of_sample.pdf")
+
+
+
+    
     return 0    
 # =============================================================================
 # NK cells
-    #best_params_list = stepwise_fit([['R2',200,12000],['R1',200,12000],['kSOCSon',1E-7,1E-4],['kpa',1E-7,1E-4]],experimental_NKcell,12)
-    best_params_list = [['R1', 200.0], ['R2', 3418.181818181818], ['kSOCSon', 9.9999999999999995e-08], ['kpa', 9.9999999999999995e-08]]
-    #best_params_list = [['kpa', 0.0001], ['R2', 12000.0], ['kSOCSon', 9.1818181818181835e-06], ['R1', 4490.909090909091], ['pS', 727.27272727272725]]
-    # old values #best_params_list = [['R1', 200.0], ['R2', 3571.4285714285716], ['kpa', 8.0714285714285719e-07], ['kSOCSon', 9.9999999999999995e-08]]
+    #NKbest_params_list = stepwise_fit([['R2',200,12000],['R1',200,12000],['kSOCSon',1E-7,1E-4],['kpa',1E-7,1E-4]],experimental_NKcell,12)
+    NKbest_params_list = [['R1', 200.0], ['R2', 3418.181818181818], ['kSOCSon', 9.9999999999999995e-08], ['kpa', 9.9999999999999995e-08]]
+    #NKbest_params_list = [['kpa', 0.0001], ['R2', 12000.0], ['kSOCSon', 9.1818181818181835e-06], ['R1', 4490.909090909091], ['pS', 727.27272727272725]]
+    # old values #NKbest_params_list = [['R1', 200.0], ['R2', 3571.4285714285716], ['kpa', 8.0714285714285719e-07], ['kSOCSon', 9.9999999999999995e-08]]
     print("The best fit for NK cells was")
-    print(best_params_list)
+    print(NKbest_params_list)
     with open('stepwise_results.txt','a') as f:
         f.write("\nNK cell fit:\n")
-        f.write(str(best_params_list))
+        f.write(str(NKbest_params_list))
     
     res = IFN_2Dscan("IFN_Models.Mixed_IFN_ppCompatible",
                ["Ib",np.multiply([0,0.06,0.32,1.6,8,40,200,1000],1E-12*6.022E23*1E-5)],
@@ -554,10 +664,10 @@ def main():
                [0,300,600,900,1200],
                ['TotalpSTAT','pSTAT1'],
                doseNorm=6.022E23*1E-5,
-               custom_params=best_params_list,
+               custom_params=NKbest_params_list,
                suppress=True) 
     
-    sf = score_parameter(best_params_list,experimental_NKcell,sf_flag=True)[0]
+    sf = score_parameter(NKbest_params_list,experimental_NKcell,sf_flag=True)[0]
     res = np.multiply(res,sf)
     arcsinh_response = []
     for row in res:
@@ -595,7 +705,7 @@ def main():
                [0,300,600,900,1200],
                ['TotalpSTAT','pSTAT1'],
                doseNorm=6.022E23*1E-5,
-               custom_params=best_params_list,
+               custom_params=NKbest_params_list,
                suppress=True) 
     model_sim = [[sf*el[2] for el in row] for row in model_res]
     sns.lineplot(x=np.divide(model_doseA,6.022E23*1E-5*1E-12)[1:],y=[el[0] for el in model_sim[1:]], ax=axes3[0], legend="full",label="Model",color=alpha_palette[1])
@@ -618,7 +728,7 @@ def main():
     ax6.plot([0.06,0.32,1.6,8,40,200,1000],simulated_response[0][1:],'g')  
     
     props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
-    textstr = '\n'.join([r'{}={:.2E}'.format(r[0],r[1]) for r in best_params_list])
+    textstr = '\n'.join([r'{}={:.2E}'.format(r[0],r[1]) for r in NKbest_params_list])
     ax5.text(0.05, 0.95, textstr, transform=ax5.transAxes, fontsize=14,
         verticalalignment='top', bbox=props)
     ax6.text(0.05, 0.95, textstr, transform=ax6.transAxes, fontsize=14,
