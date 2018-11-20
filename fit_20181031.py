@@ -314,8 +314,9 @@ def main():
     test_NKcell_beta = np.subtract(test_NKcell_beta,np.mean(test_NKcell_beta[0]))
 
     # Normalize all data by globally maximal response
-    normfac2 = np.max([np.max(test_Tcell_alpha),np.max(test_Tcell_beta),np.max(test_Bcell_alpha),np.max(test_Bcell_beta),np.max(test_NKcell_alpha),np.max(test_NKcell_beta)])
-    #normfac2 = np.max(test_Bcell_beta)
+    #normfac2 = np.max([np.max(test_Tcell_alpha),np.max(test_Tcell_beta),np.max(test_Bcell_alpha),np.max(test_Bcell_beta),np.max(test_NKcell_alpha),np.max(test_NKcell_beta)])
+    normfac2 = np.max(test_Bcell_beta)/np.max(experimental_Bcell[0])
+    #
     test_Tcell_alpha = np.divide(test_Tcell_alpha,normfac2)
     test_Tcell_beta = np.divide(test_Tcell_beta,normfac2)
     test_Bcell_alpha = np.divide(test_Bcell_alpha,normfac2)
@@ -351,7 +352,7 @@ def main():
                custom_params=Tbest_params_list,
                suppress=True) 
     
-    sf = score_parameter(Tbest_params_list,experimental_Tcell,sf_flag=True)[0]
+    T_sf = score_parameter(Tbest_params_list,experimental_Tcell,sf_flag=True)[0]
     res = np.multiply(res,sf)
     arcsinh_response = []
     for row in res:
@@ -435,7 +436,7 @@ def main():
                custom_params=Bbest_params_list,
                suppress=True) 
     
-    sf = score_parameter(Bbest_params_list,experimental_Bcell,sf_flag=True)[0]
+    B_sf = score_parameter(Bbest_params_list,experimental_Bcell,sf_flag=True)[0]
     res = np.multiply(res,sf)
     arcsinh_response = []
     for row in res:
@@ -539,12 +540,12 @@ def main():
                doseNorm=6.022E23*1E-5,
                custom_params=Bbest_params_list,
                suppress=True) 
-    Tmodel_sim5 = [[sf*el[2] for el in row] for row in Tmodel_res5]
-    Tmodel_sim20 = [[sf*el[2] for el in row] for row in Tmodel_res20]
-    Tmodel_sim60 = [[sf*el[2] for el in row] for row in Tmodel_res60]
-    Bmodel_sim5 = [[sf*el[2] for el in row] for row in Bmodel_res5]
-    Bmodel_sim20 = [[sf*el[2] for el in row] for row in Bmodel_res20]
-    Bmodel_sim60 = [[sf*el[2] for el in row] for row in Bmodel_res60]
+    Tmodel_sim5 = [[T_sf*el[2] for el in row] for row in Tmodel_res5]
+    Tmodel_sim20 = [[T_sf*el[2] for el in row] for row in Tmodel_res20]
+    Tmodel_sim60 = [[T_sf*el[2] for el in row] for row in Tmodel_res60]
+    Bmodel_sim5 = [[B_sf*el[2] for el in row] for row in Bmodel_res5]
+    Bmodel_sim20 = [[B_sf*el[2] for el in row] for row in Bmodel_res20]
+    Bmodel_sim60 = [[B_sf*el[2] for el in row] for row in Bmodel_res60]
 
     # Plot T cell specific fits
     axes1[0].set(xscale='log',yscale='linear')
