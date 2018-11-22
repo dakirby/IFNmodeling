@@ -188,4 +188,5 @@ def sample_incomplete_sim(results_dir, burn_in, down_sample):
     print("All samples were combined and written to complete_samples.csv in results directory")
     print("File chain_lengths.txt written to results directory to allow further reanalysis")
 
-
+resample_simulation("/media/homes/dkirby/Documents/IFN/IFNmodeling/MCMC_Results/", 0.2, 8, 
+                        check_convergence=True, plot_autocorr=True, check_corr=True)

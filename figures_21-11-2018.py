@@ -16,11 +16,12 @@ script_dir = os.path.dirname(__file__)
 results_dir = os.path.join(script_dir, 'Paper_Figures/')
 if not os.path.isdir(results_dir):
     os.makedirs(results_dir)
+import pandas as pd
 import seaborn as sns
 sns.set_style("ticks")
 plt.close('all')
+
 # Import data
-import pandas as pd
 try:
     data = pd.read_csv("IFNmodeling\MacParland_Extended.csv")
 except FileNotFoundError:
@@ -28,7 +29,27 @@ except FileNotFoundError:
         data = pd.read_csv("MacParland_Extended.csv")
     except:
         raise
+IFN_exps = [data.loc[(data.loc[:,'Dose (pM)']==10) & (data.loc[:,'Interferon']=="Alpha"),['0','5','15','30','60']].values[0],
+            data.loc[(data.loc[:,'Dose (pM)']==10) & (data.loc[:,'Interferon']=="Beta"),['0','5','15','30','60']].values[0],
+            data.loc[(data.loc[:,'Dose (pM)']==90) & (data.loc[:,'Interferon']=="Alpha"),['0','5','15','30','60']].values[0],
+            data.loc[(data.loc[:,'Dose (pM)']==90) & (data.loc[:,'Interferon']=="Beta"),['0','5','15','30','60']].values[0],
+            data.loc[(data.loc[:,'Dose (pM)']==600) & (data.loc[:,'Interferon']=="Alpha"),['0','5','15','30','60']].values[0],
+            data.loc[(data.loc[:,'Dose (pM)']==600) & (data.loc[:,'Interferon']=="Beta"),['0','5','15','30','60']].values[0],
+            data.loc[(data.loc[:,'Dose (pM)']==4000) & (data.loc[:,'Interferon']=="Alpha"),['15','30','60']].values[0],
+            data.loc[(data.loc[:,'Dose (pM)']==2000) & (data.loc[:,'Interferon']=="Beta"),['5','15','30','60']].values[0],
+            data.loc[(data.loc[:,'Dose (pM)']==8000) & (data.loc[:,'Interferon']=="Alpha"),['15','30','60']].values[0],
+            data.loc[(data.loc[:,'Dose (pM)']==11000) & (data.loc[:,'Interferon']=="Beta"),['5','15','30','60']].values[0]]
 
+IFN_sigmas =[data.loc[(data.loc[:,'Dose (pM)']==10) & (data.loc[:,'Interferon']=="Alpha_std"),['0','5','15','30','60']].values[0],
+             data.loc[(data.loc[:,'Dose (pM)']==10) & (data.loc[:,'Interferon']=="Beta_std"),['0','5','15','30','60']].values[0],
+             data.loc[(data.loc[:,'Dose (pM)']==90) & (data.loc[:,'Interferon']=="Alpha_std"),['0','5','15','30','60']].values[0],
+             data.loc[(data.loc[:,'Dose (pM)']==90) & (data.loc[:,'Interferon']=="Beta_std"),['0','5','15','30','60']].values[0],
+             data.loc[(data.loc[:,'Dose (pM)']==600) & (data.loc[:,'Interferon']=="Alpha_std"),['0','5','15','30','60']].values[0],
+             data.loc[(data.loc[:,'Dose (pM)']==600) & (data.loc[:,'Interferon']=="Beta_std"),['0','5','15','30','60']].values[0],
+             data.loc[(data.loc[:,'Dose (pM)']==4000) & (data.loc[:,'Interferon']=="Alpha_std"),['15','30','60']].values[0],
+             data.loc[(data.loc[:,'Dose (pM)']==2000) & (data.loc[:,'Interferon']=="Beta_std"),['5','15','30','60']].values[0],
+             data.loc[(data.loc[:,'Dose (pM)']==8000) & (data.loc[:,'Interferon']=="Alpha_std"),['15','30','60']].values[0],
+             data.loc[(data.loc[:,'Dose (pM)']==11000) & (data.loc[:,'Interferon']=="Beta_std"),['5','15','30','60']].values[0]]
 nPost=14#35
 pLimit=97.5
 # Best fit to Sagar's data: 25-09-2018

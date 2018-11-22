@@ -16,8 +16,6 @@ import numpy as np
 import timeit #For profiling
 plt.close('all')
 
-
-
 # Run simulation
 def main(tc=False, dr=False, multi_dr=False, multi_tc=False, 
          wtc=False, wctc=False, wdr=False, wmulti_dr=False,
@@ -29,6 +27,7 @@ def main(tc=False, dr=False, multi_dr=False, multi_tc=False,
         pyplt.timecourse(IFNbModel, t, [['T',"Tb"],['TotalpSTAT',"Total pSTAT"],
                                         ['BoundSOCS',"Bound SOCS"]],
                          ['Time (s)','Molecules/cell'],title='IFNb Time Course')
+        plt.show()
     if multi_tc==True:
         pyplt.compare_timecourse([IFNaModel], 
                                  [{'I':10E-12*6.022E23*1E-5},{'I':90E-12*6.022E23*1E-5},{'I':600E-12*6.022E23*1E-5}],
@@ -150,5 +149,5 @@ def main(tc=False, dr=False, multi_dr=False, multi_tc=False,
 
 
 if __name__ == "__main__":
-   main(dr=True)
-   
+   main(tc=True)
+ 
