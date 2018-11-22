@@ -187,8 +187,13 @@ def IFN_2Dscan(modelfile, param1, param2, t_list, spec, custom_params=False,
     return response_image
 
 def MSE(alpha_simulated_scan, alpha_experimental_scan, beta_simulated_scan, beta_experimental_scan,sf_flag=False):
-    def score(sf, alpha_sim, alpha_exp, beta_sim, beta_exp):        
-        score = np.sum(np.square(np.subtract(np.multiply(alpha_sim,sf), alpha_exp)))+np.sum(np.square(np.subtract(np.multiply(beta_sim,sf), beta_exp)))
+    def score(sf, alpha_sim, alpha_exp, beta_sim, beta_exp):    
+        weight_matrix = np.ones(np.shape(alpha_exp))
+        for i in range(len(weight_matrix[0])):
+            weight_matrix[-1][i] = 2
+            weight_matrix[-2][i] = 2
+            weight_matrix[-3][i] = 2
+        score = np.sum(np.square(np.multiply(weight_matrix,np.subtract(np.multiply(alpha_sim,sf), alpha_exp))))+np.sum(np.square(np.multiply(weight_matrix,np.subtract(np.multiply(beta_sim,sf), beta_exp))))
         return score
     optimal_score = minimize(score,[0.9],args=(alpha_simulated_scan, alpha_experimental_scan, beta_simulated_scan, beta_experimental_scan))['fun']
     if sf_flag==True:
