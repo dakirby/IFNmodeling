@@ -604,8 +604,8 @@ def bayesian_timecourse(samplefile, dose, end_time, sample_size, percent, spec, 
 #   [alpha_responses, beta_responses] (list) = the dose response curves
 #                       alpha_responses = [[mean curve, low curve, high curve] for each species]        
 # =============================================================================
-def bayesian_doseresponse(samplefile, doses, end_time, sample_size, percent, spec, priors, 
-                          rho, beta, suppress=False, dr_species=['I', 6.022E23, 1E-5]):
+def bayesian_doseresponse(samplefile, doses, end_time, sample_size, percent, spec, priors, rho,
+                          beta, suppress=False, dr_species=['I', 6.022E23, 1E-5], corr_flag=False):
     # Read samples
     samples = pd.read_csv(samplefile,index_col=0)
     # Check that function inputs are valid
@@ -622,6 +622,8 @@ def bayesian_doseresponse(samplefile, doses, end_time, sample_size, percent, spe
     beta_mod = ODE_system_beta.Model()
     # Choose 'global' best model (fits complete data optimally, not just dose-response data points)
     (best_model,best_gamma) = MAP(samplefile, priors, beta, rho)#best_model is a dict with parameter values and best_gamma is a float
+    if corr_flag==True:
+        print("The best model is {} with scale factor {}".format(best_model,best_gamma))
     # Make best_model into a list to compare to all model later
     best_model_list = [[variable_names[i], best_model[variable_names[i]]] for i in range(nVars) if variable_names[i] != 'gamma']
 
