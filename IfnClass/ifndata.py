@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Created on Sun Nov 25 10:05:14 2018
 
@@ -7,16 +6,12 @@ Created on Sun Nov 25 10:05:14 2018
 IfnData is the standardized python object for IFN data sets, used for fitting 
 and plotting data.
 """
-import pandas as pd
 import numpy as np
 import os
 import pickle
 import ast
+import ifndatabase.process_csv
 
-cwd = os.getcwd()
-parent_wd = cwd.split("IFNmodeling")[0]+"IFNmodeling\\"
-#sys.path.append(parent_wd)
-import IfnData
 
 class IfnData:
     """
@@ -44,57 +39,55 @@ class IfnData:
         max_dose = the maximum dose used in the entire experiment
     
     """
-               
+
     # Initializer / Instance Attributes
     def __init__(self, name):
         self.name = name
         self.data_set = self.load_data()
         self.conditions = self.load_conditions()
-    
+
     # Instance methods
     def load_data(self):
         cwd = os.getcwd()
-        parent_wd = cwd.split("IFNmodeling")[0]+"IFNmodeling\\"
+        parent_wd = cwd.split("IFNmodeling")[0] + "IFNmodeling\\"
         # attempt loading DataFrame object
         try:
-            return pickle.load(open(parent_wd+"IfnData\{}.p".format(self.name), 'rb'))
+            return pickle.load(open(parent_wd + "ifndatabase\{}.p".format(self.name), 'rb'))
         except FileNotFoundError:
             # Attempt initializing module and then importing DataFrame object
             try:
-                from IfnData.process_csv import build_DataFrames
                 print("Trying to build data sets")
-                build_DataFrames(parent_wd+"IfnData\\")
-                return pickle.load(open(parent_wd+"IfnData\{}.p".format(self.name), 'rb'))
+                ifndatabase.process_csv.build_database(parent_wd + "ifndatabase\\")
+                return pickle.load(open(parent_wd + "ifndatabase\{}.p".format(self.name), 'rb'))
             except FileNotFoundError:
                 # Attempt loading a local DataFrame object
                 try:
                     return pickle.load(open("{}.p".format(self.name), 'rb'))
                 except FileNotFoundError:
                     raise FileNotFoundError("Could not find the data file specified")
+
     def load_conditions(self):
         cwd = os.getcwd()
-        parent_wd = cwd.split("IFNmodeling")[0]+"IFNmodeling\\"
+        parent_wd = cwd.split("IFNmodeling")[0] + "IFNmodeling\\"
         # attempt loading DataFrame object
         try:
-            with open(parent_wd+"IfnData\{}.txt".format(self.name),'r') as inf:
+            with open(parent_wd + "ifndatabase\{}.txt".format(self.name), 'r') as inf:
                 return ast.literal_eval(inf.read())
         except FileNotFoundError:
             # Attempt loading a local conditions file if none found in data dir
             try:
-                with open("{}.txt".format(self.name),'r') as inf:
+                with open("{}.txt".format(self.name), 'r') as inf:
                     return ast.literal_eval(inf.read())
             # Return default None if no experimental conditions provided
             except FileNotFoundError:
                 return None
-        
+
+    @property
     def get_dose_range(self):
-        dose_spec_names = [dose_species for dose_species, dose_species_data in self.data_set.groupby(level='Dose_Species')]
+        dose_spec_names = [dose_species for dose_species, dose_species_data in
+                           self.data_set.groupby(level='Dose_Species')]
         dose_list = [list(self.data_set.loc[spec].index) for spec in dose_spec_names]
-        return (np.min(dose_list),np.max(dose_list))
+        return np.min(dose_list), np.max(dose_list)
 
 
-def load_Experimental_Data():
-    return IfnData("Experimental_Data")
-
-testData = IfnData("Experimental_Data")    
-                                                            
+testClass = IfnData("Experimental_Data")
