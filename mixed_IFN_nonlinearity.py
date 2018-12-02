@@ -65,7 +65,7 @@ def main():
     # Simulated linear additive expectation vs response
 # =============================================================================
 #     doses = [0]+list(np.logspace(-2,5))
-#     simulation = IFN_2Dscan("IFN_Models.Mixed_IFN_ppCompatible",
+#     simulation = IFN_2Dscan("ifnmodels.Mixed_IFN_ppCompatible",
 #                ["Ia",np.multiply(doses,1E-12*6.022E23*1E-5)],
 #                ["Ib",np.multiply(doses,1E-12*6.022E23*1E-5)],
 #                [0,300,900,1800,3600],
@@ -78,8 +78,8 @@ def main():
 # 
 #     # Comparison to linear sum of responses
 #     # Alpha linear
-#     from IFN_Models import IFN_alpha_altSOCS_ppCompatible
-#     from IFN_Models import IFN_beta_altSOCS_ppCompatible
+#     from ifnmodels import IFN_alpha_altSOCS_ppCompatible
+#     from ifnmodels import IFN_beta_altSOCS_ppCompatible
 # 
 #     alphaDR = doseresponse(IFN_alpha_altSOCS_ppCompatible, ['I', np.multiply(doses,1E-12*6.022E23*1E-5)],
 #                              [0,300,900,1800,3600], [['TotalpSTAT','pSTAT']],

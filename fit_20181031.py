@@ -146,7 +146,7 @@ def IFN_2Dscan(modelfile, param1, param2, t_list, spec, custom_params=False,
                 params.append([[param1[0],val1],[param2[0],val2]])        
 
     # Write modelfile
-    imported_model = __import__(modelfile,fromlist=['IFN_Models'])
+    imported_model = __import__(modelfile,fromlist=['ifnmodels'])
     py_output = export(imported_model.model, 'python')
     with open('ODE_system.py','w') as f:
         f.write(py_output)
@@ -199,7 +199,7 @@ def MSE(simulated_scan, experimental_scan,sf_flag=False):
 # experimental_scan (list) = 2D scan
 # returns the mean square error
 def score_parameter(p,experimental_scan,sf_flag=False):
-     res = IFN_2Dscan("IFN_Models.Mixed_IFN_ppCompatible",
+     res = IFN_2Dscan("ifnmodels.Mixed_IFN_ppCompatible",
             ["Ib",np.multiply([0,0.06,0.32,1.6,8,40,200,1000],1E-12*6.022E23*1E-5)],
             ["Ia",np.multiply([0,0.06,0.32,1.6,8,40,200,1000],1E-12*6.022E23*1E-5)],
             [0,300,600,900,1200],
@@ -343,7 +343,7 @@ def main():
         f.write(str(Tbest_params_list))
     
     # Plot best fit model as arcsinh heatmap
-    res = IFN_2Dscan("IFN_Models.Mixed_IFN_ppCompatible",
+    res = IFN_2Dscan("ifnmodels.Mixed_IFN_ppCompatible",
                ["Ib",np.multiply(train_doses,1E-12*6.022E23*1E-5)],
                ["Ia",np.multiply(train_doses,1E-12*6.022E23*1E-5)],
                [0,300,600,900,1200],
@@ -378,12 +378,12 @@ def main():
     model_doseA = np.multiply([0]+list(np.logspace(min_doseA,max_doseA,20)),6.022E23*1E-5*1E-12)
     model_doseB = np.multiply([0]+list(np.logspace(min_doseB,max_doseB,20)),6.022E23*1E-5*1E-12)
 # =============================================================================
-#     a_dr = np.multiply(sf,p_doseresponse("IFN_Models.Mixed_IFN_ppCompatible", ['Ia',model_doseA], 
+#     a_dr = np.multiply(sf,p_doseresponse("ifnmodels.Mixed_IFN_ppCompatible", ['Ia',model_doseA],
 #                                          np.multiply(test_times,60), [['TotalpSTAT','pSTAT1']],
 #                                          axes_labels = ['',''], title = '', suppress=True, 
 #                                          Norm=None, parameters=Tbest_params_list+[['Ib',0]], 
 #                                          dose_axis_norm=False, scan=0)[0])
-#     b_dr = np.multiply(sf,p_doseresponse("IFN_Models.Mixed_IFN_ppCompatible", ['Ib',model_doseB], 
+#     b_dr = np.multiply(sf,p_doseresponse("ifnmodels.Mixed_IFN_ppCompatible", ['Ib',model_doseB],
 #                                          np.multiply(test_times,60), [['TotalpSTAT','pSTAT1']],
 #                                          axes_labels = ['',''], title = '', suppress=True, 
 #                                          Norm=None, parameters=Tbest_params_list+[['Ia',0]], 
@@ -427,7 +427,7 @@ def main():
         f.write("\nB cell fit:\n")
         f.write(str(Bbest_params_list))
     
-    res = IFN_2Dscan("IFN_Models.Mixed_IFN_ppCompatible",
+    res = IFN_2Dscan("ifnmodels.Mixed_IFN_ppCompatible",
                ["Ib",np.multiply([0,0.06,0.32,1.6,8,40,200,1000],1E-12*6.022E23*1E-5)],
                ["Ia",np.multiply([0,0.06,0.32,1.6,8,40,200,1000],1E-12*6.022E23*1E-5)],
                [0,300,600,900,1200],
@@ -490,7 +490,7 @@ def main():
     Btest_beta_DR60 = [dose[5] for dose in test_Bcell_beta]     
     
 # Compute all necessary model simulations for smooth plotting model vs data
-    Tmodel_res5 = IFN_2Dscan("IFN_Models.Mixed_IFN_ppCompatible",
+    Tmodel_res5 = IFN_2Dscan("ifnmodels.Mixed_IFN_ppCompatible",
                ["Ib",model_doseA],
                ["Ia",model_doseB],
                [0,120,300],
@@ -499,7 +499,7 @@ def main():
                custom_params=Tbest_params_list,
                suppress=True) 
     
-    Tmodel_res20 = IFN_2Dscan("IFN_Models.Mixed_IFN_ppCompatible",
+    Tmodel_res20 = IFN_2Dscan("ifnmodels.Mixed_IFN_ppCompatible",
                ["Ib",model_doseA],
                ["Ia",model_doseB],
                [0,300,1200],
@@ -507,7 +507,7 @@ def main():
                doseNorm=6.022E23*1E-5,
                custom_params=Tbest_params_list,
                suppress=True) 
-    Tmodel_res60 = IFN_2Dscan("IFN_Models.Mixed_IFN_ppCompatible",
+    Tmodel_res60 = IFN_2Dscan("ifnmodels.Mixed_IFN_ppCompatible",
                ["Ib",model_doseA],
                ["Ia",model_doseB],
                [0,300,3600],
@@ -516,7 +516,7 @@ def main():
                custom_params=Tbest_params_list,
                suppress=True) 
     
-    Bmodel_res5 = IFN_2Dscan("IFN_Models.Mixed_IFN_ppCompatible",
+    Bmodel_res5 = IFN_2Dscan("ifnmodels.Mixed_IFN_ppCompatible",
                ["Ib",model_doseA],
                ["Ia",model_doseB],
                [0,120,300],
@@ -524,7 +524,7 @@ def main():
                doseNorm=6.022E23*1E-5,
                custom_params=Bbest_params_list,
                suppress=True) 
-    Bmodel_res20 = IFN_2Dscan("IFN_Models.Mixed_IFN_ppCompatible",
+    Bmodel_res20 = IFN_2Dscan("ifnmodels.Mixed_IFN_ppCompatible",
                ["Ib",model_doseA],
                ["Ia",model_doseB],
                [0,300,1200],
@@ -532,7 +532,7 @@ def main():
                doseNorm=6.022E23*1E-5,
                custom_params=Bbest_params_list,
                suppress=True) 
-    Bmodel_res60 = IFN_2Dscan("IFN_Models.Mixed_IFN_ppCompatible",
+    Bmodel_res60 = IFN_2Dscan("ifnmodels.Mixed_IFN_ppCompatible",
                ["Ib",model_doseA],
                ["Ia",model_doseB],
                [0,300,3600],
@@ -659,7 +659,7 @@ def main():
         f.write("\nNK cell fit:\n")
         f.write(str(NKbest_params_list))
     
-    res = IFN_2Dscan("IFN_Models.Mixed_IFN_ppCompatible",
+    res = IFN_2Dscan("ifnmodels.Mixed_IFN_ppCompatible",
                ["Ib",np.multiply([0,0.06,0.32,1.6,8,40,200,1000],1E-12*6.022E23*1E-5)],
                ["Ia",np.multiply([0,0.06,0.32,1.6,8,40,200,1000],1E-12*6.022E23*1E-5)],
                [0,300,600,900,1200],
@@ -700,7 +700,7 @@ def main():
     sns.scatterplot(x=train_doses[1:],y=[r[0] for r in experimental_NKcell[1:]], ax=axes3[0], legend="full", label="Training Data", color=alpha_palette[0])
     sns.scatterplot(x=train_doses[1:],y=experimental_NKcell[0][1:], ax=axes3[1], legend="full", label="Training Data", color=beta_palette[0])
     # Plot the model
-    model_res = IFN_2Dscan("IFN_Models.Mixed_IFN_ppCompatible",
+    model_res = IFN_2Dscan("ifnmodels.Mixed_IFN_ppCompatible",
                ["Ib",model_doseA],
                ["Ia",model_doseB],
                [0,300,600,900,1200],

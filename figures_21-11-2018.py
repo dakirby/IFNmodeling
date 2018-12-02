@@ -57,7 +57,7 @@ posterior_filename = 'MCMC_Results-22-11-2018/posterior_samples.csv'
 priors_dict={'R1':[100,12000,None,None],'R2':[100,12000,None,None],
               'kpa':[1.5E-8,10,np.log(1),4],'kSOCSon':[1.5E-11,0.07,np.log(1E-6),4],
               'k_d4':[4E-5,0.9,np.log(0.006),1.8],'kd4':[0.002,44,np.log(0.3),1.8]}
-modelfiles = ['IFN_Models.IFN_alpha_altSOCS_ppCompatible','IFN_Models.IFN_beta_altSOCS_ppCompatible']
+modelfiles = ['ifnmodels.IFN_alpha_altSOCS_ppCompatible','ifnmodels.IFN_beta_altSOCS_ppCompatible']
 # =============================================================================
 # # Detailed model
 # posterior_filename = 'MCMC_Results-03-10-2018/posterior_samples.csv'
@@ -67,7 +67,7 @@ modelfiles = ['IFN_Models.IFN_alpha_altSOCS_ppCompatible','IFN_Models.IFN_beta_a
 #              'kSTATbinding':[1E-11,1,np.log(1E-6),4],'kloc':[1E-5,10,np.log(1.25E-3),4],
 #              'kSOCSmRNA':[1E-7,10,np.log(1E-3),4],'mRNAdeg':[5E-8,10,np.log(5E-4),4],
 #              'mRNAtrans':[1E-7,10,np.log(1E-3),4],'kSOCS':[5E-7,10,np.log(5E-3),4]}
-# modelfiles = ['IFN_Models.IFN_detailed_model_alpha_ppCompatible','IFN_Models.IFN_detailed_model_beta_ppCompatible']
+# modelfiles = ['ifnmodels.IFN_detailed_model_alpha_ppCompatible','ifnmodels.IFN_detailed_model_beta_ppCompatible']
 # =============================================================================
 # =============================================================================
 # # Internalization sim
@@ -78,7 +78,7 @@ modelfiles = ['IFN_Models.IFN_alpha_altSOCS_ppCompatible','IFN_Models.IFN_beta_a
 #              'kIntBasal_r1':[1E-7,1E-1,None,None],'kIntBasal_r2':[2E-7,2E-1,None,None],
 #         'kint_IFN':[5E-7,5E-1,None,None],'krec_a1':[3E-7,3E-1,None,None],'krec_a2':[5E-6,5E0,None,None],
 #         'krec_b1':[1E-7,1E-1,None,None],'krec_b2':[1E-6,1E0,None,None]}
-# modelfiles = ['IFN_Models.IFN_alpha_altSOCS_Internalization_ppCompatible','IFN_Models.IFN_beta_altSOCS_Internalization_ppCompatible']
+# modelfiles = ['ifnmodels.IFN_alpha_altSOCS_Internalization_ppCompatible','ifnmodels.IFN_beta_altSOCS_Internalization_ppCompatible']
 # =============================================================================
 # =============================================================================
 # # Limited Internalization Sim
@@ -88,18 +88,18 @@ modelfiles = ['IFN_Models.IFN_alpha_altSOCS_ppCompatible','IFN_Models.IFN_beta_a
 #              'k_d4':[4E-5,0.9,np.log(0.006),1.8],
 #              'krec_a1':[3E-7,3E-1,None,None],'krec_a2':[5E-6,5E0,None,None],
 #              'krec_b1':[1E-7,1E-1,None,None],'krec_b2':[1E-6,1E0,None,None]}
-# modelfiles = ['IFN_Models.IFN_alpha_altSOCS_Internalization_ppCompatible','IFN_Models.IFN_beta_altSOCS_Internalization_ppCompatible']
+# modelfiles = ['ifnmodels.IFN_alpha_altSOCS_Internalization_ppCompatible','ifnmodels.IFN_beta_altSOCS_Internalization_ppCompatible']
 # =============================================================================
 
 
 # Make sure modelfile is up to date
 # Write modelfiles
 from pysb.export import export
-alpha_model = __import__(modelfiles[0],fromlist=['IFN_Models'])
+alpha_model = __import__(modelfiles[0],fromlist=['ifnmodels'])
 py_output = export(alpha_model.model, 'python')
 with open('ODE_system_alpha.py','w') as f:
     f.write(py_output)
-beta_model = __import__(modelfiles[1],fromlist=['IFN_Models'])
+beta_model = __import__(modelfiles[1],fromlist=['ifnmodels'])
 py_output = export(beta_model.model, 'python')
 with open('ODE_system_beta.py','w') as f:
     f.write(py_output)

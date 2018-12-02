@@ -24,7 +24,7 @@ class IfnData:
     name : string
         The name of the pandas DataFrame pickled object containing the data
     Attributes
-    -------
+    ----------
     name : string
         The filename used to find source files for this IfnData instance
     data_set : DataFrame
@@ -34,7 +34,7 @@ class IfnData:
         parameters and values at which the experiments were performed
     Methods
     -------
-    get_dose_range : tuple = (min_dose, max_dose)
+    get_dose_range -> tuple = (min_dose, max_dose)
         min_dose = the minimum dose used in the entire experiment
         max_dose = the maximum dose used in the entire experiment
     

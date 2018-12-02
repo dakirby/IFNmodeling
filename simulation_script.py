@@ -3,15 +3,15 @@ from MCMC_reanalysis import *
 
 def main():
     plt.close('all')
-#    modelfiles = ['IFN_Models.IFN_alpha_altSOCS_ppCompatible','IFN_Models.IFN_beta_altSOCS_ppCompatible']
-    modelfiles = ['IFN_Models.IFN_alpha_altSOCS_Internalization_ppCompatible','IFN_Models.IFN_beta_altSOCS_Internalization_ppCompatible']
+#    modelfiles = ['ifnmodels.IFN_alpha_altSOCS_ppCompatible','ifnmodels.IFN_beta_altSOCS_ppCompatible']
+    modelfiles = ['ifnmodels.IFN_alpha_altSOCS_Internalization_ppCompatible','ifnmodels.IFN_beta_altSOCS_Internalization_ppCompatible']
 # Write modelfiles
     print("Importing models")
-    alpha_model = __import__(modelfiles[0],fromlist=['IFN_Models'])
+    alpha_model = __import__(modelfiles[0],fromlist=['ifnmodels'])
     py_output = export(alpha_model.model, 'python')
     with open('ODE_system_alpha.py','w') as f:
         f.write(py_output)
-    beta_model = __import__(modelfiles[1],fromlist=['IFN_Models'])
+    beta_model = __import__(modelfiles[1],fromlist=['ifnmodels'])
     py_output = export(beta_model.model, 'python')
     with open('ODE_system_beta.py','w') as f:
         f.write(py_output)

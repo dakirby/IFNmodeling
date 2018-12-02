@@ -146,7 +146,7 @@ def IFN_2Dscan(modelfile, param1, param2, t_list, spec, custom_params=False,
                 params.append([[param1[0],val1],[param2[0],val2]])        
 
     # Write modelfile
-    imported_model = __import__(modelfile,fromlist=['IFN_Models'])
+    imported_model = __import__(modelfile,fromlist=['ifnmodels'])
     py_output = export(imported_model.model, 'python')
     with open('ODE_system.py','w') as f:
         f.write(py_output)
@@ -210,11 +210,11 @@ def score_parameter(p,alpha_experimental_scan,beta_experimental_scan,sf_flag=Fal
     alpha_scan = []
     beta_scan = []
     for dose in range(len(test_alpha)):
-        alpha_scan.append(p_timecourse("IFN_Models.Mixed_IFN_ppCompatible", np.multiply(test_times,60),
+        alpha_scan.append(p_timecourse("ifnmodels.Mixed_IFN_ppCompatible", np.multiply(test_times,60),
                             [['TotalpSTAT','pSTAT1']], suppress=True, 
                             parameters=p+[['Ia',1E-12*6.022E23*1E-5*test_alpha[dose]],['Ib',0]], 
                             scan=0)['TotalpSTAT'])
-        beta_scan.append(p_timecourse("IFN_Models.Mixed_IFN_ppCompatible", np.multiply(test_times,60),
+        beta_scan.append(p_timecourse("ifnmodels.Mixed_IFN_ppCompatible", np.multiply(test_times,60),
                             [['TotalpSTAT','pSTAT1']], suppress=True, 
                             parameters=p+[['Ib',1E-12*6.022E23*1E-5*test_beta[dose]],['Ia',0]], 
                             scan=0)['TotalpSTAT'])
@@ -354,7 +354,7 @@ def main():
         f.write(str(Tbest_params_list))
 # =============================================================================
 #     # Plot best fit model as arcsinh heatmap
-#     res = IFN_2Dscan("IFN_Models.Mixed_IFN_ppCompatible",
+#     res = IFN_2Dscan("ifnmodels.Mixed_IFN_ppCompatible",
 #                ["Ib",np.multiply(train_doses,1E-12*6.022E23*1E-5)],
 #                ["Ia",np.multiply(train_doses,1E-12*6.022E23*1E-5)],
 #                [0,300,600,900,1200],
@@ -390,12 +390,12 @@ def main():
     model_doseA = np.multiply([0]+list(np.logspace(min_doseA,max_doseA,20)),6.022E23*1E-5*1E-12)
     model_doseB = np.multiply([0]+list(np.logspace(min_doseB,max_doseB,20)),6.022E23*1E-5*1E-12)
 # =============================================================================
-#     a_dr = np.multiply(sf,p_doseresponse("IFN_Models.Mixed_IFN_ppCompatible", ['Ia',model_doseA], 
+#     a_dr = np.multiply(sf,p_doseresponse("ifnmodels.Mixed_IFN_ppCompatible", ['Ia',model_doseA],
 #                                          np.multiply(test_times,60), [['TotalpSTAT','pSTAT1']],
 #                                          axes_labels = ['',''], title = '', suppress=True, 
 #                                          Norm=None, parameters=Tbest_params_list+[['Ib',0]], 
 #                                          dose_axis_norm=False, scan=0)[0])
-#     b_dr = np.multiply(sf,p_doseresponse("IFN_Models.Mixed_IFN_ppCompatible", ['Ib',model_doseB], 
+#     b_dr = np.multiply(sf,p_doseresponse("ifnmodels.Mixed_IFN_ppCompatible", ['Ib',model_doseB],
 #                                          np.multiply(test_times,60), [['TotalpSTAT','pSTAT1']],
 #                                          axes_labels = ['',''], title = '', suppress=True, 
 #                                          Norm=None, parameters=Tbest_params_list+[['Ia',0]], 
@@ -441,7 +441,7 @@ def main():
     B_sf = score_parameter(Bbest_params_list,test_Bcell_alpha,test_Bcell_beta,sf_flag=True)[0]
  
 # =============================================================================
-#     res = IFN_2Dscan("IFN_Models.Mixed_IFN_ppCompatible",
+#     res = IFN_2Dscan("ifnmodels.Mixed_IFN_ppCompatible",
 #                ["Ib",np.multiply([0,0.06,0.32,1.6,8,40,200,1000],1E-12*6.022E23*1E-5)],
 #                ["Ia",np.multiply([0,0.06,0.32,1.6,8,40,200,1000],1E-12*6.022E23*1E-5)],
 #                [0,300,600,900,1200],
@@ -489,7 +489,7 @@ def main():
     Btest_beta_DR60 = [dose[5] for dose in test_Bcell_beta]     
     
 # Compute all necessary model simulations for smooth plotting model vs data
-    Tmodel_res5 = IFN_2Dscan("IFN_Models.Mixed_IFN_ppCompatible",
+    Tmodel_res5 = IFN_2Dscan("ifnmodels.Mixed_IFN_ppCompatible",
                ["Ib",model_doseA],
                ["Ia",model_doseB],
                [0,120,300],
@@ -498,7 +498,7 @@ def main():
                custom_params=Tbest_params_list,
                suppress=True) 
     
-    Tmodel_res20 = IFN_2Dscan("IFN_Models.Mixed_IFN_ppCompatible",
+    Tmodel_res20 = IFN_2Dscan("ifnmodels.Mixed_IFN_ppCompatible",
                ["Ib",model_doseA],
                ["Ia",model_doseB],
                [0,300,1200],
@@ -506,7 +506,7 @@ def main():
                doseNorm=6.022E23*1E-5,
                custom_params=Tbest_params_list,
                suppress=True) 
-    Tmodel_res60 = IFN_2Dscan("IFN_Models.Mixed_IFN_ppCompatible",
+    Tmodel_res60 = IFN_2Dscan("ifnmodels.Mixed_IFN_ppCompatible",
                ["Ib",model_doseA],
                ["Ia",model_doseB],
                [0,300,3600],
@@ -515,7 +515,7 @@ def main():
                custom_params=Tbest_params_list,
                suppress=True) 
     
-    Bmodel_res5 = IFN_2Dscan("IFN_Models.Mixed_IFN_ppCompatible",
+    Bmodel_res5 = IFN_2Dscan("ifnmodels.Mixed_IFN_ppCompatible",
                ["Ib",model_doseA],
                ["Ia",model_doseB],
                [0,120,300],
@@ -523,7 +523,7 @@ def main():
                doseNorm=6.022E23*1E-5,
                custom_params=Bbest_params_list,
                suppress=True) 
-    Bmodel_res20 = IFN_2Dscan("IFN_Models.Mixed_IFN_ppCompatible",
+    Bmodel_res20 = IFN_2Dscan("ifnmodels.Mixed_IFN_ppCompatible",
                ["Ib",model_doseA],
                ["Ia",model_doseB],
                [0,300,1200],
@@ -531,7 +531,7 @@ def main():
                doseNorm=6.022E23*1E-5,
                custom_params=Bbest_params_list,
                suppress=True) 
-    Bmodel_res60 = IFN_2Dscan("IFN_Models.Mixed_IFN_ppCompatible",
+    Bmodel_res60 = IFN_2Dscan("ifnmodels.Mixed_IFN_ppCompatible",
                ["Ib",model_doseA],
                ["Ia",model_doseB],
                [0,300,3600],

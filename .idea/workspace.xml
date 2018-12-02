@@ -2,54 +2,43 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="e445a2e5-4ffe-4291-9345-013a47247733" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ifnclass/ifnmodel.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/IFNmodeling.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/IFNmodeling.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/20181031_pSTAT1_Table.csv" beforeDir="false" afterPath="$PROJECT_DIR$/20181031_pSTAT1_Table.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/20181113_B6_IFNs_Dose-Response.csv" beforeDir="false" afterPath="$PROJECT_DIR$/20181113_B6_IFNs_Dose-Response.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Experimental_Data.csv" beforeDir="false" afterPath="$PROJECT_DIR$/Experimental_Data.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Experimental_Data.py" beforeDir="false" afterPath="$PROJECT_DIR$/Experimental_Data.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Experimental_Data.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/Experimental_Data.xlsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Export_Models.py" beforeDir="false" afterPath="$PROJECT_DIR$/Export_Models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/IFN_Models/IFN_alpha_altSOCS.py" beforeDir="false" afterPath="$PROJECT_DIR$/IFN_Models/IFN_alpha_altSOCS.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/IFN_Models/IFN_alpha_altSOCS_Internalization_ppCompatible.py" beforeDir="false" afterPath="$PROJECT_DIR$/IFN_Models/IFN_alpha_altSOCS_Internalization_ppCompatible.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/IFN_Models/IFN_alpha_altSOCS_ppCompatible.py" beforeDir="false" afterPath="$PROJECT_DIR$/IFN_Models/IFN_alpha_altSOCS_ppCompatible.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/IFN_Models/IFN_beta_altSOCS.py" beforeDir="false" afterPath="$PROJECT_DIR$/IFN_Models/IFN_beta_altSOCS.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/IFN_Models/IFN_beta_altSOCS_Internalization_ppCompatible.py" beforeDir="false" afterPath="$PROJECT_DIR$/IFN_Models/IFN_beta_altSOCS_Internalization_ppCompatible.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/IFN_Models/IFN_beta_altSOCS_ppCompatible.py" beforeDir="false" afterPath="$PROJECT_DIR$/IFN_Models/IFN_beta_altSOCS_ppCompatible.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/IFN_Models/IFN_detailed_alt_SOCS_alpha_ppCompatible.py" beforeDir="false" afterPath="$PROJECT_DIR$/IFN_Models/IFN_detailed_alt_SOCS_alpha_ppCompatible.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/IFN_Models/IFN_detailed_alt_SOCS_beta_ppCompatible.py" beforeDir="false" afterPath="$PROJECT_DIR$/IFN_Models/IFN_detailed_alt_SOCS_beta_ppCompatible.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/IFN_Models/IFN_detailed_model_alpha.py" beforeDir="false" afterPath="$PROJECT_DIR$/IFN_Models/IFN_detailed_model_alpha.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/IFN_Models/IFN_detailed_model_alpha_ppCompatible.py" beforeDir="false" afterPath="$PROJECT_DIR$/IFN_Models/IFN_detailed_model_alpha_ppCompatible.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/IFN_Models/IFN_detailed_model_beta.py" beforeDir="false" afterPath="$PROJECT_DIR$/IFN_Models/IFN_detailed_model_beta.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/IFN_Models/IFN_detailed_model_beta_ppCompatible.py" beforeDir="false" afterPath="$PROJECT_DIR$/IFN_Models/IFN_detailed_model_beta_ppCompatible.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/IFN_Models/IFN_simplified_model_alpha.py" beforeDir="false" afterPath="$PROJECT_DIR$/IFN_Models/IFN_simplified_model_alpha.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/IFN_Models/IFN_simplified_model_alpha_ppCompatible.py" beforeDir="false" afterPath="$PROJECT_DIR$/IFN_Models/IFN_simplified_model_alpha_ppCompatible.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/IFN_Models/IFN_simplified_model_beta.py" beforeDir="false" afterPath="$PROJECT_DIR$/IFN_Models/IFN_simplified_model_beta.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/IFN_Models/IFN_simplified_model_beta_ppCompatible.py" beforeDir="false" afterPath="$PROJECT_DIR$/IFN_Models/IFN_simplified_model_beta_ppCompatible.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/IFN_Models/Mixed_IFN_ppCompatible.py" beforeDir="false" afterPath="$PROJECT_DIR$/IFN_Models/Mixed_IFN_ppCompatible.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/IFN_Models/SBML_alpha.sbml" beforeDir="false" afterPath="$PROJECT_DIR$/IFN_Models/SBML_alpha.sbml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/IFN_Models/SBML_beta.sbml" beforeDir="false" afterPath="$PROJECT_DIR$/IFN_Models/SBML_beta.sbml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/IFN_Models/detailed_SBML_alpha.sbml" beforeDir="false" afterPath="$PROJECT_DIR$/IFN_Models/detailed_SBML_alpha.sbml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/IFN_Models/detailed_SBML_beta.sbml" beforeDir="false" afterPath="$PROJECT_DIR$/IFN_Models/detailed_SBML_beta.sbml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/IFN_Models/IFN_alpha_altSOCS.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/IFN_alpha_altSOCS.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/IFN_Models/IFN_alpha_altSOCS_Internalization_ppCompatible.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/IFN_alpha_altSOCS_Internalization_ppCompatible.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/IFN_Models/IFN_alpha_altSOCS_ppCompatible.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/IFN_alpha_altSOCS_ppCompatible.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/IFN_Models/IFN_beta_altSOCS.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/IFN_beta_altSOCS.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/IFN_Models/IFN_beta_altSOCS_Internalization_ppCompatible.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/IFN_beta_altSOCS_Internalization_ppCompatible.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/IFN_Models/IFN_beta_altSOCS_ppCompatible.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/IFN_beta_altSOCS_ppCompatible.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/IFN_Models/IFN_detailed_alt_SOCS_alpha_ppCompatible.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/IFN_detailed_alt_SOCS_alpha_ppCompatible.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/IFN_Models/IFN_detailed_alt_SOCS_beta_ppCompatible.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/IFN_detailed_alt_SOCS_beta_ppCompatible.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/IFN_Models/IFN_detailed_model_alpha.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/IFN_detailed_model_alpha.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/IFN_Models/IFN_detailed_model_alpha_ppCompatible.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/IFN_detailed_model_alpha_ppCompatible.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/IFN_Models/IFN_detailed_model_beta.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/IFN_detailed_model_beta.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/IFN_Models/IFN_detailed_model_beta_ppCompatible.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/IFN_detailed_model_beta_ppCompatible.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/IFN_Models/IFN_simplified_model_alpha.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/IFN_simplified_model_alpha.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/IFN_Models/IFN_simplified_model_alpha_ppCompatible.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/IFN_simplified_model_alpha_ppCompatible.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/IFN_Models/IFN_simplified_model_beta.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/IFN_simplified_model_beta.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/IFN_Models/IFN_simplified_model_beta_ppCompatible.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/IFN_simplified_model_beta_ppCompatible.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/IFN_Models/Mixed_IFN_ppCompatible.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/Mixed_IFN_ppCompatible.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/IFN_Models/SBML_alpha.sbml" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/SBML_alpha.sbml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/IFN_Models/SBML_beta.sbml" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/SBML_beta.sbml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/IFN_Models/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/IFN_Models/detailed_SBML_alpha.sbml" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/detailed_SBML_alpha.sbml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/IFN_Models/detailed_SBML_beta.sbml" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/detailed_SBML_beta.sbml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/IFNa-IFNb_matrix.png" beforeDir="false" afterPath="$PROJECT_DIR$/IFNa-IFNb_matrix.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/IFNdata/20181031_pSTAT1_Table.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/IFNdata/20181031_pSTAT1_Table_Bcells.p" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/IFNdata/20181031_pSTAT1_Table_NKcells.p" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/IFNdata/20181031_pSTAT1_Table_Tcells.p" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/IFNdata/20181113_B6_IFNs_Dose_Response.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/IFNdata/20181113_B6_IFNs_Dose_Response_Bcells.p" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/IFNdata/20181113_B6_IFNs_Dose_Response_NonLymphocytes.p" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/IFNdata/20181113_B6_IFNs_Dose_Response_Tcells.p" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/IFNdata/Experimental_Data.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/IFNdata/Experimental_Data.p" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/IFNdata/MacParland_Extended.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/IFNdata/MacParland_Extended.p" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/IFNdata/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/IFNdata/process_csv.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/IfnClass/IfnDataClass.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/IfnClass/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/IfnClass/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/IfnClass/ifndata.py" beforeDir="false" afterPath="$PROJECT_DIR$/IfnClass/ifndata.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/LICENSE" beforeDir="false" afterPath="$PROJECT_DIR$/LICENSE" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MCMC_Results-03-10-2018/Reanalysis/Gelman-Rubin_Reanalysis.csv" beforeDir="false" afterPath="$PROJECT_DIR$/MCMC_Results-03-10-2018/Reanalysis/Gelman-Rubin_Reanalysis.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MCMC_Results-03-10-2018/Reanalysis/posterior_sample_reanalysis.csv" beforeDir="false" afterPath="$PROJECT_DIR$/MCMC_Results-03-10-2018/Reanalysis/posterior_sample_reanalysis.csv" afterDir="false" />
@@ -117,8 +106,24 @@
       <change beforePath="$PROJECT_DIR$/figures_21-11-2018.py" beforeDir="false" afterPath="$PROJECT_DIR$/figures_21-11-2018.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/fit_20181031.py" beforeDir="false" afterPath="$PROJECT_DIR$/fit_20181031.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/fit_20181113_B6.py" beforeDir="false" afterPath="$PROJECT_DIR$/fit_20181113_B6.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnclass/ifnmodel.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnclass/ifnmodel.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifndatabase/20181031_pSTAT1_Table.csv" beforeDir="false" afterPath="$PROJECT_DIR$/ifndatabase/20181031_pSTAT1_Table.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifndatabase/20181031_pSTAT1_Table_Bcells.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifndatabase/20181031_pSTAT1_Table_Bcells.p" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifndatabase/20181031_pSTAT1_Table_NKcells.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifndatabase/20181031_pSTAT1_Table_NKcells.p" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifndatabase/20181031_pSTAT1_Table_Tcells.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifndatabase/20181031_pSTAT1_Table_Tcells.p" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifndatabase/20181113_B6_IFNs_Dose_Response.csv" beforeDir="false" afterPath="$PROJECT_DIR$/ifndatabase/20181113_B6_IFNs_Dose_Response.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifndatabase/20181113_B6_IFNs_Dose_Response_Bcells.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifndatabase/20181113_B6_IFNs_Dose_Response_Bcells.p" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifndatabase/20181113_B6_IFNs_Dose_Response_NonLymphocytes.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifndatabase/20181113_B6_IFNs_Dose_Response_NonLymphocytes.p" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifndatabase/20181113_B6_IFNs_Dose_Response_Tcells.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifndatabase/20181113_B6_IFNs_Dose_Response_Tcells.p" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifndatabase/Experimental_Data.csv" beforeDir="false" afterPath="$PROJECT_DIR$/ifndatabase/Experimental_Data.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifndatabase/Experimental_Data.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifndatabase/Experimental_Data.p" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifndatabase/MacParland_Extended.csv" beforeDir="false" afterPath="$PROJECT_DIR$/ifndatabase/MacParland_Extended.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifndatabase/MacParland_Extended.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifndatabase/MacParland_Extended.p" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifndatabase/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifndatabase/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifndatabase/process_csv.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifndatabase/process_csv.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/init_multiprocessing.py" beforeDir="false" afterPath="$PROJECT_DIR$/init_multiprocessing.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mcmc.py" beforeDir="false" afterPath="$PROJECT_DIR$/mcmc.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mcmc_2.py" beforeDir="false" afterPath="$PROJECT_DIR$/mcmc_2.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mixed_IFN_nonlinearity.py" beforeDir="false" afterPath="$PROJECT_DIR$/mixed_IFN_nonlinearity.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/posterior_samples.csv" beforeDir="false" afterPath="$PROJECT_DIR$/posterior_samples.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pysb_parallel.py" beforeDir="false" afterPath="$PROJECT_DIR$/pysb_parallel.py" afterDir="false" />
@@ -143,8 +148,8 @@
       <file leaf-file-name="ifndata.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/ifnclass/ifndata.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="918">
-              <caret line="54" column="29" lean-forward="true" selection-start-line="54" selection-start-column="29" selection-end-line="54" selection-end-column="29" />
+            <state relative-caret-position="612">
+              <caret line="36" column="21" selection-start-line="36" selection-start-column="21" selection-end-line="36" selection-end-column="21" />
               <folding>
                 <element signature="e#160#178#0" expanded="true" />
               </folding>
@@ -152,14 +157,28 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="mcmc_2.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/mcmc_2.py">
-          <provider selected="true" editor-type-id="text-editor" />
+      <file leaf-file-name="ifnmodel.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/ifnclass/ifnmodel.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="319">
+              <caret line="54" column="40" selection-start-line="54" selection-start-column="40" selection-end-line="54" selection-end-column="40" />
+              <folding>
+                <element signature="e#0#44#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
         </entry>
       </file>
-      <file leaf-file-name="ifnmodel.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/ifnclass/ifnmodel.py">
-          <provider selected="true" editor-type-id="text-editor" />
+      <file leaf-file-name="mcmc_2.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/mcmc_2.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="166">
+              <caret line="885" column="45" selection-start-line="885" selection-start-column="45" selection-end-line="885" selection-end-column="45" />
+              <folding>
+                <element signature="e#305#332#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
         </entry>
       </file>
     </leaf>
@@ -188,7 +207,7 @@
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
     <option name="x" value="950" />
-    <option name="width" value="979" />
+    <option name="width" value="980" />
     <option name="height" value="1040" />
   </component>
   <component name="ProjectView">
@@ -208,6 +227,11 @@
               <item name="IFNmodeling" type="462c0819:PsiDirectoryNode" />
               <item name="ifnclass" type="462c0819:PsiDirectoryNode" />
             </path>
+            <path>
+              <item name="IFNmodeling" type="b2602c69:ProjectViewProjectNode" />
+              <item name="IFNmodeling" type="462c0819:PsiDirectoryNode" />
+              <item name="ifnmodels" type="462c0819:PsiDirectoryNode" />
+            </path>
           </expand>
           <select />
         </subPane>
@@ -217,7 +241,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
-    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+    <property name="settings.editor.selected.configurable" value="preferences.editor" />
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -231,7 +255,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.ifndata">
+  <component name="RunManager" selected="Python.ifnmodel">
     <configuration name="IfnDataClass" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="IFNmodeling" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -263,6 +287,24 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/ifnclass/ifndata.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+    </configuration>
+    <configuration name="ifnmodel" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="IFNmodeling" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/ifnclass" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/ifnclass/ifnmodel.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -309,9 +351,11 @@
       <item itemvalue="Python.IfnDataClass" />
       <item itemvalue="Python.ifndata" />
       <item itemvalue="Python.process_csv (1)" />
+      <item itemvalue="Python.ifnmodel" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.ifnmodel" />
         <item itemvalue="Python.ifndata" />
         <item itemvalue="Python.process_csv (1)" />
         <item itemvalue="Python.IfnDataClass" />
@@ -336,15 +380,14 @@
     <frame x="-7" y="-7" width="1550" height="838" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.25" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.16471355" />
       <window_info anchor="bottom" id="TODO" order="6" />
-      <window_info anchor="bottom" id="Event Log" order="7" side_tool="true" />
-      <window_info anchor="bottom" id="Find" order="1" weight="0.32965517" />
-      <window_info anchor="bottom" id="Run" order="2" weight="0.32965517" />
-      <window_info anchor="bottom" id="Version Control" order="7" />
+      <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.32965517" />
+      <window_info anchor="bottom" id="Version Control" order="9" />
       <window_info anchor="bottom" id="Python Console" order="7" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
-      <window_info anchor="bottom" id="Terminal" order="7" />
+      <window_info anchor="bottom" id="Terminal" order="8" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
@@ -353,48 +396,22 @@
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Find" order="1" weight="0.32965517" />
     </layout>
   </component>
   <component name="VcsContentAnnotationSettings">
     <option name="myLimit" value="2678400000" />
   </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <option name="time" value="1" />
+    </breakpoint-manager>
+  </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/IfnClass/IfnDataClass.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="238">
-          <caret line="18" column="18" selection-start-line="18" selection-start-column="18" selection-end-line="18" selection-end-column="18" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/IfnData/process_csv.py" />
-    <entry file="file://$PROJECT_DIR$/IfnDataSets/process_csv.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="204">
-          <caret line="14" column="41" lean-forward="true" selection-start-line="14" selection-start-column="41" selection-end-line="14" selection-end-column="41" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/IfnClass/IfnDataClass.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="170">
-          <caret line="10" column="13" lean-forward="true" selection-start-line="10" selection-start-column="13" selection-end-line="10" selection-end-column="13" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/ifndatabase/process_csv.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="353">
-          <caret line="121" lean-forward="true" selection-start-line="121" selection-end-line="121" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/ifnclass/ifnmodel.py">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
     <entry file="file://$PROJECT_DIR$/ifnclass/ifndata.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="918">
-          <caret line="54" column="29" lean-forward="true" selection-start-line="54" selection-start-column="29" selection-end-line="54" selection-end-column="29" />
+        <state relative-caret-position="544">
+          <caret line="36" column="21" selection-start-line="36" selection-start-column="21" selection-end-line="36" selection-end-column="21" />
           <folding>
             <element signature="e#160#178#0" expanded="true" />
           </folding>
@@ -402,7 +419,95 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/mcmc_2.py">
-      <provider selected="true" editor-type-id="text-editor" />
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2652">
+          <caret line="157" column="22" selection-start-line="157" selection-start-column="13" selection-end-line="157" selection-end-column="22" />
+          <folding>
+            <element signature="e#305#332#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnclass/ifnmodel.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="714">
+          <caret line="46" column="19" selection-start-line="46" selection-start-column="19" selection-end-line="46" selection-end-column="19" />
+          <folding>
+            <element signature="e#0#44#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnclass/ifndata.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="612">
+          <caret line="36" column="21" selection-start-line="36" selection-start-column="21" selection-end-line="36" selection-end-column="21" />
+          <folding>
+            <element signature="e#160#178#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/mcmc_2.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2669">
+          <caret line="157" column="22" selection-start-line="157" selection-start-column="13" selection-end-line="157" selection-end-column="22" />
+          <folding>
+            <element signature="e#305#332#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnclass/ifnmodel.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="782">
+          <caret line="46" column="19" lean-forward="true" selection-start-line="46" selection-start-column="19" selection-end-line="46" selection-end-column="19" />
+          <folding>
+            <element signature="e#0#44#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/IfnClass/IfnDataClass.py" />
+    <entry file="file://$PROJECT_DIR$/IfnData/process_csv.py" />
+    <entry file="file://$PROJECT_DIR$/IfnDataSets/process_csv.py" />
+    <entry file="file://$PROJECT_DIR$/IfnClass/IfnDataClass.py" />
+    <entry file="file://$PROJECT_DIR$/ifndatabase/process_csv.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="353">
+          <caret line="121" lean-forward="true" selection-start-line="121" selection-end-line="121" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnclass/ifndata.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="612">
+          <caret line="36" column="21" selection-start-line="36" selection-start-column="21" selection-end-line="36" selection-end-column="21" />
+          <folding>
+            <element signature="e#160#178#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/mcmc_2.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="166">
+          <caret line="885" column="45" selection-start-line="885" selection-start-column="45" selection-end-line="885" selection-end-column="45" />
+          <folding>
+            <element signature="e#305#332#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnclass/ifnmodel.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="319">
+          <caret line="54" column="40" selection-start-line="54" selection-start-column="40" selection-end-line="54" selection-end-column="40" />
+          <folding>
+            <element signature="e#0#44#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
     </entry>
   </component>
 </project>
