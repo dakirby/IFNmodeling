@@ -198,7 +198,7 @@ class IfnModel:
                 dataframe.set_index(['Observable', 'Dose_Species', 'Dose (pM)'], inplace=True)
                 return dataframe
             else:
-                row = [dataframe_labels[0], dataframe_labels[1]] + [(val/NA*volEC, ) for val in sim[obs]]
+                row = [dataframe_labels[0], dataframe_labels[1]] + [(val/NA*volEC, ) for val in sim[observable]]
                 dataframe = pd.DataFrame.from_records(row, columns=['Dose_Species', 'Dose (pM)']+times)
                 dataframe.set_index(['Dose_Species', 'Dose (pM)'], inplace=True)
                 return dataframe

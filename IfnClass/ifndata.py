@@ -19,6 +19,9 @@ class IfnData:
     experimental IFN dose-response or timecourse data. This is the expected 
     data object used for plotting and fitting within the IFNmodeling module.
 
+    The standard column labels are as follows:
+
+
     Parameters
     ----------
     name : string
