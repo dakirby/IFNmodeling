@@ -88,6 +88,3 @@ class IfnData:
                            self.data_set.groupby(level='Dose_Species')]
         dose_list = [list(self.data_set.loc[spec].index) for spec in dose_spec_names]
         return np.min(dose_list), np.max(dose_list)
-
-
-testClass = IfnData("Experimental_Data")
