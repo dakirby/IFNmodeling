@@ -1,7 +1,7 @@
 from pysb.export import export
 from collections import OrderedDict
 import copy
-from numpy import multiply, zeros
+from numpy import multiply, zeros, nan
 import pandas as pd
 
 
@@ -190,15 +190,13 @@ class IfnModel:
                 else:
                     return {observable: sim[observable]}
             # Build dataframe
-            NA=6.022E23
-            volEC=1E-5
             if type(observable) == list:
-                rows = [[obs, dataframe_labels[0], dataframe_labels[1]] + [(val/NA*volEC, ) for val in sim[obs]] for obs in observable]
+                rows = [[obs, dataframe_labels[0], dataframe_labels[1]] + [(val, nan) for val in sim[obs]] for obs in observable]
                 dataframe = pd.DataFrame.from_records(rows, columns=['Observable', 'Dose_Species', 'Dose (pM)']+times)
                 dataframe.set_index(['Observable', 'Dose_Species', 'Dose (pM)'], inplace=True)
                 return dataframe
             else:
-                row = [dataframe_labels[0], dataframe_labels[1]] + [(val/NA*volEC, ) for val in sim[observable]]
+                row = [(dataframe_labels[0], dataframe_labels[1], *[(val, nan) for val in sim[observable]])]
                 dataframe = pd.DataFrame.from_records(row, columns=['Dose_Species', 'Dose (pM)']+times)
                 dataframe.set_index(['Dose_Species', 'Dose (pM)'], inplace=True)
                 return dataframe
@@ -223,15 +221,13 @@ class IfnModel:
         if return_type == 'list':
             return dose_response_table
         elif return_type == 'dataframe':
-            NA = 6.022E23
-            volEC = 1E-5
             if type(observable) != list:
                 if dataframe_labels is None:
                     dataframe_labels == dose_species
                 data_dict = {'Dose_Species': [dataframe_labels for d in range(len(doses))],
                              'Dose (pM)': [d for d in doses]}
                 for t in range(len(times)):
-                    data_dict.update({str(times[t]): [(dose_response_table[observable][d][t]/NA*volEC, ) for d in range(len(doses))]})
+                    data_dict.update({str(times[t]): [(dose_response_table[observable][d][t], nan) for d in range(len(doses))]})
                 df = pd.DataFrame.from_dict(data_dict)
                 df.set_index(['Dose_Species', 'Dose (pM)'], inplace=True)
                 return df
@@ -244,7 +240,7 @@ class IfnModel:
                                  'Dose_Species': [dataframe_labels for _ in range(len(doses))],
                                  'Dose (pM)': [d for d in doses]}
                     for t in range(len(times)):
-                        data_dict.update({str(times[t]): [(dose_response_table[obs][d][t]/NA*volEC, ) for d in range(len(doses))]})
+                        data_dict.update({str(times[t]): [(dose_response_table[obs][d][t], nan) for d in range(len(doses))]})
                     df = pd.DataFrame.from_dict(data_dict)
                     total_df = total_df.append(df)
                 total_df.set_index(['Observable_Species', 'Dose_Species', 'Dose (pM)'], inplace=True)
@@ -252,6 +248,7 @@ class IfnModel:
 
 if __name__ == '__main__':
     testModel = IfnModel('IFN_alpha_altSOCS_ppCompatible')
-    dr = testModel.doseresponse([0, 5, 15, 30], ['T','TotalpSTAT'], 'I', multiply([1E-9, 1E-8, 1E-7], 6.022E18),
+    tc = testModel.timecourse([0, 5, 15, 30], 'TotalpSTAT', return_type='dataframe', dataframe_labels=['Alpha', 1])
+    dr = testModel.doseresponse([0, 5, 15, 30], ['T', 'TotalpSTAT'], 'I', multiply([1E-9, 1E-8, 1E-7], 6.022E18),
                                 return_type='dataframe', dataframe_labels='Alpha')
     print(dr)
