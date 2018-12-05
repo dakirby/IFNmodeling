@@ -6,7 +6,6 @@ Created on Sun Nov 25 10:05:14 2018
 IfnData is the standardized python object for IFN data sets, used for fitting 
 and plotting data.
 """
-import numpy as np
 import os
 import pickle
 import ast
@@ -85,9 +84,25 @@ class IfnData:
             except FileNotFoundError:
                 return None
 
-    @property
-    def get_dose_range(self):
+    def get_dose_species(self) -> list:
+        return list(self.data_set.index.levels[0])
+
+    def get_times(self) -> dict:
+        keys = self.get_dose_species()
+        return dict(zip(keys, [[int(el) for el in self.data_set.loc[key].columns.get_values().tolist()] for key in keys]))
+
+    def get_doses(self) -> dict:
+        keys = self.get_dose_species()
+
         dose_spec_names = [dose_species for dose_species, dose_species_data in
                            self.data_set.groupby(level='Dose_Species')]
         dose_list = [list(self.data_set.loc[spec].index) for spec in dose_spec_names]
-        return np.min(dose_list), np.max(dose_list)
+        return dict(zip(keys, dose_list))
+
+    def get_responses(self) -> dict:
+        datatable = {}
+        times = self.get_times()
+        for key, t in times.items():
+            t = [str(n) for n in t]
+            datatable.update({key: self.data_set.loc[key][t].values})
+        return datatable

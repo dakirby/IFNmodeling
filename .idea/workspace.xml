@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="e445a2e5-4ffe-4291-9345-013a47247733" name="Default" comment="">
+      <change afterPath="$PROJECT_DIR$/ifnclass/ifnfit.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/IFNmodeling.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/IFNmodeling.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
@@ -148,10 +149,10 @@
       <file leaf-file-name="ifndata.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/ifnclass/ifndata.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="914">
-              <caret line="92" column="51" selection-start-line="92" selection-start-column="51" selection-end-line="92" selection-end-column="51" />
+            <state relative-caret-position="136">
+              <caret line="8" selection-start-line="8" selection-end-line="8" />
               <folding>
-                <element signature="e#160#178#0" expanded="true" />
+                <element signature="e#160#169#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -160,8 +161,8 @@
       <file leaf-file-name="ifnmodel.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/ifnclass/ifnmodel.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="118">
-              <caret line="242" column="94" selection-start-line="242" selection-start-column="94" selection-end-line="242" selection-end-column="94" />
+            <state relative-caret-position="3995">
+              <caret line="239" column="31" selection-start-line="239" selection-start-column="31" selection-end-line="239" selection-end-column="31" />
               <folding>
                 <element signature="e#0#30#0" expanded="true" />
               </folding>
@@ -169,11 +170,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="ifnplot.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="ifnplot.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/ifnclass/ifnplot.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="293">
-              <caret line="228" column="4" selection-start-line="228" selection-start-column="4" selection-end-line="228" selection-end-column="4" />
+            <state relative-caret-position="3910">
+              <caret line="234" selection-start-line="231" selection-start-column="4" selection-end-line="234" />
               <folding>
                 <element signature="e#0#26#0" expanded="true" />
               </folding>
@@ -181,11 +182,14 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="figures_21-11-2018.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/figures_21-11-2018.py">
+      <file leaf-file-name="ifnfit.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/ifnclass/ifnfit.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="305">
-              <caret line="799" column="43" lean-forward="true" selection-start-line="799" selection-start-column="43" selection-end-line="799" selection-end-column="43" />
+            <state relative-caret-position="166">
+              <caret line="289" column="37" selection-start-line="289" selection-start-column="37" selection-end-line="289" selection-end-column="37" />
+              <folding>
+                <element signature="e#0#27#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -193,8 +197,8 @@
       <file leaf-file-name="mcmc_2.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/mcmc_2.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="812">
-              <caret line="928" column="19" selection-start-line="928" selection-start-column="19" selection-end-line="928" selection-end-column="19" />
+            <state relative-caret-position="-14348">
+              <caret line="60" selection-start-line="60" selection-end-line="61" />
               <folding>
                 <element signature="e#305#332#0" expanded="true" />
               </folding>
@@ -214,6 +218,8 @@
   <component name="FindInProjectRecents">
     <findStrings>
       <find>x()</find>
+      <find>OrderedDict</find>
+      <find>minim</find>
     </findStrings>
     <replaceStrings>
       <replace>t()</replace>
@@ -228,16 +234,19 @@
         <option value="$PROJECT_DIR$/IfnData/process_csv.py" />
         <option value="$PROJECT_DIR$/IfnDataSets/process_csv.py" />
         <option value="$PROJECT_DIR$/IfnClass/IfnDataClass.py" />
+        <option value="$PROJECT_DIR$/ifnclass/ifnplot.py" />
+        <option value="$PROJECT_DIR$/ifndatabase/MacParland_Extended.txt" />
+        <option value="$PROJECT_DIR$/ifndatabase/Experimental_Data.txt" />
+        <option value="$PROJECT_DIR$/ifnclass/ifnmodel.py" />
         <option value="$PROJECT_DIR$/ifndatabase/process_csv.py" />
         <option value="$PROJECT_DIR$/ifnclass/ifndata.py" />
-        <option value="$PROJECT_DIR$/ifnclass/ifnmodel.py" />
-        <option value="$PROJECT_DIR$/ifnclass/ifnplot.py" />
+        <option value="$PROJECT_DIR$/ifnclass/ifnfit.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
     <option name="x" value="950" />
-    <option name="width" value="980" />
+    <option name="width" value="979" />
     <option name="height" value="1040" />
   </component>
   <component name="ProjectView">
@@ -245,7 +254,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -261,16 +269,17 @@
             <path>
               <item name="IFNmodeling" type="b2602c69:ProjectViewProjectNode" />
               <item name="IFNmodeling" type="462c0819:PsiDirectoryNode" />
-              <item name="ifnmodels" type="462c0819:PsiDirectoryNode" />
+              <item name="ifndatabase" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../Pleiotropy Project/cellsignalling" />
     <property name="settings.editor.selected.configurable" value="preferences.keymap" />
   </component>
   <component name="RunDashboard">
@@ -285,25 +294,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.ifnplot">
-    <configuration name="IfnDataClass" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <module name="IFNmodeling" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/IfnClass" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/IfnClass/IfnDataClass.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-    </configuration>
+  <component name="RunManager" selected="Python.ifnfit">
     <configuration name="ifndata" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="IFNmodeling" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -317,6 +308,24 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/ifnclass/ifndata.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+    </configuration>
+    <configuration name="ifnfit" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="IFNmodeling" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/ifnclass" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/ifnclass/ifnfit.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -377,19 +386,19 @@
       <option name="MODULE_MODE" value="false" />
     </configuration>
     <list>
-      <item itemvalue="Python.IfnDataClass" />
       <item itemvalue="Python.ifndata" />
       <item itemvalue="Python.process_csv (1)" />
       <item itemvalue="Python.ifnmodel" />
       <item itemvalue="Python.ifnplot" />
+      <item itemvalue="Python.ifnfit" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.ifnplot" />
-        <item itemvalue="Python.ifnmodel" />
-        <item itemvalue="Python.ifndata" />
+        <item itemvalue="Python.ifnfit" />
         <item itemvalue="Python.process_csv (1)" />
-        <item itemvalue="Python.IfnDataClass" />
+        <item itemvalue="Python.ifnmodel" />
+        <item itemvalue="Python.ifnplot" />
+        <item itemvalue="Python.ifndata" />
       </list>
     </recent_temporary>
   </component>
@@ -422,13 +431,13 @@
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32965517" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.32965517" />
       <window_info anchor="bottom" id="Version Control" order="9" />
       <window_info anchor="bottom" id="Python Console" order="7" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.32965517" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="bottom" id="Terminal" order="8" />
-      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info id="Favorites" order="2" side_tool="true" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
@@ -447,16 +456,103 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="12" />
+      <option name="time" value="19" />
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/ifnclass/ifnmodel.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="4063">
+          <caret line="239" column="31" selection-start-line="239" selection-start-column="31" selection-end-line="239" selection-end-column="31" />
+          <folding>
+            <element signature="e#0#30#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnclass/ifnplot.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3978">
+          <caret line="234" lean-forward="true" selection-start-line="231" selection-start-column="4" selection-end-line="234" />
+          <folding>
+            <element signature="e#0#26#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/mcmc_2.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="12563">
+          <caret line="740" column="25" lean-forward="true" selection-start-line="740" selection-start-column="25" selection-end-line="740" selection-end-column="25" />
+          <folding>
+            <element signature="e#305#332#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnclass/ifnfit.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="5882">
+          <caret line="353" column="68" selection-start-line="353" selection-start-column="68" selection-end-line="353" selection-end-column="68" />
+          <folding>
+            <element signature="e#0#27#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnclass/ifndata.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1564">
+          <caret line="92" column="51" selection-start-line="92" selection-start-column="51" selection-end-line="92" selection-end-column="51" />
+          <folding>
+            <element signature="e#160#169#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnclass/ifnmodel.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="4114">
+          <caret line="242" column="94" selection-start-line="242" selection-start-column="94" selection-end-line="242" selection-end-column="94" />
+          <folding>
+            <element signature="e#0#30#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/figures_21-11-2018.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="13583">
+          <caret line="799" column="43" lean-forward="true" selection-start-line="799" selection-start-column="43" selection-end-line="799" selection-end-column="43" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/mcmc_2.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="15776">
+          <caret line="928" column="19" selection-start-line="928" selection-start-column="19" selection-end-line="928" selection-end-column="19" />
+          <folding>
+            <element signature="e#305#332#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnclass/ifnplot.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3876">
+          <caret line="228" column="4" selection-start-line="228" selection-start-column="4" selection-end-line="228" selection-end-column="4" />
+          <folding>
+            <element signature="e#0#26#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/ifnclass/ifndata.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1496">
           <caret line="92" column="51" selection-start-line="92" selection-start-column="51" selection-end-line="92" selection-end-column="51" />
           <folding>
-            <element signature="e#160#178#0" expanded="true" />
+            <element signature="e#160#169#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -499,7 +595,7 @@
         <state relative-caret-position="1496">
           <caret line="92" column="51" selection-start-line="92" selection-start-column="51" selection-end-line="92" selection-end-column="51" />
           <folding>
-            <element signature="e#160#178#0" expanded="true" />
+            <element signature="e#160#169#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -542,7 +638,7 @@
         <state relative-caret-position="697">
           <caret line="45" column="21" selection-start-line="45" selection-start-column="13" selection-end-line="45" selection-end-column="21" />
           <folding>
-            <element signature="e#160#178#0" expanded="true" />
+            <element signature="e#160#169#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -589,7 +685,7 @@
         <state relative-caret-position="765">
           <caret line="45" column="21" selection-start-line="45" selection-start-column="13" selection-end-line="45" selection-end-column="21" />
           <folding>
-            <element signature="e#160#178#0" expanded="true" />
+            <element signature="e#160#169#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -636,7 +732,7 @@
         <state relative-caret-position="544">
           <caret line="36" column="21" selection-start-line="36" selection-start-column="21" selection-end-line="36" selection-end-column="21" />
           <folding>
-            <element signature="e#160#178#0" expanded="true" />
+            <element signature="e#160#169#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -666,7 +762,7 @@
         <state relative-caret-position="612">
           <caret line="36" column="21" selection-start-line="36" selection-start-column="21" selection-end-line="36" selection-end-column="21" />
           <folding>
-            <element signature="e#160#178#0" expanded="true" />
+            <element signature="e#160#169#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -695,57 +791,93 @@
     <entry file="file://$PROJECT_DIR$/IfnData/process_csv.py" />
     <entry file="file://$PROJECT_DIR$/IfnDataSets/process_csv.py" />
     <entry file="file://$PROJECT_DIR$/IfnClass/IfnDataClass.py" />
-    <entry file="file://$PROJECT_DIR$/ifndatabase/process_csv.py">
+    <entry file="file://$PROJECT_DIR$/ifnclass/ifnplot.py___jb_tmp___" />
+    <entry file="file://$PROJECT_DIR$/figures_21-11-2018.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="527">
-          <caret line="33" column="61" selection-start-line="33" selection-start-column="4" selection-end-line="33" selection-end-column="61" />
+        <state relative-caret-position="13498">
+          <caret line="799" column="43" selection-start-line="799" selection-start-column="43" selection-end-line="799" selection-end-column="43" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ifnclass/ifnplot.py___jb_tmp___" />
-    <entry file="file://$PROJECT_DIR$/mcmc_2.py">
+    <entry file="file://$PROJECT_DIR$/ifnmodels/Mixed_IFN_ppCompatible.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="812">
-          <caret line="928" column="19" selection-start-line="928" selection-start-column="19" selection-end-line="928" selection-end-column="19" />
+        <state relative-caret-position="-357" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifndatabase/MacParland_Extended.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret column="15" selection-start-column="15" selection-end-column="15" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifndatabase/Experimental_Data.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret column="34" selection-start-column="34" selection-end-column="34" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifndatabase/process_csv.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="387">
+          <caret line="123" column="109" selection-start-line="123" selection-start-column="109" selection-end-line="123" selection-end-column="109" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/fit_20181031.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="137">
+          <caret line="23" column="35" selection-start-line="23" selection-start-column="35" selection-end-line="23" selection-end-column="35" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnclass/ifndata.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="136">
+          <caret line="8" selection-start-line="8" selection-end-line="8" />
           <folding>
-            <element signature="e#305#332#0" expanded="true" />
+            <element signature="e#160#169#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/ifnclass/ifnmodel.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="118">
-          <caret line="242" column="94" selection-start-line="242" selection-start-column="94" selection-end-line="242" selection-end-column="94" />
+        <state relative-caret-position="3995">
+          <caret line="239" column="31" selection-start-line="239" selection-start-column="31" selection-end-line="239" selection-end-column="31" />
           <folding>
             <element signature="e#0#30#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/figures_21-11-2018.py">
+    <entry file="file://$PROJECT_DIR$/ifnclass/ifnplot.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="305">
-          <caret line="799" column="43" lean-forward="true" selection-start-line="799" selection-start-column="43" selection-end-line="799" selection-end-column="43" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/ifnclass/ifndata.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="914">
-          <caret line="92" column="51" selection-start-line="92" selection-start-column="51" selection-end-line="92" selection-end-column="51" />
+        <state relative-caret-position="3910">
+          <caret line="234" selection-start-line="231" selection-start-column="4" selection-end-line="234" />
           <folding>
-            <element signature="e#160#178#0" expanded="true" />
+            <element signature="e#0#26#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ifnclass/ifnplot.py">
+    <entry file="file://$PROJECT_DIR$/mcmc_2.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="293">
-          <caret line="228" column="4" selection-start-line="228" selection-start-column="4" selection-end-line="228" selection-end-column="4" />
+        <state relative-caret-position="-14348">
+          <caret line="60" selection-start-line="60" selection-end-line="61" />
           <folding>
-            <element signature="e#0#26#0" expanded="true" />
+            <element signature="e#305#332#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnclass/ifnfit.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="166">
+          <caret line="289" column="37" selection-start-line="289" selection-start-column="37" selection-end-line="289" selection-end-column="37" />
+          <folding>
+            <element signature="e#0#27#0" expanded="true" />
           </folding>
         </state>
       </provider>

@@ -53,11 +53,11 @@ def build_database(data_wd: str) -> None:
                ['Beta', 90] + bZipped[1],
                ['Beta', 600] + bZipped[2],
                ['Beta', 2000] + bZipped[3],
-               ['Beta', 11000] + bZipped[4][0:-1]]
+               ['Beta', 11000] + bZipped[4]]
     df = pd.DataFrame.from_records(aZipped + bZipped,
                                    columns=['Dose_Species', 'Dose (pM)'] + list(dataset_2.columns[2:]))
     df.set_index(['Dose_Species', 'Dose (pM)'], inplace=True)
-
+    print(df)
     pickle.dump(df, open(data_wd + 'MacParland_Extended.p', 'wb'))
 
     # 20181031_pSTAT1_Table
@@ -119,3 +119,6 @@ def build_database(data_wd: str) -> None:
     pickle.dump(df, open(data_wd + '20181113_B6_IFNs_Dose_Response_Tcells.p', 'wb'))
 
     print("Initialized DataFrame objects")
+
+if __name__ == '__main__':
+    build_database('C:\\Users\\Duncan\\Documents\\University\\Grad Studies Year 2\\IFNmodeling\\ifndatabase\\')

@@ -4,6 +4,7 @@ from ifndata import IfnData
 from ifnmodel import IfnModel
 from numpy import linspace, logspace, float64, divide
 
+
 class Trajectory:
     """
     Documentation - A Trajectory object is an augmented IfnData object which simply includes metainformation on the
@@ -25,6 +26,7 @@ class Trajectory:
     d(): return the doses for a DoseresponsePlot
     z(): returns the responses for a DoseresponsePlot
     """
+
     # Initializer / Instance Attributes
     def __init__(self, data: IfnData, plot_type: str, line_style, label='', **kwargs):
         self.data = data
@@ -76,6 +78,7 @@ class TimecoursePlot:
     remove_trajectory(index: int)
         Removes a trajectory from the TimecoursePlot instance, as indicated by its index in self.trajectories list
     """
+
     # Initializer / Instance Attributes
     def __init__(self, shape):
         self.nrows = shape[0]
@@ -127,6 +130,7 @@ class TimecoursePlot:
         plt.show()
         return self.fig
 
+
 class DoseresponsePlot:
     """
     Documentation - A DoseresponsePlot holds IfnModels and IfnData instances which are to be plotted in a
@@ -154,6 +158,7 @@ class DoseresponsePlot:
     remove_trajectory(index: int)
         Removes a trajectory from the DoseresponsePlot instance, as indicated by its index in self.trajectories list
     """
+
     # Initializer / Instance Attributes
     def __init__(self, shape):
         self.nrows = shape[0]
@@ -169,8 +174,9 @@ class DoseresponsePlot:
 
     # Instance methods
     def add_trajectory(self, data: IfnData, time, plot_type: str, line_style, subplot_idx: tuple,
-                       observable_species: str, label='', dn: float=1.):
-        t = Trajectory(data, plot_type, line_style, label=label, timeslice = time, observable=observable_species, dose_norm=dn)
+                       observable_species: str, label='', dn: float = 1.):
+        t = Trajectory(data, plot_type, line_style, label=label, timeslice=time, observable=observable_species,
+                       dose_norm=dn)
         self.trajectories.append(t)
         if self.nrows == 1 and self.ncols == 1:
             self.subplot_indices.append((None, None))
@@ -219,15 +225,16 @@ class DoseresponsePlot:
 
 
 if __name__ == '__main__':
-    testClass = IfnData("Experimental_Data")
+    testData = IfnData("Experimental_Data")
     testModel = IfnModel('IFN_alpha_altSOCS_ppCompatible')
-    tc = testModel.timecourse(list(linspace(0,30)), 'TotalpSTAT', return_type='dataframe', dataframe_labels=['Alpha', 1E-9])
-    testplot = TimecoursePlot((1,1))
-    testplot.add_trajectory(tc, 'plot', 'r', (0,0))
+    tc = testModel.timecourse(list(linspace(0, 30)), 'TotalpSTAT', return_type='dataframe',
+                              dataframe_labels=['Alpha', 1E-9])
+    testplot = TimecoursePlot((1, 1))
+    testplot.add_trajectory(tc, 'plot', 'r', (0, 0))
     testplot.show_figure()
 
-    dr = testModel.doseresponse([0, 5, 15, 30], 'TotalpSTAT', 'I', multiply(list(logspace(-11,-2)), 6.022E18),
+    dr = testModel.doseresponse([0, 5, 15, 30], 'TotalpSTAT', 'I', multiply(list(logspace(-11, -2)), 6.022E18),
                                 return_type='dataframe', dataframe_labels='Alpha')
-    testplot = DoseresponsePlot((1,1))
-    testplot.add_trajectory(dr, 5, 'plot', 'r', (0,0), 'Alpha', dn=6.022E23*1E-9*1E-5)
+    testplot = DoseresponsePlot((1, 1))
+    testplot.add_trajectory(dr, 5, 'plot', 'r', (0, 0), 'Alpha', dn=6.022E23 * 1E-9 * 1E-5)
     testtraj = testplot.show_figure()

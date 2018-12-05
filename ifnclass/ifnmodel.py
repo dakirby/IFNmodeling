@@ -212,7 +212,7 @@ class IfnModel:
         dose_parameters.update(parameters)
         # iterate through all doses
         for idx, d in enumerate(doses):
-            dose_parameters.update({dose_species: d})
+            dose_parameters.update({dose_species: d*1E-9*6.022E23*1E-5})
             trajectories = self.timecourse(times, observable, parameters=dose_parameters)
             # add results to dose_response_table dictionary
             for observable_species in trajectories.keys():
@@ -249,6 +249,6 @@ class IfnModel:
 if __name__ == '__main__':
     testModel = IfnModel('IFN_alpha_altSOCS_ppCompatible')
     tc = testModel.timecourse([0, 5, 15, 30], 'TotalpSTAT', return_type='dataframe', dataframe_labels=['Alpha', 1])
-    dr = testModel.doseresponse([0, 5, 15, 30], ['T', 'TotalpSTAT'], 'I', multiply([1E-9, 1E-8, 1E-7], 6.022E18),
+    dr = testModel.doseresponse([0, 5, 15, 30], ['T', 'TotalpSTAT'], 'I', [1, 10, 100],
                                 return_type='dataframe', dataframe_labels='Alpha')
     print(dr)
