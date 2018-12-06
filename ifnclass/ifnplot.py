@@ -34,21 +34,28 @@ class Trajectory:
         self.line_style = line_style
         self.label = label
         self.timeslice = kwargs.get('timeslice', None)
-        self.observable = kwargs.get('observable', None)
+        self.dose_species = kwargs.get('dose_species', None)
         self.dose_norm = kwargs.get('dose_norm', 1)
 
-    def t(self):
-        return [el for el in self.data.columns if (type(el) == int or type(el) == float or isinstance(el, float64))]
+    def t(self):  # times
+        if self.timeslice is None:
+            return [el for el in self.data.data_set.columns if
+                    (type(el) == int or type(el) == float or isinstance(el, float64))]
+        else:
+            return [self.timeslice]
 
-    def y(self):
+    def y(self):  # timecourse response values
         idx = self.t()
-        return self.data[idx].values[0]
+        return self.data.data_set[idx].values[0]
 
-    def d(self):
-        return divide(self.data.loc[self.observable].index.values, self.dose_norm)
+    def d(self):  # doses
+        return divide(self.data.data_set.loc[self.dose_species].index.values, self.dose_norm)
 
-    def z(self):
-        return self.data.loc[self.observable][:][str(self.timeslice)].values
+    def z(self):  # dose-response response values
+        if self.timeslice is None:
+            return self.data.data_set.xs(self.dose_species).values
+        else:
+            return self.data.data_set.xs(self.dose_species).loc[:, self.timeslice].values
 
 
 class TimecoursePlot:
@@ -168,7 +175,7 @@ class DoseresponsePlot:
             for row in range(self.nrows):
                 for column in range(self.ncols):
                     self.axes[row][column].set(xscale='log', yscale='linear')
-                    if row == self.nrows-1:
+                    if row == self.nrows - 1:
                         self.axes[row][column].set_xlabel('Dose (pM)')
                     if column == 0:
                         self.axes[row][column].set_ylabel('Response')
@@ -181,8 +188,8 @@ class DoseresponsePlot:
 
     # Instance methods
     def add_trajectory(self, data: IfnData, time, plot_type: str, line_style, subplot_idx: tuple,
-                       observable_species: str, label='', dn: float = 1.):
-        t = Trajectory(data, plot_type, line_style, label=label, timeslice=time, observable=observable_species,
+                       dose_species: str, label='', dn: float = 1.):
+        t = Trajectory(data, plot_type, line_style, label=label, timeslice=time, dose_species=dose_species,
                        dose_norm=dn)
         self.trajectories.append(t)
         if self.nrows == 1 and self.ncols == 1:
@@ -216,17 +223,38 @@ class DoseresponsePlot:
             if trajectory.plot_type == 'plot':
                 x = trajectory.d()
                 z = [el[0] for el in trajectory.z()]
-                ax.plot(x, z, trajectory.line_style, label=trajectory.label)
+                if x[0] == 0:
+                    x = x[1:]
+                    z = z[1:]
+                if type(trajectory.line_style) == str:
+                    ax.plot(x, z, trajectory.line_style, label=trajectory.label)
+                else:
+                    ax.plot(x, z, c=trajectory.line_style, label=trajectory.label)
             elif trajectory.plot_type == 'scatter':
-                x = trajectory.data.loc[:, 'Dose (pM)'].values
-                y = [el[0] for el in trajectory.data.loc[:, trajectory.metadata['time']].values]
-                ax.scatter(x, y, c=trajectory.line_style[0],
-                           marker=trajectory.line_style[1], label=trajectory.label)
+                x = trajectory.d()
+                z = [el[0] for el in trajectory.z()]
+                if x[0] == 0:
+                    x = x[1:]
+                    z = z[1:]
+                if len(trajectory.line_style) == 2:
+                    ax.scatter(x, z, c=trajectory.line_style[0],
+                               marker=trajectory.line_style[1], label=trajectory.label)
+                elif len(trajectory.line_style) == 1:
+                    ax.scatter(x, z, c=trajectory.line_style[0], label=trajectory.label)
+                else:
+                    try:
+                        ax.scatter(x, z, c=[trajectory.line_style], label=trajectory.label)
+                    except:
+                        print("Could not interpret line style")
+                        raise
             elif trajectory.plot_type == 'errorbar':
-                x = trajectory.data.loc[:, 'Dose (pM)'].values
-                y = [el[0] for el in trajectory.data.loc[:, trajectory.metadata['time']].values]
-                sigmas = [el[1] for el in trajectory.data.loc[:, trajectory.metadata['time']].values]
-                ax.errorbar(x, y, yerr=sigmas, fmt=trajectory.line_style, label=trajectory.label)
+                x = trajectory.d()
+                z = [el[0] for el in trajectory.z()]
+                if x[0] == 0:
+                    x = x[1:]
+                    z = z[1:]
+                sigmas = [el[1] for el in trajectory.z()]
+                ax.errorbar(x, z, yerr=sigmas, fmt=trajectory.line_style, label=trajectory.label)
         plt.show()
         return self.fig
 
@@ -243,10 +271,10 @@ if __name__ == '__main__':
     testplot.show_figure()
 
     dra = testModel.doseresponse([0, 5, 15, 30, 60], 'TotalpSTAT', 'Ia', list(logspace(-3, 4)),
-                                parameters={'Ib':0}, return_type='dataframe', dataframe_labels='Alpha')
+                                 parameters={'Ib': 0}, return_type='dataframe', dataframe_labels='Alpha')
 
     drb = testModel.doseresponse([0, 5, 15, 30, 60], 'TotalpSTAT', 'Ib', list(logspace(-3, 4)),
-                                parameters={'Ia':0}, return_type='dataframe', dataframe_labels='Beta')
+                                 parameters={'Ia': 0}, return_type='dataframe', dataframe_labels='Beta')
     testplot = DoseresponsePlot((1, 1))
     testplot.add_trajectory(dra, 15, 'plot', 'r', (0, 0), 'Alpha', dn=1)
     testplot.add_trajectory(drb, 15, 'plot', 'g', (0, 0), 'Beta', dn=1)

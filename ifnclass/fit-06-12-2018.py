@@ -2,6 +2,7 @@ from ifndata import IfnData
 from ifnmodel import IfnModel
 from ifnplot import Trajectory, TimecoursePlot, DoseresponsePlot
 from numpy import linspace, logspace
+import seaborn as sns
 
 
 if __name__ == '__main__':
@@ -13,9 +14,13 @@ if __name__ == '__main__':
 
     smooth_plot = DoseresponsePlot((2, 2))
 
-    alpha_indices = [not bool(el) for el in list(newdata.data_set.index.labels[0])]
-    beta_indices = [not el for el in alpha_indices]
+    alpha_palette = sns.color_palette("Reds", 6)
+    beta_palette = sns.color_palette("Greens", 6)
 
-    smooth_plot.add_trajectory(newdata.data_set.iloc[alpha_indices], 2.5, 'plot', 'r', (0, 0), 'Alpha', dn=1)
-    smooth_plot.add_trajectory(newdata.data_set.iloc[beta_indices], 15, 'plot', 'g', (0, 0), 'Beta', dn=1)
+    for idx, t in enumerate([2.5, 5, 7.5, 10, 20, 60]):
+        #smooth_plot.add_trajectory(newdata, t, 'plot', alpha_palette[idx], (0, 0), 'Alpha', dn=1)
+        smooth_plot.add_trajectory(newdata, t, 'scatter', alpha_palette[idx], (0, 0), 'Alpha', dn=1)
+        #smooth_plot.add_trajectory(newdata, t, 'plot', beta_palette[idx], (0, 1), 'Beta', dn=1)
+        smooth_plot.add_trajectory(newdata, t, 'scatter', beta_palette[idx], (0, 1), 'Beta', dn=1)
+
     testtraj = smooth_plot.show_figure()

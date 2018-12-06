@@ -57,7 +57,6 @@ def build_database(data_wd: str) -> None:
     df = pd.DataFrame.from_records(aZipped + bZipped,
                                    columns=['Dose_Species', 'Dose (pM)'] + list(dataset_2.columns[2:]))
     df.set_index(['Dose_Species', 'Dose (pM)'], inplace=True)
-    print(df)
     pickle.dump(df, open(data_wd + 'MacParland_Extended.p', 'wb'))
 
     # 20181031_pSTAT1_Table
@@ -93,9 +92,38 @@ def build_database(data_wd: str) -> None:
     alpha_doses_20181113_B6 = [0, 5, 50, 250, 500, 5000, 25000, 50000]
     beta_doses_20181113_B6 = [0, 0.1, 1, 5, 10, 100, 200, 1000]
     dataset_4 = pd.read_csv(data_wd + "20181113_B6_IFNs_Dose_Response.csv")
-    Bdata = dataset_4.loc[:]["Lymphocytes/B cells | Geometric Mean (Comp-APC-A)"].values.reshape((8, 12))
-    Tdata = dataset_4.loc[:]["Lymphocytes/T cells | Geometric Mean (Comp-APC-A)"].values.reshape((8, 12))
-    NIdata = dataset_4.loc[:]["Lymphocytes/NonT, nonB | Geometric Mean (Comp-APC-A)"].values.reshape((8, 12))
+    Bdata = dataset_4.loc[:]["Lymphocytes/B cells | Geometric Mean (Comp-APC-A)"].values.reshape((8, 12)).tolist()
+    Tdata = dataset_4.loc[:]["Lymphocytes/T cells | Geometric Mean (Comp-APC-A)"].values.reshape((8, 12)).tolist()
+    NIdata = dataset_4.loc[:]["Lymphocytes/NonT, nonB | Geometric Mean (Comp-APC-A)"].values.reshape((8, 12)).tolist()
+
+    # Normalize by Jaki and add non-existent uncertainties
+    # Bcells
+    Jaki_a = Bdata[0][0]
+    Jaki_b = Bdata[0][1]
+    for r in range(len(Bdata)):
+        for c in range(len(Bdata[r])):
+            if c % 2 == 0:
+                Bdata[r][c] = (Bdata[r][c] - Jaki_a, np.nan)
+            else:
+                Bdata[r][c] = (Bdata[r][c] - Jaki_b, np.nan)
+    # Tcells
+    Jaki_a = Tdata[0][0]
+    Jaki_b = Tdata[0][1]
+    for r in range(len(Tdata)):
+        for c in range(len(Tdata[r])):
+            if c % 2 == 0:
+                Tdata[r][c] = (Tdata[r][c] - Jaki_a, np.nan)
+            else:
+                Tdata[r][c] = (Tdata[r][c] - Jaki_b, np.nan)
+    # Non-immune cells
+    Jaki_a = NIdata[0][0]
+    Jaki_b = NIdata[0][1]
+    for r in range(len(NIdata)):
+        for c in range(len(NIdata[r])):
+            if c % 2 == 0:
+                NIdata[r][c] = (NIdata[r][c] - Jaki_a, np.nan)
+            else:
+                NIdata[r][c] = (NIdata[r][c] - Jaki_b, np.nan)
 
     # Non-lymphocyte cells
     NIalpha = [['Alpha', alpha_doses_20181113_B6[row]] + [NIdata[row][2 * i] for i in range(6)] for row in range(8)]
