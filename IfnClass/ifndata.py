@@ -43,10 +43,15 @@ class IfnData:
     """
 
     # Initializer / Instance Attributes
-    def __init__(self, name):
-        self.name = name
-        self.data_set = self.load_data()
-        self.conditions = self.load_conditions()
+    def __init__(self, name, df=None, conditions=None):
+        if name == 'custom':
+            self.name = None
+            self.data_set = df
+            self.conditions = conditions
+        else:
+            self.name = name
+            self.data_set = self.load_data()
+            self.conditions = self.load_conditions()
 
     # Instance methods
     def load_data(self):

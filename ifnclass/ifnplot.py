@@ -49,7 +49,10 @@ class Trajectory:
         return self.data.data_set[idx].values[0]
 
     def d(self):  # doses
-        return divide(self.data.data_set.loc[self.dose_species].index.values, self.dose_norm)
+        if self.timeslice is None:
+            return divide(self.data.data_set.loc[self.dose_species].index.values, self.dose_norm)
+        else:
+            return divide(self.data.data_set.loc[self.dose_species].index.values, self.dose_norm)
 
     def z(self):  # dose-response response values
         if self.timeslice is None:
@@ -256,7 +259,7 @@ class DoseresponsePlot:
                 sigmas = [el[1] for el in trajectory.z()]
                 ax.errorbar(x, z, yerr=sigmas, fmt=trajectory.line_style, label=trajectory.label)
         plt.show()
-        return self.fig
+        return self.fig, self.axes
 
 
 if __name__ == '__main__':
