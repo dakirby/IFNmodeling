@@ -8,6 +8,8 @@ from collections import OrderedDict
 from scipy.optimize import minimize
 from multiprocessing import Process, Queue, JoinableQueue, cpu_count
 import pickle
+import copy
+
 
 class StepwiseFit:
     """
@@ -158,6 +160,12 @@ class Prior:
                 return 0
 
 
+def __unpackMCMC__(ID, jobs, result, countQ):
+    processMCMC = MCMC()
+    processMCMC.load()
+    processMCMC.__run_chain__(ID, jobs, result, countQ)
+
+
 class MCMC:
     """
      Documentation - An MCMC instance is characterized by the IfnModel and IfnData associated with it.
@@ -204,10 +212,15 @@ class MCMC:
         self.filename = 'results/initial_model.p'
         self.best_fit_parameters = {}
         self.best_fit_scale_factor = 1
+        self.best_fit_score = 1E15
+        self.average_acceptance = 1
+        self.parameter_history = []
+        self.scale_factor_history = []
+        self.score_history = []
 
     # Private methods
     # ---------------
-    def __MSE_of_parametric_model__(self, parameter_dict):
+    def __MSE_of_parametric_model__(self, parameter_dict, sf_flag=0):
         def score_target(sf, data, sim):
             diff_table = zeros(shape(sim))
             for r in range(len(data)):
@@ -243,8 +256,13 @@ class MCMC:
             else:
                 total_sim_table += simulation.tolist()
         # Score results by mean squared error
-        score = minimize(score_target, [40], args=(total_data_table, total_sim_table))['fun']
-        return score
+        opt = minimize(score_target, [40], args=(total_data_table, total_sim_table))
+        score = opt['fun']
+        sf = opt['x']
+        if sf_flag == 1:
+            return score, opt
+        else:
+            return score
 
     def __prior_penalty__(self, parameter_dict):
         penalty = 0
@@ -266,8 +284,8 @@ class MCMC:
             raise ValueError('Burn rate should be in the range [0,1)')
         if self.down_sample > self.num_samples:
             raise ValueError('Cannot thin more than there are samples')
-        #lenPost = int(np.floor([chains * (n + 1) * (1 - burn_rate) / down_sample])[0])
-        #print("It's estimated this simulation will produce {} posterior samples.".format(lenPost))
+        # lenPost = int(np.floor([chains * (n + 1) * (1 - burn_rate) / down_sample])[0])
+        # print("It's estimated this simulation will produce {} posterior samples.".format(lenPost))
         return True
 
     def __autochoose_beta__(self):
@@ -278,6 +296,83 @@ class MCMC:
         for i in range(n):
             pList.append(self.__parameter_jump__(self.temperature))
         return pList
+
+    def __score_and_sf_for_current_model__(self):
+        MSE, sf = self.__MSE_of_parametric_model__(self.model.parameters, sf_flag=1)
+        return MSE / self.beta + self.__prior_penalty__(self.model.parameters), sf
+
+    def __run_chain__(self, ID, jobs, result, countQ):
+        while True:
+            initial_parameters = jobs.get()
+            if initial_parameters is None:
+                break
+            initial_parameters = initial_parameters[0]
+            self.model.set_parameters(initial_parameters)
+            current_score, _ = self.__score_and_sf_for_current_model__()
+            current_parameters = copy.deepcopy(self.model.parameters)
+
+            progress_bar = self.num_samples / 10
+
+            acceptance = 0
+            attempts = 0
+            while acceptance < self.num_samples:
+                # Identify failed chains
+                if attempts > 2000 and acceptance == 0:
+                    print("Chain {} failed to start".format(ID))
+                    break
+                attempts += 1
+                # Monitor acceptance rate
+                if acceptance > progress_bar:
+                    print("{:.1f}% done".format(acceptance/self.num_samples * 100))
+                    print("Chain {} acceptance rate = {:.1f}%".format(ID, acceptance/attempts*100))
+                    # Record progress to text file
+                    with open('results/progress.txt','a') as f:
+                        f.write("Chain {} is {:.1f}% done, currently averaging {:.1f}% acceptance.\n".format(ID, acceptance/self.num_samples*100, acceptance/attempts*100))
+                    # Save state at checkpoint
+                    with open('results/chain_results/{}chain.p'.format(str(ID)), 'wb') as f:
+                        pickle.dump(self.__dict__, f, 2)
+                    progress_bar += self.num_samples/10
+
+                new_parameters = self.__parameter_jump__()
+                self.model.set_parameters(new_parameters)
+
+                new_score, new_scale_factor = self.__score_and_sf_for_current_model__()
+
+                """
+                Asymmetry factor for lognormal jumping distributions with x* proposed and x the current value: 
+                    C = PDF(LogNormal(log(x*),sigma), x)/PDF(LogNormal(log(x),sigma), x*)
+                    C = x*/x
+                """
+                asymmetry_factor = 1
+                for key, new_value in new_parameters.items():
+                    try:
+                        if self.priors[key].type_of_distribution == 'lognormal':
+                            asymmetry_factor *= new_value/current_parameters[key]
+                    except KeyError:
+                        pass
+
+                alpha = asymmetry_factor * np.exp(-(new_score-current_score))
+                if new_score < current_score or np.random.rand() < alpha:
+                    # Search for MAP:
+                    if new_score < self.best_fit_score:
+                        self.best_fit_parameters = new_parameters
+                        self.best_fit_scale_factor = new_scale_factor
+                    # Add to chain
+                    self.parameter_history.append(new_parameters)
+                    self.scale_factor_history.append(new_scale_factor)
+                    current_score = new_score
+                    current_parameters.update(new_parameters)
+                    acceptance += 1
+                else:
+                    self.model.set_parameters(current_parameters)
+
+            # Save final state
+            with open('results/chain_results/{}chain.p'.format(str(ID)), 'wb') as f:
+                pickle.dump(self.__dict__, f, 2)
+
+            result.put([self.parameter_history, self.scale_factor_history])
+            countQ.put([ID, acceptance / attempts * 100])
+        print("Chain {} exiting".format(ID))
 
     # Public methods
     # --------------
@@ -291,13 +386,19 @@ class MCMC:
         self.__dict__.update(tmp_dict)
 
     def score_current_model(self):
-        return self.__MSE_of_parametric_model__(self.model.parameters)/self.beta + self.__prior_penalty__(self.model.parameters)
+        return self.__MSE_of_parametric_model__(self.model.parameters) / self.beta + self.__prior_penalty__(
+            self.model.parameters)
 
     def fit(self, num_accepted_steps: int, num_chains: int, burn_rate: float, down_sample_frequency: int, beta: float,
             cpu=None, initialise=True):
         # Check input parameters
         self.__check_input__
         print("Performing MCMC Analysis")
+        # Define simulation parameters for instance
+        self.num_samples = num_accepted_steps
+        self.num_chains = num_chains
+        self.burn_in = burn_rate
+        self.down_sample = down_sample_frequency
         # Selecting optimal beta (scale factor for MSE)
         if beta == -1:
             self.__autochoose_beta__()
@@ -308,47 +409,56 @@ class MCMC:
             initial_parameters = [initialise for _ in range(self.num_chains)]
         # Sample using MCMC
         print("Sampling from posterior distribution")
+        # Set up simulation processes
         if self.num_chains >= cpu_count():
-            NUMBER_OF_PROCESSES = cpu_count() - 1
+            number_of_processes = cpu_count() - 1
         else:
-            NUMBER_OF_PROCESSES = self.num_chains
-        if cpu != None: NUMBER_OF_PROCESSES = cpu  # Manual override of core number selection
-        print("Using {} processes".format(NUMBER_OF_PROCESSES))
+            number_of_processes = self.num_chains
+        if cpu is not None:
+            number_of_processes = cpu  # Manual override of core number selection
+        print("Using {} processes".format(number_of_processes))
         with open('results/progress.txt', 'w') as f:  # clear previous progress report
             f.write('')
         jobs = Queue()  # put jobs on queue
         result = JoinableQueue()
         countQ = JoinableQueue()
-        if NUMBER_OF_PROCESSES == 1:
-            jobs.put([initial_parameters[0], beta, rho, n, priors_dict])
-            mh(0, jobs, result, countQ)
+        # Start up chains
+        # Prepare instance for multiprocessing by pickling
+        self.save()
+        if number_of_processes == 1:
+            jobs.put([initial_parameters[0]])
+            jobs.put(None)
+            self.__run_chain__(0, jobs, result, countQ)
         else:
+            # Put jobs in queue
             for m in range(self.num_chains):
-                jobs.put([initial_parameters[m], beta, rho, n, priors_dict])
-            [Process(target=mh, args=(i, jobs, result, countQ)).start()
-             for i in range(NUMBER_OF_PROCESSES)]
-        # pull in the results from each thread
+                jobs.put([initial_parameters[m]])
+            # Add signals for each process that there are no more jobs
+            for w in range(number_of_processes):
+                jobs.put(None)
+            [Process(target=__unpackMCMC__, args=(i, jobs, result, countQ)).start() for i in range(number_of_processes)]
+        # Pull in the results from each thread
         pool_results = []
         chain_attempts = []
         for m in range(self.num_chains):
+            print("Getting results")
             r = result.get()
             pool_results.append(r)
             result.task_done()
             a = countQ.get()
             chain_attempts.append(a)
-        # tell the workers there are no more jobs
-        for w in range(NUMBER_OF_PROCESSES):
-            jobs.put(None)
         # close all extra threads
-        result.join()
         jobs.close()
+        result.join()
         result.close()
         countQ.close()
 
+        return 0
+        """
         # Perform data analysis
-        average_acceptance = np.mean([el[1] for el in chain_attempts])
-        print("Average acceptance rate was {:.1f}%".format(average_acceptance))
-        samples = get_parameter_distributions(pool_results, burn_rate, down_sample)
+        self.average_acceptance = np.mean([el[1] for el in chain_attempts])
+        print("Average acceptance rate was {:.1f}%".format(self.average_acceptance))
+        self.samples = self.get_parameter_distributions(pool_results, burn_rate, down_sample)
         plot_parameter_autocorrelations(samples.drop('gamma', axis=1))
         get_summary_statistics(samples.drop('gamma', axis=1))
         with open(results_dir + 'simulation_summary.txt', 'w') as f:
@@ -359,7 +469,7 @@ class MCMC:
             for i in chains_list:
                 f.write(str(i))
                 f.write("\n")
-
+        """
 
 if __name__ == '__main__':
     testData = IfnData("MacParland_Extended")
@@ -385,6 +495,6 @@ if __name__ == '__main__':
                         'kd4': Prior('lognormal', mean=0.3, sigma=1.8),
                         'k_d4': Prior('lognormal', mean=0.006, sigma=1.8)}
     mcmcFit = MCMC(testModel, testData, ['kpa', 'kSOCSon', 'R1', 'R2', 'kd4', 'k_d4'], mixed_IFN_priors, jump_dists)
-    mcmcFit.save()
-    mcmcFit = mcmcFit.load()
-    #test_parameters = {'kpa': 1.13e-06, 'kSOCSon': 1.4e-06, 'R1': 1377, 'R2': 574, 'kd4': 0.257, 'k_d4': 0.0085}
+    mcmcFit.fit(10, 1, 0, 1, 1E8)
+
+    # test_parameters = {'kpa': 1.13e-06, 'kSOCSon': 1.4e-06, 'R1': 1377, 'R2': 574, 'kd4': 0.257, 'k_d4': 0.0085}

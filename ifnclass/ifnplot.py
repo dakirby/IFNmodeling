@@ -1,4 +1,4 @@
-from numpy import multiply
+from numpy import ndarray, shape
 import matplotlib.pyplot as plt
 from ifndata import IfnData
 from ifnmodel import IfnModel
@@ -164,11 +164,18 @@ class DoseresponsePlot:
         self.nrows = shape[0]
         self.ncols = shape[1]
         self.fig, self.axes = plt.subplots(nrows=self.nrows, ncols=self.ncols)
-        if type(self.axes) == list:
-            for ax in self.axes:
-                ax.set(xscale='log', yscale='linear')
+        if self.nrows > 1 or self.ncols > 1:
+            for row in range(self.nrows):
+                for column in range(self.ncols):
+                    self.axes[row][column].set(xscale='log', yscale='linear')
+                    if row == self.nrows-1:
+                        self.axes[row][column].set_xlabel('Dose (pM)')
+                    if column == 0:
+                        self.axes[row][column].set_ylabel('Response')
         else:
             self.axes.set(xscale='log', yscale='linear')
+            self.axes.set_xlabel('Dose (pM)')
+            self.axes.set_ylabel('Response')
         self.trajectories = []
         self.subplot_indices = []
 
@@ -226,15 +233,21 @@ class DoseresponsePlot:
 
 if __name__ == '__main__':
     testData = IfnData("Experimental_Data")
-    testModel = IfnModel('IFN_alpha_altSOCS_ppCompatible')
+    testModel = IfnModel('Mixed_IFN_ppCompatible')
+    testParameters = {'kpa': 4.686e-05, 'kSOCSon': 2.687e-06, 'kd4': 0.236, 'k_d4': 0.2809, 'R1': 108, 'R2': 678}
+    testModel.set_parameters(testParameters)
     tc = testModel.timecourse(list(linspace(0, 30)), 'TotalpSTAT', return_type='dataframe',
                               dataframe_labels=['Alpha', 1E-9])
     testplot = TimecoursePlot((1, 1))
     testplot.add_trajectory(tc, 'plot', 'r', (0, 0))
     testplot.show_figure()
 
-    dr = testModel.doseresponse([0, 5, 15, 30], 'TotalpSTAT', 'I', multiply(list(logspace(-11, -2)), 6.022E18),
-                                return_type='dataframe', dataframe_labels='Alpha')
+    dra = testModel.doseresponse([0, 5, 15, 30, 60], 'TotalpSTAT', 'Ia', list(logspace(-3, 4)),
+                                parameters={'Ib':0}, return_type='dataframe', dataframe_labels='Alpha')
+
+    drb = testModel.doseresponse([0, 5, 15, 30, 60], 'TotalpSTAT', 'Ib', list(logspace(-3, 4)),
+                                parameters={'Ia':0}, return_type='dataframe', dataframe_labels='Beta')
     testplot = DoseresponsePlot((1, 1))
-    testplot.add_trajectory(dr, 5, 'plot', 'r', (0, 0), 'Alpha', dn=6.022E23 * 1E-9 * 1E-5)
+    testplot.add_trajectory(dra, 15, 'plot', 'r', (0, 0), 'Alpha', dn=1)
+    testplot.add_trajectory(drb, 15, 'plot', 'g', (0, 0), 'Beta', dn=1)
     testtraj = testplot.show_figure()
