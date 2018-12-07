@@ -218,7 +218,7 @@ class IfnModel:
         dose_parameters.update(parameters)
         # iterate through all doses
         for idx, d in enumerate(doses):
-            dose_parameters.update({dose_species: d*1E-9*6.022E23*1E-5})
+            dose_parameters.update({dose_species: d*1E-12*6.022E23*1E-5})
             trajectories = self.timecourse(times, observable, parameters=dose_parameters)
             # add results to dose_response_table dictionary
             for observable_species in trajectories.keys():
