@@ -91,7 +91,7 @@ if __name__ == '__main__':
     smooth60 = pd.DataFrame.from_records(
         list(zip(['Alpha'] * len(alpha60_smooth_data[0]), alpha60_smooth_data[0], alpha60_smooth_data[1])) +
         list(zip(['Beta'] * len(beta60_smooth_data[0]), beta60_smooth_data[0], beta60_smooth_data[1])),
-        columns=['Dose_Species', 'Dose (pM)', 2.5])
+        columns=['Dose_Species', 'Dose (pM)', 60])
     smooth60 = smooth60.set_index(['Dose_Species', 'Dose (pM)'])
 
     # Build IfnData objects
