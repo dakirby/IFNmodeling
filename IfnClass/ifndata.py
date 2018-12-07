@@ -94,7 +94,10 @@ class IfnData:
 
     def get_times(self) -> dict:
         keys = self.get_dose_species()
-        return dict(zip(keys, [[int(el) for el in self.data_set.loc[key].columns.get_values().tolist()] for key in keys]))
+        if type(self.data_set.loc[keys[0]].columns.get_values().tolist()) == str:
+            return dict(zip(keys, [[int(el) for el in self.data_set.loc[key].columns.get_values().tolist()] for key in keys]))
+        else:
+            return dict(zip(keys, [[el for el in self.data_set.loc[key].columns.get_values().tolist()] for key in keys]))
 
     def get_doses(self) -> dict:
         keys = self.get_dose_species()
@@ -108,6 +111,9 @@ class IfnData:
         datatable = {}
         times = self.get_times()
         for key, t in times.items():
-            t = [str(n) for n in t]
-            datatable.update({key: self.data_set.loc[key][t].values})
+            if str(t[0]) in self.data_set.loc[key].index:
+                t = [str(n) for n in t]
+                datatable.update({key: self.data_set.loc[key][t].values})
+            else:
+                datatable.update({key: self.data_set.loc[key][t].values})
         return datatable

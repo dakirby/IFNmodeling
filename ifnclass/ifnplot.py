@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from ifndata import IfnData
 from ifnmodel import IfnModel
 from numpy import linspace, logspace, float64, divide
-
+import time
 
 class Trajectory:
     """
@@ -58,7 +58,15 @@ class Trajectory:
         if self.timeslice is None:
             return self.data.data_set.xs(self.dose_species).values
         else:
-            return self.data.data_set.xs(self.dose_species).loc[:, self.timeslice].values
+            try:
+                return self.data.data_set.xs(self.dose_species).loc[:, self.timeslice].values
+            except KeyError:
+                try:
+                    temp = [str(el) for el in self.timeslice]
+                    return self.data.data_set.xs(self.dose_species).loc[:, temp].values
+                except KeyError:
+                    print(self.data.data_set.xs(self.dose_species).columns.values)
+                    return self.data.data_set.xs(self.dose_species).loc[:, [float(el) for el in self.timeslice][0]].values
 
 
 class TimecoursePlot:
@@ -174,7 +182,7 @@ class DoseresponsePlot:
         self.nrows = shape[0]
         self.ncols = shape[1]
         self.fig, self.axes = plt.subplots(nrows=self.nrows, ncols=self.ncols)
-        if self.nrows > 1 or self.ncols > 1:
+        if self.nrows > 1 and self.ncols > 1:
             for row in range(self.nrows):
                 for column in range(self.ncols):
                     self.axes[row][column].set(xscale='log', yscale='linear')
@@ -182,6 +190,13 @@ class DoseresponsePlot:
                         self.axes[row][column].set_xlabel('Dose (pM)')
                     if column == 0:
                         self.axes[row][column].set_ylabel('Response')
+        elif self.ncols > 1:
+            for column in range(self.ncols):
+                self.axes[column].set(xscale='log', yscale='linear')
+                self.axes[column].set_xlabel('Dose (pM)')
+                if column == 0:
+                    self.axes[column].set_ylabel('Response')
+
         else:
             self.axes.set(xscale='log', yscale='linear')
             self.axes.set_xlabel('Dose (pM)')
@@ -218,7 +233,7 @@ class DoseresponsePlot:
         del self.trajectories[index]
         del self.subplot_indices[index]
 
-    def show_figure(self):
+    def show_figure(self, show_flag=True, save_flag=False):
         for trajectory_idx in range(len(self.trajectories)):
             trajectory = self.trajectories[trajectory_idx]
             plt_idx = self.subplot_indices[trajectory_idx]
@@ -258,9 +273,14 @@ class DoseresponsePlot:
                     z = z[1:]
                 sigmas = [el[1] for el in trajectory.z()]
                 ax.errorbar(x, z, yerr=sigmas, fmt=trajectory.line_style, label=trajectory.label)
-        plt.show()
+        if save_flag:
+            plt.savefig('fig{}.pdf'.format(int(time.time())))
+        if show_flag:
+            plt.show()
         return self.fig, self.axes
 
+    def save_figure(self):
+        self.show_figure(show_flag=False, save_flag=True)
 
 if __name__ == '__main__':
     testData = IfnData("Experimental_Data")

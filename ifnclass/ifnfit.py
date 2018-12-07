@@ -46,12 +46,12 @@ class StepwiseFit:
 
     # Instance methods
     def score_parameter(self, parameter_dict):
-        def score_target(sf, data, sim):
+        def score_target(scf, data, sim):
             diff_table = zeros(shape(sim))
             for r in range(len(data)):
                 for c in range(len(data[r])):
                     if not isnan(data[r][c]):
-                        diff_table[r][c] = sim[r][c] * sf - data[r][c]
+                        diff_table[r][c] = sim[r][c] * scf - data[r][c]
             return np.sum(square(diff_table))
 
         score = 0
@@ -61,50 +61,60 @@ class StepwiseFit:
             simulation_doses = self.data.get_doses()[dose_species]
             datatable = self.data.get_responses()[dose_species]
             datatable = [[el[0] for el in r] for r in datatable]
-
             if dose_species == 'Alpha':
                 spec = 'Ia'
             else:
                 spec = 'Ib'
             simulation = self.model.doseresponse(simulation_times, 'TotalpSTAT', spec, simulation_doses,
                                                  parameters=self.data.conditions[dose_species],
-                                                 return_type='list', dataframe_labels=None)['TotalpSTAT']
-
-            score += minimize(score_target, [40], args=(datatable, simulation))['fun']
+                                                 return_type='list', dataframe_labels='Alpha')['TotalpSTAT']
+            opt = minimize(score_target, [0.1], args=(datatable, simulation))
+            sf = opt['x']
+            score += opt['fun']
         self.model.reset_parameters()
-        return score
+        return score, sf
 
     def fit(self):
         print("Beginning stepwise fit")
         final_fit = OrderedDict({})
+        final_scale_factor = 1
         number_of_parameters = len(self.parameters_to_fit)
+        total_tests = (number_of_parameters+1)*number_of_parameters*self.num_test_vals/2
+        print('total test: {}'.format(total_tests))
         initial_score = 0
         # Fit each parameter, ordered from most important to least
         for i in range(number_of_parameters):
-            score = 0
+            print("{}% of the way done".format(i*100/number_of_parameters))
+            reference_score = 0
+            best_scale_factor = 1
             best_parameter = []
             # Test all remaining parameters, using previously fit values
             for p, (min_test_val, max_test_val) in self.parameters_to_fit.items():
                 residuals = []
+                scale_factor_list = []
                 # Try all test values for current parameter
                 for j in linspace(min_test_val, max_test_val, self.num_test_vals):
                     test_parameters = {**{p: j}, **final_fit}  # Includes previously fit parameters
-                    residuals.append(self.score_parameter(test_parameters))
+                    score, scale_factor = self.score_parameter(test_parameters)
+                    residuals.append(score)
+                    scale_factor_list.append(scale_factor)
                 # Choose best value for current parameter
                 best_parameter_value = linspace(min_test_val, max_test_val, self.num_test_vals)[
                     residuals.index(min(residuals))]
                 # Decide if this is the best parameter so far in this round of 'i' loop
-                if min(residuals) < score or score == 0:
+                if min(residuals) < reference_score or reference_score == 0:
                     if initial_score == 0:
                         initial_score = min(residuals)
-                    score = min(residuals)
+                    reference_score = min(residuals)
+                    best_scale_factor = scale_factor_list[residuals.index(min(residuals))]
                     best_parameter = [p, best_parameter_value]
             # Record the next best parameter and remove it from parameters left to test
             final_fit.update({best_parameter[0]: best_parameter[1]})
+            final_scale_factor = best_scale_factor
             del self.parameters_to_fit[best_parameter[0]]
-        print("Score improved from {} to {} after {} iterations".format(initial_score, score, number_of_parameters))
+        print("Score improved from {} to {} after {} iterations".format(initial_score, reference_score, number_of_parameters))
         self.model.set_parameters(final_fit)
-        return final_fit
+        return final_fit, final_scale_factor
 
 
 class Prior:

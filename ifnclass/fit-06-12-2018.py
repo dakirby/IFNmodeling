@@ -49,20 +49,21 @@ if __name__ == '__main__':
 
     alpha25_n = 3
     beta25_n = 3
-    print(alpha25_top, alpha25_n, alpha25_K)
-    print(alpha60_top, alpha60_n, alpha60_K)
-    print(beta25_top, beta25_n, beta25_K)
-    print(beta60_top, beta60_n, beta60_K)
+    #print(alpha25_top, alpha25_n, alpha25_K)
+    #print(alpha60_top, alpha60_n, alpha60_K)
+    #print(beta25_top, beta25_n, beta25_K)
+    #print(beta60_top, beta60_n, beta60_K)
 
     # Generate points from MM
-    alpha2_5_smooth_data = [logspace(log10(5), log10(50000)),
-                            MM_data(logspace(log10(5), log10(50000)), alpha25_top, alpha25_n, alpha25_K)]
-    alpha60_smooth_data = [logspace(log10(5), log10(50000)),
-                           MM_data(logspace(log10(5), log10(50000)), alpha60_top, alpha60_n, alpha60_K)]
-    beta2_5_smooth_data = [logspace(log10(1), log10(1000)),
-                           MM_data(logspace(log10(1), log10(1000)), beta25_top, beta25_n, beta25_K)]
-    beta60_smooth_data = [logspace(log10(1), log10(1000)),
-                          MM_data(logspace(log10(1), log10(1000)), beta60_top, beta60_n, beta60_K)]
+    alpha_doses = list(logspace(log10(5), log10(50000), 15))+list(logspace(2.5, 2.95, 10))
+    alpha_doses.sort()
+    beta_doses = list(logspace(0, 3, 15))+list(logspace(1.35, 2.65, 10))
+    beta_doses.sort()
+
+    alpha2_5_smooth_data = [alpha_doses, MM_data(alpha_doses, alpha25_top, alpha25_n, alpha25_K)]
+    alpha60_smooth_data = [alpha_doses, MM_data(alpha_doses, alpha60_top, alpha60_n, alpha60_K)]
+    beta2_5_smooth_data = [beta_doses, MM_data(beta_doses, beta25_top, beta25_n, beta25_K)]
+    beta60_smooth_data = [beta_doses, MM_data(beta_doses, beta60_top, beta60_n, beta60_K)]
     # Format into DataFrames
     a25smooth = pd.DataFrame.from_records(
         list(zip(['Alpha'] * len(alpha2_5_smooth_data[0]), alpha2_5_smooth_data[0], alpha2_5_smooth_data[1])),
@@ -81,11 +82,25 @@ if __name__ == '__main__':
         columns=['Dose_Species', 'Dose (pM)', 60])
     b60smooth = b60smooth.set_index(['Dose_Species', 'Dose (pM)'])
 
+    smooth25 = pd.DataFrame.from_records(
+        list(zip(['Alpha'] * len(alpha2_5_smooth_data[0]), alpha2_5_smooth_data[0], alpha2_5_smooth_data[1])) +
+        list(zip(['Beta'] * len(beta2_5_smooth_data[0]), beta2_5_smooth_data[0], beta2_5_smooth_data[1])),
+        columns=['Dose_Species', 'Dose (pM)', 2.5])
+    smooth25 = smooth25.set_index(['Dose_Species', 'Dose (pM)'])
+
+    smooth60 = pd.DataFrame.from_records(
+        list(zip(['Alpha'] * len(alpha60_smooth_data[0]), alpha60_smooth_data[0], alpha60_smooth_data[1])) +
+        list(zip(['Beta'] * len(beta60_smooth_data[0]), beta60_smooth_data[0], beta60_smooth_data[1])),
+        columns=['Dose_Species', 'Dose (pM)', 2.5])
+    smooth60 = smooth60.set_index(['Dose_Species', 'Dose (pM)'])
+
     # Build IfnData objects
     a25smoothIfnData = IfnData('custom', df=a25smooth, conditions={'Alpha': {'Ib': 0}, 'Beta': {'Ia': 0}})
     a60smoothIfnData = IfnData('custom', df=a60smooth, conditions={'Alpha': {'Ib': 0}, 'Beta': {'Ia': 0}})
     b25smoothIfnData = IfnData('custom', df=b25smooth, conditions={'Alpha': {'Ib': 0}, 'Beta': {'Ia': 0}})
     b60smoothIfnData = IfnData('custom', df=b60smooth, conditions={'Alpha': {'Ib': 0}, 'Beta': {'Ia': 0}})
+    smooth25IfnData = IfnData('custom', df=smooth25, conditions={'Alpha': {'Ib': 0}, 'Beta': {'Ia': 0}})
+    smooth60IfnData = IfnData('custom', df=smooth60, conditions={'Alpha': {'Ib': 0}, 'Beta': {'Ia': 0}})
 
     smooth_plot = DoseresponsePlot((2, 2))
     alpha_palette = sns.color_palette("Reds", 6)
@@ -107,18 +122,70 @@ if __name__ == '__main__':
         smooth_plot.add_trajectory(newdata, t, 'scatter', alpha_palette[idx * 2], (0, 0), 'Alpha', dn=1)
         smooth_plot.add_trajectory(newdata, t, 'scatter', beta_palette[idx * 2], (0, 1), 'Beta', dn=1)
 
-    fig, axes = smooth_plot.show_figure()
+    #fig, axes = smooth_plot.show_figure()
 
     # Stepwise fitting
+    # ----------------
+    # First fit the 2.5 minute data
     Mixed_Model = IfnModel('Mixed_IFN_ppCompatible')
-    stepfit25 = StepwiseFit(Mixed_Model, a25smoothIfnData,
-                            {'kpa': (1E-7, 1E-5), 'kSOCSon': (1E-7, 1E-5), 'R1': (200, 12000),
-                             'R2': (200, 12000), 'kd4': (0.006, 1)})
-    stepfit25.fit()
+    stepfit25 = StepwiseFit(Mixed_Model, smooth25IfnData,
+                            {'kpa': (1E-7, 1E-3), 'kd4': (0.006, 1), 'k_d4': (0.0006, 0.3),
+                             'R2': (200, 12000), 'R1': (200, 12000), 'krec_a2': (0.0005, 0.05),
+                             'krec_b2': (0.0001, 0.01)}, n=10)
+    best_parameters, best_scale_factor = stepfit25.fit()
+    print("The fit for 2.5 minutes was:")
+    print(best_parameters)
+    print(stepfit25.model.parameters)
+    print(best_scale_factor)
 
-    sw_tc = stepfit25.model.timecourse(list(linspace(0, 30)), 'TotalpSTAT', return_type='dataframe',
-                                       dataframe_labels=['Alpha', 1E-9])
+    dra25df = stepfit25.model.doseresponse([2.5, 10, 20, 60], 'TotalpSTAT', 'Ia', list(logspace(-3, 4)),
+                                  parameters={'Ib': 0}, return_type='dataframe', dataframe_labels='Alpha')
+    drb25df = stepfit25.model.doseresponse([2.5, 10, 20, 60], 'TotalpSTAT', 'Ib', list(logspace(-3, 4)),
+                                  parameters={'Ia': 0}, return_type='dataframe', dataframe_labels='Beta')
 
-    testplot = TimecoursePlot((1, 1))
-    testplot.add_trajectory(sw_tc, 'plot', 'r', (0, 0))
-    testplot.show_figure()
+    for i in range(4):
+        dra25df.loc['Alpha'].iloc[:, i] *= best_scale_factor
+        drb25df.loc['Beta'].iloc[:, i] *= best_scale_factor
+
+    dra25 = IfnData('custom', df=dra25df, conditions={'Alpha': {'Ib': 0}})
+    drb25 = IfnData('custom', df=drb25df, conditions={'Beta': {'Ia': 0}})
+
+    results_plot = DoseresponsePlot((1, 2))
+    for idx, t in enumerate(['2.5', '10', '20', '60']):
+        results_plot.add_trajectory(dra25, t, 'plot', alpha_palette[idx], (0, 0), 'Alpha')
+        results_plot.add_trajectory(drb25, t, 'plot', beta_palette[idx], (0,1), 'Beta')
+    for idx, t in enumerate([2.5, 10, 20, 60]):
+        results_plot.add_trajectory(newdata, t, 'scatter', alpha_palette[idx], (0, 0), 'Alpha', dn=1)
+        results_plot.add_trajectory(newdata, t, 'scatter', beta_palette[idx], (0, 1), 'Beta', dn=1)
+
+    results_plot.save_figure()
+
+    # Now try to fit the 60 minute data starting from the 2.5 minute results
+    stepfit60 = StepwiseFit(stepfit25.model, smooth60IfnData,
+                            {'kpa': (1E-7, 1E-3), 'kd4': (0.006, 1), 'k_d4': (0.0006, 0.3),
+                             'R2': (200, 12000), 'R1': (200, 12000), 'kSOCSon': (5E-8, 5E-4)}, n=10)
+    best_parameters, best_scale_factor = stepfit60.fit()
+    print("The final fit was:")
+    print(best_parameters)
+    print(best_scale_factor)
+    dra60df = stepfit60.model.doseresponse([2.5, 10, 20, 60], 'TotalpSTAT', 'Ia', list(logspace(-3, 4)),
+                                  parameters={'Ib': 0}, return_type='dataframe', dataframe_labels='Alpha')
+    drb60df = stepfit60.model.doseresponse([2.5, 10, 20, 60], 'TotalpSTAT', 'Ib', list(logspace(-3, 4)),
+                                  parameters={'Ia': 0}, return_type='dataframe', dataframe_labels='Beta')
+
+    for i in range(4):
+        dra60df.loc['Alpha'].iloc[:, i] *= best_scale_factor
+        drb60df.loc['Beta'].iloc[:, i] *= best_scale_factor
+
+    dra60 = IfnData('custom', df=dra60df, conditions={'Alpha': {'Ib': 0}})
+    drb60 = IfnData('custom', df=drb60df, conditions={'Beta': {'Ia': 0}})
+
+    results_plot2 = DoseresponsePlot((1, 2))
+    for idx, t in enumerate(['2.5', '10', '20', '60']):
+        results_plot2.add_trajectory(dra60, t, 'plot', alpha_palette[idx], (0, 0), 'Alpha')
+        results_plot2.add_trajectory(drb60, t, 'plot', beta_palette[idx], (0,1), 'Beta')
+    for idx, t in enumerate([2.5, 10, 20, 60]):
+        results_plot2.add_trajectory(newdata, t, 'scatter', alpha_palette[idx], (0, 0), 'Alpha', dn=1)
+        results_plot2.add_trajectory(newdata, t, 'scatter', beta_palette[idx], (0, 1), 'Beta', dn=1)
+
+    results_plot2.show_figure(save_flag=True)

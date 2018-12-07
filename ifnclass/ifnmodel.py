@@ -172,7 +172,13 @@ class IfnModel:
         if parameters is not None:
             self.set_parameters(parameters)
         # Simulate
-        (_, sim) = self.model.simulate(multiply(times, 60), param_values=list(self.parameters.values()))
+        noTflag = False
+        if times[0] != 0:
+            noTflag = True
+            times = [0, *times]
+        (_, sim) = self.model.simulate(multiply(times, 60).tolist(), param_values=list(self.parameters.values()))
+        if noTflag == True:
+            sim = sim[1:]
         # Reset model parameter vector so that timecourse() is not permanently altering model parameters
         self.parameters = initial_parameters
         # Return trajectory(ies)
@@ -247,8 +253,9 @@ class IfnModel:
                 return total_df
 
 if __name__ == '__main__':
-    testModel = IfnModel('IFN_alpha_altSOCS_ppCompatible')
-    tc = testModel.timecourse([0, 5, 15, 30], 'TotalpSTAT', return_type='dataframe', dataframe_labels=['Alpha', 1])
-    dr = testModel.doseresponse([0, 5, 15, 30], ['T', 'TotalpSTAT'], 'I', [1, 10, 100],
+    testModel = IfnModel('Mixed_IFN_ppCompatible')
+    tc = testModel.timecourse([0, 5, 15, 30], 'TotalpSTAT', return_type='list', dataframe_labels=['Alpha', 1])
+    dr = testModel.doseresponse([0, 5, 15, 30], ['Ta', 'TotalpSTAT'], 'Ia', [1, 10, 100],
                                 return_type='dataframe', dataframe_labels='Alpha')
+    print(tc)
     print(dr)
