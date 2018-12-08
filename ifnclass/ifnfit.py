@@ -114,6 +114,8 @@ class StepwiseFit:
             del self.parameters_to_fit[best_parameter[0]]
         print("Score improved from {} to {} after {} iterations".format(initial_score, reference_score, number_of_parameters))
         self.model.set_parameters(final_fit)
+        with open('stepwisefit.p', 'wb') as f:
+            pickle.dump(self.__dict__, f, 2)
         return final_fit, final_scale_factor
 
 

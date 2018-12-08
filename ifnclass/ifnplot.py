@@ -285,8 +285,9 @@ class DoseresponsePlot:
 if __name__ == '__main__':
     testData = IfnData("20181113_B6_IFNs_Dose_Response_Bcells")
     testModel = IfnModel('Mixed_IFN_ppCompatible')
-    # testParameters = {'kpa': 4.686e-05, 'kSOCSon': 2.687e-06, 'kd4': 0.236, 'k_d4': 0.2809, 'R1': 108, 'R2': 678}
-    best_fit_old20min = {'kpa': 1e-07, 'kSOCSon': 1e-07, 'krec_a1': 0.0001, 'krec_a2': 0.001, 'R1': 1272, 'R2': 1272, 'krec_b1': 1.0e-05, 'krec_b2': 0.0001}
+    # testParameters = {'kpa': 4.686e-05, 'kSOCSon': 2.687e-06, 'kd4': 0.236, 'k_d4': 0.2809, 'R1': 108, 'R2': 678} 'kpa': 1e-07,
+    best_fit_old20min = {'kSOCSon': 1e-07, 'krec_a1': 0.0001, 'krec_a2': 0.001, 'R1': 1272, 'R2': 1272,
+                         'krec_b1': 1.0e-05, 'krec_b2': 0.0001, 'kpu':1E-2, 'kpa':1E-7}
 
     testModel.set_parameters(best_fit_old20min)
     tc = testModel.timecourse(list(linspace(0, 30)), 'TotalpSTAT', return_type='dataframe',
@@ -297,15 +298,23 @@ if __name__ == '__main__':
     #testplot.add_trajectory(tc, 'plot', 'r', (0, 0))
     #testplot.show_figure()
 
-    dra = testModel.doseresponse([0, 2.5, 5, 15, 30, 60], 'TotalpSTAT', 'Ia', list(logspace(-3, 4)),
+    dra = testModel.doseresponse([0, 2.5, 5, 15, 30, 60], 'TotalpSTAT', 'Ia', list(logspace(-3, 6)),
                                  parameters={'Ib': 0}, return_type='dataframe', dataframe_labels='Alpha')
 
-    drb = testModel.doseresponse([0, 2.5, 5, 15, 30, 60], 'TotalpSTAT', 'Ib', list(logspace(-3, 4)),
+    drb = testModel.doseresponse([0, 2.5, 5, 15, 30, 60], 'TotalpSTAT', 'Ib', list(logspace(-3, 6)),
                                  parameters={'Ia': 0}, return_type='dataframe', dataframe_labels='Beta')
     draIfnData = IfnData('custom', df=dra, conditions={'Alpha': {'Ib': 0}})
     drbIfnData = IfnData('custom', df=drb, conditions={'Beta': {'Ia': 0}})
 
     testplot = DoseresponsePlot((1, 1))
-    testplot.add_trajectory(draIfnData, '15', 'plot', 'r', (0, 0), 'Alpha', dn=1)
-    testplot.add_trajectory(drbIfnData, '15', 'plot', 'g', (0, 0), 'Beta', dn=1)
+    testplot.add_trajectory(draIfnData, '15', 'plot', 'r:', (0, 0), 'Alpha', dn=1)
+    testplot.add_trajectory(drbIfnData, '15', 'plot', 'g:', (0, 0), 'Beta', dn=1)
+
+    testplot.add_trajectory(draIfnData, '30', 'plot', 'r--', (0, 0), 'Alpha', dn=1)
+    testplot.add_trajectory(drbIfnData, '30', 'plot', 'g--', (0, 0), 'Beta', dn=1)
+
+
+    testplot.add_trajectory(draIfnData, '60', 'plot', 'r', (0, 0), 'Alpha', dn=1)
+    testplot.add_trajectory(drbIfnData, '60', 'plot', 'g', (0, 0), 'Beta', dn=1)
+
     testtraj = testplot.show_figure()
