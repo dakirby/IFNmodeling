@@ -61,7 +61,7 @@ if __name__ == '__main__':
     stepfit60 = StepwiseFit(stepfit25.model, smooth60IfnData,
                             {'kSOCSon': (1E-8, 5E-4), 'kd4': (0.06, 1), 'k_d4': (0.0006, 0.3),
                              'krec_a2': (0.0005, 0.05), 'krec_b2': (0.01, 0.0001),
-                             'krec_a1': (0.00003, 0.003), 'krec_b1': (0.001, 0.00001)}, n=5)
+                             'krec_a1': (0.00003, 0.003), 'krec_b1': (0.001, 0.00001)}, n=8)
     best_parameters, best_scale_factor60 = stepfit60.fit()
     with open('stepwisefitmodel.p','wb') as f:
         pickle.dump(stepfit60.model.__dict__,f,2)
@@ -70,7 +70,7 @@ if __name__ == '__main__':
     print(stepfit60.model.parameters)
     print("The final fit was:")
     print(best_parameters)
-    print(best_scale_factor)
+    print(best_scale_factor60)
     dra60df = stepfit60.model.doseresponse([2.5, 10, 20, 60], 'TotalpSTAT', 'Ia', list(logspace(-3, 5)),
                                   parameters={'Ib': 0}, return_type='dataframe', dataframe_labels='Alpha')
     drb60df = stepfit60.model.doseresponse([2.5, 10, 20, 60], 'TotalpSTAT', 'Ib', list(logspace(-3, 4)),

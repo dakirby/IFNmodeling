@@ -36,6 +36,7 @@ class Trajectory:
         self.timeslice = kwargs.get('timeslice', None)
         self.dose_species = kwargs.get('dose_species', None)
         self.dose_norm = kwargs.get('dose_norm', 1)
+        self.color = kwargs.get('color', None)
 
     def t(self):  # times
         if self.timeslice is None:
@@ -106,8 +107,8 @@ class TimecoursePlot:
         self.subplot_indices = []
 
     # Instance methods
-    def add_trajectory(self, data: IfnData, plot_type: str, line_style, subplot_idx: tuple, label=''):
-        t = Trajectory(data, plot_type, line_style, label=label)
+    def add_trajectory(self, data: IfnData, plot_type: str, line_style, subplot_idx: tuple, label='', **kwargs):
+        t = Trajectory(data, plot_type, line_style, label=label, **kwargs)
         self.trajectories.append(t)
         if self.nrows == 1 and self.ncols == 1:
             self.subplot_indices.append((None, None))
@@ -132,21 +133,50 @@ class TimecoursePlot:
         del self.trajectories[index]
         del self.subplot_indices[index]
 
-    def show_figure(self):
+    def show_figure(self, show_flag=True, save_flag=False):
         for trajectory_idx in range(len(self.trajectories)):
             trajectory = self.trajectories[trajectory_idx]
             plt_idx = self.subplot_indices[trajectory_idx]
             ax = self.get_axis_object(plt_idx)
             if trajectory.plot_type == 'plot':
-                ax.plot(trajectory.t(), [el[0] for el in trajectory.y()], trajectory.line_style, label=trajectory.label)
+                if type(trajectory.line_style) == str:
+                    if trajectory.color is not None:
+                        ax.plot(trajectory.t(), [el[0] for el in trajectory.y()], trajectory.line_style,
+                                label=trajectory.label, color=trajectory.color)
+                        ax.legend()
+                    else:
+                        ax.plot(trajectory.t(), [el[0] for el in trajectory.y()], trajectory.line_style, label=trajectory.label)
+                        ax.legend()
+                else:
+                    ax.plot(trajectory.t(), [el[0] for el in trajectory.y()], c=trajectory.line_style, label=trajectory.label)
+                    ax.legend()
             elif trajectory.plot_type == 'scatter':
-                ax.scatter(trajectory.t(), [el[0] for el in trajectory.y()], c=trajectory.line_style[0],
-                           marker=trajectory.line_style[1], label=trajectory.label)
+                if type(trajectory.line_style) == str:
+                    if trajectory.color is not None:
+                        ax.scatter(trajectory.t(), [el[0] for el in trajectory.y()], c=trajectory.line_style[0],
+                                   marker=trajectory.line_style[1], label=trajectory.label, color=trajectory.color)
+                        ax.legend()
+                    else:
+                        ax.scatter(trajectory.t(), [el[0] for el in trajectory.y()], c=trajectory.line_style[0],
+                                   marker=trajectory.line_style[1], label=trajectory.label)
+                        ax.legend()
+                else:
+                    ax.scatter(trajectory.t(), [el[0] for el in trajectory.y()], c=trajectory.line_style,
+                               label=trajectory.label)
+                    ax.legend()
             elif trajectory.plot_type == 'errorbar':
                 ax.errorbar(trajectory.t(), [el[0] for el in trajectory.y()], yerr=[el[1] for el in trajectory.y()],
                             fmt=trajectory.line_style, label=trajectory.label)
-        plt.show()
+                ax.legend()
+        if save_flag:
+            plt.savefig('fig{}.pdf'.format(int(time.time())))
+        if show_flag:
+            plt.legend()
+            plt.show()
         return self.fig
+
+    def save_figure(self):
+        self.show_figure(show_flag=False, save_flag=True)
 
 
 class DoseresponsePlot:

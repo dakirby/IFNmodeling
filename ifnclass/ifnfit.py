@@ -55,6 +55,7 @@ class StepwiseFit:
             return np.sum(square(diff_table))
 
         score = 0
+        parameter_copy = copy.deepcopy(self.model.parameters)
         self.model.set_parameters(parameter_dict)
         for dose_species in self.data.get_dose_species():
             simulation_times = self.data.get_times()[dose_species]
@@ -71,7 +72,7 @@ class StepwiseFit:
             opt = minimize(score_target, [0.1], args=(datatable, simulation))
             sf = opt['x']
             score += opt['fun']
-        self.model.reset_parameters()
+        self.model.set_parameters(parameter_copy)
         return score, sf
 
     def fit(self):
@@ -114,9 +115,11 @@ class StepwiseFit:
             del self.parameters_to_fit[best_parameter[0]]
         print("Score improved from {} to {} after {} iterations".format(initial_score, reference_score, number_of_parameters))
         self.model.set_parameters(final_fit)
+        self.best_fit_parameters = final_fit
+        self.model.default_parameters = copy.deepcopy(self.model.parameters)
         with open('stepwisefit.p', 'wb') as f:
             pickle.dump(self.__dict__, f, 2)
-        return final_fit, final_scale_factor
+        return final_fit, final_scale_factor[0]
 
 
 class Prior:

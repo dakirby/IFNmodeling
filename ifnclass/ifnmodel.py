@@ -3,6 +3,7 @@ from collections import OrderedDict
 import copy
 from numpy import multiply, zeros, nan
 import pandas as pd
+import pickle
 
 
 class IfnModel:
@@ -82,19 +83,39 @@ class IfnModel:
 
     # Instance methods
     def build_model(self, name):
-        model_code = __import__('ifnmodels.' + name, fromlist=['ifnmodels'])
-        py_output = export(model_code.model, 'python')
-        with open("ODE_system.py", 'w') as f:
-            f.write(py_output)
-        import ODE_system
-        model_obj = ODE_system.Model()
-        return model_obj
+        if name == '':
+            return None
+        else:
+            model_code = __import__('ifnmodels.' + name, fromlist=['ifnmodels'])
+            py_output = export(model_code.model, 'python')
+            with open("ODE_system.py", 'w') as f:
+                f.write(py_output)
+            import ODE_system
+            model_obj = ODE_system.Model()
+            return model_obj
+
+    def save_model(self, name):
+        with open(name, 'wb') as f:
+            pickle.dump(self.__dict__, f,2)
+
+    def load_model(self, name):
+        try:
+            with open('ifnmodel/'+name+'.p', 'rb') as f:
+                tmp_dict = pickle.load(f)
+            self.__dict__.update(tmp_dict)
+        except FileNotFoundError:
+            with open(name, 'rb') as f:
+                tmp_dict = pickle.load(f)
+            self.__dict__.update(tmp_dict)
 
     def build_parameters(self, pysb_model):
-        parameter_dict = OrderedDict({})
-        for p in pysb_model.parameters:
-            parameter_dict.update({p[0]: p[1]})
-        return parameter_dict
+        if pysb_model is not None:
+            parameter_dict = OrderedDict({})
+            for p in pysb_model.parameters:
+                parameter_dict.update({p[0]: p[1]})
+            return parameter_dict
+        else:
+            return {}
 
     def check_if_parameters_in_model(self, test_parameters):
         list1 = [element for element in test_parameters.keys() if element in self.parameters.keys()]
