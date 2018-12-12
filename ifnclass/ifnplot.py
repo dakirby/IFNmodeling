@@ -40,8 +40,10 @@ class Trajectory:
 
     def t(self):  # times
         if self.timeslice is None:
-            return [el for el in self.data.data_set.columns if
-                    (type(el) == int or type(el) == float or isinstance(el, float64))]
+            if type(self.data.data_set.columns[0]) == str:
+                return [int(el) for el in self.data.data_set.columns if el is not 'Dose_Species' and el is not 'Dose (pM)']
+            else:
+                return [el for el in self.data.data_set.columns if el is not 'Dose_Species' and el is not 'Dose (pM)']
         else:
             return [self.timeslice]
 
@@ -61,12 +63,15 @@ class Trajectory:
         else:
             try:
                 return self.data.data_set.xs(self.dose_species).loc[:, self.timeslice].values
-            except KeyError:
+            except (KeyError, TypeError):
                 try:
-                    temp = [str(el) for el in self.timeslice]
+                    if type(self.timeslice) == list:
+                        temp = [str(el) for el in self.timeslice]
+                    else:
+                        temp = str(self.timeslice)
                     return self.data.data_set.xs(self.dose_species).loc[:, temp].values
                 except KeyError:
-                    print(self.data.data_set.xs(self.dose_species).columns.values)
+                    print("Something went wrong indexing times")
                     return self.data.data_set.xs(self.dose_species).loc[:, [float(el) for el in self.timeslice][0]].values
 
 
@@ -153,8 +158,9 @@ class TimecoursePlot:
             elif trajectory.plot_type == 'scatter':
                 if type(trajectory.line_style) == str:
                     if trajectory.color is not None:
-                        ax.scatter(trajectory.t(), [el[0] for el in trajectory.y()], c=trajectory.line_style[0],
-                                   marker=trajectory.line_style[1], label=trajectory.label, color=trajectory.color)
+                        plot_times = trajectory.t()
+                        plot_responses = [el[0] for el in trajectory.y()]
+                        ax.scatter(plot_times, plot_responses, marker=trajectory.line_style, label=trajectory.label, color=trajectory.color)
                         ax.legend()
                     else:
                         ax.scatter(trajectory.t(), [el[0] for el in trajectory.y()], c=trajectory.line_style[0],
@@ -165,8 +171,17 @@ class TimecoursePlot:
                                label=trajectory.label)
                     ax.legend()
             elif trajectory.plot_type == 'errorbar':
-                ax.errorbar(trajectory.t(), [el[0] for el in trajectory.y()], yerr=[el[1] for el in trajectory.y()],
-                            fmt=trajectory.line_style, label=trajectory.label)
+                x = trajectory.t()
+                y = [el[0] for el in trajectory.y()]
+                sigmas = [el[1] for el in trajectory.y()]
+                if type(trajectory.line_style) == str:
+                    if trajectory.color is not None:
+                        ax.errorbar(x, y, yerr=sigmas, fmt=trajectory.line_style,
+                                    label=trajectory.label, color=trajectory.color)
+                    else:
+                        ax.errorbar(x, y, yerr=sigmas, fmt=trajectory.line_style, label=trajectory.label)
+                else:
+                    ax.errorbar(x, y, yerr=sigmas, fmt='--', label=trajectory.label, color=trajectory.line_style)
                 ax.legend()
         if save_flag:
             plt.savefig('fig{}.pdf'.format(int(time.time())))
@@ -226,7 +241,12 @@ class DoseresponsePlot:
                 self.axes[column].set_xlabel('Dose (pM)')
                 if column == 0:
                     self.axes[column].set_ylabel('Response')
-
+        elif self.nrows > 1:
+            for row in range(self.nrows):
+                self.axes[row].set(xscale='log', yscale='linear')
+                if row == 0:
+                    self.axes[row].set_xlabel('Dose (pM)')
+                self.axes[row].set_ylabel('Response')
         else:
             self.axes.set(xscale='log', yscale='linear')
             self.axes.set_xlabel('Dose (pM)')
@@ -236,9 +256,9 @@ class DoseresponsePlot:
 
     # Instance methods
     def add_trajectory(self, data: IfnData, time, plot_type: str, line_style, subplot_idx: tuple,
-                       dose_species: str, label='', dn: float = 1.):
+                       dose_species: str, label='', dn: float = 1., **kwargs):
         t = Trajectory(data, plot_type, line_style, label=label, timeslice=time, dose_species=dose_species,
-                       dose_norm=dn)
+                       dose_norm=dn, **kwargs)
         self.trajectories.append(t)
         if self.nrows == 1 and self.ncols == 1:
             self.subplot_indices.append((None, None))
@@ -275,9 +295,14 @@ class DoseresponsePlot:
                     x = x[1:]
                     z = z[1:]
                 if type(trajectory.line_style) == str:
-                    ax.plot(x, z, trajectory.line_style, label=trajectory.label)
+                    if trajectory.color is not None:
+                        ax.plot(x, z, trajectory.line_style, label=trajectory.label, color=trajectory.color)
+                    else:
+                        ax.plot(x, z, trajectory.line_style, label=trajectory.label)
                 else:
                     ax.plot(x, z, c=trajectory.line_style, label=trajectory.label)
+                ax.legend()
+
             elif trajectory.plot_type == 'scatter':
                 x = trajectory.d()
                 z = [el[0] for el in trajectory.z()]
@@ -285,8 +310,11 @@ class DoseresponsePlot:
                     x = x[1:]
                     z = z[1:]
                 if len(trajectory.line_style) == 2:
-                    ax.scatter(x, z, c=trajectory.line_style[0],
-                               marker=trajectory.line_style[1], label=trajectory.label)
+                    if trajectory.color is not None:
+                        ax.scatter(x, z, marker=trajectory.line_style[1], label=trajectory.label, color=trajectory.color)
+                    else:
+                        ax.scatter(x, z, c=trajectory.line_style[0],
+                                   marker=trajectory.line_style[1], label=trajectory.label)
                 elif len(trajectory.line_style) == 1:
                     ax.scatter(x, z, c=trajectory.line_style[0], label=trajectory.label)
                 else:
@@ -302,7 +330,14 @@ class DoseresponsePlot:
                     x = x[1:]
                     z = z[1:]
                 sigmas = [el[1] for el in trajectory.z()]
-                ax.errorbar(x, z, yerr=sigmas, fmt=trajectory.line_style, label=trajectory.label)
+                if type(trajectory.line_style) == str:
+                    if trajectory.color is not None:
+                        ax.errorbar(x, z, yerr=sigmas, fmt=trajectory.line_style,
+                                    label=trajectory.label, color=trajectory.color)
+                    else:
+                        ax.errorbar(x, z, yerr=sigmas, fmt=trajectory.line_style, label=trajectory.label)
+                else:
+                    ax.errorbar(x, z, yerr=sigmas, fmt='--', label=trajectory.label, color=trajectory.line_style)
         if save_flag:
             plt.savefig('fig{}.pdf'.format(int(time.time())))
         if show_flag:

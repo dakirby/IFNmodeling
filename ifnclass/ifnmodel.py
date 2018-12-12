@@ -193,6 +193,9 @@ class IfnModel:
         if parameters is not None:
             self.set_parameters(parameters)
         # Simulate
+        if type(times[0]) == str:
+            for i in range(len(times)):
+                times[i] = float(times[i])
         noTflag = False
         if times[0] != 0:
             noTflag = True

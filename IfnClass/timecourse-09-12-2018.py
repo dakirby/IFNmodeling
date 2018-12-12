@@ -14,53 +14,16 @@ from collections import OrderedDict
 if __name__ == '__main__':
     newdata = IfnData("20181113_B6_IFNs_Dose_Response_Bcells")
     Mixed_Model = IfnModel('')
-    '''
-    fit_parameters = OrderedDict(
-        [('kd4', 1.0), ('krec_a1', 3.0000000000000001e-05), ('krec_a2', 0.050000000000000003), ('krec_b2', 0.01),
-         ('krec_b1', 0.001), ('k_d4', 0.00059999999999999995), ('kSOCSon', 1e-08), ('kd3', 0.001),
-         ('k_d3', 2.3999999999999999e-06)])
-    Mixed_Model.set_parameters(fit_parameters)
-    Mixed_Model.save_model('fitting_2_5.p')
-    '''
     Mixed_Model.load_model('fitting_2_5.p')
 
-    alpha_palette = sns.color_palette("Reds", 7)
-    beta_palette = sns.color_palette("Greens", 7)
-
-    dra60df = Mixed_Model.doseresponse([2.5, 10, 20, 60], 'TotalpSTAT', 'Ia', list(logspace(-3, 5)),
-                                       parameters={'Ib': 0}, return_type='dataframe', dataframe_labels='Alpha')
-    drb60df = Mixed_Model.doseresponse([2.5, 10, 20, 60], 'TotalpSTAT', 'Ib', list(logspace(-3, 4)),
-                                       parameters={'Ia': 0}, return_type='dataframe', dataframe_labels='Beta')
-
-    scale_factor = 0.03094064
-    scale_data = lambda q: (scale_factor * q[0], scale_factor * q[1])
-    for i in range(4):
-        dra60df.loc['Alpha'].iloc[:, i] = dra60df.loc['Alpha'].iloc[:, i].apply(scale_data)
-        drb60df.loc['Beta'].iloc[:, i] = drb60df.loc['Beta'].iloc[:, i].apply(scale_data)
-
-    tca5000IfnData = IfnData('custom', df=dra60df, conditions={'Alpha': {'Ib': 0}})
-    tca100IfnData = IfnData('custom', df=drb60df, conditions={'Beta': {'Ia': 0}})
-
-    """
-    initial_fit = DoseresponsePlot((1, 2))
-    for idx, t in enumerate(['2.5', '10', '20', '60']):
-        initial_fit.add_trajectory(dra60, t, 'plot', alpha_palette[idx], (0, 0), 'Alpha')
-        initial_fit.add_trajectory(drb60, t, 'plot', beta_palette[idx], (0, 1), 'Beta')
-    for idx, t in enumerate([2.5, 10, 20, 60]):
-        initial_fit.add_trajectory(newdata, t, 'scatter', alpha_palette[idx], (0, 0), 'Alpha', dn=1)
-        initial_fit.add_trajectory(newdata, t, 'scatter', beta_palette[idx], (0, 1), 'Beta', dn=1)
-
-    initial_fit.show_figure(save_flag=False)
-    """
-
-    # ---------------------------
-    # Now try to improve the fit:
-    # ---------------------------
-
-    Mixed_Model.set_parameters({'kpu': 0.002, 'R2': 2300 * 2, 'R1': 1800 * 2, 'k_d4': 0.06, 'kint_b': 0.00002,
-                                'k_a1': 4.98E-14 * 2, 'k_a2': 8.30e-13 * 2, 'kSOCSon': 1e-8,
-                                'ka1': 3.321155762205247e-14 * 0.5, 'ka2': 4.98173364330787e-13 * 0.5})
-    scale_factor = 0.02894064
+    Mixed_Model.set_parameters(
+        {'kpu': 0.0028, 'R2': 2300 * 2.5, 'R1': 1800 * 1.8, 'k_d4': 0.06, 'kint_b': 0.0003, 'krec_b1': 0.001,
+         'k_a1': 4.98E-14, 'k_a2': 8.30e-13 * 4, 'kSOCSon': 0.9e-8,
+         'ka1': 3.321155762205247e-14 * 0.3, 'ka2': 4.98173364330787e-13 * 0.3,
+         'kint_a': 0.0014, 'krec_a1': 9e-03})
+    scale_factor = 0.036
+    alpha_palette = sns.color_palette("Reds", 9)
+    beta_palette = sns.color_palette("Greens", 9)
 
     # Additional fitting
     """
@@ -104,20 +67,27 @@ if __name__ == '__main__':
         beta_IfnData_objects.append(IfnData('custom', df=beta_time_courses[j], conditions={'Beta': {'Ia': 0}}))
     # Generate plot
     new_fit = TimecoursePlot((1, 2))
+    alpha_mask = [5, 50, 250]
+    beta_mask = [0.1, 5, 200]
     # Add fits
     for j, dose in enumerate([5, 50, 250, 500, 5000, 25000, 50000]):
-        new_fit.add_trajectory(alpha_IfnData_objects[j], 'plot', alpha_palette[j], (0, 0), label='Alpha '+str(dose))
+        if dose not in alpha_mask:
+            new_fit.add_trajectory(alpha_IfnData_objects[j], 'plot', alpha_palette[j+2], (0, 0), label='Alpha '+str(dose))
     for j, dose in enumerate([0.1, 1, 5, 10, 100, 200, 1000]):
-        new_fit.add_trajectory(beta_IfnData_objects[j], 'plot', beta_palette[j], (0, 1), label='Beta '+str(dose))
+        if dose not in beta_mask:
+            new_fit.add_trajectory(beta_IfnData_objects[j], 'plot', beta_palette[j+2], (0, 1), label='Beta '+str(dose))
     # Add data
     for idx, d in enumerate([5, 50, 250, 500, 5000, 25000, 50000]):
-        atc = IfnData('custom', df=newdata.data_set.loc['Alpha', d, :])
-        new_fit.add_trajectory(atc, 'scatter', alpha_palette[idx], (0, 0), label='Alpha '+str(d))
-        new_fit.add_trajectory(atc, 'plot', '--', (0, 0), color=alpha_palette[idx])
-    for idx, d in enumerate([0.1, 1, 5, 10, 100, 200, 1000]):
-        btc = IfnData('custom', df=newdata.data_set.loc['Beta', d, :])
-        new_fit.add_trajectory(btc, 'scatter', beta_palette[idx], (0, 1), label='Beta '+str(d))
-        new_fit.add_trajectory(btc, 'plot', '--', (0, 1), color=beta_palette[idx])
+        # Optional mask:
+        if d not in alpha_mask:
+            atc = IfnData('custom', df=newdata.data_set.loc['Alpha', d, :])
+            new_fit.add_trajectory(atc, 'scatter', alpha_palette[idx+2], (0, 0), label='Alpha '+str(d))
+            new_fit.add_trajectory(atc, 'plot', '--', (0, 0), color=alpha_palette[idx+2])
+    for j, dose in enumerate([0.1, 1, 5, 10, 100, 200, 1000]):
+        if dose not in beta_mask:
+            btc = IfnData('custom', df=newdata.data_set.loc['Beta', dose, :])
+            new_fit.add_trajectory(btc, 'scatter', beta_palette[j+2], (0, 1), label='Beta '+str(dose))
+            new_fit.add_trajectory(btc, 'plot', '--', (0, 1), color=beta_palette[j+2])
 
     new_fit.show_figure()
     print(Mixed_Model.parameters)

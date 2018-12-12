@@ -30,11 +30,41 @@ if __name__ == '__main__':
     # ---------------------------
     # Now try to improve the fit:
     # ---------------------------
+    """
+    Results of the 5 minute stepwise fit
+    OrderedDict([('R2', 500.0), ('kpu', 0.0001), ('R1', 821.42857142857144), ('k_d4', 0.10000000000000001), ('kd4', 0.21642857142857141), ('kd3', 0.00021642857142857143), ('k_d3', 0.00040000000000000002)])
+    10.6992020307
+    # Previous attempt                 
+    Mixed_Model.set_parameters({'kpa': 2e-6, 'kpu': 0.0008,
+                                'R2': 4464, 'R1': 4785,
+                                'k_d4': 0.001, 'kd4': 0.092,
+                                'k_a1': 4.98e-14 * 0.02, 'k_a2': 8.3e-13 * 0.02,
+                                'ka1': 3.32e-14 * 0.1, 'ka2': 4.98e-13 * 0.1,
+                                'kSOCSon': 2e-6, 'kSOCS': 0.001,
+                                'kint_b': 0.0004, 'krec_b2': 0.001, 'krec_b1': 0.001,
+                                'kint_a': 0.00444, 'krec_a1': 3e-05, 'krec_a2': 5e-4})                 
+    """
+    """ 
+    # Best of 11-12-2018-11pm
+    Mixed_Model.set_parameters({'kpu': 0.00025, 'kpa': 5e-7,
+                                'R2': 1742, 'R1': 1785,
+                                'k_d4': 0.06, 'kd4': 0.803, 'kd3': 0.008,
+                                'k_a2': 8.3e-13 * 0.1,
+                                'ka2': 4.98173364330787e-13 * 0.05, 'ka1': 3.321155762205247e-14 * 0.1,
+                                'ka4': 0.2,
+                                'kSOCS': 0.005, 'kSOCSon': 1e-3, 'SOCSdeg': 0,
+                                'kint_b': 0.0009, 'kint_a': 0.001})
+    """
+    Mixed_Model.set_parameters({'kpu': 0.00025, 'kpa': 5e-7,
+                                'R2': 1742, 'R1': 1785,
+                                'k_d4': 0.06, 'kd4': 0.803, 'kd3': 0.008,
+                                'k_a2': 8.3e-13 * 0.1,
+                                'ka2': 4.98173364330787e-13 * 0.1, 'ka1': 3.321155762205247e-14,
+                                'ka4': 0.2,
+                                'kSOCS': 0.005, 'kSOCSon': 1e-3, 'SOCSdeg': 0,
+                                'kint_b': 0.0009, 'kint_a': 0.001})
 
-    Mixed_Model.set_parameters({'kpu': 0.001, 'R2': 4000, 'R1': 3000, 'k_d4': 0.03, 'kd4': 0.1,
-                                'krec_b2': 0.01, 'krec_b1': 0.001, 'kSOCSon': 1e-7,
-                                'kint_a': 0.00014, 'krec_a1': 3e-05, 'krec_a2': 5e-4})
-    scale_factor = 2.5
+    scale_factor = 20
     # Additional fitting
     """
     stepfit25 = StepwiseFit(Mixed_Model, smooth25IfnData,

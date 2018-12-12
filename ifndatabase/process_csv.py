@@ -38,16 +38,17 @@ def build_database(data_wd: str) -> None:
     # MacParland_Extended
     # -------------------
     dataset_2 = pd.read_csv(data_wd + "MacParland_Extended.csv")
-    aData = dataset_2.loc[(dataset_2.loc[:, 'Interferon'] == "Alpha"), ['0', '5', '15', '30', '60']].values
-    bData = dataset_2.loc[(dataset_2.loc[:, 'Interferon'] == "Alpha_std"), ['0', '5', '15', '30', '60']].values
+    print(dataset_2.columns)
+    aData = dataset_2.loc[(dataset_2.loc[:, 'Interferon'] == "Alpha"), [str(el) for el in [0, 5, 15, 30, 60]]].values
+    bData = dataset_2.loc[(dataset_2.loc[:, 'Interferon'] == "Alpha_std"), [str(el) for el in [0, 5, 15, 30, 60]]].values
     aZipped = [[tuple(el) for el in r] for r in np.dstack((aData, bData))]
     aZipped = [['Alpha', 10] + aZipped[0],
                ['Alpha', 90] + aZipped[1],
                ['Alpha', 600] + aZipped[2],
                ['Alpha', 4000] + aZipped[3],
                ['Alpha', 8000] + aZipped[4]]
-    aData = dataset_2.loc[(dataset_2.loc[:, 'Interferon'] == "Beta"), ['0', '5', '15', '30', '60']].values
-    bData = dataset_2.loc[(dataset_2.loc[:, 'Interferon'] == "Beta_std"), ['0', '5', '15', '30', '60']].values
+    aData = dataset_2.loc[(dataset_2.loc[:, 'Interferon'] == "Beta"), [str(el) for el in [0, 5, 15, 30, 60]]].values
+    bData = dataset_2.loc[(dataset_2.loc[:, 'Interferon'] == "Beta_std"), [str(el) for el in [0, 5, 15, 30, 60]]].values
     bZipped = [[tuple(el) for el in r] for r in np.dstack((aData, bData))]
     bZipped = [['Beta', 10] + bZipped[0],
                ['Beta', 90] + bZipped[1],
@@ -55,7 +56,7 @@ def build_database(data_wd: str) -> None:
                ['Beta', 2000] + bZipped[3],
                ['Beta', 11000] + bZipped[4]]
     df = pd.DataFrame.from_records(aZipped + bZipped,
-                                   columns=['Dose_Species', 'Dose (pM)'] + list(dataset_2.columns[2:]))
+                                   columns=['Dose_Species', 'Dose (pM)', 0, 5, 15, 30, 60])
     df.set_index(['Dose_Species', 'Dose (pM)'], inplace=True)
     pickle.dump(df, open(data_wd + 'MacParland_Extended.p', 'wb'))
 
