@@ -12,6 +12,7 @@ import pickle
 
 if __name__ == '__main__':
     newdata = IfnData("MacParland_Extended")
+    newdata.data_set.drop(labels=[4000, 8000], level=1, inplace=True)
     df5 = pd.DataFrame(newdata.data_set.loc[:, 5])
     df15 = pd.DataFrame(newdata.data_set.loc[:, 15])
     df30 = pd.DataFrame(newdata.data_set.loc[:, 30])
@@ -27,19 +28,19 @@ if __name__ == '__main__':
 
     # Stepwise fitting
     # ----------------
-    # First fit the 30 minute data
-    stepfit25 = StepwiseFit(Mixed_Model, IfnData_30,
+    # First fit the 5 minute data
+    stepfit25 = StepwiseFit(Mixed_Model, IfnData_5,
                             {'kpu': (0.0001, 0.01), 'kpa': (1e-7, 1e-5), 'kd4': (0.03, 0.9), 'k_d4': (0.001, 0.1),
                              'kSOCS': (0.0001, 0.001), 'ka4': (0.01, 1), 'kSOCSon': (1E-9, 1E-7)}, n=15)
     best_parameters, best_scale_factor = stepfit25.fit()
-    print("The fit for 30 minutes was:")
+    print("The fit for 5 minutes was:")
     print(best_parameters)
     print(best_scale_factor)
     scale_data = lambda q: (best_scale_factor*q[0], best_scale_factor*q[1])
 
     # Generate a figure of this fit
     #   First simulate continuous dose-response curve
-    dra25df = stepfit25.model.doseresponse([5, 15, 30, 60], 'TotalpSTAT', 'Ia', list(logspace(1, 4)),
+    dra25df = stepfit25.model.doseresponse([5, 15, 30, 60], 'TotalpSTAT', 'Ia', list(logspace(1, 3)),
                                   parameters={'Ib': 0}, return_type='dataframe', dataframe_labels='Alpha')
     drb25df = stepfit25.model.doseresponse([5, 15, 30, 60], 'TotalpSTAT', 'Ib', list(logspace(1, 4.1)),
                                   parameters={'Ia': 0}, return_type='dataframe', dataframe_labels='Beta')
@@ -81,15 +82,15 @@ if __name__ == '__main__':
     print("The final fit was:")
     print(best_parameters)
     print(best_scale_factor60)
-    dra60df = stepfit60.model.doseresponse([5, 15, 30, 60], 'TotalpSTAT', 'Ia', list(logspace(1, 4)),
+    dra60df = stepfit60.model.doseresponse([5, 15, 30, 60], 'TotalpSTAT', 'Ia', list(logspace(1, 3)),
                                   parameters={'Ib': 0}, return_type='dataframe', dataframe_labels='Alpha')
     drb60df = stepfit60.model.doseresponse([5, 15, 30, 60], 'TotalpSTAT', 'Ib', list(logspace(1, 4.1)),
                                   parameters={'Ia': 0}, return_type='dataframe', dataframe_labels='Beta')
 
-    with open('dra60df.p','wb') as f:
-        pickle.dump(dra60df,f,2)
-    with open('drb60df.p','wb') as f:
-        pickle.dump(drb60df,f,2)
+    with open('dra60df.p', 'wb') as f:
+        pickle.dump(dra60df, f, 2)
+    with open('drb60df.p', 'wb') as f:
+        pickle.dump(drb60df, f, 2)
 
     for i in range(4):
         dra60df.loc['Alpha'].iloc[:, i] = dra60df.loc['Alpha'].iloc[:, i].apply(scale_data60)

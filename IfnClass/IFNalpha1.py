@@ -28,13 +28,15 @@ if __name__ == '__main__':
                                 'kSOCS': 0.005, 'kSOCSon': 1e-3, 'SOCSdeg': 0,
                                 'kint_b': 0.0009, 'kint_a': 0.001})
     '''
-    scale_factor = 20
+    Mixed_Model.set_parameters({'ka4': 0.0003623*0.01, 'ka2': 4.981e-13*0.01, 'R2': 2000, 'R1': 500})
+
+    scale_factor = 1
 
     scale_data = lambda q: (scale_factor*q[0], scale_factor*q[1])
     times = [1, 60]
-    dradf = Mixed_Model.doseresponse(times, 'TotalpSTAT', 'Ia', list(logspace(1, log10(8000))),
+    dradf = Mixed_Model.doseresponse(times, 'TotalpSTAT', 'Ia', [0.051, 0.51, 1.54, 5.13, 15.4, 51.3],
                                            parameters={'Ib': 0}, return_type='dataframe', dataframe_labels='Alpha')
-    drbdf = Mixed_Model.doseresponse(times, 'TotalpSTAT', 'Ib', list(logspace(1, log10(11000))),
+    drbdf = Mixed_Model.doseresponse(times, 'TotalpSTAT', 'Ib', [0.051, 0.51, 1.54, 5.13, 15.4, 51.3],
                                            parameters={'Ia': 0}, return_type='dataframe', dataframe_labels='Beta')
 
     for i in range(len(times)):
@@ -50,9 +52,13 @@ if __name__ == '__main__':
     # Add fits
     for idx, t in enumerate([el for el in times]):
         if t not in alpha_mask:
-            new_fit.add_trajectory(dra60, t, 'plot', alpha_palette[idx], (0, 0), 'Alpha', label='Alpha '+str(t)+' min')
+            new_fit.add_trajectory(dra60, t, 'scatter', alpha_palette[idx], (idx, 0), 'Alpha', label='Alpha '+str(t)+' min')
+            new_fit.add_trajectory(dra60, t, 'plot', alpha_palette[idx], (idx, 0), 'Alpha',
+                                   label='Alpha ' + str(t) + ' min')
         if t not in beta_mask:
-            new_fit.add_trajectory(drb60, t, 'plot', beta_palette[idx], (1, 0), 'Beta', label='Beta '+str(t)+' min')
+            new_fit.add_trajectory(drb60, t, 'scatter', beta_palette[idx], (idx, 0), 'Beta', label='Beta '+str(t)+' min')
+            new_fit.add_trajectory(drb60, t, 'plot', beta_palette[idx], (idx, 0), 'Beta',
+                                   label='Beta ' + str(t) + ' min')
 
     new_fit.show_figure(save_flag=False)
     print(Mixed_Model.parameters)
