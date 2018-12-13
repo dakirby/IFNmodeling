@@ -71,6 +71,8 @@ class Trajectory:
                         temp = str(self.timeslice)
                     return self.data.data_set.xs(self.dose_species).loc[:, temp].values
                 except KeyError:
+                    print(self.data.data_set.xs(self.dose_species))
+                    print(self.data.data_set.xs(self.dose_species).columns)
                     print("Something went wrong indexing times")
                     return self.data.data_set.xs(self.dose_species).loc[:, [float(el) for el in self.timeslice][0]].values
 

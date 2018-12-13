@@ -7,7 +7,7 @@ import seaborn as sns
 from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
 import pandas as pd
-from smooth_B6_IFN import * # Imports smoothed data to fit to
+from smooth_Sagar import * # Imports smoothed data to fit to
 import pickle
 
 if __name__ == '__main__':
@@ -29,9 +29,11 @@ if __name__ == '__main__':
     # Stepwise fitting
     # ----------------
     # First fit the 5 minute data
-    stepfit25 = StepwiseFit(Mixed_Model, IfnData_5,
+    stepfit25 = StepwiseFit(Mixed_Model, smoothIfnData,
                             {'kpu': (0.0001, 0.01), 'kpa': (1e-7, 1e-5), 'kd4': (0.03, 0.9), 'k_d4': (0.001, 0.1),
-                             'kSOCS': (0.0001, 0.001), 'ka4': (0.01, 1), 'kSOCSon': (1E-9, 1E-7)}, n=15)
+                             'kSOCS': (0.0001, 0.001), 'ka4': (0.01, 1), 'kSOCSon': (1E-9, 1E-7),
+                             'R1': (500, 8000), 'R1': (500, 8000),
+                             'ka1': (3.3211e-14*0.1,3.3211e-14*10), 'ka2': (9.963e-13*0.1, 9.96e-13*10)}, n=15)
     best_parameters, best_scale_factor = stepfit25.fit()
     print("The fit for 5 minutes was:")
     print(best_parameters)
@@ -67,7 +69,7 @@ if __name__ == '__main__':
 
     # Now try to fit the 60 minute data starting from the 5 minute results
     # ----------------------------------------------------------------------
-    stepfit60 = StepwiseFit(stepfit25.model, IfnData_60,
+    stepfit60 = StepwiseFit(stepfit25.model, smooth60IfnData,
                             {'kSOCSon': (1E-9, 1E-7),
                              'krec_a2': (0.0001, 0.005), 'krec_b2': (0.0001, 0.01),
                              'krec_a1': (0.00003, 0.003), 'krec_b1': (0.0001, 0.01)}, n=15)
