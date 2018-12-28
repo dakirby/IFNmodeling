@@ -100,7 +100,7 @@ class IfnModel:
 
     def load_model(self, name):
         try:
-            with open('ifnmodel/'+name+'.p', 'rb') as f:
+            with open('ifnmodels/'+name, 'rb') as f:
                 tmp_dict = pickle.load(f)
             self.__dict__.update(tmp_dict)
         except FileNotFoundError:

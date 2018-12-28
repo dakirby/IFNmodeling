@@ -56,16 +56,16 @@ class IfnData:
     # Instance methods
     def load_data(self):
         cwd = os.getcwd()
-        parent_wd = cwd.split("IFNmodeling")[0] + "IFNmodeling\\"
+        parent_wd = cwd.split("IFNmodeling")[0] + "IFNmodeling"
         # attempt loading DataFrame object
         try:
-            return pickle.load(open(parent_wd + "ifndatabase\{}.p".format(self.name), 'rb'))
+            return pickle.load(open(os.path.join(parent_wd, "ifndatabase","{}.p".format(self.name)), 'rb'))
         except FileNotFoundError:
             # Attempt initializing module and then importing DataFrame object
             try:
                 print("Trying to build data sets")
-                ifndatabase.process_csv.build_database(parent_wd + "ifndatabase\\")
-                return pickle.load(open(parent_wd + "ifndatabase\{}.p".format(self.name), 'rb'))
+                ifndatabase.process_csv.build_database(os.path.join(parent_wd, "ifndatabase"))
+                return pickle.load(open(os.path.join(parent_wd, "ifndatabase", "{}.p".format(self.name)), 'rb'))
             except FileNotFoundError:
                 # Attempt loading a local DataFrame object
                 try:
@@ -75,10 +75,10 @@ class IfnData:
 
     def load_conditions(self):
         cwd = os.getcwd()
-        parent_wd = cwd.split("IFNmodeling")[0] + "IFNmodeling\\"
+        parent_wd = cwd.split("IFNmodeling")[0] + "IFNmodeling"
         # attempt loading DataFrame object
         try:
-            with open(parent_wd + "ifndatabase\{}.txt".format(self.name), 'r') as inf:
+            with open(os.path.join(parent_wd, "ifndatabase", "{}.txt".format(self.name)), 'r') as inf:
                 return ast.literal_eval(inf.read())
         except FileNotFoundError:
             # Attempt loading a local conditions file if none found in data dir
