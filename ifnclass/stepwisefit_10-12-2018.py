@@ -118,4 +118,4 @@ if __name__ == '__main__':
         results_plot2.add_trajectory(newdata, t, 'errorbar', alpha_palette[idx], (0, 0), 'Alpha', dn=1)
         results_plot2.add_trajectory(newdata, t, 'errorbar', beta_palette[idx], (0, 1), 'Beta', dn=1)
 
-    results_plot2.show_figure(save_flag=True)
+    results_plot2.show_figure(save_flag=True, save_dir='stepwise_fits')

@@ -249,6 +249,8 @@ class IfnModel:
                 dose_response_table[observable_species][idx] = trajectories[observable_species]
         # return dose response curves
         if return_type == 'list':
+            for observable_species in dose_response_table.keys():
+                dose_response_table[observable_species] = dose_response_table[observable_species].tolist()
             return dose_response_table
         elif return_type == 'dataframe':
             if type(observable) != list:

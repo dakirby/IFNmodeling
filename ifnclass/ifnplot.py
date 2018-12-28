@@ -4,6 +4,8 @@ from ifndata import IfnData
 from ifnmodel import IfnModel
 from numpy import linspace, logspace, float64, divide
 import time
+import os
+
 
 class Trajectory:
     """
@@ -140,7 +142,7 @@ class TimecoursePlot:
         del self.trajectories[index]
         del self.subplot_indices[index]
 
-    def show_figure(self, show_flag=True, save_flag=False):
+    def show_figure(self, show_flag=True, save_flag=False, save_dir=''):
         for trajectory_idx in range(len(self.trajectories)):
             trajectory = self.trajectories[trajectory_idx]
             plt_idx = self.subplot_indices[trajectory_idx]
@@ -186,7 +188,7 @@ class TimecoursePlot:
                     ax.errorbar(x, y, yerr=sigmas, fmt='--', label=trajectory.label, color=trajectory.line_style)
                 ax.legend()
         if save_flag:
-            plt.savefig('fig{}.pdf'.format(int(time.time())))
+            plt.savefig(os.path.join(save_dir, 'fig{}.pdf'.format(int(time.time()))))
         if show_flag:
             plt.legend()
             plt.show()
@@ -285,7 +287,7 @@ class DoseresponsePlot:
         del self.trajectories[index]
         del self.subplot_indices[index]
 
-    def show_figure(self, show_flag=True, save_flag=False):
+    def show_figure(self, show_flag=True, save_flag=False, save_dir=''):
         for trajectory_idx in range(len(self.trajectories)):
             trajectory = self.trajectories[trajectory_idx]
             plt_idx = self.subplot_indices[trajectory_idx]
@@ -341,13 +343,14 @@ class DoseresponsePlot:
                 else:
                     ax.errorbar(x, z, yerr=sigmas, fmt='--', label=trajectory.label, color=trajectory.line_style)
         if save_flag:
-            plt.savefig('fig{}.pdf'.format(int(time.time())))
+            plt.savefig(os.path.join(save_dir, 'fig{}.pdf'.format(int(time.time()))))
         if show_flag:
             plt.show()
         return self.fig, self.axes
 
     def save_figure(self):
         self.show_figure(show_flag=False, save_flag=True)
+
 
 if __name__ == '__main__':
     testData = IfnData("20181113_B6_IFNs_Dose_Response_Bcells")
