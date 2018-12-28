@@ -353,18 +353,28 @@ if __name__ == '__main__':
     testData = IfnData("20181113_B6_IFNs_Dose_Response_Bcells")
     testModel = IfnModel('Mixed_IFN_ppCompatible')
     # testParameters = {'kpa': 4.686e-05, 'kSOCSon': 2.687e-06, 'kd4': 0.236, 'k_d4': 0.2809, 'R1': 108, 'R2': 678} 'kpa': 1e-07,
-    best_fit_old20min = {'kSOCSon': 1e-07, 'krec_a1': 0.0001, 'krec_a2': 0.001, 'R1': 1272, 'R2': 1272,
-                         'krec_b1': 1.0e-05, 'krec_b2': 0.0001, 'kpu':1E-2, 'kpa':1E-7}
-
+    #best_fit_old20min = {'kSOCSon': 1e-07, 'krec_a1': 0.0001, 'krec_a2': 0.001, 'R1': 1272, 'R2': 1272,
+    #                     'krec_b1': 1.0e-05, 'krec_b2': 0.0001, 'kpu':1E-2, 'kpa':1E-7}
+    best_fit_old20min = {'kpu': 0.004, 'kpa': 1e-6,
+     'R2': 1742, 'R1': 1785,
+     'k_d4': 0.06, 'kd4': 0.3,
+     'k_a2': 8.3e-13, 'k_a1': 4.98e-14,
+     'ka4': 0.001,
+     'kSOCS': 0.01, 'kSOCSon': 2e-3, 'SOCSdeg': 0.2,
+     'kint_b': 0.0, 'kint_a': 0.04}
+    dose = 1000 # in pM
+    best_fit_old20min.update({'Ib': dose * 6.022E23 * 1E-5 * 1E-12, 'Ia': 0})
     testModel.set_parameters(best_fit_old20min)
-    tc = testModel.timecourse(list(linspace(0, 30)), 'TotalpSTAT', return_type='dataframe',
-                              dataframe_labels=['Alpha', 1E-9])
-    tcIfnData = IfnData('custom', df=tc, conditions={'Alpha': {'Ib': 0}})
+    print(testModel.parameters)
 
-    #testplot = TimecoursePlot((1, 1))
-    #testplot.add_trajectory(tc, 'plot', 'r', (0, 0))
-    #testplot.show_figure()
+    tc = testModel.timecourse(list(linspace(0, 60)), 'TotalpSTAT', return_type='dataframe',
+                              dataframe_labels=['Beta', dose])
+    tcIfnData = IfnData('custom', df=tc, conditions={'Beta': {'Ia': 0}})
 
+    testplot = TimecoursePlot((1, 1))
+    testplot.add_trajectory(tcIfnData, 'plot', 'g', (0, 0))
+    testplot.show_figure()
+    exit()
     dra = testModel.doseresponse([0, 2.5, 5, 15, 30, 60], 'TotalpSTAT', 'Ia', list(logspace(-3, 6)),
                                  parameters={'Ib': 0}, return_type='dataframe', dataframe_labels='Alpha')
 

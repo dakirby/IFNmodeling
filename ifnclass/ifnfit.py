@@ -9,6 +9,8 @@ from scipy.optimize import minimize
 from multiprocessing import Process, Queue, JoinableQueue, cpu_count
 import pickle
 import copy
+import os
+import matplotlib.pyplot as plt
 
 
 class StepwiseFit:
@@ -232,6 +234,9 @@ class MCMC:
         self.parameter_history = []
         self.scale_factor_history = []
         self.score_history = []
+        self.thinned_parameter_samples = []
+        self.thinned_parameter_scale_factors = []
+        self.thinned_parameter_scores = []
 
     # Private methods
     # ---------------
@@ -341,10 +346,10 @@ class MCMC:
                     print("{:.1f}% done".format(acceptance/self.num_samples * 100))
                     print("Chain {} acceptance rate = {:.1f}%".format(ID, acceptance/attempts*100))
                     # Record progress to text file
-                    with open('results/progress.txt','a') as f:
+                    with open('mcmc_results/progress.txt','a') as f:
                         f.write("Chain {} is {:.1f}% done, currently averaging {:.1f}% acceptance.\n".format(ID, acceptance/self.num_samples*100, acceptance/attempts*100))
                     # Save state at checkpoint
-                    with open('results/chain_results/{}chain.p'.format(str(ID)), 'wb') as f:
+                    with open('mcmc_results/chain_results/{}chain.p'.format(str(ID)), 'wb') as f:
                         pickle.dump(self.__dict__, f, 2)
                     progress_bar += self.num_samples/10
 
@@ -375,6 +380,7 @@ class MCMC:
                     # Add to chain
                     self.parameter_history.append(new_parameters)
                     self.scale_factor_history.append(new_scale_factor)
+                    self.score_history.append(new_score)
                     current_score = new_score
                     current_parameters.update(new_parameters)
                     acceptance += 1
@@ -382,18 +388,25 @@ class MCMC:
                     self.model.set_parameters(current_parameters)
 
             # Save final state
-            with open('results/chain_results/{}chain.p'.format(str(ID)), 'wb') as f:
+            with open('mcmc_results/chain_results/{}chain.p'.format(str(ID)), 'wb') as f:
                 pickle.dump(self.__dict__, f, 2)
 
-            result.put([self.parameter_history, self.scale_factor_history])
+            result.put([self.parameter_history, self.scale_factor_history, self.score_history])
             countQ.put([ID, acceptance / attempts * 100])
         print("Chain {} exiting".format(ID))
 
+        with open('mcmc_results/progress.txt', 'a') as f:
+            f.write("Chain {} is exiting".format(ID))
+
     # Public methods
     # --------------
-    def save(self):
-        with open(self.filename, 'wb') as f:
-            pickle.dump(self.__dict__, f, 2)
+    def save(self, alt_filename=''):
+        if alt_filename=='':
+            with open(self.filename, 'wb') as f:
+                pickle.dump(self.__dict__, f, 2)
+        else:
+            with open(alt_filename, 'wb') as f:
+                pickle.dump(self.__dict__, f, 2)
 
     def load(self):
         with open(self.filename, 'rb') as f:
@@ -404,11 +417,43 @@ class MCMC:
         return self.__MSE_of_parametric_model__(self.model.parameters) / self.beta + self.__prior_penalty__(
             self.model.parameters)
 
+    def plot_parameter_distributions(self):
+        if self.num_chains == 1:
+            k = len(self.parameters_to_fit)  # total number subplots
+            n = 2  # number of chart columns
+            m = (k - 1) // n + 1  # number of chart rows
+            fig, axes = plt.subplots(m, n, figsize=(n * 5, m * 3))
+            if k % 2 == 1:  # avoids extra empty subplot
+                axes[-1][n - 1].set_axis_off()
+            for i, (name, col) in enumerate(df.iteritems()):
+                r, c = i // n, i % n
+                ax = axes[r, c]  # get axis object
+                # determine whether or not to plot on log axis
+                if abs(int(np.log10(np.max(col))) - int(np.log10(np.min(col)))) >= 4:
+                    ax.set(xscale='log', yscale='linear')
+                # Plot histogram with kde for chain
+                sns.distplot(col, ax=ax, hist=True, kde=True,
+                             color='darkblue',
+                             hist_kws={'edgecolor': 'black'},
+                             kde_kws={'linewidth': 4})
+            fig.tight_layout()
+            if save == True:
+                if title == '':
+                    plt.savefig(results_dir + 'parameter_distributions.pdf')
+                else:
+                    plt.savefig(results_dir + title + '.pdf')
+            return (fig, axes)
+
     def fit(self, num_accepted_steps: int, num_chains: int, burn_rate: float, down_sample_frequency: int, beta: float,
             cpu=None, initialise=True):
         # Check input parameters
         self.__check_input__
         print("Performing MCMC Analysis")
+        # Create results directory
+        if not os.path.isdir("mcmc_results"):
+            os.mkdir("mcmc_results")
+        if not os.path.isdir("mcmc_results\chain_results"):
+            os.mkdir("mcmc_results\chain_results")
         # Define simulation parameters for instance
         self.num_samples = num_accepted_steps
         self.num_chains = num_chains
@@ -432,7 +477,7 @@ class MCMC:
         if cpu is not None:
             number_of_processes = cpu  # Manual override of core number selection
         print("Using {} processes".format(number_of_processes))
-        with open('results/progress.txt', 'w') as f:  # clear previous progress report
+        with open('mcmc_results/progress.txt', 'w') as f:  # clear previous progress report
             f.write('')
         jobs = Queue()  # put jobs on queue
         result = JoinableQueue()
@@ -468,23 +513,37 @@ class MCMC:
         result.close()
         countQ.close()
 
-        return 0
-        """
         # Perform data analysis
+        # Record average acceptance across all chains
         self.average_acceptance = np.mean([el[1] for el in chain_attempts])
         print("Average acceptance rate was {:.1f}%".format(self.average_acceptance))
-        self.samples = self.get_parameter_distributions(pool_results, burn_rate, down_sample)
-        plot_parameter_autocorrelations(samples.drop('gamma', axis=1))
-        get_summary_statistics(samples.drop('gamma', axis=1))
-        with open(results_dir + 'simulation_summary.txt', 'w') as f:
-            f.write('Temperature used was {}\n'.format(beta))
-            f.write('Number of chains = {}\n'.format(chains))
-            f.write("Average acceptance rate was {:.1f}%\n".format(average_acceptance))
+        # Consolidate results into attributes
+        for chain in pool_results:
+            self.parameter_history += chain[0]
+            self.scale_factor_history += chain[1]
+            self.score_history += chain[2]
+        # Perform burn-in and down sampling
+        for chain in pool_results:
+            sample_pattern = range(int(burn_rate*len(chain)), len(chain), down_sample_frequency)
+            self.thinned_parameter_samples += [chain[0][i] for i in sample_pattern]
+            self.thinned_parameter_scale_factors += [chain[1][i] for i in sample_pattern]
+            self.thinned_parameter_scores += [chain[2][i] for i in sample_pattern]
+        # Write summary file
+        with open("mcmc_results/simulation_summary.txt", 'w') as f:
+            f.write('Temperature used was {}\n'.format(self.beta))
+            f.write('Number of chains = {}\n'.format(self.num_chains))
+            f.write("Average acceptance rate was {:.1f}%\n".format(self.average_acceptance))
             f.write("Initial conditions were\n")
-            for i in chains_list:
+            for i in initial_parameters:
                 f.write(str(i))
                 f.write("\n")
-        """
+            f.write("Individual chain acceptance rates were:\n")
+            for i in chain_attempts:
+                f.write("Chain {}: {:.1f}%".format(i[0], i[1]))
+
+        # Save object
+        self.save(alt_filename="mcmc_results/mcmc_fit.p")
+
 
 if __name__ == '__main__':
     testData = IfnData("MacParland_Extended")

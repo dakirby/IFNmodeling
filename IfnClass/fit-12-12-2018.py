@@ -56,16 +56,16 @@ if __name__ == '__main__':
                                 'kSOCS': 0.005, 'kSOCSon': 1e-3, 'SOCSdeg': 0,
                                 'kint_b': 0.0009, 'kint_a': 0.001})
     """
-    Mixed_Model.set_parameters({'kpu': 0.00025, 'kpa': 7e-7,
-                                'R2': 2742, 'R1': 1785,
-                                'k_d4': 0.006, 'kd4': 0.3,
-                                'k_a2': 8.3e-13 * 0.1,
+    Mixed_Model.set_parameters({'kpu': 0.0004, 'kpa': 1e-6,
+                                'R2': 1742, 'R1': 1785,
+                                'k_d4': 0.06, 'kd4': 0.3,
+                                'k_a2': 8.3e-13 * 0.25, 'k_a1': 4.98e-14 * 0.01,
                                 'ka2': 4.98173364330787e-13 * 2, 'ka1': 3.321155762205247e-14 * 1,
                                 'ka4': 0.001,
-                                'kSOCS': 0.008, 'kSOCSon': 3e-3, 'SOCSdeg': 0.5,
-                                'kint_b': 0.0009, 'kint_a': 0.04})
+                                'kSOCS': 0.01, 'kSOCSon': 2e-3, 'SOCSdeg': 0.2,
+                                'kint_b': 0.0, 'kint_a': 0.04})
 
-    scale_factor = 12
+    scale_factor = 18
     # Additional fitting
     """
     stepfit25 = StepwiseFit(Mixed_Model, smooth25IfnData,
@@ -120,16 +120,16 @@ if __name__ == '__main__':
    # Simulate time courses
     alpha_time_courses = []
     for d in [10, 90, 600]: #[10, 90, 600, 4000, 8000]:
-        alpha_time_courses.append(Mixed_Model.timecourse(list(linspace(0, 60, 25)), 'TotalpSTAT',
+        alpha_time_courses.append(Mixed_Model.timecourse(list(linspace(0, 60, 30)), 'TotalpSTAT',
                                                          {'Ia': d * 6.022E23 * 1E-5 * 1E-12, 'Ib': 0},
                                                          return_type='dataframe', dataframe_labels=['Alpha', d]))
     beta_time_courses = []
     for d in [10, 90, 600, 2000, 11000]:
-        beta_time_courses.append(Mixed_Model.timecourse(list(linspace(0, 60, 25)), 'TotalpSTAT',
+        beta_time_courses.append(Mixed_Model.timecourse(list(linspace(0, 60, 30)), 'TotalpSTAT',
                                                         {'Ib': d * 6.022E23 * 1E-5 * 1E-12, 'Ia': 0},
                                                         return_type='dataframe', dataframe_labels=['Beta', d]))
     # Scale simulations
-    for i in range(25):
+    for i in range(30):
         for j in range(3):
             alpha_time_courses[j].loc['Alpha'].iloc[:, i] = alpha_time_courses[j].loc['Alpha'].iloc[:, i].apply(scale_data)
         for j in range(5):

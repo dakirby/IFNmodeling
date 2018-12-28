@@ -29,11 +29,18 @@ if __name__ == '__main__':
     # Stepwise fitting
     # ----------------
     # First fit the 5 minute data
-    stepfit25 = StepwiseFit(Mixed_Model, smoothIfnData,
-                            {'kpu': (0.0001, 0.01), 'kpa': (1e-7, 1e-5), 'kd4': (0.03, 0.9), 'k_d4': (0.001, 0.1),
+    """
+    # Normal choices for global fit
+    {'kpu': (0.0001, 0.01), 'kpa': (1e-7, 1e-5), 'kd4': (0.03, 0.9), 'k_d4': (0.001, 0.1),
                              'kSOCS': (0.0001, 0.001), 'ka4': (0.01, 1), 'kSOCSon': (1E-9, 1E-7),
                              'R1': (500, 8000), 'R1': (500, 8000),
-                             'ka1': (3.3211e-14*0.1,3.3211e-14*10), 'ka2': (9.963e-13*0.1, 9.96e-13*10)}, n=15)
+                             'ka1': (3.3211e-14*0.1,3.3211e-14*10), 'ka2': (9.963e-13*0.1, 9.96e-13*10)}
+    """
+
+    stepfit25 = StepwiseFit(Mixed_Model, smoothIfnData, {'k_d4': (0.0006, 0.06),
+                            'k_a2': (8.3e-13 * 0.01, 8.3e-13 * 2), 'k_a1': (4.98e-14 * 0.01, 4.98e-14 * 2),
+                            'kSOCSon': (3E-4, 3E-2), 'SOCSdeg': (0.02, 0.2),
+                            'kint_b': (0.0,0.1)}, n=15)
     best_parameters, best_scale_factor = stepfit25.fit()
     print("The fit for 5 minutes was:")
     print(best_parameters)
@@ -66,7 +73,7 @@ if __name__ == '__main__':
         results_plot.add_trajectory(newdata, t, 'errorbar', beta_palette[idx], (0, 1), 'Beta', dn=1)
 
     results_plot.show_figure()
-
+    exit()
     # Now try to fit the 60 minute data starting from the 5 minute results
     # ----------------------------------------------------------------------
     stepfit60 = StepwiseFit(stepfit25.model, smooth60IfnData,
