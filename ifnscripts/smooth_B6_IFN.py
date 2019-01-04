@@ -58,14 +58,11 @@ As IfnData objects:
 
 """
 
-from ifndata import IfnData
-from ifnmodel import IfnModel
-from ifnplot import Trajectory, TimecoursePlot, DoseresponsePlot
-from ifnfit import StepwiseFit
-from numpy import linspace, logspace, log10, nan
+from ifnclass.ifndata import IfnData
+from ifnclass.ifnplot import DoseresponsePlot
+from numpy import logspace, log10, nan
 import seaborn as sns
 from scipy.optimize import curve_fit
-import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 

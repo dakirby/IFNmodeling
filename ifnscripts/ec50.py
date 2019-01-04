@@ -1,7 +1,6 @@
-from ifndata import IfnData
-from ifnmodel import IfnModel
-from ifnplot import Trajectory, TimecoursePlot, DoseresponsePlot
-from numpy import linspace, logspace, log10, nan
+from ifnclass.ifndata import IfnData
+from ifnclass.ifnmodel import IfnModel
+from numpy import linspace, logspace
 import seaborn as sns
 from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
@@ -88,7 +87,7 @@ if __name__ == '__main__':
     axes[0].plot(time_list, alpha_ec50, label=r'IFN$\alpha$ EC50', color=alpha_palette[4])
     axes[1].plot(time_list, beta_ec50, label=r'IFN$\beta$ EC50', color=beta_palette[4])
     fig.show()
-    fig.savefig('ec50_vs_time.pdf')
+    fig.savefig('results\ec50_vs_time.pdf')
 
     fig, axes = plt.subplots(nrows=1, ncols=2)
     axes[0].set_xlabel("Time (s)")
@@ -99,5 +98,5 @@ if __name__ == '__main__':
     axes[0].plot(time_list, alpha_peak, label=r'IFN$\alpha$ Peak Response', color=alpha_palette[4])
     axes[1].plot(time_list, beta_peak, label=r'IFN$\beta$ Peak Response', color=beta_palette[4])
     fig.show()
-    fig.savefig('peak_response_vs_time.pdf')
+    fig.savefig('results\peak_response_vs_time.pdf')
 

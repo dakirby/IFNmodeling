@@ -1,6 +1,11 @@
-from ifndata import IfnData
-from ifnmodel import IfnModel
-from ifnplot import TimecoursePlot
+try:
+    from ifnclass.ifndata import IfnData
+    from ifnclass.ifnmodel import IfnModel
+    from ifnclass.ifnplot import TimecoursePlot
+except (ImportError, ModuleNotFoundError):
+    from ifndata import IfnData
+    from ifnmodel import IfnModel
+    from ifnplot import TimecoursePlot
 from numpy import linspace, shape, square, isnan, zeros, log
 import numpy.random as rnd
 import numpy as np

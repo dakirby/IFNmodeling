@@ -1,14 +1,7 @@
-from ifndata import IfnData
-from ifnmodel import IfnModel
-from ifnplot import Trajectory, TimecoursePlot, DoseresponsePlot
-from ifnfit import StepwiseFit
-from numpy import linspace, logspace, log10, nan
+from ifnclass.ifndata import IfnData
+from ifnclass.ifnmodel import IfnModel
+from ifnclass.ifnplot import DoseresponsePlot
 import seaborn as sns
-from scipy.optimize import curve_fit
-import matplotlib.pyplot as plt
-import pandas as pd
-import pickle
-from collections import OrderedDict
 
 
 if __name__ == '__main__':

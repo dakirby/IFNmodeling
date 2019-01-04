@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 try:
     from .ifndata import IfnData
     from .ifnmodel import IfnModel
-except ImportError:
+except (ImportError, ModuleNotFoundError):
     from ifndata import IfnData
     from ifnmodel import IfnModel
 from numpy import linspace, logspace, float64, divide

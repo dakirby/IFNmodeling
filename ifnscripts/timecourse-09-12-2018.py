@@ -1,15 +1,10 @@
-from ifndata import IfnData
-from ifnmodel import IfnModel
-from ifnplot import Trajectory, TimecoursePlot, DoseresponsePlot
-from ifnfit import StepwiseFit
+from ifnclass.ifndata import IfnData
+from ifnclass.ifnmodel import IfnModel
+from ifnclass.ifnplot import Trajectory, TimecoursePlot, DoseresponsePlot
+from ifnclass.ifnfit import StepwiseFit
 from numpy import linspace, logspace, log10, nan
 import seaborn as sns
-from scipy.optimize import curve_fit
-import matplotlib.pyplot as plt
-import pandas as pd
 from smooth_B6_IFN import *  # Imports smoothed data to fit to
-import pickle
-from collections import OrderedDict
 
 if __name__ == '__main__':
     newdata = IfnData("20181113_B6_IFNs_Dose_Response_Bcells")
