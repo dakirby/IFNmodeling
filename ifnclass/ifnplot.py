@@ -1,7 +1,11 @@
 from numpy import ndarray, shape
 import matplotlib.pyplot as plt
-from ifndata import IfnData
-from ifnmodel import IfnModel
+try:
+    from .ifndata import IfnData
+    from .ifnmodel import IfnModel
+except ImportError:
+    from ifndata import IfnData
+    from ifnmodel import IfnModel
 from numpy import linspace, logspace, float64, divide
 import time
 import os
