@@ -82,16 +82,7 @@
       <change beforePath="$PROJECT_DIR$/figures_21-11-2018.py" beforeDir="false" afterPath="$PROJECT_DIR$/figures_21-11-2018.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/fit_20181031.py" beforeDir="false" afterPath="$PROJECT_DIR$/fit_20181031.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/fit_20181113_B6.py" beforeDir="false" afterPath="$PROJECT_DIR$/fit_20181113_B6.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ifnclass/IFNalpha1.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnclass/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnclass/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ifnclass/dra60df.p" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ifnclass/drb60df.p" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ifnclass/ec50.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/ec50.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ifnclass/fit-06-12-2018.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ifnclass/fit-10-12-2018.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ifnclass/fit-12-12-2018.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ifnclass/fitting_2_5.p" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ifnclass/fitting_2_5.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnclass/ifndata.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnclass/ifndata.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnclass/ifndatabase" beforeDir="false" afterPath="$PROJECT_DIR$/ifnclass/ifndatabase" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnclass/ifnfit.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnclass/ifnfit.py" afterDir="false" />
@@ -99,19 +90,9 @@
       <change beforePath="$PROJECT_DIR$/ifnclass/ifnmodel.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnclass/ifnmodel.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnclass/ifnmodels" beforeDir="false" afterPath="$PROJECT_DIR$/ifnclass/ifnmodels" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnclass/ifnplot.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnclass/ifnplot.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ifnclass/mcmc_results/chain_results/0chain.p" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ifnclass/mcmc_results/mcmc_fit.p" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnclass/results/Sagar_Fits/Email/huh_data.csv" beforeDir="false" afterPath="$PROJECT_DIR$/ifnclass/results/Sagar_Fits/Email/huh_data.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnclass/results/chain_results/0chain.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifnclass/results/chain_results/0chain.p" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnclass/results/initial_model.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifnclass/results/initial_model.p" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ifnclass/smooth_B6_IFN.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ifnclass/smooth_Sagar.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ifnclass/stepwisefit.p" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ifnclass/stepwisefit_10-12-2018.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ifnclass/stepwisefitmodel.p" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ifnclass/stepwisefitmodel12_12_2018.p" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ifnclass/stepwisefitobject.p" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ifnclass/timecourse-09-12-2018.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/ifndatabase/20181031_pSTAT1_Table.csv" beforeDir="false" afterPath="$PROJECT_DIR$/ifndatabase/20181031_pSTAT1_Table.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifndatabase/20181031_pSTAT1_Table_Bcells.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifndatabase/20181031_pSTAT1_Table_Bcells.p" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifndatabase/20181031_pSTAT1_Table_NKcells.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifndatabase/20181031_pSTAT1_Table_NKcells.p" afterDir="false" />
@@ -148,11 +129,31 @@
       <change beforePath="$PROJECT_DIR$/ifnmodels/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/__init__.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnmodels/detailed_SBML_alpha.sbml" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/detailed_SBML_alpha.sbml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnmodels/detailed_SBML_beta.sbml" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/detailed_SBML_beta.sbml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/IFNalpha1.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/IFNalpha1.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/dra60df.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/dra60df.p" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/drb60df.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/drb60df.p" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/ec50.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/ec50.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/fit-06-12-2018.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/fit-06-12-2018.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/fit-10-12-2018.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/fit-10-12-2018.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/fit-12-12-2018.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/fit-12-12-2018.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnscripts/fitting_2_5.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/fitting_2_5.p" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/fitting_2_5.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/fitting_2_5.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnscripts/ifnclass" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/ifnclass" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnscripts/ifndatabase" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/ifndatabase" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnscripts/ifnmodels" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/ifnmodels" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/mcmc_results/chain_results/0chain.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/mcmc_results/chain_results/0chain.p" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/mcmc_results/mcmc_fit.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/mcmc_results/mcmc_fit.p" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnscripts/refractoriness_figure.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/refractoriness_figure.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/results/Sagar_Fits/Email/huh_data.csv" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/results/Sagar_Fits/Email/huh_data.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/results/initial_model.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/results/initial_model.p" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/smooth_B6_IFN.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/smooth_B6_IFN.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/smooth_Sagar.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/smooth_Sagar.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/stepwisefit.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/stepwisefit.p" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/stepwisefit_10-12-2018.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/stepwisefit_10-12-2018.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/stepwisefitmodel.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/stepwisefitmodel.p" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/stepwisefitmodel12_12_2018.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/stepwisefitmodel12_12_2018.p" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/stepwisefitobject.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/stepwisefitobject.p" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/timecourse-09-12-2018.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/timecourse-09-12-2018.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/init_multiprocessing.py" beforeDir="false" afterPath="$PROJECT_DIR$/init_multiprocessing.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mcmc.py" beforeDir="false" afterPath="$PROJECT_DIR$/mcmc.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mcmc_2.py" beforeDir="false" afterPath="$PROJECT_DIR$/mcmc_2.py" afterDir="false" />
@@ -180,26 +181,44 @@
       <file leaf-file-name="figures.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/figures.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-3927" />
+            <state relative-caret-position="-5100" />
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="IFN_beta_altSOCS.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/ifnmodels/IFN_beta_altSOCS.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="472">
+              <caret line="56" column="41" lean-forward="true" selection-start-line="56" selection-start-column="41" selection-end-line="56" selection-end-column="41" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="IFN_alpha_altSOCS.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/ifnmodels/IFN_alpha_altSOCS.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="217">
+              <caret line="51" column="39" lean-forward="true" selection-start-line="51" selection-end-line="51" selection-end-column="39" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Mixed_IFN_explicitUSP18.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/ifnmodels/Mixed_IFN_explicitUSP18.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="68">
+              <caret line="28" column="19" selection-start-line="28" selection-start-column="19" selection-end-line="28" selection-end-column="19" />
+            </state>
           </provider>
         </entry>
       </file>
       <file leaf-file-name="refractoriness_figure.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/ifnscripts/refractoriness_figure.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="68">
-              <caret line="4" column="20" selection-start-line="4" selection-start-column="20" selection-end-line="4" selection-end-column="20" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="timecourse-09-12-2018.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/ifnscripts/timecourse-09-12-2018.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="119">
-              <caret line="7" lean-forward="true" selection-start-line="7" selection-end-line="7" />
+            <state relative-caret-position="292">
+              <caret line="66" column="33" lean-forward="true" selection-start-line="66" selection-start-column="33" selection-end-line="66" selection-end-column="33" />
               <folding>
-                <element signature="e#0#36#0" expanded="true" />
+                <element signature="e#0#38#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -282,8 +301,6 @@
         <option value="$PROJECT_DIR$/ifnclass/ifnmodel.py" />
         <option value="$PROJECT_DIR$/ifnclass/ec50.py" />
         <option value="$PROJECT_DIR$/ifnscripts/ifnclass/ifnplot.py" />
-        <option value="$PROJECT_DIR$/ifnscripts/refractoriness_figure.py" />
-        <option value="$PROJECT_DIR$/ifnscripts/ec50.py" />
         <option value="$PROJECT_DIR$/ifnscripts/smooth_B6_IFN.py" />
         <option value="$PROJECT_DIR$/ifnclass/ifnplot.py" />
         <option value="$PROJECT_DIR$/ifnscripts/ifnclass/ifnfit.py" />
@@ -296,6 +313,10 @@
         <option value="$PROJECT_DIR$/ifnscripts/smooth_Sagar.py" />
         <option value="$PROJECT_DIR$/ifnscripts/stepwisefit_10-12-2018.py" />
         <option value="$PROJECT_DIR$/ifnscripts/timecourse-09-12-2018.py" />
+        <option value="$PROJECT_DIR$/ifnscripts/ec50.py" />
+        <option value="$PROJECT_DIR$/ifnscripts/refractoriness_figure.py" />
+        <option value="$PROJECT_DIR$/ifnmodels/Mixed_IFN_ppCompatible.py" />
+        <option value="$PROJECT_DIR$/ifnmodels/Mixed_IFN_explicitUSP18.py" />
       </list>
     </option>
   </component>
@@ -326,6 +347,11 @@
             <path>
               <item name="IFNmodeling" type="b2602c69:ProjectViewProjectNode" />
               <item name="IFNmodeling" type="462c0819:PsiDirectoryNode" />
+              <item name="ifnmodels" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="IFNmodeling" type="b2602c69:ProjectViewProjectNode" />
+              <item name="IFNmodeling" type="462c0819:PsiDirectoryNode" />
               <item name="ifnscripts" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
@@ -337,6 +363,11 @@
   <component name="PropertiesComponent">
     <property name="last_opened_file_path" value="$PROJECT_DIR$/../Pleiotropy Project/cellsignalling" />
     <property name="settings.editor.selected.configurable" value="preferences.keymap" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\Duncan\Documents\University\Grad Studies Year 2\IFNmodeling\ifnmodels" />
+    </key>
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -350,7 +381,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.timecourse-09-12-2018">
+  <component name="RunManager" selected="Python.refractoriness_figure">
     <configuration name="IFNalpha1" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="IFNmodeling" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -369,7 +400,7 @@
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
     </configuration>
-    <configuration name="fit-06-12-2018" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration name="ec50" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="IFNmodeling" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -381,13 +412,13 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/ifnscripts/fit-06-12-2018.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/ifnscripts/ec50.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
     </configuration>
-    <configuration name="smooth_B6_IFN" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration name="refractoriness_figure" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="IFNmodeling" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -399,7 +430,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/ifnscripts/smooth_B6_IFN.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/ifnscripts/refractoriness_figure.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -442,19 +473,19 @@
       <option name="MODULE_MODE" value="false" />
     </configuration>
     <list>
-      <item itemvalue="Python.smooth_B6_IFN" />
-      <item itemvalue="Python.fit-06-12-2018" />
       <item itemvalue="Python.IFNalpha1" />
       <item itemvalue="Python.stepwisefit_10-12-2018" />
       <item itemvalue="Python.timecourse-09-12-2018" />
+      <item itemvalue="Python.ec50" />
+      <item itemvalue="Python.refractoriness_figure" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.refractoriness_figure" />
+        <item itemvalue="Python.ec50" />
         <item itemvalue="Python.timecourse-09-12-2018" />
         <item itemvalue="Python.stepwisefit_10-12-2018" />
         <item itemvalue="Python.IFNalpha1" />
-        <item itemvalue="Python.fit-06-12-2018" />
-        <item itemvalue="Python.smooth_B6_IFN" />
       </list>
     </recent_temporary>
   </component>
@@ -483,12 +514,12 @@
     <frame x="-7" y="-7" width="1550" height="838" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.16471355" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.16471355" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
       <window_info anchor="bottom" id="Version Control" order="9" />
       <window_info anchor="bottom" id="Python Console" order="7" />
-      <window_info anchor="bottom" id="Run" order="2" visible="true" weight="0.32965517" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.32965517" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="bottom" id="Terminal" order="8" />
       <window_info id="Favorites" order="2" side_tool="true" />
@@ -516,9 +547,6 @@
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/IfnData/process_csv.py" />
-    <entry file="file://$PROJECT_DIR$/IfnDataSets/process_csv.py" />
-    <entry file="file://$PROJECT_DIR$/IfnClass/IfnDataClass.py" />
     <entry file="file://$PROJECT_DIR$/ifnclass/ifnplot.py___jb_tmp___" />
     <entry file="file://$PROJECT_DIR$/figures_21-11-2018.py">
       <provider selected="true" editor-type-id="text-editor">
@@ -574,7 +602,6 @@
     <entry file="file://$PROJECT_DIR$/ifnclass/IFNalpha1.py" />
     <entry file="file://$PROJECT_DIR$/ifnclass/fit-10-12-2018.py" />
     <entry file="file://$PROJECT_DIR$/ifnclass/smooth_Sagar.py" />
-    <entry file="file://$PROJECT_DIR$/ifnmodels/Mixed_IFN_ppCompatible.py" />
     <entry file="file://$PROJECT_DIR$/mcmc_2.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="11305">
@@ -623,11 +650,6 @@
     <entry file="file://$PROJECT_DIR$/ifnclass/ifnfit.py">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/figures.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-3927" />
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/ifnscripts/ifnclass/ifnplot.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="34">
@@ -652,16 +674,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="153">
           <caret line="102" column="26" selection-start-line="102" selection-start-column="26" selection-end-line="102" selection-end-column="26" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/ifnscripts/ec50.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="404">
-          <caret line="102" lean-forward="true" selection-start-line="102" selection-end-line="102" />
-          <folding>
-            <element signature="e#0#36#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -726,16 +738,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ifnscripts/fitting_2_5.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="102">
-          <caret line="6" lean-forward="true" selection-start-line="6" selection-end-line="6" />
-          <folding>
-            <element signature="e#0#36#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/ifnscripts/ODE_system.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-255">
@@ -772,13 +774,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ifnscripts/refractoriness_figure.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="68">
-          <caret line="4" column="20" selection-start-line="4" selection-start-column="20" selection-end-line="4" selection-end-column="20" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/ifnscripts/stepwisefit_10-12-2018.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-425">
@@ -791,11 +786,71 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/ifnscripts/timecourse-09-12-2018.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="119">
-          <caret line="7" lean-forward="true" selection-start-line="7" selection-end-line="7" />
+        <state relative-caret-position="68">
+          <caret line="4" column="19" lean-forward="true" selection-start-line="4" selection-start-column="19" selection-end-line="4" selection-end-column="19" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnscripts/fitting_2_5.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="272">
+          <caret line="16" column="15" selection-start-line="16" selection-start-column="15" selection-end-line="16" selection-end-column="15" />
           <folding>
             <element signature="e#0#36#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnscripts/ec50.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="268">
+          <caret line="73" lean-forward="true" selection-start-line="73" selection-end-line="73" />
+          <folding>
+            <element signature="e#0#36#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/figures.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-5100" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnmodels/IFN_beta_altSOCS.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="472">
+          <caret line="56" column="41" lean-forward="true" selection-start-line="56" selection-start-column="41" selection-end-line="56" selection-end-column="41" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnscripts/refractoriness_figure.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="292">
+          <caret line="66" column="33" lean-forward="true" selection-start-line="66" selection-start-column="33" selection-end-line="66" selection-end-column="33" />
+          <folding>
+            <element signature="e#0#38#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnmodels/Mixed_IFN_ppCompatible.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="33">
+          <caret line="179" lean-forward="true" selection-start-line="179" selection-end-line="179" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnmodels/IFN_alpha_altSOCS.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="217">
+          <caret line="51" column="39" lean-forward="true" selection-start-line="51" selection-end-line="51" selection-end-column="39" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnmodels/Mixed_IFN_explicitUSP18.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="68">
+          <caret line="28" column="19" selection-start-line="28" selection-start-column="19" selection-end-line="28" selection-end-column="19" />
         </state>
       </provider>
     </entry>

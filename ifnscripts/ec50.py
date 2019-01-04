@@ -71,6 +71,7 @@ if __name__ == '__main__':
          'k_a1': 4.98E-14, 'k_a2': 8.30e-13 * 4, 'kSOCSon': 0.9e-8,
          'ka1': 3.321155762205247e-14 * 0.3, 'ka2': 4.98173364330787e-13 * 0.3,
          'kint_a': 0.0014, 'krec_a1': 9e-03})
+
     scale_factor = 0.036  # 0.02894064
     time_list = list(linspace(2.5, 60, num=15))
     alpha_peak, alpha_n, alpha_ec50 = get_ec50(Mixed_Model, time_list, 'Ia', 'TotalpSTAT', custom_parameters={'Ib': 0}, rflag=True)

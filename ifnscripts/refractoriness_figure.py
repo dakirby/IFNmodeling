@@ -1,9 +1,9 @@
-from ifnclass.ifndata import IfnData
 from ifnclass.ifnmodel import IfnModel
 from numpy import linspace, logspace
 import seaborn as sns
 from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 def MM(xdata, top, n, k):
@@ -62,41 +62,66 @@ if __name__ == '__main__':
     alpha_palette = sns.color_palette("Reds", 6)
     beta_palette = sns.color_palette("Greens", 6)
 
-    newdata = IfnData("20181113_B6_IFNs_Dose_Response_Bcells")
-    Mixed_Model = IfnModel('')
-    Mixed_Model.load_model('fitting_2_5.p')
+    Mixed_Model = IfnModel('Mixed_IFN_ppCompatible')
+    USP18_Model = IfnModel('Mixed_IFN_explicitUSP18')
+    print(USP18_Model.parameters)
+    exit()
 
     Mixed_Model.set_parameters(
-        {'kpu': 0.0028, 'R2': 2300 * 2.5, 'R1': 1800 * 1.8, 'k_d4': 0.06, 'kint_b': 0.0003, 'krec_b1': 0.001,
+        {'kpu': 0.0028, 'R2': 2300 * 2.5, 'R1': 1800 * 1.8, 'k_d4': 0.06, 'kint_b': 0.0003,
+         'krec_b1': 0.001, 'krec_b2': 0.01,
          'k_a1': 4.98E-14, 'k_a2': 8.30e-13 * 4, 'kSOCSon': 0.9e-8,
-         'ka1': 3.321155762205247e-14 * 0.3, 'ka2': 4.98173364330787e-13 * 0.3,
-         'kint_a': 0.0014, 'krec_a1': 9e-03})
+         'ka1': 3.321155762205247e-14 * 0.3, 'ka2': 4.98173364330787e-13 * 0.3, 'kd4': 1.0, 'kd3': 0.001,
+         'kint_a': 0.0014, 'krec_a1': 9e-03, 'krec_a2': 0.05})
+
     scale_factor = 0.036  # 0.02894064
-    time_list = list(linspace(2.5, 60, num=15))
-    alpha_peak, alpha_n, alpha_ec50 = get_ec50(Mixed_Model, time_list, 'Ia', 'TotalpSTAT', custom_parameters={'Ib': 0}, rflag=True)
-    beta_peak, beta_n, beta_ec50 = get_ec50(Mixed_Model, time_list, 'Ib', 'TotalpSTAT', custom_parameters={'Ia': 0}, rflag=True)
+    dose_list = list(logspace(-2, 6, num=20))
+    dr_curve_a = [el[0] for el in Mixed_Model.doseresponse([60], 'TotalpSTAT', 'Ia', dose_list,
+                                                   parameters={'Ib': 0}, return_type='list')['TotalpSTAT']]
+    dr_curve_b = [el[0] for el in Mixed_Model.doseresponse([60], 'TotalpSTAT', 'Ib', dose_list,
+                                                   parameters={'Ia': 0}, return_type='list')['TotalpSTAT']]
+    # Now compute the 5* refractory response
+    k4sf1 = 3.5
+    Mixed_Model.set_parameters({'kd4': 1.0*k4sf1, 'k_d4': 0.06*k4sf1})
+    dr_curve_a20 = [el[0] for el in Mixed_Model.doseresponse([60], 'TotalpSTAT', 'Ia', dose_list,
+                                                   parameters={'Ib': 0}, return_type='list')['TotalpSTAT']]
+    dr_curve_b20 = [el[0] for el in Mixed_Model.doseresponse([60], 'TotalpSTAT', 'Ib', dose_list,
+                                                   parameters={'Ia': 0}, return_type='list')['TotalpSTAT']]
+    # Now compute the 10* refractory response
+    k4sf2 = 10
+    Mixed_Model.set_parameters({'kd4': 1.0*k4sf2, 'k_d4': 0.06*k4sf2})
+    dr_curve_a60 = [el[0] for el in Mixed_Model.doseresponse([60], 'TotalpSTAT', 'Ia', dose_list,
+                                                   parameters={'Ib': 0}, return_type='list')['TotalpSTAT']]
+    dr_curve_b60 = [el[0] for el in Mixed_Model.doseresponse([60], 'TotalpSTAT', 'Ib', dose_list,
+                                                   parameters={'Ia': 0}, return_type='list')['TotalpSTAT']]
 
+    # Plot
     fig, axes = plt.subplots(nrows=1, ncols=2)
-    axes[0].set_xlabel("Time (s)")
-    axes[1].set_xlabel("Time (s)")
-    axes[0].set_title(r"EC50 vs Time for IFN$\alpha$")
-    axes[1].set_title(r"EC50 vs Time for IFN$\beta$")
-    axes[0].set_ylabel("EC50")
-    axes[0].set(xscale='linear', yscale='log')
-    axes[1].set(xscale='linear', yscale='log')
-    axes[0].plot(time_list, alpha_ec50, label=r'IFN$\alpha$ EC50', color=alpha_palette[4])
-    axes[1].plot(time_list, beta_ec50, label=r'IFN$\beta$ EC50', color=beta_palette[4])
-    fig.show()
-    fig.savefig('results\ec50_vs_time.pdf')
+    axes[0].set_xlabel("Dose (pM)")
+    axes[1].set_xlabel("Dose (pM)")
+    axes[0].set_title("Relative Refractory Response")
+    axes[1].set_title(r"Absolute Responses")
+    axes[0].set_ylabel("pSTAT1")
+    axes[0].set(xscale='log', yscale='linear')
+    axes[1].set(xscale='log', yscale='linear')
+    axes[0].plot(dose_list, np.divide(dr_curve_a20, dr_curve_a),
+                 label=r'IFN$\alpha$ $K_{D4}\times$'+'{}'.format(k4sf1), color=alpha_palette[2])
+    axes[0].plot(dose_list, np.divide(dr_curve_a60, dr_curve_a),
+                 label=r'IFN$\alpha$ $K_{D4}\times$'+'{}'.format(k4sf2), color=alpha_palette[4])
+    axes[0].plot(dose_list, np.divide(dr_curve_b20, dr_curve_b),
+                 label=r'IFN$\beta$ $K_{D4}\times$'+'{}'.format(k4sf1), color=beta_palette[2])
+    axes[0].plot(dose_list, np.divide(dr_curve_b60, dr_curve_b),
+                 label=r'IFN$\beta$ $K_{D4}\times$'+'{}'.format(k4sf2), color=beta_palette[4])
+    axes[1].plot(dose_list, dr_curve_a, label=r'IFN$\alpha$', color=alpha_palette[0])
+    axes[1].plot(dose_list, dr_curve_a20, label=r'IFN$\alpha$ $K_{D4}\times$'+'{}'.format(k4sf1), color=alpha_palette[2])
+    axes[1].plot(dose_list, dr_curve_a60, label=r'IFN$\alpha$ $K_{D4}\times$'+'{}'.format(k4sf2), color=alpha_palette[4])
+    axes[1].plot(dose_list, dr_curve_b, label=r'IFN$\beta$', color=beta_palette[0])
+    axes[1].plot(dose_list, dr_curve_b20, label=r'IFN$\beta$ $K_{D4}\times$'+'{}'.format(k4sf1), color=beta_palette[2])
+    axes[1].plot(dose_list, dr_curve_b60, label=r'IFN$\beta$ $K_{D4}\times$'+'{}'.format(k4sf2), color=beta_palette[4])
 
-    fig, axes = plt.subplots(nrows=1, ncols=2)
-    axes[0].set_xlabel("Time (s)")
-    axes[1].set_xlabel("Time (s)")
-    axes[0].set_title(r"Peak Response vs Time for IFN$\alpha$")
-    axes[1].set_title(r"Peak Response vs Time for IFN$\beta$")
-    axes[0].set_ylabel("Peak Response")
-    axes[0].plot(time_list, alpha_peak, label=r'IFN$\alpha$ Peak Response', color=alpha_palette[4])
-    axes[1].plot(time_list, beta_peak, label=r'IFN$\beta$ Peak Response', color=beta_palette[4])
+    axes[0].legend(loc=2, prop={'size': 5})
+    axes[1].legend(loc=2, prop={'size': 5})
     fig.show()
-    fig.savefig('results\peak_response_vs_time.pdf')
+    fig.savefig('results/refractoriness.pdf')
+
 
