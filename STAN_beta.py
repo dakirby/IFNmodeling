@@ -1,4 +1,4 @@
-# exported from PySB model 'IFN_Models.IFN_beta_altSOCS_Internalization_ppCompatible'
+# exported from PySB model 'ifnmodels.IFN_beta_altSOCS_Internalization_ppCompatible'
 stan_code = r"""functions{    
     real[] ode_rhs(real t,
                     real[] y,

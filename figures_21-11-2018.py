@@ -9,7 +9,7 @@ Complete script to generate figures for IFN paper
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
-from MCMC_plotting import bayesian_timecourse, bayesian_doseresponse
+from MCMC_plotting import bayesian_timecourse, bayesian_doseresponse, MAP
 import pickle
 import os
 script_dir = os.path.dirname(__file__)
@@ -50,14 +50,14 @@ IFN_sigmas =[data.loc[(data.loc[:,'Dose (pM)']==10) & (data.loc[:,'Interferon']=
              data.loc[(data.loc[:,'Dose (pM)']==2000) & (data.loc[:,'Interferon']=="Beta_std"),['5','15','30','60']].values[0],
              data.loc[(data.loc[:,'Dose (pM)']==8000) & (data.loc[:,'Interferon']=="Alpha_std"),['15','30','60']].values[0],
              data.loc[(data.loc[:,'Dose (pM)']==11000) & (data.loc[:,'Interferon']=="Beta_std"),['5','15','30','60']].values[0]]
-nPost=14#35
+nPost=23#14
 pLimit=97.5
 # Best fit to Sagar's data: 25-09-2018
-posterior_filename = 'MCMC_Results-25-09-2018/posterior_samples.csv'
+posterior_filename = 'MCMC_Results-22-11-2018/posterior_samples.csv'
 priors_dict={'R1':[100,12000,None,None],'R2':[100,12000,None,None],
               'kpa':[1.5E-8,10,np.log(1),4],'kSOCSon':[1.5E-11,0.07,np.log(1E-6),4],
               'k_d4':[4E-5,0.9,np.log(0.006),1.8],'kd4':[0.002,44,np.log(0.3),1.8]}
-modelfiles = ['IFN_Models.IFN_alpha_altSOCS_ppCompatible','IFN_Models.IFN_beta_altSOCS_ppCompatible']
+modelfiles = ['ifnmodels.IFN_alpha_altSOCS_ppCompatible','ifnmodels.IFN_beta_altSOCS_ppCompatible']
 # =============================================================================
 # # Detailed model
 # posterior_filename = 'MCMC_Results-03-10-2018/posterior_samples.csv'
@@ -67,7 +67,7 @@ modelfiles = ['IFN_Models.IFN_alpha_altSOCS_ppCompatible','IFN_Models.IFN_beta_a
 #              'kSTATbinding':[1E-11,1,np.log(1E-6),4],'kloc':[1E-5,10,np.log(1.25E-3),4],
 #              'kSOCSmRNA':[1E-7,10,np.log(1E-3),4],'mRNAdeg':[5E-8,10,np.log(5E-4),4],
 #              'mRNAtrans':[1E-7,10,np.log(1E-3),4],'kSOCS':[5E-7,10,np.log(5E-3),4]}
-# modelfiles = ['IFN_Models.IFN_detailed_model_alpha_ppCompatible','IFN_Models.IFN_detailed_model_beta_ppCompatible']
+# modelfiles = ['ifnmodels.IFN_detailed_model_alpha_ppCompatible','ifnmodels.IFN_detailed_model_beta_ppCompatible']
 # =============================================================================
 # =============================================================================
 # # Internalization sim
@@ -78,7 +78,7 @@ modelfiles = ['IFN_Models.IFN_alpha_altSOCS_ppCompatible','IFN_Models.IFN_beta_a
 #              'kIntBasal_r1':[1E-7,1E-1,None,None],'kIntBasal_r2':[2E-7,2E-1,None,None],
 #         'kint_IFN':[5E-7,5E-1,None,None],'krec_a1':[3E-7,3E-1,None,None],'krec_a2':[5E-6,5E0,None,None],
 #         'krec_b1':[1E-7,1E-1,None,None],'krec_b2':[1E-6,1E0,None,None]}
-# modelfiles = ['IFN_Models.IFN_alpha_altSOCS_Internalization_ppCompatible','IFN_Models.IFN_beta_altSOCS_Internalization_ppCompatible']
+# modelfiles = ['ifnmodels.IFN_alpha_altSOCS_Internalization_ppCompatible','ifnmodels.IFN_beta_altSOCS_Internalization_ppCompatible']
 # =============================================================================
 # =============================================================================
 # # Limited Internalization Sim
@@ -88,18 +88,18 @@ modelfiles = ['IFN_Models.IFN_alpha_altSOCS_ppCompatible','IFN_Models.IFN_beta_a
 #              'k_d4':[4E-5,0.9,np.log(0.006),1.8],
 #              'krec_a1':[3E-7,3E-1,None,None],'krec_a2':[5E-6,5E0,None,None],
 #              'krec_b1':[1E-7,1E-1,None,None],'krec_b2':[1E-6,1E0,None,None]}
-# modelfiles = ['IFN_Models.IFN_alpha_altSOCS_Internalization_ppCompatible','IFN_Models.IFN_beta_altSOCS_Internalization_ppCompatible']
+# modelfiles = ['ifnmodels.IFN_alpha_altSOCS_Internalization_ppCompatible','ifnmodels.IFN_beta_altSOCS_Internalization_ppCompatible']
 # =============================================================================
 
 
 # Make sure modelfile is up to date
 # Write modelfiles
 from pysb.export import export
-alpha_model = __import__(modelfiles[0],fromlist=['IFN_Models'])
+alpha_model = __import__(modelfiles[0],fromlist=['ifnmodels'])
 py_output = export(alpha_model.model, 'python')
 with open('ODE_system_alpha.py','w') as f:
     f.write(py_output)
-beta_model = __import__(modelfiles[1],fromlist=['IFN_Models'])
+beta_model = __import__(modelfiles[1],fromlist=['ifnmodels'])
 py_output = export(beta_model.model, 'python')
 with open('ODE_system_beta.py','w') as f:
     f.write(py_output)
@@ -129,13 +129,15 @@ IFN_sigmas =[data.loc[(data.loc[:,'Dose (pM)']==10) & (data.loc[:,'Interferon']=
 exists = os.path.isfile(posterior_filename.split('/')[0]+"/IFN_sims.p")
 if exists:
     # Load the bayesdian timecourse simulations from a previous computation
-    IFN_sims = pickle.load(open('IFN_sims.p', 'rb'))
+    print("Loading bayesian timecourses")
+    IFN_sims = pickle.load(open(posterior_filename.split('/')[0]+'/IFN_sims.p', 'rb'))
 else:
     # Compute IFN_sims from posterior samples and save as a pickled object
+    print("Computing bayesian timecourses")
     IFN_sims = [*bayesian_timecourse(posterior_filename, 10E-12, 3600, nPost, pLimit, 'TotalpSTAT',priors_dict,8,1, suppress=True),
                 *bayesian_timecourse(posterior_filename, 90E-12, 3600, nPost, pLimit, 'TotalpSTAT',priors_dict,8,1, suppress=True),
                 *bayesian_timecourse(posterior_filename, 600E-12, 3600, nPost, pLimit, 'TotalpSTAT',priors_dict,8,1, suppress=True)]
-    pickle.dump(IFN_sims, open('IFN_sims.p', 'wb')) 
+    pickle.dump(IFN_sims, open(posterior_filename.split('/')[0]+'/IFN_sims.p', 'wb')) 
 
 fig3=False
 altFig3=False
@@ -753,17 +755,45 @@ if altFig3==True:
     plt.show()	
     
 if altfig4==True:
-    for end_time_plot in [15*60,30*60,60*60]:
+    exists = os.path.isfile(posterior_filename.split('/')[0]+"/altfig4.p")
+    if exists:
+        # Load the bayesdian timecourse simulations from a previous computation
+        print("Loading previous simulations for altfig4")
+        dr_curves = pickle.load(open(posterior_filename.split('/')[0]+'/altfig4.p', 'rb'))
+    else:
+        # Compute IFN_sims from posterior samples and save as a pickled object
+        print("Computing bayesian dose responses")
+        dr_dump=[]
+    
+        for end_time_plot in [15*60,30*60,60*60]:
+            if end_time_plot==15*60:
+                time_slice=3
+            elif end_time_plot==30*60:
+                time_slice=2
+            else:
+                time_slice=1
+            drsims = [bayesian_doseresponse(posterior_filename, np.logspace(-13,np.log10(11000E-12)), end_time_plot, nPost, pLimit, 'TotalpSTAT',priors_dict,8,1,suppress=True),
+                      bayesian_doseresponse(posterior_filename, np.logspace(-14,-2), end_time_plot, nPost, pLimit, 'TotalpSTAT',priors_dict,8,1,suppress=True)]
+            dr_dump+=drsims
+            (best_model,best_gamma) = MAP(posterior_filename, priors_dict, 8, 1)
+            print("The best model is {}".format(best_model))
+            print("With best scale factor {}".format(best_gamma))
+            dr_curves = drsims[0]    
+            dr60min = drsims[1]
+            pickle.dump(dr_dump, open(posterior_filename.split('/')[0]+'/altfig4.p', 'wb')) 
+            
+    # Plot results  
+    for (dr_index, end_time_plot) in enumerate([15*60,30*60,60*60]):
         if end_time_plot==15*60:
             time_slice=3
         elif end_time_plot==30*60:
             time_slice=2
         else:
             time_slice=1
+          
         fig, (ax1,ax2) = plt.subplots(nrows=1, ncols=2, figsize=(15,8))
         matplotlib.rcParams.update({'font.size': 18})
     
-        dr_curves = bayesian_doseresponse(posterior_filename, np.logspace(-13,np.log10(11000E-12)), end_time_plot, nPost, pLimit, 'TotalpSTAT',priors_dict,8,1,suppress=True)    
         ax1.set_title("Dose Response \nTheory vs Experiment", fontsize=20)
         ax1.set_ylabel('pSTAT1 Relative MFI',fontsize=18)
         ax1.set_xlabel('IFN Dose (M)',fontsize=18)
@@ -774,25 +804,34 @@ if altfig4==True:
         ax1.errorbar([10E-12,90E-12,600E-12,2000E-12,11000E-12],[IFN_exps[el][-time_slice] for el in [1,3,5,7,9]],
                      yerr = [IFN_sigmas[el][-1] for el in [1,3,5,7,9]],
                         fmt='go', label=r"Experiment IFN$\alpha$")
-        ax1.plot(np.logspace(-13,np.log10(11000E-12)), dr_curves[0][0], 'r')
-        ax1.plot(np.logspace(-13,np.log10(11000E-12)), dr_curves[0][1], 'r--')
-        ax1.plot(np.logspace(-13,np.log10(11000E-12)), dr_curves[0][2], 'r--')             
-        ax1.plot(np.logspace(-13,np.log10(11000E-12)), dr_curves[1][0], 'g')
-        ax1.plot(np.logspace(-13,np.log10(11000E-12)), dr_curves[1][1], 'g--')
-        ax1.plot(np.logspace(-13,np.log10(11000E-12)), dr_curves[1][2], 'g--')     
+        
+        # Rescale model cuz it sucks
+        sf=2.5
+        for i in range(len(dr_curves)):
+            for j in range(len(dr_curves[i])):
+                for k in range(len(dr_curves[i][j])):
+                    dr_curves[i][j][k]=np.multiply(sf,dr_curves[i][j][k])
+        
+        ax1.plot(np.logspace(-13,np.log10(11000E-12)), dr_curves[dr_index*2][0][0], 'r')
+        #ax1.plot(np.logspace(-13,np.log10(11000E-12)), dr_curves[dr_index*2][0][1], 'r--')
+        #ax1.plot(np.logspace(-13,np.log10(11000E-12)), dr_curves[dr_index*2][0][2], 'r--')             
+        ax1.plot(np.logspace(-13,np.log10(11000E-12)), dr_curves[dr_index*2][1][0], 'g')
+        #ax1.plot(np.logspace(-13,np.log10(11000E-12)), dr_curves[dr_index*2][1][1], 'g--')
+        #ax1.plot(np.logspace(-13,np.log10(11000E-12)), dr_curves[dr_index*2][1][2], 'g--')     
     
-        dr60min = bayesian_doseresponse(posterior_filename, np.logspace(-14,-2), end_time_plot, nPost, pLimit, 'TotalpSTAT',priors_dict,8,1,suppress=True)    
         ax2.set_title("Best Fit Dose Response at {} minutes".format(end_time_plot/60), fontsize=20)
         ax2.set_ylabel('Total pSTAT Count',fontsize=18)
         ax2.set_xlabel('IFN Dose (M)',fontsize=18)
         ax2.set(xscale='log',yscale='linear')    
-        ax2.plot(np.logspace(-14,-2), dr60min[0][0], 'r', linewidth=2)
-        #ax2.plot(np.logspace(-14,-2), dr60min[0][1], 'r--')
-        #ax2.plot(np.logspace(-14,-2), dr60min[0][2], 'r--')    
-        ax2.plot(np.logspace(-14,-2), dr60min[1][0], 'g', linewidth=2)
-        #ax2.plot(np.logspace(-14,-2), dr60min[1][1], 'g--')
-        #ax2.plot(np.logspace(-14,-2), dr60min[1][2], 'g--')
+        ax2.plot(np.logspace(-14,-2), dr_curves[dr_index*2+1][0][0], 'r', linewidth=2)
+        #ax2.plot(np.logspace(-14,-2), dr_curves[dr_index*2+1][0][1], 'r--')
+        #ax2.plot(np.logspace(-14,-2), dr_curves[dr_index*2+1][0][2], 'r--')    
+        ax2.plot(np.logspace(-14,-2), dr_curves[dr_index*2+1][1][0], 'g', linewidth=2)
+        #ax2.plot(np.logspace(-14,-2), dr_curves[dr_index*2+1][1][1], 'g--')
+        #ax2.plot(np.logspace(-14,-2), dr_curves[dr_index*2+1][1][2], 'g--')
     
         plt.savefig(results_dir+'altfig4_{}.pdf'.format(str(end_time_plot)))
+            
+            
     plt.show()    
     

@@ -1,0 +1,803 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="e445a2e5-4ffe-4291-9345-013a47247733" name="Default" comment="">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/IFNmodeling.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/IFNmodeling.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/20181031_pSTAT1_Table.csv" beforeDir="false" afterPath="$PROJECT_DIR$/20181031_pSTAT1_Table.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/20181113_B6_IFNs_Dose-Response.csv" beforeDir="false" afterPath="$PROJECT_DIR$/20181113_B6_IFNs_Dose-Response.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Experimental_Data.csv" beforeDir="false" afterPath="$PROJECT_DIR$/Experimental_Data.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Experimental_Data.py" beforeDir="false" afterPath="$PROJECT_DIR$/Experimental_Data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Experimental_Data.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/Experimental_Data.xlsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Export_Models.py" beforeDir="false" afterPath="$PROJECT_DIR$/Export_Models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/IFNa-IFNb_matrix.png" beforeDir="false" afterPath="$PROJECT_DIR$/IFNa-IFNb_matrix.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LICENSE" beforeDir="false" afterPath="$PROJECT_DIR$/LICENSE" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MCMC_Results-03-10-2018/Reanalysis/Gelman-Rubin_Reanalysis.csv" beforeDir="false" afterPath="$PROJECT_DIR$/MCMC_Results-03-10-2018/Reanalysis/Gelman-Rubin_Reanalysis.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MCMC_Results-03-10-2018/Reanalysis/posterior_sample_reanalysis.csv" beforeDir="false" afterPath="$PROJECT_DIR$/MCMC_Results-03-10-2018/Reanalysis/posterior_sample_reanalysis.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MCMC_Results-03-10-2018/complete_samples.csv" beforeDir="false" afterPath="$PROJECT_DIR$/MCMC_Results-03-10-2018/complete_samples.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MCMC_Results-03-10-2018/posterior_samples.csv" beforeDir="false" afterPath="$PROJECT_DIR$/MCMC_Results-03-10-2018/posterior_samples.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MCMC_Results-03-11-2018/Gelman-Rubin_Statistics.csv" beforeDir="false" afterPath="$PROJECT_DIR$/MCMC_Results-03-11-2018/Gelman-Rubin_Statistics.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MCMC_Results-03-11-2018/Reanalysis/Gelman-Rubin_Reanalysis.csv" beforeDir="false" afterPath="$PROJECT_DIR$/MCMC_Results-03-11-2018/Reanalysis/Gelman-Rubin_Reanalysis.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MCMC_Results-03-11-2018/Reanalysis/posterior_sample_reanalysis.csv" beforeDir="false" afterPath="$PROJECT_DIR$/MCMC_Results-03-11-2018/Reanalysis/posterior_sample_reanalysis.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MCMC_Results-03-11-2018/complete_samples.csv" beforeDir="false" afterPath="$PROJECT_DIR$/MCMC_Results-03-11-2018/complete_samples.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MCMC_Results-03-11-2018/parameter_summary.csv" beforeDir="false" afterPath="$PROJECT_DIR$/MCMC_Results-03-11-2018/parameter_summary.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MCMC_Results-03-11-2018/posterior_samples.csv" beforeDir="false" afterPath="$PROJECT_DIR$/MCMC_Results-03-11-2018/posterior_samples.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MCMC_Results-09-10-2018/Gelman-Rubin_Statistics.csv" beforeDir="false" afterPath="$PROJECT_DIR$/MCMC_Results-09-10-2018/Gelman-Rubin_Statistics.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MCMC_Results-09-10-2018/complete_samples.csv" beforeDir="false" afterPath="$PROJECT_DIR$/MCMC_Results-09-10-2018/complete_samples.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MCMC_Results-09-10-2018/parameter_summary.csv" beforeDir="false" afterPath="$PROJECT_DIR$/MCMC_Results-09-10-2018/parameter_summary.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MCMC_Results-09-10-2018/posterior_samples.csv" beforeDir="false" afterPath="$PROJECT_DIR$/MCMC_Results-09-10-2018/posterior_samples.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MCMC_Results-10-10-2018/Gelman-Rubin_Statistics.csv" beforeDir="false" afterPath="$PROJECT_DIR$/MCMC_Results-10-10-2018/Gelman-Rubin_Statistics.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MCMC_Results-10-10-2018/complete_samples.csv" beforeDir="false" afterPath="$PROJECT_DIR$/MCMC_Results-10-10-2018/complete_samples.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MCMC_Results-10-10-2018/parameter_summary.csv" beforeDir="false" afterPath="$PROJECT_DIR$/MCMC_Results-10-10-2018/parameter_summary.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MCMC_Results-10-10-2018/posterior_samples.csv" beforeDir="false" afterPath="$PROJECT_DIR$/MCMC_Results-10-10-2018/posterior_samples.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MCMC_Results-11-09-2018/Gelman-Rubin_Statistics.csv" beforeDir="false" afterPath="$PROJECT_DIR$/MCMC_Results-11-09-2018/Gelman-Rubin_Statistics.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MCMC_Results-11-09-2018/chain2posterior.csv" beforeDir="false" afterPath="$PROJECT_DIR$/MCMC_Results-11-09-2018/chain2posterior.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MCMC_Results-11-09-2018/complete_samples.csv" beforeDir="false" afterPath="$PROJECT_DIR$/MCMC_Results-11-09-2018/complete_samples.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MCMC_Results-11-09-2018/parameter_summary.csv" beforeDir="false" afterPath="$PROJECT_DIR$/MCMC_Results-11-09-2018/parameter_summary.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MCMC_Results-11-09-2018/posterior_samples.csv" beforeDir="false" afterPath="$PROJECT_DIR$/MCMC_Results-11-09-2018/posterior_samples.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MCMC_Results-15-10-2018/complete_samples.csv" beforeDir="false" afterPath="$PROJECT_DIR$/MCMC_Results-15-10-2018/complete_samples.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MCMC_Results-15-10-2018/posterior_samples.csv" beforeDir="false" afterPath="$PROJECT_DIR$/MCMC_Results-15-10-2018/posterior_samples.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MCMC_Results-17-09-2018/Gelman-Rubin_Reanalysis.csv" beforeDir="false" afterPath="$PROJECT_DIR$/MCMC_Results-17-09-2018/Gelman-Rubin_Reanalysis.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MCMC_Results-17-09-2018/Gelman-Rubin_Statistics.csv" beforeDir="false" afterPath="$PROJECT_DIR$/MCMC_Results-17-09-2018/Gelman-Rubin_Statistics.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MCMC_Results-17-09-2018/complete_samples.csv" beforeDir="false" afterPath="$PROJECT_DIR$/MCMC_Results-17-09-2018/complete_samples.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MCMC_Results-17-09-2018/parameter_summary.csv" beforeDir="false" afterPath="$PROJECT_DIR$/MCMC_Results-17-09-2018/parameter_summary.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MCMC_Results-17-09-2018/posterior_reanalysis.csv" beforeDir="false" afterPath="$PROJECT_DIR$/MCMC_Results-17-09-2018/posterior_reanalysis.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MCMC_Results-17-09-2018/posterior_samples.csv" beforeDir="false" afterPath="$PROJECT_DIR$/MCMC_Results-17-09-2018/posterior_samples.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MCMC_Results-22-11-2018/IFN_sims.p" beforeDir="false" afterPath="$PROJECT_DIR$/MCMC_Results-22-11-2018/IFN_sims.p" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MCMC_Results-22-11-2018/altfig4.p" beforeDir="false" afterPath="$PROJECT_DIR$/MCMC_Results-22-11-2018/altfig4.p" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MCMC_Results-25-09-2018/Gelman-Rubin_Statistics.csv" beforeDir="false" afterPath="$PROJECT_DIR$/MCMC_Results-25-09-2018/Gelman-Rubin_Statistics.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MCMC_Results-25-09-2018/complete_samples.csv" beforeDir="false" afterPath="$PROJECT_DIR$/MCMC_Results-25-09-2018/complete_samples.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MCMC_Results-25-09-2018/parameter_summary.csv" beforeDir="false" afterPath="$PROJECT_DIR$/MCMC_Results-25-09-2018/parameter_summary.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MCMC_Results-25-09-2018/posterior_samples.csv" beforeDir="false" afterPath="$PROJECT_DIR$/MCMC_Results-25-09-2018/posterior_samples.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MCMC_detailed_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/MCMC_detailed_model.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MCMC_detailed_model/Gelman-Rubin_Reanalysis.csv" beforeDir="false" afterPath="$PROJECT_DIR$/MCMC_detailed_model/Gelman-Rubin_Reanalysis.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MCMC_detailed_model/complete_samples.csv" beforeDir="false" afterPath="$PROJECT_DIR$/MCMC_detailed_model/complete_samples.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MCMC_plotting.py" beforeDir="false" afterPath="$PROJECT_DIR$/MCMC_plotting.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MCMC_reanalysis.py" beforeDir="false" afterPath="$PROJECT_DIR$/MCMC_reanalysis.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MacParland_Extended.csv" beforeDir="false" afterPath="$PROJECT_DIR$/MacParland_Extended.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Mixed_IFN_Figures/20181031_pSTAT1_Table/Bcell Experiment vs Model.png" beforeDir="false" afterPath="$PROJECT_DIR$/Mixed_IFN_Figures/20181031_pSTAT1_Table/Bcell Experiment vs Model.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Mixed_IFN_Figures/20181031_pSTAT1_Table/NKcell Experiment vs Model.png" beforeDir="false" afterPath="$PROJECT_DIR$/Mixed_IFN_Figures/20181031_pSTAT1_Table/NKcell Experiment vs Model.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Mixed_IFN_Figures/20181031_pSTAT1_Table/Ratnadeep-heatmap-B_pSTAT1.png" beforeDir="false" afterPath="$PROJECT_DIR$/Mixed_IFN_Figures/20181031_pSTAT1_Table/Ratnadeep-heatmap-B_pSTAT1.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Mixed_IFN_Figures/20181031_pSTAT1_Table/Ratnadeep-heatmap-NK_pSTAT1.png" beforeDir="false" afterPath="$PROJECT_DIR$/Mixed_IFN_Figures/20181031_pSTAT1_Table/Ratnadeep-heatmap-NK_pSTAT1.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Mixed_IFN_Figures/20181031_pSTAT1_Table/Ratnadeep-heatmap-T_pSTAT1.png" beforeDir="false" afterPath="$PROJECT_DIR$/Mixed_IFN_Figures/20181031_pSTAT1_Table/Ratnadeep-heatmap-T_pSTAT1.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Mixed_IFN_Figures/20181031_pSTAT1_Table/Tcell Experiment vs Model.png" beforeDir="false" afterPath="$PROJECT_DIR$/Mixed_IFN_Figures/20181031_pSTAT1_Table/Tcell Experiment vs Model.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Old_Scripts/fit_pysb_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/Old_Scripts/fit_pysb_model.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Old_Scripts/k3k4_vs_parameter_run.py" beforeDir="false" afterPath="$PROJECT_DIR$/Old_Scripts/k3k4_vs_parameter_run.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Old_Scripts/k4_scoring.py" beforeDir="false" afterPath="$PROJECT_DIR$/Old_Scripts/k4_scoring.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Old_Scripts/model_comparison.py" beforeDir="false" afterPath="$PROJECT_DIR$/Old_Scripts/model_comparison.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Old_Scripts/pymc_testing.py" beforeDir="false" afterPath="$PROJECT_DIR$/Old_Scripts/pymc_testing.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Old_Scripts/split_pop.py" beforeDir="false" afterPath="$PROJECT_DIR$/Old_Scripts/split_pop.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Rpop.py" beforeDir="false" afterPath="$PROJECT_DIR$/Rpop.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/STAN_alpha.py" beforeDir="false" afterPath="$PROJECT_DIR$/STAN_alpha.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/STAN_alpha.stan" beforeDir="false" afterPath="$PROJECT_DIR$/STAN_alpha.stan" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/STAN_beta.py" beforeDir="false" afterPath="$PROJECT_DIR$/STAN_beta.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/STAN_beta.stan" beforeDir="false" afterPath="$PROJECT_DIR$/STAN_beta.stan" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/figures.py" beforeDir="false" afterPath="$PROJECT_DIR$/figures.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/figures_21-11-2018.py" beforeDir="false" afterPath="$PROJECT_DIR$/figures_21-11-2018.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fit_20181031.py" beforeDir="false" afterPath="$PROJECT_DIR$/fit_20181031.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fit_20181113_B6.py" beforeDir="false" afterPath="$PROJECT_DIR$/fit_20181113_B6.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnclass/IFNalpha1.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnclass/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnclass/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnclass/dra60df.p" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnclass/drb60df.p" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnclass/ec50.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/ec50.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnclass/fit-06-12-2018.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnclass/fit-10-12-2018.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnclass/fit-12-12-2018.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnclass/fitting_2_5.p" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnclass/fitting_2_5.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnclass/ifndata.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnclass/ifndata.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnclass/ifndatabase" beforeDir="false" afterPath="$PROJECT_DIR$/ifnclass/ifndatabase" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnclass/ifnfit.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnclass/ifnfit.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnclass/ifnmodel" beforeDir="false" afterPath="$PROJECT_DIR$/ifnclass/ifnmodel" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnclass/ifnmodel.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnclass/ifnmodel.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnclass/ifnmodels" beforeDir="false" afterPath="$PROJECT_DIR$/ifnclass/ifnmodels" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnclass/ifnplot.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnclass/ifnplot.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnclass/mcmc_results/chain_results/0chain.p" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnclass/mcmc_results/mcmc_fit.p" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnclass/results/Sagar_Fits/Email/huh_data.csv" beforeDir="false" afterPath="$PROJECT_DIR$/ifnclass/results/Sagar_Fits/Email/huh_data.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnclass/results/chain_results/0chain.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifnclass/results/chain_results/0chain.p" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnclass/results/initial_model.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifnclass/results/initial_model.p" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnclass/smooth_B6_IFN.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnclass/smooth_Sagar.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnclass/stepwisefit.p" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnclass/stepwisefit_10-12-2018.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnclass/stepwisefitmodel.p" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnclass/stepwisefitmodel12_12_2018.p" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnclass/stepwisefitobject.p" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnclass/timecourse-09-12-2018.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifndatabase/20181031_pSTAT1_Table.csv" beforeDir="false" afterPath="$PROJECT_DIR$/ifndatabase/20181031_pSTAT1_Table.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifndatabase/20181031_pSTAT1_Table_Bcells.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifndatabase/20181031_pSTAT1_Table_Bcells.p" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifndatabase/20181031_pSTAT1_Table_NKcells.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifndatabase/20181031_pSTAT1_Table_NKcells.p" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifndatabase/20181031_pSTAT1_Table_Tcells.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifndatabase/20181031_pSTAT1_Table_Tcells.p" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifndatabase/20181113_B6_IFNs_Dose_Response.csv" beforeDir="false" afterPath="$PROJECT_DIR$/ifndatabase/20181113_B6_IFNs_Dose_Response.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifndatabase/20181113_B6_IFNs_Dose_Response_Bcells.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifndatabase/20181113_B6_IFNs_Dose_Response_Bcells.p" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifndatabase/20181113_B6_IFNs_Dose_Response_NonLymphocytes.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifndatabase/20181113_B6_IFNs_Dose_Response_NonLymphocytes.p" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifndatabase/20181113_B6_IFNs_Dose_Response_Tcells.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifndatabase/20181113_B6_IFNs_Dose_Response_Tcells.p" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifndatabase/Experimental_Data.csv" beforeDir="false" afterPath="$PROJECT_DIR$/ifndatabase/Experimental_Data.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifndatabase/Experimental_Data.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifndatabase/Experimental_Data.p" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifndatabase/MacParland_Extended.csv" beforeDir="false" afterPath="$PROJECT_DIR$/ifndatabase/MacParland_Extended.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifndatabase/MacParland_Extended.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifndatabase/MacParland_Extended.p" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifndatabase/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifndatabase/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifndatabase/process_csv.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifndatabase/process_csv.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnmodels/IFN_alpha_altSOCS.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/IFN_alpha_altSOCS.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnmodels/IFN_alpha_altSOCS_Internalization_ppCompatible.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/IFN_alpha_altSOCS_Internalization_ppCompatible.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnmodels/IFN_alpha_altSOCS_ppCompatible.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/IFN_alpha_altSOCS_ppCompatible.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnmodels/IFN_beta_altSOCS.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/IFN_beta_altSOCS.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnmodels/IFN_beta_altSOCS_Internalization_ppCompatible.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/IFN_beta_altSOCS_Internalization_ppCompatible.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnmodels/IFN_beta_altSOCS_ppCompatible.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/IFN_beta_altSOCS_ppCompatible.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnmodels/IFN_detailed_alt_SOCS_alpha_ppCompatible.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/IFN_detailed_alt_SOCS_alpha_ppCompatible.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnmodels/IFN_detailed_alt_SOCS_beta_ppCompatible.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/IFN_detailed_alt_SOCS_beta_ppCompatible.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnmodels/IFN_detailed_model_alpha.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/IFN_detailed_model_alpha.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnmodels/IFN_detailed_model_alpha_ppCompatible.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/IFN_detailed_model_alpha_ppCompatible.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnmodels/IFN_detailed_model_beta.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/IFN_detailed_model_beta.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnmodels/IFN_detailed_model_beta_ppCompatible.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/IFN_detailed_model_beta_ppCompatible.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnmodels/IFN_simplified_model_alpha.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/IFN_simplified_model_alpha.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnmodels/IFN_simplified_model_alpha_ppCompatible.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/IFN_simplified_model_alpha_ppCompatible.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnmodels/IFN_simplified_model_beta.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/IFN_simplified_model_beta.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnmodels/IFN_simplified_model_beta_ppCompatible.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/IFN_simplified_model_beta_ppCompatible.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnmodels/Mixed_IFN_ppCompatible.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/Mixed_IFN_ppCompatible.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnmodels/SBML_alpha.sbml" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/SBML_alpha.sbml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnmodels/SBML_beta.sbml" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/SBML_beta.sbml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnmodels/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnmodels/detailed_SBML_alpha.sbml" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/detailed_SBML_alpha.sbml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnmodels/detailed_SBML_beta.sbml" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/detailed_SBML_beta.sbml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/fitting_2_5.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/fitting_2_5.p" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/ifnclass" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/ifnclass" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/ifndatabase" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/ifndatabase" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/ifnmodels" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/ifnmodels" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/refractoriness_figure.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/refractoriness_figure.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/init_multiprocessing.py" beforeDir="false" afterPath="$PROJECT_DIR$/init_multiprocessing.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mcmc.py" beforeDir="false" afterPath="$PROJECT_DIR$/mcmc.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mcmc_2.py" beforeDir="false" afterPath="$PROJECT_DIR$/mcmc_2.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mixed_IFN_nonlinearity.py" beforeDir="false" afterPath="$PROJECT_DIR$/mixed_IFN_nonlinearity.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/posterior_samples.csv" beforeDir="false" afterPath="$PROJECT_DIR$/posterior_samples.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pysb_parallel.py" beforeDir="false" afterPath="$PROJECT_DIR$/pysb_parallel.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pysb_parallel_testing.py" beforeDir="false" afterPath="$PROJECT_DIR$/pysb_parallel_testing.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pysbplotlib.py" beforeDir="false" afterPath="$PROJECT_DIR$/pysbplotlib.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pysbplotlib_testing.py" beforeDir="false" afterPath="$PROJECT_DIR$/pysbplotlib_testing.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sIFNAR2_Data.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/sIFNAR2_Data.xlsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/simulation_script.py" beforeDir="false" afterPath="$PROJECT_DIR$/simulation_script.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/single_model_exploration.py" beforeDir="false" afterPath="$PROJECT_DIR$/single_model_exploration.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/stan.py" beforeDir="false" afterPath="$PROJECT_DIR$/stan.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/write_stan.py" beforeDir="false" afterPath="$PROJECT_DIR$/write_stan.py" afterDir="false" />
+    </list>
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="TRACKING_ENABLED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileEditorManager">
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file leaf-file-name="figures.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/figures.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-3927" />
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="refractoriness_figure.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/ifnscripts/refractoriness_figure.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="68">
+              <caret line="4" column="20" selection-start-line="4" selection-start-column="20" selection-end-line="4" selection-end-column="20" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="timecourse-09-12-2018.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/ifnscripts/timecourse-09-12-2018.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="119">
+              <caret line="7" lean-forward="true" selection-start-line="7" selection-end-line="7" />
+              <folding>
+                <element signature="e#0#36#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>x()</find>
+      <find>OrderedDict</find>
+      <find>minim</find>
+      <find>self.trajectories</find>
+      <find>num_test_vals</find>
+      <find>25</find>
+      <find>grou</find>
+      <find>get_doses</find>
+      <find>alpha_doses</find>
+      <find>6.02</find>
+      <find>reset</find>
+      <find>load</find>
+      <find>newdata</find>
+      <find>xs</find>
+      <find>alpha</find>
+      <find>7.5</find>
+      <find>smooth5IfnData</find>
+      <find>smooth5</find>
+      <find>20</find>
+      <find>parameter_history</find>
+      <find>write</find>
+      <find>open</find>
+      <find>f}</find>
+      <find>save_flag</find>
+      <find>results</find>
+      <find>save</find>
+    </findStrings>
+    <replaceStrings>
+      <replace>t()</replace>
+      <replace>60</replace>
+      <replace>Sagar_data</replace>
+      <replace>beta_data</replace>
+      <replace>_b</replace>
+      <replace>beta</replace>
+      <replace>15</replace>
+      <replace>30</replace>
+    </replaceStrings>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/IfnData/process_csv.py" />
+        <option value="$PROJECT_DIR$/IfnDataSets/process_csv.py" />
+        <option value="$PROJECT_DIR$/IfnClass/IfnDataClass.py" />
+        <option value="$PROJECT_DIR$/ifndatabase/MacParland_Extended.txt" />
+        <option value="$PROJECT_DIR$/ifndatabase/Experimental_Data.txt" />
+        <option value="$PROJECT_DIR$/mcmc_2.py" />
+        <option value="$PROJECT_DIR$/fit-06-12-2018.py" />
+        <option value="$PROJECT_DIR$/ifndatabase/smooth_B6_IFN.py" />
+        <option value="$PROJECT_DIR$/ifnclass/smooth_B6_IFN.py" />
+        <option value="$PROJECT_DIR$/ifnclass/fit-06-12-2018.py" />
+        <option value="$PROJECT_DIR$/ifnclass/timecourse-09-12-2018.py" />
+        <option value="$PROJECT_DIR$/ifnclass/fitting_2_5.py" />
+        <option value="$PROJECT_DIR$/ifndatabase/process_csv.py" />
+        <option value="$PROJECT_DIR$/ifnclass/IFNalpha1.py" />
+        <option value="$PROJECT_DIR$/ifnclass/fit-10-12-2018.py" />
+        <option value="$PROJECT_DIR$/ifnclass/smooth_Sagar.py" />
+        <option value="$PROJECT_DIR$/ifnclass/fit-12-12-2018.py" />
+        <option value="$PROJECT_DIR$/ifnclass/ifnfit.py" />
+        <option value="$PROJECT_DIR$/ifnclass/stepwisefit_10-12-2018.py" />
+        <option value="$PROJECT_DIR$/ifnclass/ifnmodel.py" />
+        <option value="$PROJECT_DIR$/ifnclass/ec50.py" />
+        <option value="$PROJECT_DIR$/ifnscripts/ifnclass/ifnplot.py" />
+        <option value="$PROJECT_DIR$/ifnscripts/refractoriness_figure.py" />
+        <option value="$PROJECT_DIR$/ifnscripts/ec50.py" />
+        <option value="$PROJECT_DIR$/ifnscripts/smooth_B6_IFN.py" />
+        <option value="$PROJECT_DIR$/ifnclass/ifnplot.py" />
+        <option value="$PROJECT_DIR$/ifnscripts/ifnclass/ifnfit.py" />
+        <option value="$PROJECT_DIR$/ifnclass/ifndata.py" />
+        <option value="$PROJECT_DIR$/ifnscripts/fit-06-12-2018.py" />
+        <option value="$PROJECT_DIR$/ifnscripts/fit-10-12-2018.py" />
+        <option value="$PROJECT_DIR$/ifnscripts/fit-12-12-2018.py" />
+        <option value="$PROJECT_DIR$/ifnscripts/fitting_2_5.py" />
+        <option value="$PROJECT_DIR$/ifnscripts/IFNalpha1.py" />
+        <option value="$PROJECT_DIR$/ifnscripts/smooth_Sagar.py" />
+        <option value="$PROJECT_DIR$/ifnscripts/stepwisefit_10-12-2018.py" />
+        <option value="$PROJECT_DIR$/ifnscripts/timecourse-09-12-2018.py" />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectFrameBounds" extendedState="6">
+    <option name="x" value="-8" />
+    <option name="width" value="977" />
+    <option name="height" value="1038" />
+  </component>
+  <component name="ProjectView">
+    <navigator proportions="" version="1">
+      <sortByType ProjectPane="true" />
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes>
+      <pane id="Scope" />
+      <pane id="ProjectPane">
+        <subPane>
+          <expand>
+            <path>
+              <item name="IFNmodeling" type="b2602c69:ProjectViewProjectNode" />
+              <item name="IFNmodeling" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="IFNmodeling" type="b2602c69:ProjectViewProjectNode" />
+              <item name="IFNmodeling" type="462c0819:PsiDirectoryNode" />
+              <item name="ifnclass" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="IFNmodeling" type="b2602c69:ProjectViewProjectNode" />
+              <item name="IFNmodeling" type="462c0819:PsiDirectoryNode" />
+              <item name="ifnscripts" type="462c0819:PsiDirectoryNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+    </panes>
+  </component>
+  <component name="PropertiesComponent">
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../Pleiotropy Project/cellsignalling" />
+    <property name="settings.editor.selected.configurable" value="preferences.keymap" />
+  </component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
+  <component name="RunManager" selected="Python.timecourse-09-12-2018">
+    <configuration name="IFNalpha1" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="IFNmodeling" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/ifnscripts" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/ifnscripts/IFNalpha1.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+    </configuration>
+    <configuration name="fit-06-12-2018" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="IFNmodeling" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/ifnscripts" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/ifnscripts/fit-06-12-2018.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+    </configuration>
+    <configuration name="smooth_B6_IFN" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="IFNmodeling" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/ifnscripts" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/ifnscripts/smooth_B6_IFN.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+    </configuration>
+    <configuration name="stepwisefit_10-12-2018" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="IFNmodeling" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/ifnscripts" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/ifnscripts/stepwisefit_10-12-2018.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+    </configuration>
+    <configuration name="timecourse-09-12-2018" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="IFNmodeling" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/ifnscripts" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/ifnscripts/timecourse-09-12-2018.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+    </configuration>
+    <list>
+      <item itemvalue="Python.smooth_B6_IFN" />
+      <item itemvalue="Python.fit-06-12-2018" />
+      <item itemvalue="Python.IFNalpha1" />
+      <item itemvalue="Python.stepwisefit_10-12-2018" />
+      <item itemvalue="Python.timecourse-09-12-2018" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.timecourse-09-12-2018" />
+        <item itemvalue="Python.stepwisefit_10-12-2018" />
+        <item itemvalue="Python.IFNalpha1" />
+        <item itemvalue="Python.fit-06-12-2018" />
+        <item itemvalue="Python.smooth_B6_IFN" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="e445a2e5-4ffe-4291-9345-013a47247733" name="Default" comment="" />
+      <created>1543457304141</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1543457304141</updated>
+    </task>
+    <task id="LOCAL-00001" summary="Built IfnModel class with simulation methods">
+      <created>1543815656852</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1543815656852</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
+    <servers />
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="-7" y="-7" width="1550" height="838" extended-state="6" />
+    <editor active="true" />
+    <layout>
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.16471355" />
+      <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
+      <window_info anchor="bottom" id="Version Control" order="9" />
+      <window_info anchor="bottom" id="Python Console" order="7" />
+      <window_info anchor="bottom" id="Run" order="2" visible="true" weight="0.32965517" />
+      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
+      <window_info anchor="bottom" id="Terminal" order="8" />
+      <window_info id="Favorites" order="2" side_tool="true" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Find" order="1" weight="0.32965517" />
+    </layout>
+  </component>
+  <component name="VcsContentAnnotationSettings">
+    <option name="myLimit" value="2678400000" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Initial code for ifnmodel class" />
+    <MESSAGE value="Built IfnModel class with simulation methods" />
+    <option name="LAST_COMMIT_MESSAGE" value="Built IfnModel class with simulation methods" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <option name="time" value="55" />
+    </breakpoint-manager>
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/IfnData/process_csv.py" />
+    <entry file="file://$PROJECT_DIR$/IfnDataSets/process_csv.py" />
+    <entry file="file://$PROJECT_DIR$/IfnClass/IfnDataClass.py" />
+    <entry file="file://$PROJECT_DIR$/ifnclass/ifnplot.py___jb_tmp___" />
+    <entry file="file://$PROJECT_DIR$/figures_21-11-2018.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="13498">
+          <caret line="799" column="43" selection-start-line="799" selection-start-column="43" selection-end-line="799" selection-end-column="43" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifndatabase/MacParland_Extended.txt" />
+    <entry file="file://$PROJECT_DIR$/ifndatabase/Experimental_Data.txt" />
+    <entry file="file://$PROJECT_DIR$/fit_20181031.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="137">
+          <caret line="23" column="35" selection-start-line="23" selection-start-column="35" selection-end-line="23" selection-end-column="35" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/fit-06-12-2018.py" />
+    <entry file="file://$APPLICATION_HOME_DIR$/helpers/pydev/_pydev_imps/_pydev_execfile.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="289">
+          <caret line="17" selection-start-line="17" selection-end-line="17" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/fit_20181113_B6.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-99">
+          <caret line="621" selection-start-line="621" selection-end-line="621" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifndatabase/smooth_B6_IFN.py" />
+    <entry file="file://$PROJECT_DIR$/ifnclass/fit-06-12-2018(1).py" />
+    <entry file="file://$PROJECT_DIR$/ifndatabase/MacParland_Extended.csv" />
+    <entry file="file://$USER_HOME$/Anaconda3/envs/PySB/Lib/site-packages/matplotlib/axes/_axes.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="306">
+          <caret line="3093" selection-start-line="3093" selection-end-line="3093" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/Anaconda3/envs/PySB/Lib/site-packages/pandas/core/indexing.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="187">
+          <caret line="1471" selection-start-line="1471" selection-end-line="1471" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnclass/timecourse-09-12-2018.py" />
+    <entry file="file://$PROJECT_DIR$/ifndatabase/process_csv.py" />
+    <entry file="file://$PROJECT_DIR$/ifnclass/fit-06-12-2018.py" />
+    <entry file="file://$PROJECT_DIR$/ifnclass/IFNalpha1.py" />
+    <entry file="file://$PROJECT_DIR$/ifnclass/fit-10-12-2018.py" />
+    <entry file="file://$PROJECT_DIR$/ifnclass/smooth_Sagar.py" />
+    <entry file="file://$PROJECT_DIR$/ifnmodels/Mixed_IFN_ppCompatible.py" />
+    <entry file="file://$PROJECT_DIR$/mcmc_2.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="11305">
+          <caret line="666" column="31" selection-start-line="666" selection-start-column="19" selection-end-line="666" selection-end-column="31" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/mcmc.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="17">
+          <caret line="378" column="38" selection-start-line="378" selection-start-column="38" selection-end-line="378" selection-end-column="38" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnclass/fitting_2_5_README.txt">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnclass/stepwisefit_10-12-2018.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="319">
+          <caret line="120" column="71" selection-start-line="120" selection-start-column="71" selection-end-line="120" selection-end-column="71" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnclass/fitting_2_5.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="13">
+          <caret line="55" lean-forward="true" selection-start-line="55" selection-end-line="55" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnclass/fit-12-12-2018.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="119">
+          <caret line="17" column="7" selection-start-line="17" selection-start-column="7" selection-end-line="17" selection-end-column="7" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnclass/smooth_B6_IFN.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="252">
+          <caret line="66" selection-start-line="66" selection-end-line="67" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnclass/ifnfit.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/figures.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-3927" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnscripts/ifnclass/ifnplot.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="34">
+          <caret line="2" column="4" selection-start-line="2" selection-start-column="4" selection-end-line="2" selection-end-column="4" />
+          <folding>
+            <element signature="e#0#32#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnclass/ec50.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="87">
+          <caret line="81" column="15" selection-start-line="81" selection-start-column="15" selection-end-line="81" selection-end-column="15" />
+          <folding>
+            <element signature="e#0#27#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnscripts/ifnclass/ifnmodel.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="153">
+          <caret line="102" column="26" selection-start-line="102" selection-start-column="26" selection-end-line="102" selection-end-column="26" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnscripts/ec50.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="404">
+          <caret line="102" lean-forward="true" selection-start-line="102" selection-end-line="102" />
+          <folding>
+            <element signature="e#0#36#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnclass/ifnmodel.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1632">
+          <caret line="96" column="12" selection-start-line="96" selection-start-column="8" selection-end-line="96" selection-end-column="12" />
+          <folding>
+            <element signature="e#0#30#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnscripts/ifnclass/ifnfit.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="51">
+          <caret line="3" column="18" selection-start-line="3" selection-start-column="18" selection-end-line="3" selection-end-column="18" />
+          <folding>
+            <element signature="e#110#170#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnclass/ifndata.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="170">
+          <caret line="10" column="10" lean-forward="true" selection-start-line="10" selection-start-column="10" selection-end-line="10" selection-end-column="10" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnclass/ifnplot.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="85">
+          <caret line="5" column="42" lean-forward="true" selection-start-line="5" selection-start-column="42" selection-end-line="5" selection-end-column="42" />
+          <folding>
+            <element signature="e#0#32#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnscripts/fit-10-12-2018.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="34">
+          <caret line="2" column="29" selection-start-line="2" selection-start-column="29" selection-end-line="2" selection-end-column="29" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnscripts/fit-06-12-2018.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret column="14" selection-start-column="14" selection-end-column="14" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnscripts/fit-12-12-2018.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="85">
+          <caret line="5" lean-forward="true" selection-start-line="5" selection-end-line="5" />
+          <folding>
+            <element signature="e#0#36#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnscripts/fitting_2_5.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="102">
+          <caret line="6" lean-forward="true" selection-start-line="6" selection-end-line="6" />
+          <folding>
+            <element signature="e#0#36#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnscripts/ODE_system.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-255">
+          <folding>
+            <element signature="e#63#75#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnscripts/IFNalpha1.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="102">
+          <caret line="9" lean-forward="true" selection-start-line="9" selection-end-line="9" />
+          <folding>
+            <element signature="e#0#36#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnscripts/smooth_B6_IFN.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="4063">
+          <caret line="290" lean-forward="true" selection-start-line="290" selection-end-line="290" />
+          <folding>
+            <element signature="e#1351#1387#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnscripts/smooth_Sagar.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="256">
+          <caret line="57" selection-start-line="57" selection-end-line="57" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnscripts/refractoriness_figure.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="68">
+          <caret line="4" column="20" selection-start-line="4" selection-start-column="20" selection-end-line="4" selection-end-column="20" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnscripts/stepwisefit_10-12-2018.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-425">
+          <caret line="17" column="33" lean-forward="true" selection-start-line="17" selection-start-column="33" selection-end-line="17" selection-end-column="33" />
+          <folding>
+            <element signature="e#0#27#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnscripts/timecourse-09-12-2018.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="119">
+          <caret line="7" lean-forward="true" selection-start-line="7" selection-end-line="7" />
+          <folding>
+            <element signature="e#0#36#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+  </component>
+</project>

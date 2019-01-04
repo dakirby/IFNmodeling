@@ -756,13 +756,13 @@ def profile(processes):
               'k_d4':[4E-5,0.9,np.log(0.006),1.8],'kd4':[0.002,44,np.log(0.3),1.8],
               'R1':[100,12000,None,None],'R2':[100,12000,None,None]}		
     plt.close('all')
-    modelfiles = ['IFN_Models.IFN_alpha_altSOCS_ppCompatible','IFN_Models.IFN_beta_altSOCS_ppCompatible']
+    modelfiles = ['ifnmodels.IFN_alpha_altSOCS_ppCompatible','ifnmodels.IFN_beta_altSOCS_ppCompatible']
     # Write modelfiles
-    alpha_model = __import__(modelfiles[0],fromlist=['IFN_Models'])
+    alpha_model = __import__(modelfiles[0],fromlist=['ifnmodels'])
     py_output = export(alpha_model.model, 'python')
     with open('ODE_system_alpha.py','w') as f:
         f.write(py_output)
-    beta_model = __import__(modelfiles[1],fromlist=['IFN_Models'])
+    beta_model = __import__(modelfiles[1],fromlist=['ifnmodels'])
     py_output = export(beta_model.model, 'python')
     with open('ODE_system_beta.py','w') as f:
         f.write(py_output)
@@ -882,15 +882,15 @@ def continue_sampling(n, n_old, priors_dict, rho, burn_rate, down_sample, cpu=No
   
 def main():
     plt.close('all')
-    modelfiles = ['IFN_Models.IFN_alpha_altSOCS_ppCompatible','IFN_Models.IFN_beta_altSOCS_ppCompatible']
-#    modelfiles = ['IFN_Models.IFN_alpha_altSOCS_Internalization_ppCompatible','IFN_Models.IFN_beta_altSOCS_Internalization_ppCompatible']
+    modelfiles = ['ifnmodels.IFN_alpha_altSOCS_ppCompatible','ifnmodels.IFN_beta_altSOCS_ppCompatible']
+#    modelfiles = ['ifnmodels.IFN_alpha_altSOCS_Internalization_ppCompatible','ifnmodels.IFN_beta_altSOCS_Internalization_ppCompatible']
 # Write modelfiles
     print("Importing models")
-    alpha_model = __import__(modelfiles[0],fromlist=['IFN_Models'])
+    alpha_model = __import__(modelfiles[0],fromlist=['ifnmodels'])
     py_output = export(alpha_model.model, 'python')
     with open('ODE_system_alpha.py','w') as f:
         f.write(py_output)
-    beta_model = __import__(modelfiles[1],fromlist=['IFN_Models'])
+    beta_model = __import__(modelfiles[1],fromlist=['ifnmodels'])
     py_output = export(beta_model.model, 'python')
     with open('ODE_system_beta.py','w') as f:
         f.write(py_output)

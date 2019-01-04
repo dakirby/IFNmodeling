@@ -19,12 +19,12 @@ posterior_filename = '/MCMC_Results-25-09-2018/posterior_samples.csv'
 MAP_priors={'R1':[100,12000,None,None],'R2':[100,12000,None,None],
               'kpa':[1.5E-8,10,np.log(1),4],'kSOCSon':[1.5E-11,0.07,np.log(1E-6),4],
               'k_d4':[4E-5,0.9,np.log(0.006),1.8],'kd4':[0.002,44,np.log(0.3),1.8]}
-modelfiles = ['IFN_Models.IFN_alpha_altSOCS_Internalization_ppCompatible','IFN_Models.IFN_beta_altSOCS_Internalization_ppCompatible']
-alpha_model = __import__(modelfiles[0],fromlist=['IFN_Models'])
+modelfiles = ['ifnmodels.IFN_alpha_altSOCS_Internalization_ppCompatible','ifnmodels.IFN_beta_altSOCS_Internalization_ppCompatible']
+alpha_model = __import__(modelfiles[0],fromlist=['ifnmodels'])
 py_output = export(alpha_model.model, 'python')
 with open('ODE_system_alpha.py','w') as f:
     f.write(py_output)
-beta_model = __import__(modelfiles[1],fromlist=['IFN_Models'])
+beta_model = __import__(modelfiles[1],fromlist=['ifnmodels'])
 py_output = export(beta_model.model, 'python')
 with open('ODE_system_beta.py','w') as f:
     f.write(py_output)
