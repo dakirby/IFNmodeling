@@ -43,6 +43,7 @@ class Trajectory:
         self.dose_species = kwargs.get('dose_species', None)
         self.dose_norm = kwargs.get('dose_norm', 1)
         self.color = kwargs.get('color', None)
+        self.linewidth = kwargs.get('linewidth', 1.5)
 
     def t(self):  # times
         if self.timeslice is None:
@@ -155,13 +156,15 @@ class TimecoursePlot:
                 if type(trajectory.line_style) == str:
                     if trajectory.color is not None:
                         ax.plot(trajectory.t(), [el[0] for el in trajectory.y()], trajectory.line_style,
-                                label=trajectory.label, color=trajectory.color)
+                                label=trajectory.label, color=trajectory.color, linewidth=trajectory.linewidth)
                         ax.legend()
                     else:
-                        ax.plot(trajectory.t(), [el[0] for el in trajectory.y()], trajectory.line_style, label=trajectory.label)
+                        ax.plot(trajectory.t(), [el[0] for el in trajectory.y()], trajectory.line_style,
+                                label=trajectory.label, linewidth=trajectory.linewidth)
                         ax.legend()
                 else:
-                    ax.plot(trajectory.t(), [el[0] for el in trajectory.y()], c=trajectory.line_style, label=trajectory.label)
+                    ax.plot(trajectory.t(), [el[0] for el in trajectory.y()], c=trajectory.line_style,
+                            label=trajectory.label, linewidth=trajectory.linewidth)
                     ax.legend()
             elif trajectory.plot_type == 'scatter':
                 if type(trajectory.line_style) == str:
@@ -304,11 +307,12 @@ class DoseresponsePlot:
                     z = z[1:]
                 if type(trajectory.line_style) == str:
                     if trajectory.color is not None:
-                        ax.plot(x, z, trajectory.line_style, label=trajectory.label, color=trajectory.color)
+                        ax.plot(x, z, trajectory.line_style, label=trajectory.label, color=trajectory.color,
+                                linewidth=trajectory.linewidth)
                     else:
-                        ax.plot(x, z, trajectory.line_style, label=trajectory.label)
+                        ax.plot(x, z, trajectory.line_style, label=trajectory.label, linewidth=trajectory.linewidth)
                 else:
-                    ax.plot(x, z, c=trajectory.line_style, label=trajectory.label)
+                    ax.plot(x, z, c=trajectory.line_style, label=trajectory.label, linewidth=trajectory.linewidth)
                 ax.legend()
 
             elif trajectory.plot_type == 'scatter':
