@@ -4,6 +4,9 @@ import copy
 from numpy import multiply, zeros, nan
 import pandas as pd
 import pickle
+import time
+import os
+from random import randint
 
 
 class IfnModel:
@@ -88,11 +91,14 @@ class IfnModel:
         else:
             model_code = __import__('ifnmodels.' + name, fromlist=['ifnmodels'])
             py_output = export(model_code.model, 'python')
-            with open("ODE_system.py", 'w') as f:
+            ODE_filename = "ODE_system_{}_{}.py".format(time.strftime("%Y%m%d-%H%M%S"), randint(100000, 999999))
+            with open(ODE_filename, 'w') as f:
                 f.write(py_output)
-            import ODE_system
+            ODE_system = __import__(ODE_filename[:-3])
             model_obj = ODE_system.Model()
+            os.remove(ODE_filename)
             return model_obj
+
 
     def save_model(self, name):
         with open(name, 'wb') as f:
@@ -123,7 +129,9 @@ class IfnModel:
 
     def check_for_detailed_balance_parameters(self, new_parameters):
         # First we check if any parameters which must maintain detailed balance are even in new_parameters
-        db_parameters_present = 'kd4' in new_parameters.keys() or 'kd3' in new_parameters.keys() or 'k_d4' in new_parameters.keys() or 'k_d3' in new_parameters.keys()
+        db_parameters_present = False
+        for key in ['ka1','kd1','ka2','kd2','ka3','kd3','ka4','kd4','k_a1','k_d1','k_a2','k_d2','k_a3','k_d3','k_a4','k_d4']:
+            db_parameters_present = (key in new_parameters.keys()) or db_parameters_present
         # Second we check if new_parameters is trying to over-constrain the model, violating detailed balance
         no_db_parameters_conflict = (not ('kd4' in new_parameters.keys() and 'kd3' in new_parameters.keys())) or (
             not ('k_d4' in new_parameters.keys() and 'k_d3' in new_parameters.keys()))
@@ -149,38 +157,66 @@ class IfnModel:
     def set_parameters(self, new_parameters: dict):
         if self.check_if_parameters_in_model(new_parameters):
             if self.check_for_detailed_balance_parameters(new_parameters):
-                if 'kd4' in new_parameters.keys():
-                    q1 = self.parameters['ka1'] / self.parameters['kd1']
-                    q2 = self.parameters['ka2'] / self.parameters['kd2']
-                    q4 = self.parameters['ka4'] / new_parameters['kd4']
+                # Use all input values given, default to current model values otherwise
+                detailed_balance_dict = {'ka1':1,'kd1':1,
+                                         'ka2': 1, 'kd2': 1,
+                                         'ka3': 1, 'kd3': 1,
+                                         'ka4': 1, 'kd4': 1,
+                                         'k_a1': 1, 'k_d1': 1,
+                                         'k_a2': 1, 'k_d2': 1,
+                                         'k_a3': 1, 'k_d3': 1,
+                                         'k_a4': 1, 'k_d4': 1}
+                for key in detailed_balance_dict.keys():
+                    if key in new_parameters.keys():
+                        detailed_balance_dict.update({key: new_parameters[key]})
+                    else:
+                        detailed_balance_dict.update({key: self.parameters[key]})
+                # Maintain detailed balance
+                original_key_list = list(new_parameters.keys())
+                if 'kd4' in original_key_list:
+                    q1 = detailed_balance_dict['ka1'] / detailed_balance_dict['kd1']
+                    q2 = detailed_balance_dict['ka2'] / detailed_balance_dict['kd2']
+                    q4 = detailed_balance_dict['ka4'] / detailed_balance_dict['kd4']
                     q3 = q2 * q4 / q1
-                    kd3 = self.parameters['ka3'] / q3
+                    kd3 = detailed_balance_dict['ka3'] / q3
                     new_parameters.update({'kd3': kd3})
-                if 'kd3' in new_parameters.keys():
-                    q1 = self.parameters['ka1'] / self.parameters['kd1']
-                    q2 = self.parameters['ka2'] / self.parameters['kd2']
-                    q3 = self.parameters['ka3'] / new_parameters['kd3']
+                    if 'kd4_USP18' in original_key_list:
+                        usp18_sf = new_parameters['kd4_USP18'] / detailed_balance_dict['kd4']
+                        kd3usp18 = usp18_sf * new_parameters['kd3']
+                        new_parameters.update({'kd3_USP18': kd3usp18})
+                if 'kd3' in original_key_list:
+                    q1 = detailed_balance_dict['ka1'] / detailed_balance_dict['kd1']
+                    q2 = detailed_balance_dict['ka2'] / detailed_balance_dict['kd2']
+                    q3 = detailed_balance_dict['ka3'] / detailed_balance_dict['kd3']
                     q4 = q1 * q3 / q2
-                    kd4 = self.parameters['ka4'] / q4
+                    kd4 = detailed_balance_dict['ka4'] / q4
                     new_parameters.update({'kd4': kd4})
-                if 'k_d4' in new_parameters.keys():
-                    q1 = self.parameters['k_a1'] / self.parameters['k_d1']
-                    q2 = self.parameters['k_a2'] / self.parameters['k_d2']
-                    q4 = self.parameters['k_a4'] / new_parameters['k_d4']
+                if 'k_d4' in original_key_list:
+                    q1 = detailed_balance_dict['k_a1'] / detailed_balance_dict['k_d1']
+                    q2 = detailed_balance_dict['k_a2'] / detailed_balance_dict['k_d2']
+                    q4 = detailed_balance_dict['k_a4'] / detailed_balance_dict['k_d4']
                     q3 = q2 * q4 / q1
                     k_d3 = self.parameters['k_a3'] / q3
                     new_parameters.update({'k_d3': k_d3})
-                if 'k_d3' in new_parameters.keys():
-                    q1 = self.parameters['k_a1'] / self.parameters['k_d1']
-                    q2 = self.parameters['k_a2'] / self.parameters['k_d2']
-                    q3 = self.parameters['k_a3'] / new_parameters['k_d3']
+                    if 'k_d4_USP18' in original_key_list:
+                        usp18_sf = new_parameters['k_d4_USP18'] / detailed_balance_dict['k_d4']
+                        kd3usp18 = usp18_sf * new_parameters['k_d3']
+                        new_parameters.update({'k_d3_USP18': kd3usp18})
+                if 'k_d3' in original_key_list:
+                    q1 = detailed_balance_dict['k_a1'] / detailed_balance_dict['k_d1']
+                    q2 = detailed_balance_dict['k_a2'] / detailed_balance_dict['k_d2']
+                    q3 = detailed_balance_dict['k_a3'] / detailed_balance_dict['k_d3']
                     q4 = q1 * q3 / q2
                     k_d4 = self.parameters['k_a4'] / q4
                     new_parameters.update({'k_d4': k_d4})
+
             self.parameters.update(new_parameters)
             return 0
         else:
             print("Some of the parameters were not found in the model. Did not update parameters.")
+            list1 = [element for element in new_parameters.keys() if element not in self.parameters.keys()]
+            print("Perhaps the following are not in the model?")
+            print(list1)
             return 1
 
     def reset_parameters(self):
