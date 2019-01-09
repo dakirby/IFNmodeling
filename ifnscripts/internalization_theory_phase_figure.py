@@ -11,7 +11,6 @@ if __name__ == '__main__':
 
     Mixed_Model = IfnModel('Mixed_IFN_ppCompatible')
 
-    # This is the fitting_2_5 script best fit parameters, best at fitting Ratnadeep's B cell data
     Mixed_Model.set_parameters(
         {'R2': 2300 * 2.5,
          'R1': 1800 * 1.8, 'k_d4': 0.06, 'kint_b': 0.0003,
