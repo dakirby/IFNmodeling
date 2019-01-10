@@ -7,7 +7,7 @@ import seaborn as sns
 
 if __name__ == '__main__':
     Sagar_data = IfnData("MacParland_Extended")
-    Sagar_data.data_set.drop(labels=[4000, 8000], level=1, inplace=True)
+    #Sagar_data.data_set.drop(labels=[4000, 8000], level=1, inplace=True)
     Mixed_Model = IfnModel('Mixed_IFN_ppCompatible')
     '''
     fit_parameters = OrderedDict(
@@ -50,16 +50,16 @@ if __name__ == '__main__':
                                 'kSOCS': 0.005, 'kSOCSon': 1e-3, 'SOCSdeg': 0,
                                 'kint_b': 0.0009, 'kint_a': 0.001})
     """
-    Mixed_Model.set_parameters({'kpu': 0.0004, 'kpa': 1e-6,
-                                'R2': 1742, 'R1': 1785,
-                                'k_d4': 0.06, 'kd4': 0.3,
-                                'k_a2': 8.3e-13 * 0.25, 'k_a1': 4.98e-14 * 0.01,
-                                'ka2': 4.98173364330787e-13 * 2, 'ka1': 3.321155762205247e-14 * 1,
+    Mixed_Model.set_parameters({'kpu': 0.0004, 'kpa': 6e-6,
+                                'R2': 2742, 'R1': 2785,
+                                'k_d4': 0.06, 'kd4': 3,
+                                'k_a2': 8.3e-13 * 0.08, 'k_a1': 4.98e-14 * 1,
+                                'ka2': 4.98173364330787e-13 *1.8, 'ka1': 3.321155762205247e-14 * 1.8,
                                 'ka4': 0.001,
-                                'kSOCS': 0.01, 'kSOCSon': 2e-3, 'SOCSdeg': 0.2,
-                                'kint_b': 0.0, 'kint_a': 0.04,
-                                'krec_a1': 3e-05, 'krec_a2': 0.05,
-                                'kdeg_a': 8E-5})
+                                'kSOCS': 0.002, 'kSOCSon': 2e-3, 'SOCSdeg': 0.02,
+                                'kint_b': 0.06, 'kint_a': 1.2,
+                                'krec_a1': 6e-03, 'krec_a2': 0.05,
+                                'kdeg_a': 5E-2, 'kdeg_b': 0.0001})
 
     scale_factor = 18
     # Additional fitting
@@ -76,7 +76,7 @@ if __name__ == '__main__':
     # Additional fitting
     scale_data = lambda q: (scale_factor*q[0], scale_factor*q[1])
     times = [5, 15, 30, 60]
-    dradf = Mixed_Model.doseresponse(times, 'TotalpSTAT', 'Ia', list(logspace(1, log10(600))),
+    dradf = Mixed_Model.doseresponse(times, 'TotalpSTAT', 'Ia', list(logspace(1, log10(8000))),
                                            parameters={'Ib': 0}, return_type='dataframe', dataframe_labels='Alpha')
     drbdf = Mixed_Model.doseresponse(times, 'TotalpSTAT', 'Ib', list(logspace(1, log10(11000))),
                                            parameters={'Ia': 0}, return_type='dataframe', dataframe_labels='Beta')
@@ -139,7 +139,7 @@ if __name__ == '__main__':
         beta_IfnData_objects.append(IfnData('custom', df=beta_time_courses[j], conditions={'Beta': {'Ia': 0}}))
     # Generate plot
     new_fit = TimecoursePlot((1, 2))
-    alpha_mask = [4000, 8000]
+    alpha_mask = []
     beta_mask = []
 
     # Add fits

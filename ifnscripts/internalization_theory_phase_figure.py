@@ -31,7 +31,7 @@ def get_ec50(model: IfnModel, times: list or int, dose_species: str, response_sp
         dr_curve = [el[0] for el in model.doseresponse([times], response_species, dose_species, list(logspace(-3, 5)),
                                       parameters=custom_parameters, return_type='list')[response_species]]
 
-        top, n, K = fit_MM(list(logspace(-3, 5)), dr_curve, [max(dr_curve), 1, 1000])
+        top, n, K = fit_MM(list(logspace(-3, 5)), dr_curve, [max(dr_curve), 1, 500])
         if rflag:
             return top, n, K
         else:
@@ -89,4 +89,5 @@ if __name__ == '__main__':
             alpha_ec50 = get_ec50(Mixed_Model, time, 'Ia', 'TotalpSTAT', custom_parameters={'Ib': 0})
             row.append(alpha_ec50)
         ec50_phase_a.append(row)
-    sns.heatmap(pd.DataFrame(ec50_phase_a,index=y_axis_values[::-1],columns=x_axis_values))
+    sns_ec50_a = sns.heatmap(pd.DataFrame(ec50_phase_a,index=y_axis_values[::-1],columns=x_axis_values))
+    sns_ec50_a.savefig('results/ec50_heatmap_a.pdf')
