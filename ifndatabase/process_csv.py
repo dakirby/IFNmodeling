@@ -148,6 +148,33 @@ def build_database(data_wd: str) -> None:
     df.set_index(['Dose_Species', 'Dose (pM)'], inplace=True)
     pickle.dump(df, open(os.path.join(data_wd, '20181113_B6_IFNs_Dose_Response_Tcells.p'), 'wb'))
 
+    # 20190108_pSTAT1_IFN
+    # -------------------
+    times_20190108 = [2.5, 5, 7.5, 10, 20, 60]
+    alpha_doses_20190108 = [0, 10, 100, 300, 1000, 3000, 10000, 100000]
+    beta_doses_20190108 = [0, 0.2, 6, 20, 60, 200, 600, 2000]
+    dataset_4 = pd.read_csv(os.path.join(data_wd, "20190108_pSTAT1_IFN.csv"))
+    Bdata = dataset_4.loc[:]["Lymphocytes/B cells | Geometric Mean (Comp-FITC-A)"].values.reshape((8, 12)).tolist()
+
+    # Normalize by Jaki and add non-existent uncertainties
+    # Bcells
+    Jaki_a = Bdata[0][0]
+    Jaki_b = Bdata[0][1]
+    for r in range(len(Bdata)):
+        for c in range(len(Bdata[r])):
+            if c % 2 == 0:
+                Bdata[r][c] = (Bdata[r][c] - Jaki_a, np.nan)
+            else:
+                Bdata[r][c] = (Bdata[r][c] - Jaki_b, np.nan)
+
+    # B cells
+    Balpha = [['Alpha', alpha_doses_20190108[row]] + [Bdata[row][2 * i] for i in range(6)] for row in range(8)]
+    Bbeta = [['Beta', beta_doses_20190108[row]] + [Bdata[row][2 * i + 1] for i in range(6)] for row in range(8)]
+    df = pd.DataFrame.from_records(Balpha + Bbeta, columns=['Dose_Species', 'Dose (pM)'] + times_20190108)
+    df.set_index(['Dose_Species', 'Dose (pM)'], inplace=True)
+    pickle.dump(df, open(os.path.join(data_wd, '20190108_pSTAT1_IFN.p'), 'wb'))
+    print(df)
+
     print("Initialized DataFrame objects")
 
 if __name__ == '__main__':

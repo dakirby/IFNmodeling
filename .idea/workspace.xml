@@ -91,9 +91,9 @@
       <change beforePath="$PROJECT_DIR$/ifnclass/ifnmodel.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnclass/ifnmodel.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnclass/ifnmodels" beforeDir="false" afterPath="$PROJECT_DIR$/ifnclass/ifnmodels" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnclass/ifnplot.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnclass/ifnplot.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ifnclass/results/Sagar_Fits/Email/huh_data.csv" beforeDir="false" afterPath="$PROJECT_DIR$/ifnclass/results/Sagar_Fits/Email/huh_data.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ifnclass/results/chain_results/0chain.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifnclass/results/chain_results/0chain.p" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ifnclass/results/initial_model.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifnclass/results/initial_model.p" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnclass/results/Sagar_Fits/Email/huh_data.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnclass/results/chain_results/0chain.p" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnclass/results/initial_model.p" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/ifndatabase/20181031_pSTAT1_Table.csv" beforeDir="false" afterPath="$PROJECT_DIR$/ifndatabase/20181031_pSTAT1_Table.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifndatabase/20181031_pSTAT1_Table_Bcells.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifndatabase/20181031_pSTAT1_Table_Bcells.p" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifndatabase/20181031_pSTAT1_Table_NKcells.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifndatabase/20181031_pSTAT1_Table_NKcells.p" afterDir="false" />
@@ -124,6 +124,7 @@
       <change beforePath="$PROJECT_DIR$/ifnmodels/IFN_simplified_model_alpha_ppCompatible.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/IFN_simplified_model_alpha_ppCompatible.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnmodels/IFN_simplified_model_beta.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/IFN_simplified_model_beta.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnmodels/IFN_simplified_model_beta_ppCompatible.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/IFN_simplified_model_beta_ppCompatible.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnmodels/Mixed_IFN_detailed.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/Mixed_IFN_detailed.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnmodels/Mixed_IFN_explicitUSP18.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/Mixed_IFN_explicitUSP18.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnmodels/Mixed_IFN_ppCompatible.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/Mixed_IFN_ppCompatible.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnmodels/SBML_alpha.sbml" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/SBML_alpha.sbml" afterDir="false" />
@@ -132,6 +133,7 @@
       <change beforePath="$PROJECT_DIR$/ifnmodels/detailed_SBML_alpha.sbml" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/detailed_SBML_alpha.sbml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnmodels/detailed_SBML_beta.sbml" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/detailed_SBML_beta.sbml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnscripts/IFNalpha1.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/IFNalpha1.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/detailed_model_equivalent_to_simple.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/detailed_model_equivalent_to_simple.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnscripts/dra60df.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/dra60df.p" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnscripts/drb60df.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/drb60df.p" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnscripts/ec50.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/ec50.py" afterDir="false" />
@@ -148,7 +150,11 @@
       <change beforePath="$PROJECT_DIR$/ifnscripts/internalization_theory_tc_figure.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/internalization_theory_tc_figure.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnscripts/mcmc_results/chain_results/0chain.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/mcmc_results/chain_results/0chain.p" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnscripts/mcmc_results/mcmc_fit.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/mcmc_results/mcmc_fit.p" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/negative_feedback_figure.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/negative_feedback_figure.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnscripts/refractoriness_figure.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/refractoriness_figure.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/results/Comparing_Detailed_to_Simple/Detailed_Model_vs_data.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/results/Comparing_Detailed_to_Simple/Detailed_Model_vs_data.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/results/Comparing_Detailed_to_Simple/SImple_vs_Detailed.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/results/Comparing_Detailed_to_Simple/SImple_vs_Detailed.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/results/Comparing_Detailed_to_Simple/Simple_Model_vs_data.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/results/Comparing_Detailed_to_Simple/Simple_Model_vs_data.pdf" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnscripts/results/Sagar_Fits/Email/huh_data.csv" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/results/Sagar_Fits/Email/huh_data.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnscripts/results/initial_model.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/results/initial_model.p" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnscripts/smooth_B6_IFN.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/smooth_B6_IFN.py" afterDir="false" />
@@ -183,29 +189,14 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="Mixed_IFN_detailed.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/ifnmodels/Mixed_IFN_detailed.py">
+      <file leaf-file-name="comparing_GAB_data.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/ifnscripts/comparing_GAB_data.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-561">
-              <caret column="92" selection-start-column="92" selection-end-column="92" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="detailed_model_equivalent_to_simple.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/ifnscripts/detailed_model_equivalent_to_simple.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="302">
-              <caret line="140" column="121" selection-start-line="140" selection-start-column="121" selection-end-line="140" selection-end-column="121" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="fitting_2_5.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/ifnscripts/fitting_2_5.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="68">
-              <caret line="9" column="18" selection-start-line="9" selection-start-column="18" selection-end-line="9" selection-end-column="18" />
+            <state relative-caret-position="98">
+              <caret line="68" column="64" selection-start-line="68" selection-start-column="64" selection-end-line="68" selection-end-column="64" />
+              <folding>
+                <element signature="e#0#36#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -221,7 +212,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>minim</find>
       <find>self.trajectories</find>
       <find>num_test_vals</find>
       <find>25</find>
@@ -251,6 +241,7 @@
       <find>usp18</find>
       <find>Mixed_Model</find>
       <find>WILD</find>
+      <find>20181113_B6_IFNs_Dose_Response_Bcells</find>
     </findStrings>
     <replaceStrings>
       <replace>t()</replace>
@@ -262,6 +253,7 @@
       <replace>15</replace>
       <replace>30</replace>
       <replace>Detailed_Model</replace>
+      <replace>data_plot_tc</replace>
     </replaceStrings>
   </component>
   <component name="Git.Settings">
@@ -282,7 +274,6 @@
         <option value="$PROJECT_DIR$/ifnclass/fit-06-12-2018.py" />
         <option value="$PROJECT_DIR$/ifnclass/timecourse-09-12-2018.py" />
         <option value="$PROJECT_DIR$/ifnclass/fitting_2_5.py" />
-        <option value="$PROJECT_DIR$/ifndatabase/process_csv.py" />
         <option value="$PROJECT_DIR$/ifnclass/IFNalpha1.py" />
         <option value="$PROJECT_DIR$/ifnclass/fit-10-12-2018.py" />
         <option value="$PROJECT_DIR$/ifnclass/smooth_Sagar.py" />
@@ -313,6 +304,9 @@
         <option value="$PROJECT_DIR$/ifnscripts/fit-10-01-2019.py" />
         <option value="$PROJECT_DIR$/ifnmodels/Mixed_IFN_detailed.py" />
         <option value="$PROJECT_DIR$/ifnscripts/detailed_model_equivalent_to_simple.py" />
+        <option value="$PROJECT_DIR$/ifnscripts/negative_feedback_figure.py" />
+        <option value="$PROJECT_DIR$/ifndatabase/process_csv.py" />
+        <option value="$PROJECT_DIR$/ifnscripts/comparing_GAB_data.py" />
       </list>
     </option>
   </component>
@@ -337,6 +331,11 @@
             <path>
               <item name="IFNmodeling" type="b2602c69:ProjectViewProjectNode" />
               <item name="IFNmodeling" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="IFNmodeling" type="b2602c69:ProjectViewProjectNode" />
+              <item name="IFNmodeling" type="462c0819:PsiDirectoryNode" />
+              <item name="ifndatabase" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="IFNmodeling" type="b2602c69:ProjectViewProjectNode" />
@@ -370,7 +369,25 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.detailed_model_equivalent_to_simple">
+  <component name="RunManager" selected="Python.comparing_GAB_data">
+    <configuration name="comparing_GAB_data" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="IFNmodeling" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/ifnscripts" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/ifnscripts/comparing_GAB_data.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+    </configuration>
     <configuration name="detailed_model_equivalent_to_simple" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="IFNmodeling" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -384,60 +401,6 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/ifnscripts/detailed_model_equivalent_to_simple.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-    </configuration>
-    <configuration name="fit-10-01-2019" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <module name="IFNmodeling" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/ifnscripts" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/ifnscripts/fit-10-01-2019.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-    </configuration>
-    <configuration name="fit-10-12-2018" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <module name="IFNmodeling" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/ifnscripts" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/ifnscripts/fit-10-12-2018.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-    </configuration>
-    <configuration name="fit-12-12-2018" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <module name="IFNmodeling" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/ifnscripts" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/ifnscripts/fit-12-12-2018.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -461,20 +424,56 @@
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
     </configuration>
+    <configuration name="negative_feedback_figure" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="IFNmodeling" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/ifnscripts" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/ifnscripts/negative_feedback_figure.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+    </configuration>
+    <configuration name="process_csv" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="IFNmodeling" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/ifndatabase" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/ifndatabase/process_csv.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+    </configuration>
     <list>
-      <item itemvalue="Python.fit-12-12-2018" />
-      <item itemvalue="Python.fit-10-12-2018" />
-      <item itemvalue="Python.fit-10-01-2019" />
       <item itemvalue="Python.fitting_2_5" />
       <item itemvalue="Python.detailed_model_equivalent_to_simple" />
+      <item itemvalue="Python.negative_feedback_figure" />
+      <item itemvalue="Python.process_csv" />
+      <item itemvalue="Python.comparing_GAB_data" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.comparing_GAB_data" />
+        <item itemvalue="Python.process_csv" />
+        <item itemvalue="Python.negative_feedback_figure" />
         <item itemvalue="Python.detailed_model_equivalent_to_simple" />
         <item itemvalue="Python.fitting_2_5" />
-        <item itemvalue="Python.fit-10-01-2019" />
-        <item itemvalue="Python.fit-12-12-2018" />
-        <item itemvalue="Python.fit-10-12-2018" />
       </list>
     </recent_temporary>
   </component>
@@ -532,12 +531,10 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="55" />
+      <option name="time" value="56" />
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/ifndatabase/smooth_B6_IFN.py" />
-    <entry file="file://$PROJECT_DIR$/ifnclass/fit-06-12-2018(1).py" />
     <entry file="file://$PROJECT_DIR$/ifndatabase/MacParland_Extended.csv" />
     <entry file="file://$USER_HOME$/Anaconda3/envs/PySB/Lib/site-packages/matplotlib/axes/_axes.py">
       <provider selected="true" editor-type-id="text-editor">
@@ -554,7 +551,6 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/ifnclass/timecourse-09-12-2018.py" />
-    <entry file="file://$PROJECT_DIR$/ifndatabase/process_csv.py" />
     <entry file="file://$PROJECT_DIR$/ifnclass/fit-06-12-2018.py" />
     <entry file="file://$PROJECT_DIR$/ifnclass/IFNalpha1.py" />
     <entry file="file://$PROJECT_DIR$/ifnclass/fit-10-12-2018.py" />
@@ -640,20 +636,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ifnclass/ifnplot.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-2873">
-          <caret line="5" column="42" lean-forward="true" selection-start-line="5" selection-start-column="42" selection-end-line="5" selection-end-column="42" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/ifnscripts/timecourse-09-12-2018.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="255">
-          <caret line="15" column="67" lean-forward="true" selection-start-line="15" selection-start-column="67" selection-end-line="15" selection-end-column="67" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/ifnmodels/Mixed_IFN_explicitUSP18.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="6">
@@ -665,9 +647,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="187">
           <caret line="221" column="24" selection-start-line="221" selection-start-column="8" selection-end-line="221" selection-end-column="24" />
-          <folding>
-            <element signature="e#0#30#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -675,13 +654,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="116">
           <caret line="143" lean-forward="true" selection-start-line="159" selection-start-column="29" selection-end-line="159" selection-end-column="49" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/ifnscripts/internalization_theory_tc_figure.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="136">
-          <caret line="68" column="26" selection-start-line="68" selection-start-column="26" selection-end-line="68" selection-end-column="26" />
         </state>
       </provider>
     </entry>
@@ -724,13 +696,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ifnmodels/Mixed_IFN_ppCompatible.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="289">
-          <caret line="91" column="13" selection-start-line="91" selection-start-column="13" selection-end-line="91" selection-end-column="13" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/ifnmodels/IFN_detailed_alt_SOCS_alpha_ppCompatible.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="422">
@@ -745,6 +710,13 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/ifnscripts/detailed_model_equivalent_to_simple.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="302">
+          <caret line="140" column="113" selection-start-line="140" selection-start-column="113" selection-end-line="140" selection-end-column="113" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/ifnmodels/Mixed_IFN_detailed.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-561">
@@ -752,17 +724,68 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ifnscripts/fitting_2_5.py">
+    <entry file="file://$PROJECT_DIR$/ifnmodels/Mixed_IFN_ppCompatible.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="68">
-          <caret line="9" column="18" selection-start-line="9" selection-start-column="18" selection-end-line="9" selection-end-column="18" />
+        <state relative-caret-position="-1598">
+          <caret line="73" column="33" selection-start-line="73" selection-start-column="26" selection-end-line="73" selection-end-column="33" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ifnscripts/detailed_model_equivalent_to_simple.py">
+    <entry file="file://$PROJECT_DIR$/ifnclass/ifnplot.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="302">
-          <caret line="140" column="121" selection-start-line="140" selection-start-column="121" selection-end-line="140" selection-end-column="121" />
+        <state relative-caret-position="-1258">
+          <caret line="5" column="42" lean-forward="true" selection-start-line="5" selection-start-column="42" selection-end-line="5" selection-end-column="42" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnscripts/negative_feedback_figure.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="439">
+          <caret line="70" column="72" selection-start-line="70" selection-start-column="72" selection-end-line="70" selection-end-column="72" />
+          <folding>
+            <element signature="e#0#36#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnscripts/fitting_2_5.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-582">
+          <caret line="8" column="26" lean-forward="true" selection-start-line="8" selection-start-column="26" selection-end-line="8" selection-end-column="26" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnscripts/internalization_theory_tc_figure.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-72">
+          <caret line="161" column="76" selection-start-line="161" selection-start-column="58" selection-end-line="161" selection-end-column="76" />
+          <folding>
+            <element signature="e#0#36#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifndatabase/process_csv.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="376">
+          <caret line="175" column="13" lean-forward="true" selection-start-line="175" selection-start-column="13" selection-end-line="175" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnscripts/timecourse-09-12-2018.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="325">
+          <caret line="80" column="60" lean-forward="true" selection-start-line="80" selection-start-column="60" selection-end-line="80" selection-end-column="60" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnscripts/comparing_GAB_data.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="98">
+          <caret line="68" column="64" selection-start-line="68" selection-start-column="64" selection-end-line="68" selection-end-column="64" />
+          <folding>
+            <element signature="e#0#36#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
