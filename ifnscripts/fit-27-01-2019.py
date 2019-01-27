@@ -17,10 +17,10 @@ if __name__ == '__main__':
     beta_doses_20190108 = [0, 0.2, 6, 20, 60, 200, 600, 2000]
 
     Mixed_Model.set_parameters({'R2': 2300 * 2.5, 'R1': 1800 * 1.8,
-         'k_a1': 4.98E-14, 'k_a2': 8.30e-13 * 4, 'k_d3': 2.4e-06, 'k_d4': 0.06,
-         'kSOCSon': 0.9e-8,'kpu': 0.0028,
-         'ka1': 3.321155762205247e-14 * 0.3, 'ka2': 4.98173364330787e-13 * 0.3, 'kd4': 1.0, 'kd3': 0.001,
-         'kint_a': 0.0007, 'kint_b': 0.0014,
+         'k_a1': 4.98E-14, 'k_a2': 8.30e-13 * 4, 'k_d3': 2.4e-06, 'k_d4': 0.9,
+         'kSOCSon': 1.5e-7,'kpu': 0.0016,
+         'ka1': 3.321155762205247e-14 * 0.5, 'ka2': 4.98173364330787e-13 * 0.5, 'kd4': 0.6, 'kd3': 0.001,
+         'kint_a': 0.0007, 'kint_b': 0.0019,
          'krec_a1': 9e-03, 'krec_a2': 0.05, 'krec_b1': 0.001, 'krec_b2': 0.01})
     scale_factor = 0.25
     scale_data = lambda q: (scale_factor*q[0], scale_factor*q[1])
@@ -40,8 +40,8 @@ if __name__ == '__main__':
     drb60 = IfnData('custom', df=drbdf, conditions={'Beta': {'Ia': 0}})
 
     new_fit = DoseresponsePlot((1, 2))
-    alpha_mask = []
-    beta_mask = []
+    alpha_mask = [7.5]
+    beta_mask = [7.5]
     # Add fits
     for idx, t in enumerate(times):
         if t not in alpha_mask:
@@ -95,8 +95,6 @@ if __name__ == '__main__':
     beta_mask = []
 
     # Add fits
-    print(len(alpha_doses_20190108))
-    print(len(alpha_IfnData_objects))
     for j, dose in enumerate(alpha_doses_20190108):
         if dose not in alpha_mask:
             new_fit.add_trajectory(alpha_IfnData_objects[j], 'plot', alpha_palette[j], (0, 0),
