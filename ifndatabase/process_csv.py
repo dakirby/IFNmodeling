@@ -39,7 +39,6 @@ def build_database(data_wd: str) -> None:
     # MacParland_Extended
     # -------------------
     dataset_2 = pd.read_csv(os.path.join(data_wd, "MacParland_Extended.csv"))
-    print(dataset_2.columns)
     aData = dataset_2.loc[(dataset_2.loc[:, 'Interferon'] == "Alpha"), [str(el) for el in [0, 5, 15, 30, 60]]].values
     bData = dataset_2.loc[(dataset_2.loc[:, 'Interferon'] == "Alpha_std"), [str(el) for el in [0, 5, 15, 30, 60]]].values
     aZipped = [[tuple(el) for el in r] for r in np.dstack((aData, bData))]
@@ -150,7 +149,7 @@ def build_database(data_wd: str) -> None:
 
     # 20190108_pSTAT1_IFN
     # -------------------
-    times_20190108 = [2.5, 5, 7.5, 10, 20, 60]
+    times_20190108 = [2.5, 5, 7.5, 10, 20, 60][::-1]
     alpha_doses_20190108 = [0, 10, 100, 300, 1000, 3000, 10000, 100000]
     beta_doses_20190108 = [0, 0.2, 6, 20, 60, 200, 600, 2000]
     dataset_4 = pd.read_csv(os.path.join(data_wd, "20190108_pSTAT1_IFN.csv"))
@@ -170,11 +169,12 @@ def build_database(data_wd: str) -> None:
     # B cells
     Balpha = [['Alpha', alpha_doses_20190108[row]] + [Bdata[row][2 * i] for i in range(6)] for row in range(8)]
     Bbeta = [['Beta', beta_doses_20190108[row]] + [Bdata[row][2 * i + 1] for i in range(6)] for row in range(8)]
-    df = pd.DataFrame.from_records(Balpha + Bbeta, columns=['Dose_Species', 'Dose (pM)'] + times_20190108)
+    # Re-order the columns so that times go from 2.5 to 60
+    Bbeta = [[row[0], row[1], row[7], row[6], row[5], row[4], row[3], row[2]] for row in Bbeta]
+    Balpha = [[row[0], row[1], row[7], row[6], row[5], row[4], row[3], row[2]] for row in Balpha]
+    df = pd.DataFrame.from_records(Balpha + Bbeta, columns=['Dose_Species', 'Dose (pM)'] + times_20190108[::-1])
     df.set_index(['Dose_Species', 'Dose (pM)'], inplace=True)
     pickle.dump(df, open(os.path.join(data_wd, '20190108_pSTAT1_IFN.p'), 'wb'))
-    print(df)
-
     print("Initialized DataFrame objects")
 
 if __name__ == '__main__':
