@@ -89,7 +89,7 @@ class StepwiseFit:
         number_of_parameters = len(self.parameters_to_fit)
         total_tests = (number_of_parameters+1)*number_of_parameters*self.num_test_vals/2
         print('total test: {}'.format(total_tests))
-        initial_score = 0
+        initial_score = self.score_parameter({})[0]
         # Fit each parameter, ordered from most important to least
         for i in range(number_of_parameters):
             print("{}% of the way done".format(i*100/number_of_parameters))
@@ -111,8 +111,6 @@ class StepwiseFit:
                     residuals.index(min(residuals))]
                 # Decide if this is the best parameter so far in this round of 'i' loop
                 if min(residuals) < reference_score or reference_score == 0:
-                    if initial_score == 0:
-                        initial_score = min(residuals)
                     reference_score = min(residuals)
                     best_scale_factor = scale_factor_list[residuals.index(min(residuals))]
                     best_parameter = [p, best_parameter_value]
@@ -231,7 +229,7 @@ class MCMC:
         self.num_samples = 100
         self.num_chains = 1
         # The following attributes will store the results of the MCMC fit
-        self.filename = 'results/initial_model.p'
+        self.filename = 'mcmc_results/initial_model.p'
         self.best_fit_parameters = {}
         self.best_fit_scale_factor = 1
         self.best_fit_score = 1E15
@@ -277,9 +275,9 @@ class MCMC:
                                                  parameters=self.data.conditions[dose_species],
                                                  return_type='list', dataframe_labels=None)['TotalpSTAT']
             if not total_sim_table:
-                total_sim_table = [el for el in simulation.tolist()]
+                total_sim_table = [el for el in list(simulation)]
             else:
-                total_sim_table += simulation.tolist()
+                total_sim_table += list(simulation)
         # Score results by mean squared error
         opt = minimize(score_target, [40], args=(total_data_table, total_sim_table))
         score = opt['fun']
