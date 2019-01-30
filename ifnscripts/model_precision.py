@@ -23,19 +23,73 @@ if __name__ == '__main__':
     scale_data = lambda q: (scale_factor * q[0], scale_factor * q[1])
 
     # Try MCMC sampling
-    jump_dists = {'kpu': 1, 'kSOCSon': 1, 'kd4': 0.5, 'k_d4': 0.5, 'R1': 0.5, 'R2': 0.5}
-    mixed_IFN_priors = {'kpu': Prior('lognormal', mean=1E-3, sigma=4),
-                        'kSOCSon': Prior('lognormal', mean=1E-6, sigma=4),
-                        'R1': Prior('uniform', lower_bound=200, upper_bound=12000),
-                        'R2': Prior('uniform', lower_bound=200, upper_bound=12000),
-                        'kd4': Prior('lognormal', mean=0.3, sigma=1.8),
-                        'k_d4': Prior('lognormal', mean=0.006, sigma=1.8)}
-    mcmcFit = MCMC(Mixed_Model, raw_data, ['kpu', 'kSOCSon', 'R1', 'R2', 'kd4', 'k_d4'], mixed_IFN_priors, jump_dists)
-    # num_accepted_steps, num_chains, burn_rate, down_sample_frequency, beta
-    mcmcFit.fit(10, 1, 0, 1, 1E22)
 
-    print(pickle.load(open("mcmc_results/chain_results/0chain.p", "rb")))
+    # first data set best fit parameters:
+    """
+    {'kpu': 0.0028,
+     'R2': 5750,
+     'R1': 3240,
+     'k_d4': 0.06,
+     'kint_b': 0.0003,
+     'krec_b1': 0.001,
+     'k_a2': 8.30e-13 * 4,
+     'kSOCSon': 0.9e-8,
+     'ka1': 3.32115e-14 * 0.3,
+     'ka2': 4.9817e-13 * 0.3,
+     'kint_a': 0.0014,
+     'krec_a1': 9e-3}
+    """
+    # second data set best fit parameters
+    """
+    {'kpu': 0.0014,
+     'R2': 5700,
+     'R1': 1800,
+     'k_d4': 0.228,
+     'kint_b': 0.00048,
+     'krec_b1': 0.001,     
+     'k_a2': 8.30e-13 * 4,
+     'kSOCSon': 2e-7,
+     'ka1': 3.321e-14 * 0.1,
+     'ka2': 4.982e-13 * 0.5,
+     'kint_a': 0.0002,
+     'krec_a1': 1e-04,
+     
+     'k_a1': 4.98E-14 * 2,
+     'k_d3': 2.4e-06, 
+     'kd4': 0.84,
+     'kd3': 0.001,
+     'krec_a2': 0.02,
+     'krec_b2': 0.005}
+    """
+    jump_dists = {'kpu': 1, 'kSOCSon': 1, 'kd4': 0.5, 'k_d4': 0.5, 'R1': 0.5, 'R2': 0.5, 'kint_b': 1,
+                  'krec_b1': 1, 'ka1': 1, 'ka2': 0.5, 'kint_a': 1, 'krec_a1': 1, 'k_a1': 1}
+    mixed_IFN_priors = {'kpu': Prior('uniform', lower_bound=0.001, upper_bound=0.003),
+                        'kSOCSon': Prior('uniform', lower_bound=0.9e-8, upper_bound=2e-7),
+                        'R1': Prior('uniform', lower_bound=1800, upper_bound=3240),
+                        'R2': Prior('uniform', lower_bound=5000, upper_bound=6000),
+                        'kd4': Prior('uniform', lower_bound=0.3, upper_bound=0.9),
+                        'k_d4': Prior('uniform', lower_bound=0.06, upper_bound=0.228),
+                        'kint_b': Prior('uniform', lower_bound=0.0003, upper_bound=0.00048),
+                        'krec_b1': Prior('uniform', lower_bound=0.0003, upper_bound=0.00048),
+                        'kSOCSon': Prior('uniform', lower_bound=0.9e-8, upper_bound=2e-7),
+                        'ka1': Prior('uniform', lower_bound=3.32115e-14 * 0.3, upper_bound=3.32115e-14 * 0.3),
+                        'ka2': Prior('uniform', lower_bound=4.982e-13 * 0.3, upper_bound=4.982e-13 * 0.5),
+                        'kint_a': Prior('uniform', lower_bound=0.0002, upper_bound=0.0014),
+                        'krec_a1': Prior('uniform', lower_bound=1e-4, upper_bound=9e-3),
+                        'k_a1': Prior('uniform', lower_bound=4.98E-14, upper_bound=4.98E-14 * 2)
+                        }
+    mcmcFit = MCMC(Mixed_Model, raw_data, ['kpu', 'kSOCSon', 'R1', 'R2', 'kd4', 'k_d4', 'kint_b', 'krec_b1', 'kSOCSon',
+                                           'ka1', 'ka2', 'kint_a', 'krec_a1', 'k_a1'], mixed_IFN_priors, jump_dists)
+    mcmcFit.temperature = 1E8
+    # num_accepted_steps, num_chains, burn_rate, down_sample_frequency, beta
+    mcmcFit.fit(5, 2, 0, 1, 1E6)
+    mcmcFit.plot_parameter_distributions()
+    plt.show()
+    mcmcFit.describe_parameter_statistics()
+    mcmcFit.gelman_rubin_convergence()
     exit()
+
+
     # Make predictions
     alpha_palette = sns.color_palette("Reds", 6)
     beta_palette = sns.color_palette("Greens", 6)

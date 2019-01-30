@@ -9,6 +9,8 @@ except (ImportError, ModuleNotFoundError):
 from numpy import linspace, shape, square, isnan, zeros, log
 import numpy.random as rnd
 import numpy as np
+import pandas as pd
+import seaborn as sns
 from collections import OrderedDict
 from scipy.optimize import minimize
 from multiprocessing import Process, Queue, JoinableQueue, cpu_count
@@ -180,9 +182,13 @@ class Prior:
                 return 0
 
 
-def __unpackMCMC__(ID, jobs, result, countQ):
-    processMCMC = MCMC()
-    processMCMC.load()
+def __unpackMCMC__(ID, jobs, result, countQ, build_model, model_parameters, temperature):
+    model_name, data_name, fit_parameters, priors, jump_distributions = build_model
+    model=IfnModel(model_name)
+    model.set_parameters(model_parameters)
+    data = IfnData(data_name)
+    processMCMC = MCMC(model, data, fit_parameters, priors, jump_distributions)
+    processMCMC.temperature = temperature
     processMCMC.__run_chain__(ID, jobs, result, countQ)
 
 
@@ -240,6 +246,7 @@ class MCMC:
         self.thinned_parameter_samples = []
         self.thinned_parameter_scale_factors = []
         self.thinned_parameter_scores = []
+        self.chain_lengths = []
 
     # Private methods
     # ---------------
@@ -294,12 +301,10 @@ class MCMC:
                 penalty += self.priors[parameter].get_log_probability(value)
         return penalty
 
-    def __parameter_jump__(self, temperature=1):
+    def __parameter_jump__(self):
         new_parameters = {}
         for parameter in self.parameters_to_fit:
-            current_value = log(self.model.parameters[parameter])
-            new_value = rnd.lognormal(current_value, temperature * self.jump_distributions[parameter])
-            new_parameters.update({parameter: new_value})
+            new_parameters.update({parameter: self.priors[parameter].draw_value()})
         return new_parameters
 
     def __check_input__(self):
@@ -317,7 +322,7 @@ class MCMC:
     def __generate_parameters_from_priors__(self, n):
         pList = []
         for i in range(n):
-            pList.append(self.__parameter_jump__(self.temperature))
+            pList.append(self.__parameter_jump__())
         return pList
 
     def __score_and_sf_for_current_model__(self):
@@ -325,6 +330,7 @@ class MCMC:
         return MSE / self.beta + self.__prior_penalty__(self.model.parameters), sf
 
     def __run_chain__(self, ID, jobs, result, countQ):
+        print("Chain {} started".format(ID))
         while True:
             initial_parameters = jobs.get()
             if initial_parameters is None:
@@ -373,8 +379,7 @@ class MCMC:
                             asymmetry_factor *= new_value/current_parameters[key]
                     except KeyError:
                         pass
-
-                alpha = asymmetry_factor * np.exp(-(new_score-current_score))
+                alpha = asymmetry_factor * np.exp(-(new_score-current_score)/self.temperature)
                 if new_score < current_score or np.random.rand() < alpha:
                     # Search for MAP:
                     if new_score < self.best_fit_score:
@@ -420,15 +425,52 @@ class MCMC:
         return self.__MSE_of_parametric_model__(self.model.parameters) / self.beta + self.__prior_penalty__(
             self.model.parameters)
 
-    def plot_parameter_distributions(self):
+    def gelman_rubin_convergence(self):
+        stats_list = []
+        indices = [int(np.sum(self.chain_lengths[0:i])) for i in range(len(self.chain_lengths)+1)]
+        if indices == [0]:
+            indices = [0, len(self.parameter_history)]
+        for variable in self.parameters_to_fit:
+            chain_mean = [np.mean([j[variable] for j in self.parameter_history[indices[i]:indices[i+1]]]) for i in range(self.num_chains)]
+            overall_mean = np.mean(chain_mean)
+            B = np.sum([(indices[i+1] - indices[i]) * (chain_mean - overall_mean) ** 2 for i in range(self.num_chains)]) / (self.num_chains - 1)
+            W = np.mean([np.var([j[variable] for j in self.parameter_history[indices[i]:indices[i+1]]]) for i in range(self.num_chains)])
+            N = np.mean([indices[i+1]-indices[i] for i in range(self.num_chains)])
+            Var = (1 - 1 / N) * W + (1 + 1 / self.num_chains) * B / N
+            Rhat = np.sqrt(Var / W)
+            stats_list.append([variable, Rhat])
+        df = pd.DataFrame.from_records(stats_list, columns=['variable', 'GR Statistic'])
+        title = os.path.join(os.getcwd(), "mcmc_results", "gelman-rubin_statistics.csv")
+        df.to_csv(title)
+        return stats_list
+
+    def describe_parameter_statistics(self, title=''):
+        statistics_record = []
+        plist = [(key, [self.parameter_history[i][key] for i in range(len(self.parameter_history))]) for key in self.parameters_to_fit]
+        for item in plist:
+            statistics_record.append([item[0], np.percentile(item[1], 2.5), np.percentile(item[1], 25),
+                                      np.mean(item[1]), np.percentile(item[1], 75), np.percentile(item[1], 95)])
+        labels = ['parameter', '2.5%', '25%', '50%', '75%', '95%']
+        df = pd.DataFrame.from_records(statistics_record, columns=labels)
+        if title == '':
+            title = os.path.join(os.getcwd(), "mcmc_results", "parameter_statistics.csv")
+            df.to_csv(title)
+        else:
+            df.to_csv('mcmc_records/'+title+'.csv')
+
+
+    def plot_parameter_distributions(self, save=False, title=''):
         if self.num_chains == 1:
             k = len(self.parameters_to_fit)  # total number subplots
             n = 2  # number of chart columns
-            m = (k - 1) // n + 1  # number of chart rows
+            m = k // n + k % n  # number of chart rows
             fig, axes = plt.subplots(m, n, figsize=(n * 5, m * 3))
             if k % 2 == 1:  # avoids extra empty subplot
                 axes[-1][n - 1].set_axis_off()
-            for i, (name, col) in enumerate(df.iteritems()):
+            # format data for plotting
+            plist = [(key, [self.parameter_history[i][key] for i in range(len(self.parameter_history))]) for key in self.parameters_to_fit]
+            # add plots
+            for i, (name, col) in enumerate(plist):
                 r, c = i // n, i % n
                 ax = axes[r, c]  # get axis object
                 # determine whether or not to plot on log axis
@@ -439,12 +481,13 @@ class MCMC:
                              color='darkblue',
                              hist_kws={'edgecolor': 'black'},
                              kde_kws={'linewidth': 4})
+                ax.set_title(name)
             fig.tight_layout()
             if save == True:
                 if title == '':
-                    plt.savefig(results_dir + 'parameter_distributions.pdf')
+                    plt.savefig('mcmc_results/parameter_distributions.pdf')
                 else:
-                    plt.savefig(results_dir + title + '.pdf')
+                    plt.savefig('mcmc_results/' + title + '.pdf')
             return (fig, axes)
 
     def fit(self, num_accepted_steps: int, num_chains: int, burn_rate: float, down_sample_frequency: int, beta: float,
@@ -487,7 +530,8 @@ class MCMC:
         countQ = JoinableQueue()
         # Start up chains
         # Prepare instance for multiprocessing by pickling
-        self.save()
+        build_model = [self.model.name, self.data.name, self.parameters_to_fit, self.priors, self.jump_distributions]
+        # Run chains
         if number_of_processes == 1:
             jobs.put([initial_parameters[0]])
             jobs.put(None)
@@ -499,7 +543,9 @@ class MCMC:
             # Add signals for each process that there are no more jobs
             for w in range(number_of_processes):
                 jobs.put(None)
-            [Process(target=__unpackMCMC__, args=(i, jobs, result, countQ)).start() for i in range(number_of_processes)]
+            [Process(target=__unpackMCMC__, args=(i, jobs, result, countQ, build_model,
+                                                  self.model.parameters, self.temperature)).start()
+             for i in range(number_of_processes)]
         # Pull in the results from each thread
         pool_results = []
         chain_attempts = []
@@ -521,10 +567,12 @@ class MCMC:
         self.average_acceptance = np.mean([el[1] for el in chain_attempts])
         print("Average acceptance rate was {:.1f}%".format(self.average_acceptance))
         # Consolidate results into attributes
-        for chain in pool_results:
-            self.parameter_history += chain[0]
-            self.scale_factor_history += chain[1]
-            self.score_history += chain[2]
+        if self.num_chains != 1:
+            for chain in pool_results:
+                self.chain_lengths.append(len(chain))
+                self.parameter_history += chain[0]
+                self.scale_factor_history += chain[1]
+                self.score_history += chain[2]
         # Perform burn-in and down sampling
         for chain in pool_results:
             sample_pattern = range(int(burn_rate*len(chain)), len(chain), down_sample_frequency)
@@ -546,7 +594,9 @@ class MCMC:
 
         # Save object
         self.save(alt_filename="mcmc_results/mcmc_fit.p")
-
+        pickle.dump(self.parameter_history, open('mcmc_results/mcmc_parameter_history.p','wb'), 2)
+        pickle.dump(self.scale_factor_history, open('mcmc_results/mcmc_scale_factor_history.p','wb'), 2)
+        pickle.dump(self.score_history, open('mcmc_results/mcmc_score_history.p','wb'), 2)
 
 if __name__ == '__main__':
     testData = IfnData("MacParland_Extended")
