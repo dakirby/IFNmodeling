@@ -54,18 +54,31 @@ if __name__ == '__main__':
 OrderedDict([('k_d4', 0.22800000000000001), ('R1', 1800.0), ('kd4', 0.84000000000000008), ('kint_a', 0.00020000000000000001), ('R2', 5700.0), ('krec_a1', 0.0001), ('krec_a2', 0.02), ('krec_b1', 0.001), ('krec_b2', 0.0050000000000000001), ('kd3', 0.00016800000000000002), ('k_d3', 0.00045600000000000003)])
     0.260432986902                             
     """
-    stepfit = StepwiseFit(Mixed_Model, raw_data,
-                            {'R1': (1800, 5700), 'R2': (1800, 5700),
-                             'kd4': (0.2, 1), 'k_d4': (0.06, 0.9),
-                             'kint_a': (0.00005, 0.0002),
-                             'krec_a1': (1e-04, 2e-03), 'krec_a2': (0.001, 0.02),
-                             'krec_b1': (0.001, 0.1), 'krec_b2': (0.005, 0.1)}, n=6)
-    best_parameters, scale_factor = stepfit.fit()
-    print(best_parameters)
-    print(scale_factor)
-    Mixed_Model = stepfit.model
+    #stepfit = StepwiseFit(Mixed_Model, raw_data,
+    #                        {'R1': (1800, 5700), 'R2': (1800, 5700),
+    #                         'kd4': (0.2, 1), 'k_d4': (0.06, 0.9),
+    #                         'kint_a': (0.00005, 0.0002),
+    #                         'krec_a1': (1e-04, 2e-03), 'krec_a2': (0.001, 0.02),
+    #                         'krec_b1': (0.001, 0.1), 'krec_b2': (0.005, 0.1)}, n=6)
+    #best_parameters, scale_factor = stepfit.fit()
+    #print(best_parameters)
+    #print(scale_factor)
+    #Mixed_Model = stepfit.model
+
+
+    Mixed_Model.set_parameters({'R2': 5700, 'R1': 1800,
+                                'k_a1': 4.98E-14 * 2, 'k_a2': 8.30e-13 * 4, 'k_d3': 2.4e-06, 'k_d4': 0.228,
+                                'kSOCSon': 2e-7, 'kpu': 0.0014,
+                                'ka1': 3.321155762205247e-14 * 0.1, 'ka2': 4.98173364330787e-13 * 0.5, 'kd4': 0.84,
+                                'kd3': 0.001,
+                                'kint_a': 0.0002, 'kint_b': 0.00048,
+                                'krec_a1': 1e-04, 'krec_a2': 0.02, 'krec_b1': 0.001, 'krec_b2': 0.005})
+    scale_factor = 0.260432986902
     # -----------------------------
-    scale_factor = 0.26
+    # End Stepwise Fit
+    # -----------------------------
+
+    #scale_factor = 0.26
     scale_data = lambda q: (scale_factor*q[0], scale_factor*q[1])
 
     # Make predictions
