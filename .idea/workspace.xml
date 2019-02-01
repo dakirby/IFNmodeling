@@ -176,6 +176,7 @@
       <change beforePath="$PROJECT_DIR$/ifnscripts/results/Comparing_Detailed_to_Simple/SImple_vs_Detailed.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/results/Comparing_Detailed_to_Simple/SImple_vs_Detailed.pdf" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnscripts/results/Comparing_Detailed_to_Simple/Simple_Model_vs_data.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/results/Comparing_Detailed_to_Simple/Simple_Model_vs_data.pdf" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnscripts/results/Sagar_Fits/Email/huh_data.csv" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/results/Sagar_Fits/Email/huh_data.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/results/Sloppiness/Hessian.pkl" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/results/Sloppiness/Hessian.pkl" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnscripts/sloppiness_analysis.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/sloppiness_analysis.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnscripts/smooth_B6_IFN.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/smooth_B6_IFN.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnscripts/smooth_Sagar.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/smooth_Sagar.py" afterDir="false" />
@@ -198,6 +199,7 @@
       <change beforePath="$PROJECT_DIR$/simulation_script.py" beforeDir="false" afterPath="$PROJECT_DIR$/simulation_script.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/single_model_exploration.py" beforeDir="false" afterPath="$PROJECT_DIR$/single_model_exploration.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/stan.py" beforeDir="false" afterPath="$PROJECT_DIR$/stan.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/testplots.py" beforeDir="false" afterPath="$PROJECT_DIR$/testplots.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/write_stan.py" beforeDir="false" afterPath="$PROJECT_DIR$/write_stan.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -212,8 +214,8 @@
       <file leaf-file-name="sloppiness_analysis.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/ifnscripts/sloppiness_analysis.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="98">
-              <caret line="74" selection-start-line="74" selection-end-line="74" />
+            <state relative-caret-position="115">
+              <caret line="61" selection-start-line="61" selection-end-line="61" />
               <folding>
                 <element signature="e#0#36#0" expanded="true" />
               </folding>
@@ -872,8 +874,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/ifnscripts/sloppiness_analysis.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="98">
-          <caret line="74" selection-start-line="74" selection-end-line="74" />
+        <state relative-caret-position="115">
+          <caret line="61" selection-start-line="61" selection-end-line="61" />
           <folding>
             <element signature="e#0#36#0" expanded="true" />
           </folding>

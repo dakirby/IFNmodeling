@@ -16,38 +16,25 @@ def chi2(model: IfnModel, new_parameters: dict, times: list):
                                      parameters={'Ib': 0}, return_type='list')['TotalpSTAT']
     drb1 = model.doseresponse(times, 'TotalpSTAT', 'Ib', list(logspace(-2, 4)),
                                      parameters={'Ia': 0}, return_type='list')['TotalpSTAT']
-
     model.set_parameters(new_parameters)
 
     dra2 = model.doseresponse(times, 'TotalpSTAT', 'Ia', list(logspace(-1, 5)),
                                      parameters={'Ib': 0}, return_type='list')['TotalpSTAT']
     drb2 = model.doseresponse(times, 'TotalpSTAT', 'Ib', list(logspace(-2, 4)),
                                      parameters={'Ia': 0}, return_type='list')['TotalpSTAT']
-
     model.set_parameters(reset_dict)
+    alpha_norm = max(max([item for sublist in dra1 for item in sublist]), max([item for sublist in dra2 for item in sublist]))
+    beta_norm = max(max([item for sublist in drb1 for item in sublist]), max([item for sublist in drb2 for item in sublist]))
 
-    return (np.sum(np.square(np.divide(np.subtract(dra1, dra2), max(max(dra1), max(dra2))))) +
-            np.sum(np.square(np.divide(np.subtract(drb1, drb2), max(max(drb1), max(drb2))))))/60.
-
-
-def model_hessian(model: IfnModel, test_params: list):
-    t = [2.5, 5, 7.5, 10, 20, 60]
-    epsilon = 1E-6
-    Hessian = np.zeros((len(test_params), len(test_params)))
-    for p1, i in enumerate(test_params):
-        for p2, j in enumerate(test_params):
-            if p1 == p2:
-                testval = {p1: model.parameters[p1] * 2 * epsilon}
-            else:
-                testval = {p1: model.parameters[p1] * epsilon, p2: model.parameters[p2] * epsilon}
-            diff = chi2(model, testval, t)
-            Hessian[i][j] = diff
-    return Hessian
+    value = (np.sum(np.square(np.divide(np.subtract(dra1, dra2), alpha_norm))) +
+            np.sum(np.square(np.divide(np.subtract(drb1, drb2), beta_norm))))/times[-1]
+    value = np.nan_to_num(value)
+    return value
 
 
 def function_builder(model: IfnModel, test_params: list, times: list):
     def _function(x):
-        theta = dict(zip(test_params, x))
+        theta = dict(zip(test_params, np.exp(x)))
         scalar = chi2(model, theta, times)
         return scalar
     return _function
@@ -72,7 +59,8 @@ if __name__ == '__main__':
      'kSTATbinding', 'kSTATunbinding', 'kpa', 'kpu', 'kloc', 'kdeloc', 'mRNAdeg', 'mRNAtrans', 'kSOCS', 'SOCSdeg', 'kSOCSon', 'kSOCSoff']
     parameters_to_test.extend([el for el in all_parameters if el not in parameters_to_test])
 
-    best_parameters = [Detailed_Model.parameters[key] for key in all_parameters]
+    # Add jitter to best fit parameters to avoid numerical instability of finding Hessian at functional 0 (?)
+    best_parameters = np.log([Detailed_Model.parameters[key] * np.random.uniform(0.97, 1.03) for key in parameters_to_test])
 
     #   Now define the X**2 function which we want to compute Hessian of. It is defined using higher order function
     #   since this allows the Hessian to defined dynamically.
