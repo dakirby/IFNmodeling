@@ -1,6 +1,7 @@
 from ifnclass.ifndata import IfnData
 from ifnclass.ifnplot import DoseresponsePlot, TimecoursePlot
 import seaborn as sns
+import matplotlib.pyplot as plt
 
 
 if __name__ == '__main__':
@@ -54,7 +55,9 @@ if __name__ == '__main__':
     data_plot_dr.axes[3][0].set_title(r"IFN$\alpha$ 2019-01-19 data")
     data_plot_dr.axes[3][1].set_title(r"IFN$\beta$ 2019-01-19 data")
 
-    data_plot_dr.show_figure(save_flag=False)
+    dr_fig, dr_axes = data_plot_dr.show_figure(save_flag=False)
+    dr_fig.set_size_inches(10.5, 28.5)
+    dr_fig.savefig('results/GAB_NewData/compare_data_dr.pdf')
 
     # -------------------------
     # Time courses
@@ -135,7 +138,6 @@ if __name__ == '__main__':
     data_plot_tc.axes[0][0].set_title(r"IFN$\alpha$ old data")
     data_plot_tc.axes[0][1].set_title(r"IFN$\beta$ old data")
 
-    data_plot_tc.show_figure(save_flag=False)
-
-
-
+    tc_fig = data_plot_tc.show_figure(save_flag=False)
+    tc_fig.set_size_inches(10.5, 28.5)
+    tc_fig.savefig('results/GAB_NewData/compare_data_tc.pdf')

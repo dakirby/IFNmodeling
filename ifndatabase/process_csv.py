@@ -178,7 +178,7 @@ def build_database(data_wd: str) -> None:
 
     # 20190121_pSTAT1_IFN
     # -------------------
-    df = pickle.load(open("20190121_pSTAT1_IFN.p", "rb"))
+    df = pd.read_csv('20190121_pSTAT1_IFN.csv').drop('Unnamed: 0', axis=1)
     # Just FYI, these are the values of df levels:
     # times_20190121 = [2.5, 5, 7.5, 10, 20, 60]
     alpha_doses_20190121 = [0, 10, 100, 300, 1000, 3000, 10000, 100000]
@@ -191,11 +191,14 @@ def build_database(data_wd: str) -> None:
     df.columns = newcolumns
     # B cells
     Bcell_df = df.drop(['Well', 'pSTAT1 in CD8+ T cells', 'pSTAT1 in CD4+ T cells'], axis=1)
+
         # Convert values to (value, error)
     temp = Bcell_df.values
     temp = [[float("{0:.1f}".format(row[0])), row[1], row[2], (float("{0:.2f}".format(row[3])), np.nan)] for row in temp]
     Bcell_df = pd.DataFrame.from_records(temp, columns=['Dose (pM)', 'Dose_Species', 'Time (min)', 'pSTAT1 in B cells'])
+
         # Put in standard form
+    Bcell_df.set_index(['Dose_Species', 'Dose (pM)'], inplace=True)
     Bcell_df = pd.pivot_table(Bcell_df, values='pSTAT1 in B cells', index=['Dose_Species', 'Dose (pM)'], columns=['Time (min)'], aggfunc=np.sum)
     Bcell_df.columns.name = None
         # Save
@@ -207,10 +210,12 @@ def build_database(data_wd: str) -> None:
     temp = CD8Tcell_df.values
     temp = [[int("{0:.0f}".format(row[0])), row[1], row[2], (float("{0:.2f}".format(row[3])), np.nan)] for row in temp]
     CD8Tcell_df = pd.DataFrame.from_records(temp, columns=['Dose (pM)', 'Dose_Species', 'Time (min)', 'pSTAT1 in CD8+ T cells'])
-        # Put in standard form
-    CD8Tcell_df = pd.pivot_table(CD8Tcell_df, values='pSTAT1 in CD8+ T cells', index=['Dose_Species', 'Dose (pM)'], columns=['Time (min)'], aggfunc=np.sum)
+    # Put in standard form
+    CD8Tcell_df.set_index(['Dose_Species', 'Dose (pM)'], inplace=True)
+    CD8Tcell_df = pd.pivot_table(CD8Tcell_df, values='pSTAT1 in CD8+ T cells', index=['Dose_Species', 'Dose (pM)'],
+                              columns=['Time (min)'], aggfunc=np.sum)
     CD8Tcell_df.columns.name = None
-        # Save
+    # Save
     pickle.dump(CD8Tcell_df, open(os.path.join(data_wd, '20190121_pSTAT1_IFN_CD8Tcell.p'), 'wb'))
 
     # CD4+ T cells
@@ -219,17 +224,17 @@ def build_database(data_wd: str) -> None:
     temp = CD4Tcell_df.values
     temp = [[int("{0:.0f}".format(row[0])), row[1], row[2], (float("{0:.2f}".format(row[3])), np.nan)] for row in temp]
     CD4Tcell_df = pd.DataFrame.from_records(temp, columns=['Dose (pM)', 'Dose_Species', 'Time (min)', 'pSTAT1 in CD4+ T cells'])
-        # Put in standard form
-    CD4Tcell_df = pd.pivot_table(CD4Tcell_df, values='pSTAT1 in CD4+ T cells', index=['Dose_Species', 'Dose (pM)'], columns=['Time (min)'], aggfunc=np.sum)
+    # Put in standard form
+    CD4Tcell_df.set_index(['Dose_Species', 'Dose (pM)'], inplace=True)
+    CD4Tcell_df = pd.pivot_table(CD4Tcell_df, values='pSTAT1 in CD4+ T cells', index=['Dose_Species', 'Dose (pM)'],
+                                 columns=['Time (min)'], aggfunc=np.sum)
     CD4Tcell_df.columns.name = None
-        # Save
+    # Save
     pickle.dump(CD4Tcell_df, open(os.path.join(data_wd, '20190121_pSTAT1_IFN_CD4Tcell.p'), 'wb'))
-
-
 
     # 20190119_pSTAT1_IFN
     # -------------------
-    df = pickle.load(open("20190119_pSTAT1_IFN.p", "rb"))
+    df = pd.read_csv('20190119_pSTAT1_IFN.csv').drop('Unnamed: 0', axis=1)
     # Just FYI, these are the values of df levels:
     # times_20190119 = [2.5, 5, 7.5, 10, 20, 60]
     alpha_doses_20190119 = [0, 10, 100, 300, 1000, 3000, 10000, 100000]
@@ -242,38 +247,49 @@ def build_database(data_wd: str) -> None:
     df.columns = newcolumns
     # B cells
     Bcell_df = df.drop(['Well', 'pSTAT1 in CD8+ T cells', 'pSTAT1 in CD4+ T cells'], axis=1)
-        # Convert values to (value, error)
+
+    # Convert values to (value, error)
     temp = Bcell_df.values
-    temp = [[float("{0:.1f}".format(row[0])), row[1], row[2], (float("{0:.2f}".format(row[3])), np.nan)] for row in temp]
+    temp = [[float("{0:.1f}".format(row[0])), row[1], row[2], (float("{0:.2f}".format(row[3])), np.nan)] for row in
+            temp]
     Bcell_df = pd.DataFrame.from_records(temp, columns=['Dose (pM)', 'Dose_Species', 'Time (min)', 'pSTAT1 in B cells'])
-        # Put in standard form
-    Bcell_df = pd.pivot_table(Bcell_df, values='pSTAT1 in B cells', index=['Dose_Species', 'Dose (pM)'], columns=['Time (min)'], aggfunc=np.sum)
+
+    # Put in standard form
+    Bcell_df.set_index(['Dose_Species', 'Dose (pM)'], inplace=True)
+    Bcell_df = pd.pivot_table(Bcell_df, values='pSTAT1 in B cells', index=['Dose_Species', 'Dose (pM)'],
+                              columns=['Time (min)'], aggfunc=np.sum)
     Bcell_df.columns.name = None
-        # Save
+    # Save
     pickle.dump(Bcell_df, open(os.path.join(data_wd, '20190119_pSTAT1_IFN_Bcell.p'), 'wb'))
 
     # CD8+ T cells
     CD8Tcell_df = df.drop(['Well', 'pSTAT1 in B cells', 'pSTAT1 in CD4+ T cells'], axis=1)
-        # Convert values to (value, error)
+    # Convert values to (value, error)
     temp = CD8Tcell_df.values
     temp = [[int("{0:.0f}".format(row[0])), row[1], row[2], (float("{0:.2f}".format(row[3])), np.nan)] for row in temp]
-    CD8Tcell_df = pd.DataFrame.from_records(temp, columns=['Dose (pM)', 'Dose_Species', 'Time (min)', 'pSTAT1 in CD8+ T cells'])
-        # Put in standard form
-    CD8Tcell_df = pd.pivot_table(CD8Tcell_df, values='pSTAT1 in CD8+ T cells', index=['Dose_Species', 'Dose (pM)'], columns=['Time (min)'], aggfunc=np.sum)
+    CD8Tcell_df = pd.DataFrame.from_records(temp, columns=['Dose (pM)', 'Dose_Species', 'Time (min)',
+                                                           'pSTAT1 in CD8+ T cells'])
+    # Put in standard form
+    CD8Tcell_df.set_index(['Dose_Species', 'Dose (pM)'], inplace=True)
+    CD8Tcell_df = pd.pivot_table(CD8Tcell_df, values='pSTAT1 in CD8+ T cells', index=['Dose_Species', 'Dose (pM)'],
+                                 columns=['Time (min)'], aggfunc=np.sum)
     CD8Tcell_df.columns.name = None
-        # Save
+    # Save
     pickle.dump(CD8Tcell_df, open(os.path.join(data_wd, '20190119_pSTAT1_IFN_CD8Tcell.p'), 'wb'))
 
     # CD4+ T cells
     CD4Tcell_df = df.drop(['Well', 'pSTAT1 in B cells', 'pSTAT1 in CD8+ T cells'], axis=1)
-        # Convert values to (value, error)
+    # Convert values to (value, error)
     temp = CD4Tcell_df.values
     temp = [[int("{0:.0f}".format(row[0])), row[1], row[2], (float("{0:.2f}".format(row[3])), np.nan)] for row in temp]
-    CD4Tcell_df = pd.DataFrame.from_records(temp, columns=['Dose (pM)', 'Dose_Species', 'Time (min)', 'pSTAT1 in CD4+ T cells'])
-        # Put in standard form
-    CD4Tcell_df = pd.pivot_table(CD4Tcell_df, values='pSTAT1 in CD4+ T cells', index=['Dose_Species', 'Dose (pM)'], columns=['Time (min)'], aggfunc=np.sum)
+    CD4Tcell_df = pd.DataFrame.from_records(temp, columns=['Dose (pM)', 'Dose_Species', 'Time (min)',
+                                                           'pSTAT1 in CD4+ T cells'])
+    # Put in standard form
+    CD4Tcell_df.set_index(['Dose_Species', 'Dose (pM)'], inplace=True)
+    CD4Tcell_df = pd.pivot_table(CD4Tcell_df, values='pSTAT1 in CD4+ T cells', index=['Dose_Species', 'Dose (pM)'],
+                                 columns=['Time (min)'], aggfunc=np.sum)
     CD4Tcell_df.columns.name = None
-        # Save
+    # Save
     pickle.dump(CD4Tcell_df, open(os.path.join(data_wd, '20190119_pSTAT1_IFN_CD4Tcell.p'), 'wb'))
 
     print("Initialized DataFrame objects")
