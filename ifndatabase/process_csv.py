@@ -248,7 +248,7 @@ def build_database(data_wd: str) -> None:
     # B cells
     Bcell_df = df.drop(['Well', 'pSTAT1 in CD8+ T cells', 'pSTAT1 in CD4+ T cells'], axis=1)
 
-    # Convert values to (value, error)
+    # Convert values to (value-background, error)
     temp = Bcell_df.values
     temp = [[float("{0:.1f}".format(row[0])), row[1], row[2], (float("{0:.2f}".format(row[3])), np.nan)] for row in
             temp]
@@ -259,6 +259,7 @@ def build_database(data_wd: str) -> None:
     Bcell_df = pd.pivot_table(Bcell_df, values='pSTAT1 in B cells', index=['Dose_Species', 'Dose (pM)'],
                               columns=['Time (min)'], aggfunc=np.sum)
     Bcell_df.columns.name = None
+
     # Save
     pickle.dump(Bcell_df, open(os.path.join(data_wd, '20190119_pSTAT1_IFN_Bcell.p'), 'wb'))
 
