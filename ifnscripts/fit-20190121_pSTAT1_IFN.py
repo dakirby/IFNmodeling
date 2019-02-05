@@ -6,7 +6,7 @@ import seaborn as sns
 from ifnclass.ifnfit import StepwiseFit
 
 if __name__ == '__main__':
-    raw_data = IfnData("20190119_pSTAT1_IFN_Bcell")
+    raw_data = IfnData("20190121_pSTAT1_IFN_Bcell")
     Mixed_Model = IfnModel('Mixed_IFN_ppCompatible')
 
     alpha_palette = sns.color_palette("Reds", 6)
@@ -17,9 +17,9 @@ if __name__ == '__main__':
     beta_doses_20190108 = [0, 0.2, 6, 20, 60, 200, 600, 2000]
 
     Mixed_Model.set_parameters({'R2': 5700, 'R1': 1800,
-                                'k_a1': 4.98E-14 * 2, 'k_a2': 1.328e-12, 'k_d3': 2.4e-06, 'k_d4': 0.228,
-                                'kSOCSon': 5e-08, 'kpu': 0.0011,
-                                'ka1': 3.3e-15, 'ka2': 1.22e-12, 'kd4': 0.86,
+                                'k_a1': 2.49e-15, 'k_a2': 1.328e-12, 'k_d3': 2.4e-06, 'k_d4': 0.228,
+                                'kSOCSon': 5e-08, 'kpu': 0.0024,
+                                'ka1': 1.65e-15, 'ka2': 1.22e-12, 'kd4': 0.86,
                                 'kd3': 1.74e-05,
                                 'kint_a': 0.00124, 'kint_b': 0.00086,
                                 'krec_a1': 0.0028, 'krec_a2': 0.01, 'krec_b1': 0.005, 'krec_b2': 0.05})
@@ -55,10 +55,11 @@ OrderedDict([('k_d4', 0.22800000000000001), ('R1', 1800.0), ('kd4', 0.8400000000
     0.260432986902                             
     """
     #stepfit = StepwiseFit(Mixed_Model, raw_data,
-    #                      {'kSOCSon': (5e-8, 8e-7),
-    #                       'kint_a': (0.0001, 0.002), 'kint_b': (0.002, 0.0001),
-    #                       'krec_a1': (1e-03, 1e-02), 'krec_a2': (0.1, 0.01),
-    #                       'krec_b1': (0.005, 0.0005), 'krec_b2': (0.05, 0.005)}, n=6)
+    #                      {'kpu': (0.001, 0.008),
+    #                       'ka1': (3.3e-14 * 0.05, 3.3e-14 * 2),
+    #                       'ka2': (5e-13 * 0.1, 5e-13 * 4),
+    #                       'k_a1': (4.98E-14 * 0.05, 4.98E-14 * 2),
+    #                       'k_a2': (8.30e-13 * 1, 8.30e-13 * 4)}, n=6)
     #best_parameters, scale_factor = stepfit.fit()
     #print(best_parameters)
     #print(scale_factor)
@@ -68,7 +69,7 @@ OrderedDict([('k_d4', 0.22800000000000001), ('R1', 1800.0), ('kd4', 0.8400000000
     # End Stepwise Fit
     # -----------------------------
 
-    scale_factor = 0.242052437849
+    scale_factor = 0.478136435145
     scale_data = lambda q: (scale_factor * q[0], scale_factor * q[1])
 
     # Make predictions
