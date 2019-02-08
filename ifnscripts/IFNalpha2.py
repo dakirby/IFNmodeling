@@ -23,8 +23,9 @@ if __name__ == '__main__':
     # ---------------------------------------------------------------
     # Hypothesis: differential recycling could make beta similar to alpha
     # ---------------------------------------------------------------
-    Mixed_Model.set_parameters({'kint_a': 0.00124, 'kint_b': 0.0086,
-                                'krec_a1': 0.028, 'krec_a2': 0.01,
+    Mixed_Model.set_parameters({'kSOCSon': 5e-06,
+                                'kint_a': 0.00124, 'kint_b': 0.0586,
+                                'krec_a1': 0.28, 'krec_a2': 0.1,
                                 'krec_b1': 0.00001, 'krec_b2': 0.00001})
 
 
