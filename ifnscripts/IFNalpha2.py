@@ -6,7 +6,8 @@ from numpy import logspace, log10
 
 
 if __name__ == '__main__':
-    Mixed_Model = IfnModel('Mixed_IFN_ppCompatible')
+    Mixed_Model = IfnModel('Mixed_IFN_Internalized_Signaling')
+    # Mixed_Model = IfnModel('Mixed_IFN_ppCompatible')
 
     alpha_palette = sns.color_palette("Reds", 3)
     beta_palette = sns.color_palette("Greens", 3)
@@ -23,7 +24,7 @@ if __name__ == '__main__':
     # ---------------------------------------------------------------
     # Hypothesis: differential recycling could make beta similar to alpha
     # ---------------------------------------------------------------
-    Mixed_Model.set_parameters({'kSOCSon': 5e-06,
+    Mixed_Model.set_parameters({'kSOCSon': 1e-07,
                                 'kint_a': 0.00124, 'kint_b': 0.0586,
                                 'krec_a1': 0.28, 'krec_a2': 0.1,
                                 'krec_b1': 0.00001, 'krec_b2': 0.00001})
