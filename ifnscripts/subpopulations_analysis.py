@@ -19,9 +19,9 @@ if __name__ == '__main__':
     beta_doses_20190108 = [0, 0.2, 6, 20, 60, 200, 600, 2000]
 
     # Parameters arbitrarily taken from best fit to GAB 20190119 data
-    Mixed_Model.set_parameters({'R2': 5700, 'R1': 1800,
+    Mixed_Model.set_parameters({'R2': 5700 * 0.1, 'R1': 1800 * 0.1,
                                 'k_a1': 4.98E-14 * 2, 'k_a2': 1.328e-12, 'k_d3': 2.4e-06, 'k_d4': 0.228,
-                                'kSOCSon': 5e-08, 'kpu': 0.0011,
+                                'kSOCSon': 8e-07, 'kpu': 0.0011,
                                 'ka1': 3.3e-15, 'ka2': 1.22e-12, 'kd4': 0.86,
                                 'kd3': 1.74e-05,
                                 'kint_a': 0.000124, 'kint_b': 0.00086,
@@ -44,15 +44,15 @@ if __name__ == '__main__':
                                      parameters={'Ia': 0}, return_type='list')['TotalpSTAT']
 
     # SUBPOPULATION 2
-    Mixed_Model.set_parameters({'R2': 5700*2, 'R1': 1800*4})
+    Mixed_Model.set_parameters({'R2': 5700*10, 'R1': 1800*10})
     dradf_2 = Mixed_Model.doseresponse(times, 'TotalpSTAT', 'Ia', sim_doses_a,
                                      parameters={'Ib': 0}, return_type='list')['TotalpSTAT']
     drbdf_2 = Mixed_Model.doseresponse(times, 'TotalpSTAT', 'Ib', sim_doses_b,
                                      parameters={'Ia': 0}, return_type='list')['TotalpSTAT']
 
     # Add subpopulations with appropriate population-fractional weights
-    subpop_1_fraction = 0.75
-    subpop_2_fraction = 0.25
+    subpop_1_fraction = 0.80
+    subpop_2_fraction = 0.20
     dradf = np.add(np.multiply(dradf_1, subpop_1_fraction), np.multiply(dradf_2, subpop_2_fraction))
     drbdf = np.add(np.multiply(drbdf_1, subpop_1_fraction), np.multiply(drbdf_2, subpop_2_fraction))
 
@@ -87,15 +87,15 @@ if __name__ == '__main__':
         if t not in beta_mask:
             new_fit.add_trajectory(dr60, t, 'plot', beta_palette[idx], (0, 1), 'Beta', label='Beta ' + str(t))
     # Add data
-    for idx, t in enumerate(times):
-        if t not in alpha_mask:
-            new_fit.add_trajectory(raw_data, t, 'plot', '--', (0, 0), 'Alpha', label='Alpha ' + str(t),
-                                   color=alpha_palette[idx])
-            new_fit.add_trajectory(raw_data, t, 'scatter', 'ro', (0, 0), 'Alpha', label='', color=alpha_palette[idx])
-        if t not in beta_mask:
-            new_fit.add_trajectory(raw_data, t, 'plot', '--', (0, 1), 'Beta', label='Beta ' + str(t),
-                                   color=beta_palette[idx])
-            new_fit.add_trajectory(raw_data, t, 'scatter', 'go', (0, 1), 'Beta', label='', color=beta_palette[idx])
+#    for idx, t in enumerate(times):
+#        if t not in alpha_mask:
+#            new_fit.add_trajectory(raw_data, t, 'plot', '--', (0, 0), 'Alpha', label='Alpha ' + str(t),
+#                                   color=alpha_palette[idx])
+#            new_fit.add_trajectory(raw_data, t, 'scatter', 'ro', (0, 0), 'Alpha', label='', color=alpha_palette[idx])
+#        if t not in beta_mask:
+#            new_fit.add_trajectory(raw_data, t, 'plot', '--', (0, 1), 'Beta', label='Beta ' + str(t),
+#                                   color=beta_palette[idx])
+#            new_fit.add_trajectory(raw_data, t, 'scatter', 'go', (0, 1), 'Beta', label='', color=beta_palette[idx])
 
     new_fit.show_figure(save_flag=False)
 

@@ -24,10 +24,27 @@ if __name__ == '__main__':
     # ---------------------------------------------------------------
     # Hypothesis: differential recycling could make beta similar to alpha
     # ---------------------------------------------------------------
-    Mixed_Model.set_parameters({'kSOCSon': 1e-07,
+    """
+    # Free fitting to produce alpha > beta:
+    Mixed_Model.set_parameters({'kSOCSon': 5e-08,
                                 'kint_a': 0.00124, 'kint_b': 0.0586,
                                 'krec_a1': 0.28, 'krec_a2': 0.1,
-                                'krec_b1': 0.00001, 'krec_b2': 0.00001})
+                                'krec_b1': 0.00001, 'krec_b2': 0.00001,
+                                'kintT_a': 0.001,
+                                'kintT_b': 0.1,
+                                'krecT_a': 0.01,
+                                'krecT_b': 0.001,
+                                'kpa_IntTa': 0.05,
+                                'kpa_IntTb': 0.00005})
+    """
+    # Minimal model:
+    Mixed_Model.set_parameters({'kintT_a': 0.001,
+                                'kintT_b': 0.1,
+                                'krecT_a': 0.001,
+                                'krecT_b': 0.001,
+                                'kpa_IntTa': 0.001,
+                                'kpa_IntTb': 0.000005})
+
 
 
     scale_factor = 0.242052437849
@@ -50,9 +67,12 @@ if __name__ == '__main__':
 
     new_fit = DoseresponsePlot((3, 1))
     new_fit.axes[0].set_title("{} minutes".format(times[0]))
+    new_fit.axes[0].set_xlabel("")
     new_fit.axes[1].set_title("{} minutes".format(times[1]))
+    new_fit.axes[1].set_xlabel("")
     new_fit.axes[2].set_title("{} minutes".format(times[2]))
-
+    new_fit.axes[2].set_xlabel("Dose (pM)")
+    new_fit.fig.set_size_inches(8.5, 25.5)
     alpha_mask = []
     beta_mask = []
     # Add fits

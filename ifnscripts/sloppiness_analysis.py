@@ -58,8 +58,8 @@ if __name__ == '__main__':
      'kint_a', 'kint_b', 'krec_a1', 'krec_a2', 'krec_b1', 'krec_b2', 'kIntBasal_r1', 'kIntBasal_r2', 'krec_r1', 'krec_r2', 'kdeg_a', 'kdeg_b',
      'kSTATbinding', 'kSTATunbinding', 'kpa', 'kpu', 'kloc', 'kdeloc', 'mRNAdeg', 'mRNAtrans', 'kSOCS', 'SOCSdeg', 'kSOCSon', 'kSOCSoff']
     parameters_to_test.extend([el for el in all_parameters if el not in parameters_to_test])
-    print(len(parameters_to_test))
-    exit()
+
+    parameters_to_test = ['kSTATbinding', 'kSTATunbinding', 'kpa']
     # Add jitter to best fit parameters to avoid numerical instability of finding Hessian at functional 0 (?)
     best_parameters = np.log([Detailed_Model.parameters[key] * np.random.uniform(0.97, 1.03) for key in parameters_to_test])
 
@@ -79,7 +79,7 @@ if __name__ == '__main__':
     evals = np.linalg.eigvals(H)
     evals = np.nan_to_num(evals)
     normalized_evals = np.divide(evals, max(evals))
-    log_normalized_evals = log10(normalized_evals)
+    log_normalized_evals = log10(np.absolute(normalized_evals))
 
     # Plot spectrum on log scale
     spec_plot = sns.distplot(log_normalized_evals, kde=False, rug=True)

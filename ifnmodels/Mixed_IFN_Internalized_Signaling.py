@@ -87,10 +87,10 @@ Parameter('krec_b2', 0.001)
 
 Parameter('kintT_a', 0.001)
 Parameter('krecT_a', 0.01)
-Parameter('kintT_b', 0.1)
+Parameter('kintT_b', 0.001)
 Parameter('krecT_b', 0.001)
-Parameter('kpa_IntTa', 0.01)
-Parameter('kpa_IntTb', 0.00005)
+Parameter('kpa_IntTa', 0.001)
+Parameter('kpa_IntTb', 0.001)
 
 
 #SOCS Feedback Inhibition
@@ -176,8 +176,8 @@ Rule('IbR1_bind_R2', IFNAR1(re=1,ri=None,loc='out')%IFN_beta(r1=1,r2=None) + IFN
 Rule('IbR2_bind_R1', IFNAR2(re=1,ri=WILD,loc='out')%IFN_beta(r1=1,r2=None) + IFNAR1(re=None,ri=None,loc='out') | IFNAR1(re=1,ri=None,loc='out')%IFN_beta(r1=1,r2=2)%IFNAR2(re=2,ri=WILD,loc='out'), k_a4, k_d4)
 
 # T Internalization
-Rule('Ta_Internalize', IFNAR1(re=1,ri=None,loc='out')%IFN_alpha2(r1=1,r2=2)%IFNAR2(re=2,ri=None,loc='out') | IFNAR1(re=1,ri=None,loc='out')%IFN_alpha2(r1=1,r2=2)%IFNAR2(re=2,ri=None,loc='out'), kintT_a, krecT_a)
-Rule('Tb_Internalize', IFNAR1(re=1,ri=None,loc='out')%IFN_beta(r1=1,r2=2)%IFNAR2(re=2,ri=None,loc='out') | IFNAR1(re=1,ri=None,loc='out')%IFN_beta(r1=1,r2=2)%IFNAR2(re=2,ri=None,loc='out'), kintT_b, krecT_b)
+Rule('Ta_Internalize', IFNAR1(re=1,ri=None,loc='out')%IFN_alpha2(r1=1,r2=2)%IFNAR2(re=2,ri=None,loc='out') | IFNAR1(re=1,ri=None,loc='in')%IFN_alpha2(r1=1,r2=2)%IFNAR2(re=2,ri=None,loc='in'), kintT_a, krecT_a)
+Rule('Tb_Internalize', IFNAR1(re=1,ri=None,loc='out')%IFN_beta(r1=1,r2=2)%IFNAR2(re=2,ri=None,loc='out') | IFNAR1(re=1,ri=None,loc='in')%IFN_beta(r1=1,r2=2)%IFNAR2(re=2,ri=None,loc='in'), kintT_b, krecT_b)
 
 #  STAT Block
 Rule('Ia_STAT', IFNAR1(re=1,ri=None,loc='out')%IFN_alpha2(r1=1,r2=2)%IFNAR2(re=2,ri=None,loc='out') + STAT(j='U',loc='Cyt',fdbk=None) >> IFNAR1(re=1,ri=None,loc='out')%IFN_alpha2(r1=1,r2=2)%IFNAR2(re=2,ri=None,loc='out') + STAT(j='P',loc='Cyt',fdbk=None), kpa)
