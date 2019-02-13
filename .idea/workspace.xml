@@ -145,6 +145,7 @@
       <change beforePath="$PROJECT_DIR$/ifnmodels/detailed_SBML_alpha.sbml" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/detailed_SBML_alpha.sbml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnmodels/detailed_SBML_beta.sbml" beforeDir="false" afterPath="$PROJECT_DIR$/ifnmodels/detailed_SBML_beta.sbml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnscripts/IFNalpha2.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/IFNalpha2.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/IFNalpha2/IFNa2_modelling_prelim_report.docx" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/IFNalpha2/IFNa2_modelling_prelim_report.docx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnscripts/comparing_GAB_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/comparing_GAB_data.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnscripts/detailed_model_equivalent_to_simple.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/detailed_model_equivalent_to_simple.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnscripts/dra60df.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/dra60df.p" afterDir="false" />
@@ -216,24 +217,23 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="ec50.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/ifnscripts/ec50.py">
+      <file leaf-file-name="figure_2.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/ifnscripts/figure_2.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="336">
-              <caret line="110" column="32" selection-start-line="110" selection-start-column="32" selection-end-line="110" selection-end-column="32" />
+            <state relative-caret-position="200">
+              <caret line="142" column="6" selection-start-line="142" selection-start-column="6" selection-end-line="142" selection-end-column="6" />
+              <folding>
+                <element signature="e#0#36#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="ifndata.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/ifnclass/ifndata.py">
+      <file leaf-file-name="ifnplot.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/ifnclass/ifnplot.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="336">
-              <caret line="139" selection-start-line="139" selection-end-line="139" />
-              <folding>
-                <element signature="e#0#159#1" />
-                <element signature="e#160#169#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="231">
+              <caret line="196" column="21" selection-start-line="196" selection-start-column="21" selection-end-line="196" selection-end-column="21" />
             </state>
           </provider>
         </entry>
@@ -299,7 +299,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/ifndatabase/smooth_B6_IFN.py" />
         <option value="$PROJECT_DIR$/ifnclass/smooth_B6_IFN.py" />
         <option value="$PROJECT_DIR$/ifnclass/fit-06-12-2018.py" />
         <option value="$PROJECT_DIR$/ifnclass/timecourse-09-12-2018.py" />
@@ -312,7 +311,6 @@
         <option value="$PROJECT_DIR$/ifnclass/ec50.py" />
         <option value="$PROJECT_DIR$/ifnscripts/ifnclass/ifnplot.py" />
         <option value="$PROJECT_DIR$/ifnscripts/smooth_B6_IFN.py" />
-        <option value="$PROJECT_DIR$/ifnclass/ifnplot.py" />
         <option value="$PROJECT_DIR$/ifnscripts/ifnclass/ifnfit.py" />
         <option value="$PROJECT_DIR$/ifnscripts/fit-06-12-2018.py" />
         <option value="$PROJECT_DIR$/ifnscripts/fit-10-12-2018.py" />
@@ -348,8 +346,10 @@
         <option value="$PROJECT_DIR$/ifnscripts/subpopulations_analysis.py" />
         <option value="$PROJECT_DIR$/ifnscripts/sloppiness_analysis.py" />
         <option value="$PROJECT_DIR$/ifnscripts/smooth_20190119.py" />
-        <option value="$PROJECT_DIR$/ifnclass/ifndata.py" />
         <option value="$PROJECT_DIR$/ifnscripts/ec50.py" />
+        <option value="$PROJECT_DIR$/ifnclass/ifndata.py" />
+        <option value="$PROJECT_DIR$/ifnclass/ifnplot.py" />
+        <option value="$PROJECT_DIR$/ifnscripts/figure_2.py" />
       </list>
     </option>
   </component>
@@ -407,7 +407,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.ec50">
+  <component name="RunManager" selected="Python.figure_2">
     <configuration name="IFNalpha2" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="IFNmodeling" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -426,24 +426,6 @@
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
     </configuration>
-    <configuration name="Pipeline_pSTAT" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <module name="IFNmodeling" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/20190121_pSTAT1_IFN-20190208T152527Z-001/20190121_pSTAT1_IFN/Processing" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/20190121_pSTAT1_IFN-20190208T152527Z-001/20190121_pSTAT1_IFN/Processing/Pipeline_pSTAT.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-    </configuration>
     <configuration name="ec50" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="IFNmodeling" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -457,6 +439,24 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/ifnscripts/ec50.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+    </configuration>
+    <configuration name="figure_2" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="IFNmodeling" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/ifnscripts" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/ifnscripts/figure_2.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -520,17 +520,17 @@
       <item itemvalue="Python.process_csv" />
       <item itemvalue="Python.subpopulations_analysis" />
       <item itemvalue="Python.IFNalpha2" />
-      <item itemvalue="Python.Pipeline_pSTAT" />
       <item itemvalue="Python.sloppiness_analysis" />
       <item itemvalue="Python.ec50" />
+      <item itemvalue="Python.figure_2" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.figure_2" />
         <item itemvalue="Python.ec50" />
         <item itemvalue="Python.sloppiness_analysis" />
         <item itemvalue="Python.subpopulations_analysis" />
         <item itemvalue="Python.IFNalpha2" />
-        <item itemvalue="Python.Pipeline_pSTAT" />
       </list>
     </recent_temporary>
   </component>
@@ -557,13 +557,14 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-7" y="-7" width="1550" height="838" extended-state="6" />
+    <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.16471355" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.16471355" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.50065106" side_tool="true" weight="0.32965517" />
       <window_info anchor="bottom" id="Version Control" order="9" />
       <window_info anchor="bottom" id="Python Console" order="7" />
-      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.49934897" visible="true" weight="0.32965517" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.49934897" visible="true" weight="0.32965517" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="bottom" id="Terminal" order="8" />
       <window_info id="Favorites" order="2" side_tool="true" />
@@ -591,7 +592,6 @@
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/ifnscripts/ifnclass/ifnplot.py" />
     <entry file="file://$PROJECT_DIR$/ifnclass/ec50.py" />
     <entry file="file://$PROJECT_DIR$/ifnscripts/ifnclass/ifnmodel.py" />
     <entry file="file://$PROJECT_DIR$/ifnscripts/ifnclass/ifnfit.py" />
@@ -776,25 +776,11 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ifnscripts/fit-20190121_pSTAT1_IFN.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1054">
-          <caret line="9" column="19" lean-forward="true" selection-start-line="9" selection-start-column="19" selection-end-line="9" selection-end-column="19" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/ifnscripts/IFNalpha1.py" />
     <entry file="file://$PROJECT_DIR$/20190121_pSTAT1_IFN-20190208T152527Z-001/20190121_pSTAT1_IFN/Processing/Pipeline_pSTAT.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="383">
           <caret line="37" column="23" selection-start-line="37" selection-start-column="23" selection-end-line="37" selection-end-column="23" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/ifnclass/ifnplot.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="988">
-          <caret line="355" column="20" selection-start-line="355" selection-start-column="16" selection-end-line="355" selection-end-column="20" />
         </state>
       </provider>
     </entry>
@@ -861,27 +847,18 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ifnscripts/fit-20190119_pSTAT1_IFN.py">
+    <entry file="file://$PROJECT_DIR$/ifnscripts/smooth_20190119.py" />
+    <entry file="file://$PROJECT_DIR$/ifnscripts/ec50.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="51">
-          <caret line="8" column="17" lean-forward="true" selection-start-line="8" selection-start-column="17" selection-end-line="8" selection-end-column="17" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/ifnscripts/smooth_20190119.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="121">
-          <caret line="76" column="16" lean-forward="true" selection-start-line="76" selection-start-column="16" selection-end-line="76" selection-end-column="16" />
-          <folding>
-            <element signature="e#1351#1387#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="116">
+          <caret line="124" column="10" selection-start-line="124" selection-start-column="10" selection-end-line="124" selection-end-column="10" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/ifnclass/ifndata.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="336">
-          <caret line="139" selection-start-line="139" selection-end-line="139" />
+        <state relative-caret-position="1136">
+          <caret line="152" selection-start-line="152" selection-end-line="152" />
           <folding>
             <element signature="e#0#159#1" />
             <element signature="e#160#169#0" expanded="true" />
@@ -889,17 +866,41 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ifnscripts/fit-27-01-2019.py">
+    <entry file="file://$PROJECT_DIR$/ifnscripts/fit-20190121_pSTAT1_IFN.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="68">
-          <caret line="9" column="45" lean-forward="true" selection-start-line="9" selection-start-column="45" selection-end-line="9" selection-end-column="45" />
+        <state relative-caret-position="-2153">
+          <caret line="2" column="55" lean-forward="true" selection-start-line="2" selection-end-line="2" selection-end-column="55" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ifnscripts/ec50.py">
+    <entry file="file://$PROJECT_DIR$/ifnscripts/fit-20190119_pSTAT1_IFN.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="336">
-          <caret line="110" column="32" selection-start-line="110" selection-start-column="32" selection-end-line="110" selection-end-column="32" />
+        <state relative-caret-position="-1142">
+          <caret line="70" selection-start-line="70" selection-end-line="71" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnscripts/fit-27-01-2019.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="507">
+          <caret line="174" column="25" lean-forward="true" selection-start-line="174" selection-start-column="25" selection-end-line="174" selection-end-column="25" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnclass/ifnplot.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="231">
+          <caret line="196" column="21" selection-start-line="196" selection-start-column="21" selection-end-line="196" selection-end-column="21" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnscripts/figure_2.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="200">
+          <caret line="142" column="6" selection-start-line="142" selection-start-column="6" selection-end-line="142" selection-end-column="6" />
+          <folding>
+            <element signature="e#0#36#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

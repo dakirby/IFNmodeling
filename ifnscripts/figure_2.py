@@ -4,6 +4,8 @@ from numpy import linspace, logspace, transpose
 import seaborn as sns
 from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
+import os
+from ifnclass.ifnplot import Trajectory, TimecoursePlot
 
 
 def MM(xdata, top, n, k):
@@ -130,23 +132,88 @@ if __name__ == '__main__':
     alpha_peak20190121, alpha_n20190121, alpha_ec5020190121 = get_ec50(Mixed_Model, time_list, 'Ia', 'TotalpSTAT', custom_parameters={'Ib': 0}, rflag=True)
     beta_peak20190121, beta_n20190121, beta_ec5020190121 = get_ec50(Mixed_Model, time_list, 'Ib', 'TotalpSTAT', custom_parameters={'Ia': 0}, rflag=True)
 
-    # Plot
-    fig, axes = plt.subplots(nrows=1, ncols=2)
-    axes[0].set_xlabel("Time (s)")
-    axes[1].set_xlabel("Time (s)")
-    axes[0].set_title(r"EC50 vs Time for IFN$\alpha$")
-    axes[1].set_title(r"EC50 vs Time for IFN$\beta$")
-    axes[0].set_ylabel("EC50")
-    axes[0].set_yscale('log')
-    axes[1].set_yscale('log')
+    # Plot EC50 vs Time
+    ec50_vs_time_fig_obj, ec50_vs_time_axes_obj = plt.subplots(nrows=1, ncols=2)
+    ec50_vs_time_axes_obj[0].set_xlabel("Time (s)")
+    ec50_vs_time_axes_obj[1].set_xlabel("Time (s)")
+    ec50_vs_time_axes_obj[0].set_title(r"EC50 vs Time for IFN$\alpha$")
+    ec50_vs_time_axes_obj[1].set_title(r"EC50 vs Time for IFN$\beta$")
+    ec50_vs_time_axes_obj[0].set_ylabel("EC50")
+    # ec50_vs_time_axes_obj[0].set_yscale('log')
+    # ec50_vs_time_axes_obj[1].set_yscale('log')
     # Add models
     for colour_idx, alpha_ec50 in enumerate([alpha_ec5020190108, alpha_ec5020190119, alpha_ec5020190121]):
-        axes[0].plot(time_list, alpha_ec50, label=r'IFN$\alpha$ EC50', color=alpha_palette[colour_idx+1])
+        ec50_vs_time_axes_obj[0].plot(time_list, alpha_ec50, label=r'IFN$\alpha$ EC50', color=alpha_palette[colour_idx + 1])
     for colour_idx, beta_ec50 in enumerate([beta_ec5020190108, beta_ec5020190119, beta_ec5020190121]):
-        axes[1].plot(time_list, beta_ec50, label=r'IFN$\beta$ EC50', color=beta_palette[colour_idx+1])
+        ec50_vs_time_axes_obj[1].plot(time_list, beta_ec50, label=r'IFN$\beta$ EC50', color=beta_palette[colour_idx + 1])
     # Add data
     for colour_idx, ec50 in enumerate([ec50_20190108, ec50_20190119, ec50_20190121]):
-        axes[0].scatter([el[0] for el in ec50['Alpha']], [el[1] for el in ec50['Alpha']], label='data', color=alpha_palette[colour_idx+1])
-        axes[1].scatter([el[0] for el in ec50['Beta']], [el[1] for el in ec50['Beta']], label='data', color=beta_palette[colour_idx+1])
-    fig.show()
-    fig.savefig('results\ec50_vs_time.pdf')
+        ec50_vs_time_axes_obj[0].scatter([el[0] for el in ec50['Alpha']], [el[1] for el in ec50['Alpha']], label='data', color=alpha_palette[colour_idx + 1])
+        ec50_vs_time_axes_obj[1].scatter([el[0] for el in ec50['Beta']], [el[1] for el in ec50['Beta']], label='data', color=beta_palette[colour_idx + 1])
+    ec50_vs_time_fig_obj.show()
+    ec50_vs_time_fig_obj.savefig(os.path.join(os.getcwd(), 'results', 'Figures', 'Figure_2', 'ec50_vs_time.pdf'))
+
+    # ----------------------------
+    # Make theory time course plot
+    # ----------------------------
+    Mixed_Model.reset_parameters()
+
+    Mixed_Model.set_parameters({'R2': 4140, 'R1': 4920,
+                                'k_a1': 2.49e-15, 'k_a2': 1.328e-12, 'k_d3': 7.5e-06, 'k_d4': 0.06,
+                                'kSOCSon': 5e-08, 'kpu': 0.0024, 'kpa': 2.08e-06,
+                                'ka1': 5.3e-15, 'ka2': 1.22e-12, 'kd4': 0.86,
+                                'kd3': 5.47e-05,
+                                'kint_a':  0.0002, 'kint_b': 0.00086,
+                                'krec_a1': 0.0001, 'krec_a2': 0.02, 'krec_b1': 0.001, 'krec_b2': 0.005})
+    scale_factor = 0.2050499
+    scale_data = lambda q: (scale_factor * q[0], scale_factor * q[1])
+
+    alpha_doses_20190108 = [0, 10, 100, 300, 1000, 3000, 10000, 100000]
+    beta_doses_20190108 = [0, 0.2, 6, 20, 60, 200, 600, 2000]
+
+    # Make predictions
+    alpha_palette = sns.color_palette("Reds", 8)
+    beta_palette = sns.color_palette("Greens", 8)
+
+    alpha_time_courses = []
+    for d in alpha_doses_20190108:
+        alpha_time_courses.append(Mixed_Model.timecourse(list(linspace(0, 60, 30)), 'TotalpSTAT',
+                                                         {'Ia': d * 6.022E23 * 1E-5 * 1E-12, 'Ib': 0},
+                                                         return_type='dataframe', dataframe_labels=['Alpha', d]))
+    beta_time_courses = []
+    for d in beta_doses_20190108:
+        beta_time_courses.append(Mixed_Model.timecourse(list(linspace(0, 60, 30)), 'TotalpSTAT',
+                                                        {'Ib': d * 6.022E23 * 1E-5 * 1E-12, 'Ia': 0},
+                                                        return_type='dataframe', dataframe_labels=['Beta', d]))
+    # Scale simulations
+    for i in range(30):
+        for j in range(len(alpha_doses_20190108)):
+            alpha_time_courses[j].loc['Alpha'].iloc[:, i] = alpha_time_courses[j].loc['Alpha'].iloc[:, i].apply(
+                scale_data)
+        for j in range(len(beta_doses_20190108)):
+            beta_time_courses[j].loc['Beta'].iloc[:, i] = beta_time_courses[j].loc['Beta'].iloc[:, i].apply(scale_data)
+    # Turn into IfnData objects
+    alpha_IfnData_objects = []
+    beta_IfnData_objects = []
+    for j in range(len(alpha_doses_20190108)):
+        alpha_IfnData_objects.append(IfnData('custom', df=alpha_time_courses[j], conditions={'Alpha': {'Ib': 0}}))
+    for j in range(len(beta_doses_20190108)):
+        beta_IfnData_objects.append(IfnData('custom', df=beta_time_courses[j], conditions={'Beta': {'Ia': 0}}))
+    # Generate plot
+    new_fit = TimecoursePlot((1, 2))
+    alpha_mask = [0, 300, 3000]
+    beta_mask = [0, 60, 600]
+
+    # Add fits
+    for j, dose in enumerate(alpha_doses_20190108):
+        if dose not in alpha_mask:
+            new_fit.add_trajectory(alpha_IfnData_objects[j], 'plot', alpha_palette[j], (0, 0),
+                                   label='Alpha ' + str(dose))
+    for j, dose in enumerate(beta_doses_20190108):
+        if dose not in beta_mask:
+            new_fit.add_trajectory(beta_IfnData_objects[j], 'plot', beta_palette[j], (0, 1),
+                                   label='Beta ' + str(dose))
+    tc_fig_obj, tc_axes_obj = new_fit.save_figure(save_dir=os.path.join(os.getcwd(), 'results', 'Figures', 'Figure_2'))
+
+    # Combine plots into Figure 2
+

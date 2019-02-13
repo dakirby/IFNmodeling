@@ -124,7 +124,7 @@ class IfnData:
         ydata = [top * x ** n / (k ** n + x ** n) for x in xdata]
         return ydata
 
-    def get_ec50s(self, hill_coeff_guess = 0.1, ec50_guess = 1421):
+    def get_ec50s(self, hill_coeff_guess = 0.1):
         def augment_data(x_data, y_data):
             new_xdata = [x_data[0]*0.1, x_data[0]*0.3, x_data[0]*0.8, *x_data, x_data[-1]*2, x_data[-1]*5, x_data[-1]*8]
             new_ydata = [y_data[0], y_data[0], y_data[0], *y_data, y_data[-1], y_data[-1], y_data[-1]]
@@ -140,3 +140,13 @@ class IfnData:
                 ec50_array.append((t[1], results[2]))
             ec50_dict[key] = ec50_array
         return ec50_dict
+
+    def get_max_responses(self):
+        Tmax_dict = {}
+        for key in self.get_dose_species():
+            response_array = np.transpose([[el[0] for el in row] for row in self.get_responses()[key]])
+            Tmax_array = []
+            for t in enumerate(self.get_times()[key]):
+                Tmax_array.append(max(response_array[t[0]]))
+            Tmax_dict[key] = Tmax_array
+        return Tmax_dict

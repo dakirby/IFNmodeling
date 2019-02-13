@@ -199,11 +199,11 @@ class TimecoursePlot:
         if show_flag:
             plt.legend()
             plt.show()
-        return self.fig
+        return self.fig, self.axes
 
-    def save_figure(self):
-        self.show_figure(show_flag=False, save_flag=True)
-
+    def save_figure(self, save_dir=''):
+        fig, axes =self.show_figure(show_flag=False, save_flag=True, save_dir=save_dir)
+        return fig, axes
 
 class DoseresponsePlot:
     """
