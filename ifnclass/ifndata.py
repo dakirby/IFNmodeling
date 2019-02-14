@@ -133,11 +133,18 @@ class IfnData:
         for key in self.get_dose_species():
             response_array = np.transpose([[el[0] for el in row] for row in self.get_responses()[key]])
             ec50_array = []
-            for t in enumerate(self.get_times()[key]):
-                doses, responses = augment_data(self.get_doses()[key][1:],  response_array[t[0]][1:])
-                results, covariance = curve_fit(self.__MM__, doses, responses,
-                                                p0=[max(responses), hill_coeff_guess, doses[int(len(doses)/2)]])
-                ec50_array.append((t[1], results[2]))
+            if self.get_doses()[key][0] == 0 or self.get_doses()[key][0] == 0.:
+                for t in enumerate(self.get_times()[key]):
+                    doses, responses = augment_data(self.get_doses()[key][1:],  response_array[t[0]][1:])
+                    results, covariance = curve_fit(self.__MM__, doses, responses,
+                                                    p0=[max(responses), hill_coeff_guess, doses[int(len(doses)/2)]])
+                    ec50_array.append((t[1], results[2]))
+            else:
+                for t in enumerate(self.get_times()[key]):
+                    doses, responses = augment_data(self.get_doses()[key],  response_array[t[0]])
+                    results, covariance = curve_fit(self.__MM__, doses, responses,
+                                                    p0=[max(responses), hill_coeff_guess, doses[int(len(doses)/2)]])
+                    ec50_array.append((t[1], results[2]))
             ec50_dict[key] = ec50_array
         return ec50_dict
 
@@ -146,7 +153,12 @@ class IfnData:
         for key in self.get_dose_species():
             response_array = np.transpose([[el[0] for el in row] for row in self.get_responses()[key]])
             Tmax_array = []
-            for t in enumerate(self.get_times()[key]):
-                Tmax_array.append(max(response_array[t[0]]))
+            if self.get_doses()[key][0] == 0. or self.get_doses()[key][0] == 0:
+                for t in enumerate(self.get_times()[key]):
+                    Tmax_array.append((t[1], max(response_array[t[0]][1:])))
+            else:
+                for t in enumerate(self.get_times()[key]):
+                    Tmax_array.append((t[1], max(response_array[t[0]])))
+
             Tmax_dict[key] = Tmax_array
         return Tmax_dict

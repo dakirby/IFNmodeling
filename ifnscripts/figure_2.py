@@ -1,6 +1,7 @@
 from ifnclass.ifndata import IfnData
 from ifnclass.ifnmodel import IfnModel
 from numpy import linspace, logspace, transpose
+import numpy as np
 import seaborn as sns
 from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
@@ -80,6 +81,15 @@ if __name__ == '__main__':
     ec50_20190108 = data_20190108.get_ec50s()
     ec50_20190108['Beta'][-1] = (ec50_20190108['Beta'][-1][0], 20.)
 
+    # Get all data set Tmax time courses
+    # 20190119
+    Tmax_20190119 = data_20190119.get_max_responses()
+
+    # 20190121
+    Tmax_20190121 = data_20190121.get_max_responses()
+
+    # 20190108
+    Tmax_20190108 = data_20190108.get_max_responses()
 
     # Make model predictions
     time_list = list(linspace(2.5, 60, num=15))
@@ -100,7 +110,9 @@ if __name__ == '__main__':
 
     scale_factor = 0.260432986902
     alpha_peak20190108, alpha_n20190108, alpha_ec5020190108 = get_ec50(Mixed_Model, time_list, 'Ia', 'TotalpSTAT', custom_parameters={'Ib': 0}, rflag=True)
+    alpha_peak20190108 = np.multiply(alpha_peak20190108, scale_factor)
     beta_peak20190108, beta_n20190108, beta_ec5020190108 = get_ec50(Mixed_Model, time_list, 'Ib', 'TotalpSTAT', custom_parameters={'Ia': 0}, rflag=True)
+    beta_peak20190108 =  np.multiply(beta_peak20190108, scale_factor)
 
     # 20190119
     Mixed_Model.reset_parameters()
@@ -115,7 +127,9 @@ if __name__ == '__main__':
 
     scale_factor = 0.242052437849
     alpha_peak20190119, alpha_n20190119, alpha_ec5020190119 = get_ec50(Mixed_Model, time_list, 'Ia', 'TotalpSTAT', custom_parameters={'Ib': 0}, rflag=True)
+    alpha_peak20190119 = np.multiply(alpha_peak20190119, scale_factor)
     beta_peak20190119, beta_n20190119, beta_ec5020190119 = get_ec50(Mixed_Model, time_list, 'Ib', 'TotalpSTAT', custom_parameters={'Ia': 0}, rflag=True)
+    beta_peak20190119 = np.multiply(beta_peak20190119, scale_factor)
 
     # 20190121
     Mixed_Model.reset_parameters()
@@ -130,10 +144,13 @@ if __name__ == '__main__':
 
     scale_factor = 0.2050499
     alpha_peak20190121, alpha_n20190121, alpha_ec5020190121 = get_ec50(Mixed_Model, time_list, 'Ia', 'TotalpSTAT', custom_parameters={'Ib': 0}, rflag=True)
+    alpha_peak20190121 = np.multiply(alpha_peak20190121, scale_factor)
     beta_peak20190121, beta_n20190121, beta_ec5020190121 = get_ec50(Mixed_Model, time_list, 'Ib', 'TotalpSTAT', custom_parameters={'Ia': 0}, rflag=True)
+    beta_peak20190121 = np.multiply(beta_peak20190121, scale_factor)
 
     # Plot EC50 vs Time
     ec50_vs_time_fig_obj, ec50_vs_time_axes_obj = plt.subplots(nrows=1, ncols=2)
+    ec50_vs_time_fig_obj.set_size_inches(11, 5)
     ec50_vs_time_axes_obj[0].set_xlabel("Time (s)")
     ec50_vs_time_axes_obj[1].set_xlabel("Time (s)")
     ec50_vs_time_axes_obj[0].set_title(r"EC50 vs Time for IFN$\alpha$")
@@ -152,6 +169,28 @@ if __name__ == '__main__':
         ec50_vs_time_axes_obj[1].scatter([el[0] for el in ec50['Beta']], [el[1] for el in ec50['Beta']], label='data', color=beta_palette[colour_idx + 1])
     ec50_vs_time_fig_obj.show()
     ec50_vs_time_fig_obj.savefig(os.path.join(os.getcwd(), 'results', 'Figures', 'Figure_2', 'ec50_vs_time.pdf'))
+
+    # Plot pSTAT_max vs Time
+    pSTAT_max_vs_time_fig_obj, pSTAT_max_vs_time_axes_obj = plt.subplots(nrows=1, ncols=2)
+    pSTAT_max_vs_time_fig_obj.set_size_inches(11, 5)
+    pSTAT_max_vs_time_axes_obj[0].set_xlabel("Time (s)")
+    pSTAT_max_vs_time_axes_obj[1].set_xlabel("Time (s)")
+    pSTAT_max_vs_time_axes_obj[0].set_title(r"$pSTAT_{max}$ vs Time for IFN$\alpha$")
+    pSTAT_max_vs_time_axes_obj[1].set_title(r"$pSTAT_{max}$ vs Time for IFN$\beta$")
+    pSTAT_max_vs_time_axes_obj[0].set_ylabel(r"$pSTAT_{max}$")
+    # pSTAT_max_vs_time_axes_obj[0].set_yscale('log')
+    # pSTAT_max_vs_time_axes_obj[1].set_yscale('log')
+    # Add models
+    for colour_idx, alpha_pSTATmax in enumerate([alpha_peak20190108, alpha_peak20190119, alpha_peak20190121]):
+        pSTAT_max_vs_time_axes_obj[0].plot(time_list, alpha_pSTATmax, label=r'IFN$\alpha$ $pSTAT_{max}$', color=alpha_palette[colour_idx + 1])
+    for colour_idx, beta_pSTATmax in enumerate([beta_peak20190108, beta_peak20190119, beta_peak20190121]):
+        pSTAT_max_vs_time_axes_obj[1].plot(time_list, beta_pSTATmax, label=r'IFN$\beta$ $pSTAT_{max}$', color=beta_palette[colour_idx + 1])
+    # Add data
+    for colour_idx, pSTATmax in enumerate([Tmax_20190108, Tmax_20190119, Tmax_20190121]):
+        pSTAT_max_vs_time_axes_obj[0].scatter([el[0] for el in pSTATmax['Alpha']], [el[1] for el in pSTATmax['Alpha']], label='data', color=alpha_palette[colour_idx + 1])
+        pSTAT_max_vs_time_axes_obj[1].scatter([el[0] for el in pSTATmax['Beta']], [el[1] for el in pSTATmax['Beta']], label='data', color=beta_palette[colour_idx + 1])
+    pSTAT_max_vs_time_fig_obj.show()
+    pSTAT_max_vs_time_fig_obj.savefig(os.path.join(os.getcwd(), 'results', 'Figures', 'Figure_2', 'pSTATmax_vs_time.pdf'))
 
     # ----------------------------
     # Make theory time course plot
@@ -201,6 +240,7 @@ if __name__ == '__main__':
         beta_IfnData_objects.append(IfnData('custom', df=beta_time_courses[j], conditions={'Beta': {'Ia': 0}}))
     # Generate plot
     new_fit = TimecoursePlot((1, 2))
+    new_fit.fig.set_size_inches(11, 8.5)
     alpha_mask = [0, 300, 3000]
     beta_mask = [0, 60, 600]
 
