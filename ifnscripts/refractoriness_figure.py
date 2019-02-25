@@ -4,6 +4,7 @@ import seaborn as sns
 from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
 import numpy as np
+import matplotlib
 
 if __name__ == '__main__':
     alpha_palette = sns.color_palette("Reds", 6)
@@ -49,6 +50,7 @@ if __name__ == '__main__':
 
     # Plot
     fig, axes = plt.subplots(nrows=1, ncols=2)
+    fig.set_size_inches(16, 8)
     axes[0].set_xlabel("Dose (pM)")
     axes[1].set_xlabel("Dose (pM)")
     axes[0].set_title("Relative Refractory Response")
@@ -110,6 +112,7 @@ if __name__ == '__main__':
                                                    parameters={'Ia': 0}, return_type='list')['TotalpSTAT']]
     # Plot
     fig, axes = plt.subplots(nrows=1, ncols=2)
+    fig.set_size_inches(16, 8)
     axes[0].set_xlabel("Dose (pM)")
     axes[1].set_xlabel("Dose (pM)")
     axes[0].set_title("Relative Refractory Response")

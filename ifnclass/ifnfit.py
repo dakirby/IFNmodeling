@@ -235,7 +235,7 @@ class MCMC:
         self.num_samples = 100
         self.num_chains = 1
         # The following attributes will store the results of the MCMC fit
-        self.filename = 'mcmc_results/initial_model.p'
+        self.filename = os.path.join('mcmc_results','initial_model.p')
         self.best_fit_parameters = {}
         self.best_fit_scale_factor = 1
         self.best_fit_score = 1E15
@@ -355,10 +355,10 @@ class MCMC:
                     print("{:.1f}% done".format(acceptance/self.num_samples * 100))
                     print("Chain {} acceptance rate = {:.1f}%".format(ID, acceptance/attempts*100))
                     # Record progress to text file
-                    with open('mcmc_results/progress.txt','a') as f:
+                    with open(os.path.join('mcmc_results','progress.txt'),'a') as f:
                         f.write("Chain {} is {:.1f}% done, currently averaging {:.1f}% acceptance.\n".format(ID, acceptance/self.num_samples*100, acceptance/attempts*100))
                     # Save state at checkpoint
-                    with open('mcmc_results/chain_results/{}chain.p'.format(str(ID)), 'wb') as f:
+                    with open(os.path.join('mcmc_results','chain_results','{}chain.p'.format(str(ID))), 'wb') as f:
                         pickle.dump(self.__dict__, f, 2)
                     progress_bar += self.num_samples/10
 
@@ -396,14 +396,14 @@ class MCMC:
                     self.model.set_parameters(current_parameters)
 
             # Save final state
-            with open('mcmc_results/chain_results/{}chain.p'.format(str(ID)), 'wb') as f:
+            with open(os.path.join('mcmc_results','chain_results','{}chain.p'.format(str(ID))), 'wb') as f:
                 pickle.dump(self.__dict__, f, 2)
 
             result.put([self.parameter_history, self.scale_factor_history, self.score_history])
             countQ.put([ID, acceptance / attempts * 100])
         print("Chain {} exiting".format(ID))
 
-        with open('mcmc_results/progress.txt', 'a') as f:
+        with open(os.path.join('mcmc_results','progress.txt'), 'a') as f:
             f.write("Chain {} is exiting".format(ID))
 
     # Public methods
@@ -485,9 +485,9 @@ class MCMC:
             fig.tight_layout()
             if save == True:
                 if title == '':
-                    plt.savefig('mcmc_results/parameter_distributions.pdf')
+                    plt.savefig(os.path.join('mcmc_results','parameter_distributions.pdf'))
                 else:
-                    plt.savefig('mcmc_results/' + title + '.pdf')
+                    plt.savefig(os.path.join('mcmc_results', title + '.pdf'))
             return (fig, axes)
 
     def fit(self, num_accepted_steps: int, num_chains: int, burn_rate: float, down_sample_frequency: int, beta: float,
@@ -523,7 +523,7 @@ class MCMC:
         if cpu is not None:
             number_of_processes = cpu  # Manual override of core number selection
         print("Using {} processes".format(number_of_processes))
-        with open('mcmc_results/progress.txt', 'w') as f:  # clear previous progress report
+        with open(os.path.join('mcmc_results','progress.txt'), 'w') as f:  # clear previous progress report
             f.write('')
         jobs = Queue()  # put jobs on queue
         result = JoinableQueue()
@@ -580,7 +580,7 @@ class MCMC:
             self.thinned_parameter_scale_factors += [chain[1][i] for i in sample_pattern]
             self.thinned_parameter_scores += [chain[2][i] for i in sample_pattern]
         # Write summary file
-        with open("mcmc_results/simulation_summary.txt", 'w') as f:
+        with open(os.path.join("mcmc_results","simulation_summary.txt"), 'w') as f:
             f.write('Temperature used was {}\n'.format(self.beta))
             f.write('Number of chains = {}\n'.format(self.num_chains))
             f.write("Average acceptance rate was {:.1f}%\n".format(self.average_acceptance))
@@ -593,10 +593,10 @@ class MCMC:
                 f.write("Chain {}: {:.1f}%".format(i[0], i[1]))
 
         # Save object
-        self.save(alt_filename="mcmc_results/mcmc_fit.p")
-        pickle.dump(self.parameter_history, open('mcmc_results/mcmc_parameter_history.p','wb'), 2)
-        pickle.dump(self.scale_factor_history, open('mcmc_results/mcmc_scale_factor_history.p','wb'), 2)
-        pickle.dump(self.score_history, open('mcmc_results/mcmc_score_history.p','wb'), 2)
+        self.save(alt_filename=os.path.join("mcmc_results","mcmc_fit.p"))
+        pickle.dump(self.parameter_history, open(os.path.join('mcmc_results','mcmc_parameter_history.p'),'wb'), 2)
+        pickle.dump(self.scale_factor_history, open(os.path.join('mcmc_results','mcmc_scale_factor_history.p'),'wb'), 2)
+        pickle.dump(self.score_history, open(os.path.join('mcmc_results','mcmc_score_history.p'),'wb'), 2)
 
 if __name__ == '__main__':
     testData = IfnData("MacParland_Extended")
