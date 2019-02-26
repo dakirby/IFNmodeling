@@ -358,4 +358,4 @@ def build_database(data_wd: str) -> None:
     print("Initialized DataFrame objects")
 
 if __name__ == '__main__':
-    build_database('C:\\Users\\Duncan\\Documents\\University\\Grad Studies Year 2\\IFNmodeling\\ifndatabase\\')
+    build_database(os.getcwd())
