@@ -111,6 +111,11 @@
       <change beforePath="$PROJECT_DIR$/ifndatabase/20190121_pSTAT1_IFN_CD4Tcell.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifndatabase/20190121_pSTAT1_IFN_CD4Tcell.p" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifndatabase/20190121_pSTAT1_IFN_CD8Tcell.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifndatabase/20190121_pSTAT1_IFN_CD8Tcell.p" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifndatabase/20190121_pSTAT1_IFN_original.csv" beforeDir="false" afterPath="$PROJECT_DIR$/ifndatabase/20190121_pSTAT1_IFN_original.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifndatabase/20190214_pSTAT1_IFN.csv" beforeDir="false" afterPath="$PROJECT_DIR$/ifndatabase/20190214_pSTAT1_IFN.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifndatabase/20190214_pSTAT1_IFN_Bcell.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifndatabase/20190214_pSTAT1_IFN_Bcell.p" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifndatabase/20190214_pSTAT1_IFN_CD4Tcell.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifndatabase/20190214_pSTAT1_IFN_CD4Tcell.p" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifndatabase/20190214_pSTAT1_IFN_CD8Tcell.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifndatabase/20190214_pSTAT1_IFN_CD8Tcell.p" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifndatabase/20190214_pSTAT1_IFN_original.csv" beforeDir="false" afterPath="$PROJECT_DIR$/ifndatabase/20190214_pSTAT1_IFN_original.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifndatabase/Experimental_Data.csv" beforeDir="false" afterPath="$PROJECT_DIR$/ifndatabase/Experimental_Data.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifndatabase/Experimental_Data.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifndatabase/Experimental_Data.p" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifndatabase/Experimental_Data.txt" beforeDir="false" afterPath="$PROJECT_DIR$/ifndatabase/Experimental_Data.txt" afterDir="false" />
@@ -231,8 +236,8 @@
       <file leaf-file-name="refractoriness_figure.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/ifnscripts/refractoriness_figure.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="306">
-              <caret line="114" column="30" selection-start-line="114" selection-start-column="30" selection-end-line="114" selection-end-column="30" />
+            <state relative-caret-position="221">
+              <caret line="109" column="107" lean-forward="true" selection-start-line="109" selection-start-column="107" selection-end-line="109" selection-end-column="107" />
               <folding>
                 <element signature="e#0#38#0" expanded="true" />
               </folding>
@@ -240,20 +245,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="process_csv.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/ifndatabase/process_csv.py">
+      <file leaf-file-name="fit-20190214_pSTAT1_IFN.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/ifnscripts/fit-20190214_pSTAT1_IFN.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="710">
-              <caret line="334" column="42" lean-forward="true" selection-start-line="334" selection-start-column="42" selection-end-line="334" selection-end-column="42" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="comparing_GAB_data.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/ifnscripts/comparing_GAB_data.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="319">
-              <caret line="167" column="4" selection-start-line="167" selection-start-column="4" selection-end-line="167" selection-end-column="4" />
+            <state relative-caret-position="135">
+              <caret line="20" column="72" lean-forward="true" selection-start-line="20" selection-start-column="72" selection-end-line="20" selection-end-column="73" />
             </state>
           </provider>
         </entry>
@@ -323,7 +319,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/ifnclass/fit-06-12-2018.py" />
         <option value="$PROJECT_DIR$/ifnclass/timecourse-09-12-2018.py" />
         <option value="$PROJECT_DIR$/ifnclass/fitting_2_5.py" />
         <option value="$PROJECT_DIR$/ifnclass/IFNalpha1.py" />
@@ -374,6 +369,7 @@
         <option value="$PROJECT_DIR$/ifndatabase/process_csv.py" />
         <option value="$PROJECT_DIR$/ifnclass/ifnfit.py" />
         <option value="$PROJECT_DIR$/ifnscripts/comparing_GAB_data.py" />
+        <option value="$PROJECT_DIR$/ifnscripts/fit-20190214_pSTAT1_IFN.py" />
       </list>
     </option>
   </component>
@@ -402,11 +398,6 @@
               <item name="IFNmodeling" type="b2602c69:ProjectViewProjectNode" />
               <item name="IFNmodeling" type="462c0819:PsiDirectoryNode" />
               <item name="ifnclass" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="IFNmodeling" type="b2602c69:ProjectViewProjectNode" />
-              <item name="IFNmodeling" type="462c0819:PsiDirectoryNode" />
-              <item name="ifndatabase" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="IFNmodeling" type="b2602c69:ProjectViewProjectNode" />
@@ -441,7 +432,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.comparing_GAB_data">
+  <component name="RunManager" selected="Python.fit-20190214_pSTAT1_IFN">
     <configuration name="comparing_GAB_data" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="IFNmodeling" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -460,24 +451,6 @@
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
     </configuration>
-    <configuration name="figure_2" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <module name="IFNmodeling" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/ifnscripts" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/ifnscripts/figure_2.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-    </configuration>
     <configuration name="figure_3" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="IFNmodeling" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -491,6 +464,24 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/ifnscripts/figure_3.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+    </configuration>
+    <configuration name="fit-20190214_pSTAT1_IFN" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="IFNmodeling" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/ifnscripts" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/ifnscripts/fit-20190214_pSTAT1_IFN.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -553,18 +544,18 @@
     <list>
       <item itemvalue="Python.process_csv" />
       <item itemvalue="Python.subpopulations_analysis" />
-      <item itemvalue="Python.figure_2" />
       <item itemvalue="Python.figure_3" />
       <item itemvalue="Python.refractoriness_figure" />
       <item itemvalue="Python.comparing_GAB_data" />
+      <item itemvalue="Python.fit-20190214_pSTAT1_IFN" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.fit-20190214_pSTAT1_IFN" />
         <item itemvalue="Python.comparing_GAB_data" />
         <item itemvalue="Python.refractoriness_figure" />
         <item itemvalue="Python.subpopulations_analysis" />
         <item itemvalue="Python.figure_3" />
-        <item itemvalue="Python.figure_2" />
       </list>
     </recent_temporary>
   </component>
@@ -626,7 +617,6 @@
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/ifnscripts/ifnclass/ifnmodel.py" />
     <entry file="file://$PROJECT_DIR$/ifnscripts/ifnclass/ifnfit.py" />
     <entry file="file://$PROJECT_DIR$/ifnscripts/ODE_system.py" />
     <entry file="file://$PROJECT_DIR$/ifnscripts/smooth_Sagar.py">
@@ -867,13 +857,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ifnscripts/fit-20190121_pSTAT1_IFN.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="204">
-          <caret line="13" lean-forward="true" selection-start-line="13" selection-end-line="13" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/ifnscripts/figure_2.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="223">
@@ -902,16 +885,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ifnscripts/refractoriness_figure.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="306">
-          <caret line="114" column="30" selection-start-line="114" selection-start-column="30" selection-end-line="114" selection-end-column="30" />
-          <folding>
-            <element signature="e#0#38#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/ifnclass/ifnfit.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="488">
@@ -926,17 +899,41 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ifnscripts/comparing_GAB_data.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="319">
-          <caret line="167" column="4" selection-start-line="167" selection-start-column="4" selection-end-line="167" selection-end-column="4" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/ifndatabase/process_csv.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="710">
           <caret line="334" column="42" lean-forward="true" selection-start-line="334" selection-start-column="42" selection-end-line="334" selection-end-column="42" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnscripts/comparing_GAB_data.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="47">
+          <caret line="151" column="42" selection-start-line="151" selection-start-column="42" selection-end-line="151" selection-end-column="42" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnscripts/refractoriness_figure.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="221">
+          <caret line="109" column="107" lean-forward="true" selection-start-line="109" selection-start-column="107" selection-end-line="109" selection-end-column="107" />
+          <folding>
+            <element signature="e#0#38#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnscripts/fit-20190121_pSTAT1_IFN.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="51">
+          <caret line="8" column="21" selection-start-line="8" selection-start-column="21" selection-end-line="8" selection-end-column="21" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnscripts/fit-20190214_pSTAT1_IFN.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="135">
+          <caret line="20" column="72" lean-forward="true" selection-start-line="20" selection-start-column="72" selection-end-line="20" selection-end-column="73" />
         </state>
       </provider>
     </entry>
