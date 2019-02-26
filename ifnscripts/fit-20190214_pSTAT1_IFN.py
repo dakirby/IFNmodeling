@@ -16,13 +16,13 @@ if __name__ == '__main__':
     alpha_doses_20190108 = [0, 10, 100, 300, 1000, 3000, 10000, 100000]
     beta_doses_20190108 = [0, 0.2, 6, 20, 60, 200, 600, 2000]
 
-    Mixed_Model.set_parameters({'R2': 4140, 'R1': 4920,
-                                'k_a1': 2.49e-15, 'k_a2': 1.328e-12, 'k_d3': 7.5e-06, 'k_d4': 0.06,
+    Mixed_Model.set_parameters({'R2': 4920, 'R1': 1800,
+                                'k_a1': 2.49e-15, 'k_a2': 1.328e-12, 'k_d3': 1.13e-4, 'k_d4': 0.9,
                                 'kSOCSon': 5e-08, 'kpu': 0.0024, 'kpa': 2.08e-06,
-                                'ka1': 5.3e-15, 'ka2': 1.22e-12, 'kd4': 0.86,
-                                'kd3': 5.47e-05,
-                                'kint_a':  0.0002, 'kint_b': 0.00086,
-                                'krec_a1': 0.0001, 'krec_a2': 0.02, 'krec_b1': 0.001, 'krec_b2': 0.005})
+                                'ka1': 5.3e-15, 'ka2': 1.22e-12, 'kd4': 1.0,
+                                'kd3': 6.52e-05,
+                                'kint_a':  0.00048, 'kint_b': 0.00086,
+                                'krec_a1': 0.0001, 'krec_a2': 0.001, 'krec_b1': 0.001, 'krec_b2': 0.005})
     # -----------------------------
     # Stepwise fit
     # -----------------------------
@@ -55,11 +55,10 @@ OrderedDict([('k_d4', 0.22800000000000001), ('R1', 1800.0), ('kd4', 0.8400000000
     0.260432986902                             
     """
     #stepfit = StepwiseFit(Mixed_Model, raw_data,
-    #                      {'R1': (1800, 5700), 'R2': (1800, 5700),
-    #                       'kd4': (0.2, 1), 'k_d4': (0.06, 0.9),
-    #                       'kint_a': (0.00005, 0.0002),
-    #                       'krec_a1': (1e-04, 2e-03), 'krec_a2': (0.001, 0.02),
-    #                       'krec_b1': (0.001, 0.1), 'krec_b2': (0.005, 0.1)}, n=6)
+    #                      {'kSOCSon': (5e-8, 8e-7),
+    #                         'kint_a': (0.0001, 0.002), 'kint_b': (0.002, 0.0001),
+    #                         'krec_a1': (1e-03, 1e-02), 'krec_a2': (0.1, 0.01),
+    #                         'krec_b1': (0.005, 0.0005), 'krec_b2': (0.05, 0.005)}, n=6)
     #best_parameters, scale_factor = stepfit.fit()
     #print(best_parameters)
     #print(scale_factor)
@@ -69,7 +68,7 @@ OrderedDict([('k_d4', 0.22800000000000001), ('R1', 1800.0), ('kd4', 0.8400000000
     # End Stepwise Fit
     # -----------------------------
 
-    scale_factor = 0.4050499
+    scale_factor = 1.2116
     scale_data = lambda q: (scale_factor * q[0], scale_factor * q[1])
 
     # Make predictions
