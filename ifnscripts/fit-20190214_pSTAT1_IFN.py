@@ -16,13 +16,13 @@ if __name__ == '__main__':
     alpha_doses_20190108 = [0, 10, 100, 300, 1000, 3000, 10000, 100000]
     beta_doses_20190108 = [0, 0.2, 6, 20, 60, 200, 600, 2000]
 
-    Mixed_Model.set_parameters({'R2': 4920, 'R1': 1800,
-                                'k_a1': 2.49e-15, 'k_a2': 1.328e-12, 'k_d3': 1.13e-4, 'k_d4': 0.9,
-                                'kSOCSon': 5e-08, 'kpu': 0.0024, 'kpa': 2.08e-06,
-                                'ka1': 5.3e-15, 'ka2': 1.22e-12, 'kd4': 1.0,
+    Mixed_Model.set_parameters({'R2': 4920, 'R1': 1200,
+                                'k_a1': 2.0e-13, 'k_a2': 1.328e-12, 'k_d3': 1.13e-4, 'k_d4': 0.9,
+                                'kSOCSon': 7.5e-08, 'kpu': 0.0022, 'kpa': 2.36e-06,
+                                'ka1': 3.3e-15, 'ka2': 1.85e-12, 'kd4': 2.0,
                                 'kd3': 6.52e-05,
-                                'kint_a':  0.00048, 'kint_b': 0.00086,
-                                'krec_a1': 0.0001, 'krec_a2': 0.001, 'krec_b1': 0.001, 'krec_b2': 0.005})
+                                'kint_a':  0.0008, 'kint_b': 0.00086,
+                                'krec_a1': 0.0001, 'krec_a2': 0.02, 'krec_b1': 0.001, 'krec_b2': 0.005})
     # -----------------------------
     # Stepwise fit
     # -----------------------------
@@ -55,10 +55,13 @@ OrderedDict([('k_d4', 0.22800000000000001), ('R1', 1800.0), ('kd4', 0.8400000000
     0.260432986902                             
     """
     #stepfit = StepwiseFit(Mixed_Model, raw_data,
-    #                      {'kSOCSon': (5e-8, 8e-7),
-    #                         'kint_a': (0.0001, 0.002), 'kint_b': (0.002, 0.0001),
-    #                         'krec_a1': (1e-03, 1e-02), 'krec_a2': (0.1, 0.01),
-    #                         'krec_b1': (0.005, 0.0005), 'krec_b2': (0.05, 0.005)}, n=6)
+    #                      {'R1': (1200, 5700), 'R2': (1800, 5700),
+    #                              'kpu': (0.0005, 0.009),
+    #                              'ka1': (3.3e-14 * 0.1, 3.3e-14 * 2),
+    #                              'ka2': (5e-13 * 0.25, 5e-13 * 4),
+    #                              'k_a1': (4.98E-14 * 0.1, 4.98E-14 * 4),
+    #                              'k_a2': (8.30e-13 * 1, 8.30e-13 * 4),
+    #                              'kd4': (0.2, 1), 'k_d4': (0.06, 0.9)}, n=6)
     #best_parameters, scale_factor = stepfit.fit()
     #print(best_parameters)
     #print(scale_factor)
@@ -68,7 +71,7 @@ OrderedDict([('k_d4', 0.22800000000000001), ('R1', 1800.0), ('kd4', 0.8400000000
     # End Stepwise Fit
     # -----------------------------
 
-    scale_factor = 1.2116
+    scale_factor = 1.46182313424
     scale_data = lambda q: (scale_factor * q[0], scale_factor * q[1])
 
     # Make predictions
@@ -140,8 +143,8 @@ OrderedDict([('k_d4', 0.22800000000000001), ('R1', 1800.0), ('kd4', 0.8400000000
         beta_IfnData_objects.append(IfnData('custom', df=beta_time_courses[j], conditions={'Beta': {'Ia': 0}}))
     # Generate plot
     new_fit = TimecoursePlot((1, 2))
-    alpha_mask = []
-    beta_mask = []
+    alpha_mask = [0]
+    beta_mask = [0]
 
     # Add fits
     for j, dose in enumerate(alpha_doses_20190108):

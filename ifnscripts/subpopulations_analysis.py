@@ -36,16 +36,22 @@ if __name__ == '__main__':
     # Subpopulations
     # -------------------------
     # SUBPOPULATION 1
-    Mixed_Model.set_parameters({'R2': 100, 'R1': 100})
+    Mixed_Model.set_parameters({'R2': 1000, 'R1': 1000})
     sim_doses_a = list(logspace(log10(alpha_doses_20190108[1]), log10(alpha_doses_20190108[-1])))
     sim_doses_b = list(logspace(log10(beta_doses_20190108[1]), log10(beta_doses_20190108[-1])))
     dradf_1 = Mixed_Model.doseresponse(times, 'TotalpSTAT', 'Ia', sim_doses_a,
                                      parameters={'Ib': 0}, return_type='list')['TotalpSTAT']
     drbdf_1 = Mixed_Model.doseresponse(times, 'TotalpSTAT', 'Ib', sim_doses_b,
                                      parameters={'Ia': 0}, return_type='list')['TotalpSTAT']
+    tc_a = Mixed_Model.timecourse(np.linspace(0, 60), 'TotalpSTAT',
+                                  parameters={'Ia': 1000, 'Ib': 0}, return_type='dataframe',
+                                  dataframe_labels=['Alpha', 1000])
+    tc_b = Mixed_Model.timecourse(np.linspace(0, 60), 'TotalpSTAT',
+                                  parameters={'Ib': 1000, 'Ia': 0}, return_type='dataframe',
+                                  dataframe_labels=['Beta', 1000])
 
     # SUBPOPULATION 2
-    Mixed_Model.set_parameters({'R2': 10000, 'R1': 10000})
+    Mixed_Model.set_parameters({'R2': 8000, 'R1': 8000})
     dradf_2 = Mixed_Model.doseresponse(times, 'TotalpSTAT', 'Ia', sim_doses_a,
                                      parameters={'Ib': 0}, return_type='list')['TotalpSTAT']
     drbdf_2 = Mixed_Model.doseresponse(times, 'TotalpSTAT', 'Ib', sim_doses_b,
@@ -78,7 +84,7 @@ if __name__ == '__main__':
     # Put into IfnData objects
     dr60 = IfnData('custom', df=drdf, conditions={'Alpha': {'Ib': 0}, 'Beta': {'Ia': 0}})
 
-    new_fit = DoseresponsePlot((1, 2))
+    new_fit = DoseresponsePlot((2, 2))
     alpha_mask = [7.5]
     beta_mask = [7.5]
     # Add fits
@@ -87,6 +93,26 @@ if __name__ == '__main__':
             new_fit.add_trajectory(dr60, t, 'plot', alpha_palette[idx], (0, 0), 'Alpha', label='Alpha ' + str(t))
         if t not in beta_mask:
             new_fit.add_trajectory(dr60, t, 'plot', beta_palette[idx], (0, 1), 'Beta', label='Beta ' + str(t))
+
+    # --------------------------------------
+    # Add original population for comparison
+    # --------------------------------------
+    dradf_1 = [['Alpha', sim_doses_a[row], *[(el, nan) for el in dradf_1[row]]] for row in range(0, len(dradf_1))]
+    drbdf_1 = [['Beta', sim_doses_b[row], *[(el, nan) for el in drbdf_1[row]]] for row in range(0, len(drbdf_1))]
+    all_data_1 = dradf_1 + drbdf_1
+    drdf_1 = pd.DataFrame.from_records(all_data_1, columns=column_labels)
+    drdf_1.set_index(['Dose_Species', 'Dose (pM)'], inplace=True)
+    for i in range(len(times)):
+        drdf_1.loc['Alpha'].iloc[:, i] = drdf_1.loc['Alpha'].iloc[:, i].apply(scale_data)
+        drdf_1.loc['Beta'].iloc[:, i] = drdf_1.loc['Beta'].iloc[:, i].apply(scale_data)
+    dr60_1 = IfnData('custom', df=drdf_1, conditions={'Alpha': {'Ib': 0}, 'Beta': {'Ia': 0}})
+    for idx, t in enumerate(times):
+        if t not in alpha_mask:
+            new_fit.add_trajectory(dr60_1, t, 'plot', alpha_palette[idx], (1, 0), 'Alpha', label='Alpha ' + str(t))
+        if t not in beta_mask:
+            new_fit.add_trajectory(dr60_1, t, 'plot', beta_palette[idx], (1, 1), 'Beta', label='Beta ' + str(t))
+
+    """
     # Add data
     for idx, t in enumerate(times):
         if t not in alpha_mask:
@@ -97,9 +123,52 @@ if __name__ == '__main__':
             new_fit.add_trajectory(raw_data, t, 'plot', '--', (0, 1), 'Beta', label='Beta ' + str(t),
                                    color=beta_palette[idx])
             new_fit.add_trajectory(raw_data, t, 'scatter', 'go', (0, 1), 'Beta', label='', color=beta_palette[idx])
-
+    """
+    new_fit.axes[0][0].set_title(r"Heterogenous population")
+    new_fit.axes[1][0].set_title(r"Homogenous population")
     new_fit.show_figure(save_flag=False)
 
+    # ----------------------
+    # Time Course Comparison
+    # Simulate time courses
+    # SUBPOPULATION 1
+    Mixed_Model.set_parameters({'R2': 1000, 'R1': 1000})
+    alpha_time_courses = []
+    for d in alpha_doses_20190108:
+        alpha_time_courses.append(Mixed_Model.timecourse(list(linspace(0, 60, 30)), 'TotalpSTAT',
+                                                         {'Ia': d * 6.022E23 * 1E-5 * 1E-12, 'Ib': 0},
+                                                         return_type='dataframe', dataframe_labels=['Alpha', d]))
+    beta_time_courses = []
+    for d in beta_doses_20190108:
+        beta_time_courses.append(Mixed_Model.timecourse(list(linspace(0, 60, 30)), 'TotalpSTAT',
+                                                        {'Ib': d * 6.022E23 * 1E-5 * 1E-12, 'Ia': 0},
+                                                        return_type='dataframe', dataframe_labels=['Beta', d]))
 
+    for i in range(30):
+        for j in range(len(alpha_doses_20190108)):
+            alpha_time_courses[j].loc['Alpha'].iloc[:, i] = alpha_time_courses[j].loc['Alpha'].iloc[:, i].apply(
+                scale_data)
+        for j in range(len(beta_doses_20190108)):
+            beta_time_courses[j].loc['Beta'].iloc[:, i] = beta_time_courses[j].loc['Beta'].iloc[:, i].apply(scale_data)
+    # Turn into IfnData objects
+    alpha_IfnData_objects = []
+    beta_IfnData_objects = []
+    for j in range(len(alpha_doses_20190108)):
+        alpha_IfnData_objects.append(IfnData('custom', df=alpha_time_courses[j], conditions={'Alpha': {'Ib': 0}}))
+    for j in range(len(beta_doses_20190108)):
+        beta_IfnData_objects.append(IfnData('custom', df=beta_time_courses[j], conditions={'Beta': {'Ia': 0}}))
+    # Generate plot
+    new_fit = TimecoursePlot((1, 2))
+    alpha_mask = [0]
+    beta_mask = [0]
 
+    # Add fits
+    for j, dose in enumerate(alpha_doses_20190108):
+        if dose not in alpha_mask:
+            new_fit.add_trajectory(alpha_IfnData_objects[j], 'plot', alpha_palette[j], (0, 0),
+                                   label='Alpha ' + str(dose))
+    for j, dose in enumerate(beta_doses_20190108):
+        if dose not in beta_mask:
+            new_fit.add_trajectory(beta_IfnData_objects[j], 'plot', beta_palette[j], (0, 1),
+                                   label='Beta ' + str(dose))
 

@@ -12,6 +12,7 @@ import ast
 import ifndatabase.process_csv
 from scipy.optimize import curve_fit
 import numpy as np
+from scipy.optimize import minimize
 
 
 class IfnData:
@@ -162,3 +163,63 @@ class IfnData:
 
             Tmax_dict[key] = Tmax_array
         return Tmax_dict
+
+
+class DataAlignment:
+    """
+     Documentation - A DataAlignment object contains several IfnData objects and the scale factors needed to align them.
+                   - Data must have the same Cytokine, Dose, and Time labels (ie. must be identical except for measured
+                     values.
+     Parameters
+     ----------
+     None
+
+     Attributes
+     ----------
+     data (list of IfnData objects): the data sets to fit
+     scale_factors (list): a float to scale each dataset by in order to optimally align them all
+
+     Methods
+     -------
+     add_data(): add an IfnData object or list of such objects to the DataAlignment object for fitting later
+     align(): find the optimal scale factors for all IfnData objects in self.data
+     """
+
+    # Initializer / Instance Attributes
+    def __init__(self):
+        self.data = []
+        self.scale_factors = []
+
+    # Private methods
+    # ---------------
+    def __score_sf__(self, scf, data, reftable):
+        diff_table = np.subtract(reftable, np.multiply(data, scf[0]))
+        return np.sum(np.square(diff_table))
+
+    # Public methods
+    # --------------
+    def add_data(self, data_object):
+        if isinstance(data_object, IfnData):
+            self.data.append(data_object)
+            if len(self.data) == 1:
+                self.scale_factors = [1.]
+        elif type(data_object) == list:
+            for d in data_object:
+                if isinstance(d, IfnData):
+                    self.data.append(d)
+                    if len(self.data) == 1:
+                        self.scale_factors = [1.]
+                else:
+                    raise TypeError("Must add IfnData instance or a list of such instances")
+        else:
+            raise TypeError("Must add IfnData instance or a list of such instances")
+
+    def align(self):
+        self.scale_factors = np.zeros(len(self.data))
+        self.scale_factors[0] = 1
+        reference_table = [[el[0] for el in row] for row in self.data[0].data_set.values]
+        datatable = [[[el[0] for el in row] for row in d.data_set.values] for d in self.data[1:]]
+        for d in range(len(datatable)):
+            opt = minimize(self.__score_sf__, [0.1], args=(datatable[d], reference_table))
+            self.scale_factors[d+1] = opt['x']
+        return self.scale_factors
