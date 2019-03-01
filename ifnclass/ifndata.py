@@ -1,3 +1,13 @@
+import os
+import pickle
+import ast
+import ifndatabase.process_csv
+from scipy.optimize import curve_fit
+import numpy as np
+from scipy.optimize import minimize
+from copy import deepcopy
+import seaborn as sns
+
 """
 Created on Sun Nov 25 10:05:14 2018
 
@@ -6,13 +16,6 @@ Created on Sun Nov 25 10:05:14 2018
 IfnData is the standardized python object for IFN data sets, used for fitting 
 and plotting data.
 """
-import os
-import pickle
-import ast
-import ifndatabase.process_csv
-from scipy.optimize import curve_fit
-import numpy as np
-from scipy.optimize import minimize
 
 
 class IfnData:
@@ -121,6 +124,11 @@ class IfnData:
                 datatable.update({key: self.data_set.loc[key][t].values})
         return datatable
 
+    def copy(self):
+        new_object = IfnData('custom', df=self.data_set.copy(), conditions=deepcopy(self.conditions))
+        new_object.name = deepcopy(self.name)
+        return new_object
+
     def __MM__(self, xdata, top, n, k):
         ydata = [top * x ** n / (k ** n + x ** n) for x in xdata]
         return ydata
@@ -178,7 +186,7 @@ class DataAlignment:
      ----------
      data (list of IfnData objects): the data sets to fit
      scale_factors (list): a float to scale each dataset by in order to optimally align them all
-
+     scaled_data (list of IfnData objects): copies of the original IfnData objects, scaled to optimally align
      Methods
      -------
      add_data(): add an IfnData object or list of such objects to the DataAlignment object for fitting later
@@ -189,6 +197,7 @@ class DataAlignment:
     def __init__(self):
         self.data = []
         self.scale_factors = []
+        self.scaled_data = []
 
     # Private methods
     # ---------------
@@ -223,3 +232,16 @@ class DataAlignment:
             opt = minimize(self.__score_sf__, [0.1], args=(datatable[d], reference_table))
             self.scale_factors[d+1] = opt['x']
         return self.scale_factors
+
+    def get_scaled_data(self):
+        self.scaled_data = [d.copy() for d in self.data]
+        for d in range(1, len(self.scaled_data)):
+            current_IfnData_object = self.scaled_data[d]
+            scale_factor = self.scale_factors[d]
+            scale_data = lambda q: (scale_factor * q[0], scale_factor * q[1])
+
+            for spec in current_IfnData_object.get_dose_species():
+                num_times = len(current_IfnData_object.get_times()[spec])
+                for i in range(num_times):
+                    current_IfnData_object.data_set.loc[spec].iloc[:, i] = current_IfnData_object.data_set.loc[spec].iloc[:, i].apply(scale_data)
+        return self.scaled_data

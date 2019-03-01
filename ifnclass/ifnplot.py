@@ -119,6 +119,26 @@ class TimecoursePlot:
         self.fig, self.axes = plt.subplots(nrows=self.nrows, ncols=self.ncols)
         self.trajectories = []
         self.subplot_indices = []
+        if self.nrows > 1 and self.ncols > 1:
+            for row in range(self.nrows):
+                for column in range(self.ncols):
+                    if row == self.nrows - 1:
+                        self.axes[row][column].set_xlabel('Time (min)')
+                    if column == 0:
+                        self.axes[row][column].set_ylabel('Response')
+        elif self.ncols > 1:
+            for column in range(self.ncols):
+                self.axes[column].set_xlabel('Time (min)')
+                if column == 0:
+                    self.axes[column].set_ylabel('Response')
+        elif self.nrows > 1:
+            for row in range(self.nrows):
+                if row == 0:
+                    self.axes[row].set_xlabel('Time (min)')
+                self.axes[row].set_ylabel('Response')
+        else:
+            self.axes.set_xlabel('Time (min)')
+            self.axes.set_ylabel('Response')
 
     # Instance methods
     def add_trajectory(self, data: IfnData, plot_type: str, line_style, subplot_idx: tuple, label='', **kwargs):
