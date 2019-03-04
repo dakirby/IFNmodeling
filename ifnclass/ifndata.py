@@ -7,6 +7,7 @@ import numpy as np
 from scipy.optimize import minimize
 from copy import deepcopy
 import seaborn as sns
+import pandas as pd
 
 """
 Created on Sun Nov 25 10:05:14 2018
@@ -25,7 +26,9 @@ class IfnData:
     data object used for plotting and fitting within the IFNmodeling module.
 
     The standard column labels are as follows:
+    'Dose_Species', 'Dose (pM)', 'Time (min)'
 
+    Each data point is of the form (value, std dev)
 
     Parameters
     ----------
@@ -98,20 +101,27 @@ class IfnData:
     def get_dose_species(self) -> list:
         return list(self.data_set.index.levels[0])
 
-    def get_times(self) -> dict:
+    def get_times(self, species='') -> dict:
         keys = self.get_dose_species()
         if type(self.data_set.loc[keys[0]].columns.get_values().tolist()) == str:
-            return dict(zip(keys, [[int(el) for el in self.data_set.loc[key].columns.get_values().tolist()] for key in keys]))
+            t = dict(zip(keys, [[int(el) for el in self.data_set.loc[key].columns.get_values().tolist()] for key in keys]))
         else:
-            return dict(zip(keys, [[el for el in self.data_set.loc[key].columns.get_values().tolist()] for key in keys]))
+            t = dict(zip(keys, [[el for el in self.data_set.loc[key].columns.get_values().tolist()] for key in keys]))
+        if species=='':
+            return t
+        else:
+            return t[species]
 
-    def get_doses(self) -> dict:
+    def get_doses(self, species='') -> dict:
         keys = self.get_dose_species()
 
         dose_spec_names = [dose_species for dose_species, dose_species_data in
                            self.data_set.groupby(level='Dose_Species')]
         dose_list = [list(self.data_set.loc[spec].index) for spec in dose_spec_names]
-        return dict(zip(keys, dose_list))
+        if species=='':
+            return dict(zip(keys, dose_list))
+        else:
+            return dict(zip(keys, dose_list))[species]
 
     def get_responses(self) -> dict:
         datatable = {}
@@ -191,6 +201,10 @@ class DataAlignment:
      -------
      add_data(): add an IfnData object or list of such objects to the DataAlignment object for fitting later
      align(): find the optimal scale factors for all IfnData objects in self.data
+     get_scaled_data(): returns a list of pandas dataframes containing all the data objects with their transformed
+                        values as per the alignment
+     summarize_data(): finds the mean and variance of each data point and returns the IfnData object continaing this
+                        computed information
      """
 
     # Initializer / Instance Attributes
@@ -245,3 +259,23 @@ class DataAlignment:
                 for i in range(num_times):
                     current_IfnData_object.data_set.loc[spec].iloc[:, i] = current_IfnData_object.data_set.loc[spec].iloc[:, i].apply(scale_data)
         return self.scaled_data
+
+    def summarize_data(self):
+        data_list = {}
+        for spec in self.scaled_data[0].get_dose_species():
+            data_list.update({spec: [[[el[0] for el in row] for row in self.scaled_data[i].data_set.loc[spec].values]
+                                     for i in range(len(self.scaled_data))]})
+        mean_data = {key: np.mean(data_list[key], axis=0) for key in self.scaled_data[0].get_dose_species()}
+        stddev = {key: np.std(data_list[key], axis=0) for key in self.scaled_data[0].get_dose_species()}
+        dose_species_list = self.scaled_data[0].get_dose_species()
+        row_length = len(mean_data[dose_species_list[0]][0])
+        column_length = len(mean_data[dose_species_list[0]])
+        zipped_data = []
+        for key in dose_species_list:
+            for row_idx, dose in enumerate(self.scaled_data[0].get_doses(key)):
+                zipped_data.append(
+                    [key, dose, *[(mean_data[key][row_idx][i], stddev[key][row_idx][i]) for i in range(row_length)]])
+        df = pd.DataFrame.from_records(zipped_data,
+                                       columns=['Dose_Species', 'Dose (pM)', *self.scaled_data[0].get_times(key)])
+        df.set_index(['Dose_Species', 'Dose (pM)'], inplace=True)
+        return df
