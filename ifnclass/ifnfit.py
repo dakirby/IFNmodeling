@@ -55,12 +55,15 @@ class StepwiseFit:
 
     # Instance methods
     def score_parameter(self, parameter_dict):
-        def score_target(scf, data, sim):
+        def score_target(scf, data, sim, data_stddev):
             diff_table = zeros(shape(sim))
             for r in range(len(data)):
                 for c in range(len(data[r])):
                     if not isnan(data[r][c]):
-                        diff_table[r][c] = sim[r][c] * scf - data[r][c]
+                        if isnan(data_stddev[r][c]):
+                            diff_table[r][c] = sim[r][c] * scf - data[r][c]
+                        else:
+                            diff_table[r][c] = (sim[r][c] * scf - data[r][c])/data_stddev[r][c]
             return np.sum(square(diff_table))
 
         score = 0
@@ -71,6 +74,7 @@ class StepwiseFit:
             simulation_doses = self.data.get_doses()[dose_species]
             datatable = self.data.get_responses()[dose_species]
             datatable = [[el[0] for el in r] for r in datatable]
+            data_stddev = [[el[1] for el in r] for r in self.data.get_responses()[dose_species]]
             if dose_species == 'Alpha':
                 spec = 'Ia'
             else:
@@ -78,7 +82,7 @@ class StepwiseFit:
             simulation = self.model.doseresponse(simulation_times, 'TotalpSTAT', spec, simulation_doses,
                                                  parameters=self.data.conditions[dose_species],
                                                  return_type='list', dataframe_labels='Alpha')['TotalpSTAT']
-            opt = minimize(score_target, [0.1], args=(datatable, simulation))
+            opt = minimize(score_target, [0.1], args=(datatable, simulation, data_stddev))
             sf = opt['x']
             score += opt['fun']
         self.model.set_parameters(parameter_copy)

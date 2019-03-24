@@ -278,4 +278,5 @@ class DataAlignment:
         df = pd.DataFrame.from_records(zipped_data,
                                        columns=['Dose_Species', 'Dose (pM)', *self.scaled_data[0].get_times(key)])
         df.set_index(['Dose_Species', 'Dose (pM)'], inplace=True)
-        return df
+        summary_IfnData = IfnData('custom', df=df, conditions=self.scaled_data[0].conditions)
+        return summary_IfnData
