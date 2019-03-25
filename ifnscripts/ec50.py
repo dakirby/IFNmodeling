@@ -1,27 +1,31 @@
 from ifnclass.ifndata import IfnData
 from ifnclass.ifnmodel import IfnModel
+from ifnclass.ifnplot import DoseresponsePlot
 from numpy import linspace, logspace, transpose
 import seaborn as sns
+import numpy as np
 from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
 
 
-def MM(xdata, top, n, k):
-    ydata = [top * x ** n / (k ** n + x ** n) for x in xdata]
+def MM(xdata, top, k):
+    ydata = [top * x / (k + x) for x in xdata]
     return ydata
 
 
 def fit_MM(doses, responses, guesses):
     top = guesses[0]
-    n = guesses[1]
-    K = guesses[2]
-    results, covariance = curve_fit(MM, doses, responses, p0=[top, n, K])
+    K = guesses[1]
+    results, covariance = curve_fit(MM, doses, responses, p0=[top, K])
     top = results[0]
-    n = results[1]
-    K = results[2]
-    if n > 3:
-        n = 3
-    return top, n, K
+    K = results[1]
+    if K > 1E4:
+        top = max(responses) * 0.5
+        for i, r in enumerate(responses):
+            if r > top:
+                K = 10 ** ((np.log10(doses[i-1]) + np.log10(doses[i])) / 2.0)
+                break
+    return top, K
 
 
 def get_ec50(model: IfnModel, times: list or int, dose_species: str, response_species: str, custom_parameters={},
@@ -30,9 +34,9 @@ def get_ec50(model: IfnModel, times: list or int, dose_species: str, response_sp
         dr_curve = [el[0] for el in model.doseresponse([times], response_species, dose_species, list(logspace(-3, 5)),
                                       parameters=custom_parameters, return_type='list')[response_species]]
 
-        top, n, K = fit_MM(list(logspace(-3, 5)), dr_curve, [max(dr_curve), 1, 1000])
+        top, K = fit_MM(list(logspace(-3, 5)), dr_curve, [max(dr_curve), 1000])
         if rflag:
-            return top, n, K
+            return top, K
         else:
             return K
 
@@ -41,16 +45,14 @@ def get_ec50(model: IfnModel, times: list or int, dose_species: str, response_sp
                                       parameters=custom_parameters, return_type='list')[response_species]
 
         top_list = []
-        n_list = []
         K_list = []
         for t in range(len(times)):
             tslice = [el[t] for el in dr_curve]
-            top, n, K = fit_MM(list(logspace(-3, 5)), tslice, [max(tslice), 1, 1000])
+            top, K = fit_MM(list(logspace(-3, 5)), tslice, [max(tslice), 1000])
             top_list.append(top)
-            n_list.append(n)
             K_list.append(K)
         if rflag:
-            return top_list, n_list, K_list
+            return top_list, K_list
         else:
             return K_list
 
@@ -63,90 +65,66 @@ if __name__ == '__main__':
     beta_palette = sns.color_palette("Greens", 6)
 
     # Get all data set EC50 time courses
-    # 20190119
-    data_20190119 = IfnData("20190119_pSTAT1_IFN_Bcell")
-    ec50_20190119 = data_20190119.get_ec50s()
-    ec50_20190119['Alpha'][-1] = (ec50_20190119['Alpha'][-1][0], 800.)
-
-    # 20190121
-    data_20190121 = IfnData("20190121_pSTAT1_IFN_Bcell")
-    ec50_20190121 = data_20190121.get_ec50s()
-    #ec50_20190121['Alpha'][-1] = (ec50_20190121['Alpha'][-1][0], 800.)
+    newdata_1 = IfnData("20190108_pSTAT1_IFN_Bcell")
+    newdata_2 = IfnData("20190119_pSTAT1_IFN_Bcell")
+    newdata_3 = IfnData("20190121_pSTAT1_IFN_Bcell")
+    newdata_4 = IfnData("20190214_pSTAT1_IFN_Bcell")
 
     # 20190108
-    data_20190108 = IfnData("20190108_pSTAT1_IFN")
-    ec50_20190108 = data_20190108.get_ec50s()
-    ec50_20190108['Beta'][-1] = (ec50_20190108['Beta'][-1][0], 20.)
+    ec50_20190108 = newdata_1.get_ec50s()
 
+    # 20190119
+    ec50_20190119 = newdata_2.get_ec50s()
+
+    # 20190121
+    ec50_20190121 = newdata_3.get_ec50s()
+
+    # 20190214
+    ec50_20190214 = newdata_4.get_ec50s()
 
     # Make model predictions
     time_list = list(linspace(2.5, 60, num=15))
     Mixed_Model = IfnModel('Mixed_IFN_ppCompatible')
-    base_parameters = {'kd4': 1.0, 'krec_a1': 3.0000000000000001e-05, 'krec_a2': 0.050000000000000003, 'krec_b2': 0.01,
-         'krec_b1': 0.001, 'k_d4': 0.00059999999999999995, 'kSOCSon': 1e-08, 'kd3': 0.001,
-         'k_d3': 2.3999999999999999e-06}
-    Mixed_Model.set_parameters(base_parameters)
+    Mixed_Model.set_parameters({'R2': 4920, 'R1': 1200,
+                                'k_a1': 2.0e-13, 'k_a2': 1.328e-12, 'k_d3': 1.13e-4, 'k_d4': 0.9,
+                                'kSOCSon': 5e-08, 'kpu': 0.0022, 'kpa': 2.36e-06,
+                                'ka1': 3.3e-15, 'ka2': 1.85e-12, 'kd4': 2.0,
+                                'kd3': 6.52e-05,
+                                'kint_a':  0.00048, 'kint_b': 0.00086,
+                                'krec_a1': 0.01, 'krec_a2': 0.01, 'krec_b1': 0.005, 'krec_b2': 0.05})
+    scale_factor = 1.46182313424
+    scale_data = lambda q: (scale_factor * q[0], scale_factor * q[1])
 
-    # 20190108
-    Mixed_Model.set_parameters({'R2': 5700, 'R1': 1800,
-                                'k_a1': 4.98E-14 * 2, 'k_a2': 8.30e-13 * 4, 'k_d3': 2.4e-06, 'k_d4': 0.228,
-                                'kSOCSon': 2e-7, 'kpu': 0.0014,
-                                'ka1': 3.321155762205247e-14 * 0.1, 'ka2': 4.98173364330787e-13 * 0.5, 'kd4': 0.84,
-                                'kd3': 0.001,
-                                'kint_a': 0.0002, 'kint_b': 0.00048,
-                                'krec_a1': 1e-04, 'krec_a2': 0.02, 'krec_b1': 0.001, 'krec_b2': 0.005})
+    alpha_peak_aggregate_a, alpha_ec_aggregate_a = get_ec50(Mixed_Model, time_list, 'Ia', 'TotalpSTAT', custom_parameters={'Ib': 0}, rflag=True)
+    beta_peak_aggregate_b, beta_ec_aggregate_b = get_ec50(Mixed_Model, time_list, 'Ib', 'TotalpSTAT', custom_parameters={'Ia': 0}, rflag=True)
 
-    scale_factor = 0.260432986902
-    alpha_peak20190108, alpha_n20190108, alpha_ec5020190108 = get_ec50(Mixed_Model, time_list, 'Ia', 'TotalpSTAT', custom_parameters={'Ib': 0}, rflag=True)
-    beta_peak20190108, beta_n20190108, beta_ec5020190108 = get_ec50(Mixed_Model, time_list, 'Ib', 'TotalpSTAT', custom_parameters={'Ia': 0}, rflag=True)
-
-    # 20190119
-    Mixed_Model.reset_parameters()
-    Mixed_Model.set_parameters(base_parameters)
-    Mixed_Model.set_parameters({'R2': 5700, 'R1': 1800,
-                                'k_a1': 4.98E-14 * 2, 'k_a2': 1.328e-12, 'k_d3': 2.4e-06, 'k_d4': 0.228,
-                                'kSOCSon': 5e-08, 'kpu': 0.0011,
-                                'ka1': 3.3e-15, 'ka2': 1.22e-12, 'kd4': 0.86,
-                                'kd3': 1.74e-05,
-                                'kint_a': 0.000124, 'kint_b': 0.00086,
-                                'krec_a1': 0.0028, 'krec_a2': 0.01, 'krec_b1': 0.005, 'krec_b2': 0.05})
-
-    scale_factor = 0.242052437849
-    alpha_peak20190119, alpha_n20190119, alpha_ec5020190119 = get_ec50(Mixed_Model, time_list, 'Ia', 'TotalpSTAT', custom_parameters={'Ib': 0}, rflag=True)
-    beta_peak20190119, beta_n20190119, beta_ec5020190119 = get_ec50(Mixed_Model, time_list, 'Ib', 'TotalpSTAT', custom_parameters={'Ia': 0}, rflag=True)
-
-    # 20190121
-    Mixed_Model.reset_parameters()
-    Mixed_Model.set_parameters(base_parameters)
-    Mixed_Model.set_parameters({'R2': 4140, 'R1': 4920,
-                                'k_a1': 2.49e-15, 'k_a2': 1.328e-12, 'k_d3': 7.5e-06, 'k_d4': 0.06,
-                                'kSOCSon': 5e-08, 'kpu': 0.0024, 'kpa': 2.08e-06,
-                                'ka1': 5.3e-15, 'ka2': 1.22e-12, 'kd4': 0.86,
-                                'kd3': 5.47e-05,
-                                'kint_a':  0.0002, 'kint_b': 0.00086,
-                                'krec_a1': 0.0001, 'krec_a2': 0.02, 'krec_b1': 0.001, 'krec_b2': 0.005})
-
-    scale_factor = 0.2050499
-    alpha_peak20190121, alpha_n20190121, alpha_ec5020190121 = get_ec50(Mixed_Model, time_list, 'Ia', 'TotalpSTAT', custom_parameters={'Ib': 0}, rflag=True)
-    beta_peak20190121, beta_n20190121, beta_ec5020190121 = get_ec50(Mixed_Model, time_list, 'Ib', 'TotalpSTAT', custom_parameters={'Ia': 0}, rflag=True)
-
-    # Plot
+    # Plot EC50 vs time
     fig, axes = plt.subplots(nrows=1, ncols=2)
     axes[0].set_xlabel("Time (s)")
     axes[1].set_xlabel("Time (s)")
     axes[0].set_title(r"EC50 vs Time for IFN$\alpha$")
     axes[1].set_title(r"EC50 vs Time for IFN$\beta$")
-    axes[0].set_ylabel("EC50")
+    axes[0].set_ylabel("EC50 (pM)")
     axes[0].set_yscale('log')
     axes[1].set_yscale('log')
     # Add models
-    for colour_idx, alpha_ec50 in enumerate([alpha_ec5020190108, alpha_ec5020190119, alpha_ec5020190121]):
-        axes[0].plot(time_list, alpha_ec50, label=r'IFN$\alpha$ EC50', color=alpha_palette[colour_idx+1])
-    for colour_idx, beta_ec50 in enumerate([beta_ec5020190108, beta_ec5020190119, beta_ec5020190121]):
-        axes[1].plot(time_list, beta_ec50, label=r'IFN$\beta$ EC50', color=beta_palette[colour_idx+1])
+    axes[0].plot(time_list, alpha_ec_aggregate_a, label=r'IFN$\alpha$ EC50', color=alpha_palette[1])
+    axes[1].plot(time_list, beta_ec_aggregate_b, label=r'IFN$\beta$ EC50', color=beta_palette[1])
     # Add data
     for colour_idx, ec50 in enumerate([ec50_20190108, ec50_20190119, ec50_20190121]):
         axes[0].scatter([el[0] for el in ec50['Alpha']], [el[1] for el in ec50['Alpha']], label='data', color=alpha_palette[colour_idx+1])
         axes[1].scatter([el[0] for el in ec50['Beta']], [el[1] for el in ec50['Beta']], label='data', color=beta_palette[colour_idx+1])
     fig.show()
     fig.savefig('results\ec50_vs_time.pdf')
+
+    exit()
+    # Plot every MM fit to data, to verify EC50 values
+    dr_plot = DoseresponsePlot((6, 2))
+    for idx, t in enumerate(newdata_4.get_times('Alpha')):
+        dr_plot.add_trajectory(dra60, t, 'plot', alpha_model_palette[0], (idx, 0), 'Alpha',
+                               label='Alpha model ' + str(t))
+    for idx, t in enumerate(newdata_4.get_times('Beta')):
+        dr_plot.add_trajectory(drb60, t, 'plot', beta_model_palette[0], (idx, 1), 'Beta', label='Beta model ' + str(t))
+
+    dr_fig, dr_axes = dr_plot.show_figure(save_flag=False)
+    dr_fig.set_size_inches(10.5, 7.1 * 6)

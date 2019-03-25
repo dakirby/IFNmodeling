@@ -143,7 +143,7 @@ class IfnData:
         ydata = [top * x ** n / (k ** n + x ** n) for x in xdata]
         return ydata
 
-    def get_ec50s(self, hill_coeff_guess = 0.1):
+    def get_ec50s(self, hill_coeff_guess = 1):
         def augment_data(x_data, y_data):
             new_xdata = [x_data[0]*0.1, x_data[0]*0.3, x_data[0]*0.8, *x_data, x_data[-1]*2, x_data[-1]*5, x_data[-1]*8]
             new_ydata = [y_data[0], y_data[0], y_data[0], *y_data, y_data[-1], y_data[-1], y_data[-1]]
@@ -157,14 +157,30 @@ class IfnData:
                     doses, responses = augment_data(self.get_doses()[key][1:],  response_array[t[0]][1:])
                     results, covariance = curve_fit(self.__MM__, doses, responses,
                                                     p0=[max(responses), hill_coeff_guess, doses[int(len(doses)/2)]])
-                    ec50_array.append((t[1], results[2]))
+                    if results[2] > 1E4:
+                        top = max(responses) * 0.5
+                        for i, r in enumerate(responses):
+                            if r > top:
+                                realistic_ec50 = 10 ** ((np.log10(doses[i - 1]) + np.log10(doses[i])) / 2.0)
+                                ec50_array.append((t[1], realistic_ec50))
+                                break
+                    else:
+                        ec50_array.append((t[1], results[2]))
             else:
                 for t in enumerate(self.get_times()[key]):
                     doses, responses = augment_data(self.get_doses()[key],  response_array[t[0]])
                     results, covariance = curve_fit(self.__MM__, doses, responses,
                                                     p0=[max(responses), hill_coeff_guess, doses[int(len(doses)/2)]])
-                    ec50_array.append((t[1], results[2]))
-            ec50_dict[key] = ec50_array
+                    if results[2] > 1E4:
+                        top = max(responses) * 0.5
+                        for i, r in enumerate(responses):
+                            if r > top:
+                                realistic_ec50 = 10 ** ((np.log10(doses[i - 1]) + np.log10(doses[i])) / 2.0)
+                                ec50_array.append((t[1], realistic_ec50))
+                                break
+                    else:
+                        ec50_array.append((t[1], results[2]))
+            ec50_dict.update({key: ec50_array})
         return ec50_dict
 
     def get_max_responses(self):
