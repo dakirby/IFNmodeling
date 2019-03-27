@@ -1,4 +1,4 @@
-from ifnclass.ifndata import IfnData
+from ifnclass.ifndata import IfnData, DataAlignment
 from ifnclass.ifnmodel import IfnModel
 from ifnclass.ifnplot import DoseresponsePlot
 from numpy import linspace, logspace, transpose
@@ -82,6 +82,13 @@ if __name__ == '__main__':
     # 20190214
     ec50_20190214 = newdata_4.get_ec50s()
 
+    # Aligned data, to get scale factors for each data set
+    alignment = DataAlignment()
+    alignment.add_data([newdata_4, newdata_3, newdata_2, newdata_1])
+    alignment.align()
+    alignment.get_scaled_data()
+    mean_data = alignment.summarize_data()
+
     # Make model predictions
     time_list = list(linspace(2.5, 60, num=15))
     Mixed_Model = IfnModel('Mixed_IFN_ppCompatible')
@@ -95,8 +102,8 @@ if __name__ == '__main__':
     scale_factor = 1.46182313424
     scale_data = lambda q: (scale_factor * q[0], scale_factor * q[1])
 
-    alpha_peak_aggregate_a, alpha_ec_aggregate_a = get_ec50(Mixed_Model, time_list, 'Ia', 'TotalpSTAT', custom_parameters={'Ib': 0}, rflag=True)
-    beta_peak_aggregate_b, beta_ec_aggregate_b = get_ec50(Mixed_Model, time_list, 'Ib', 'TotalpSTAT', custom_parameters={'Ia': 0}, rflag=True)
+    alpha_peak_aggregate, alpha_ec_aggregate = get_ec50(Mixed_Model, time_list, 'Ia', 'TotalpSTAT', custom_parameters={'Ib': 0}, rflag=True)
+    beta_peak_aggregate, beta_ec_aggregate = get_ec50(Mixed_Model, time_list, 'Ib', 'TotalpSTAT', custom_parameters={'Ia': 0}, rflag=True)
 
     # Plot EC50 vs time
     fig, axes = plt.subplots(nrows=1, ncols=2)
@@ -108,23 +115,48 @@ if __name__ == '__main__':
     axes[0].set_yscale('log')
     axes[1].set_yscale('log')
     # Add models
-    axes[0].plot(time_list, alpha_ec_aggregate_a, label=r'IFN$\alpha$ EC50', color=alpha_palette[1])
-    axes[1].plot(time_list, beta_ec_aggregate_b, label=r'IFN$\beta$ EC50', color=beta_palette[1])
+    axes[0].plot(time_list, alpha_ec_aggregate, label=r'IFN$\alpha$ EC50', color=alpha_palette[1])
+    axes[1].plot(time_list, beta_ec_aggregate, label=r'IFN$\beta$ EC50', color=beta_palette[1])
     # Add data
-    for colour_idx, ec50 in enumerate([ec50_20190108, ec50_20190119, ec50_20190121]):
+    for colour_idx, ec50 in enumerate([ec50_20190108, ec50_20190119, ec50_20190121, ec50_20190214]):
         axes[0].scatter([el[0] for el in ec50['Alpha']], [el[1] for el in ec50['Alpha']], label='data', color=alpha_palette[colour_idx+1])
         axes[1].scatter([el[0] for el in ec50['Beta']], [el[1] for el in ec50['Beta']], label='data', color=beta_palette[colour_idx+1])
     fig.show()
     fig.savefig('results\ec50_vs_time.pdf')
 
-    exit()
-    # Plot every MM fit to data, to verify EC50 values
-    dr_plot = DoseresponsePlot((6, 2))
-    for idx, t in enumerate(newdata_4.get_times('Alpha')):
-        dr_plot.add_trajectory(dra60, t, 'plot', alpha_model_palette[0], (idx, 0), 'Alpha',
-                               label='Alpha model ' + str(t))
-    for idx, t in enumerate(newdata_4.get_times('Beta')):
-        dr_plot.add_trajectory(drb60, t, 'plot', beta_model_palette[0], (idx, 1), 'Beta', label='Beta model ' + str(t))
+    #-------------#
+    # Max response
+    #-------------#
+    # 20190108
+    max_20190108 = newdata_1.get_max_responses()
 
-    dr_fig, dr_axes = dr_plot.show_figure(save_flag=False)
-    dr_fig.set_size_inches(10.5, 7.1 * 6)
+    # 20190119
+    max_20190119 = newdata_2.get_max_responses()
+
+    # 20190121
+    max_20190121 = newdata_3.get_max_responses()
+
+    # 20190214
+    max_20190214 = newdata_4.get_max_responses()
+
+    # Plot
+    fig, axes = plt.subplots(nrows=1, ncols=2)
+    axes[0].set_xlabel("Time (s)")
+    axes[1].set_xlabel("Time (s)")
+    axes[0].set_title(r"Max pSTAT vs Time for IFN$\alpha$")
+    axes[1].set_title(r"Max pSTAT vs Time for IFN$\beta$")
+    axes[0].set_ylabel("Max pSTAT")
+    axes[0].set_yscale('log')
+    axes[1].set_yscale('log')
+    # Add models
+    axes[0].plot(time_list, alpha_peak_aggregate, label=r'IFN$\alpha$ Max pSTAT', color=alpha_palette[1])
+    axes[1].plot(time_list, beta_peak_aggregate, label=r'IFN$\beta$ Max pSTAT', color=beta_palette[1])
+    # Add data
+    for colour_idx, maxpSTAT in enumerate([max_20190108, max_20190119, max_20190121, max_20190214]):
+        scale_factor = alignment.scale_factors[3-colour_idx]
+        scaled_response = [el[1] * scale_factor for el in maxpSTAT['Alpha']]
+        axes[0].scatter([el[0] for el in maxpSTAT['Alpha']], scaled_response, label='data', color=alpha_palette[colour_idx+1])
+        scaled_response = [el[1] * scale_factor for el in maxpSTAT['Beta']]
+        axes[1].scatter([el[0] for el in maxpSTAT['Beta']], scaled_response, label='data', color=beta_palette[colour_idx+1])
+    fig.show()
+    fig.savefig('results\peak_response_vs_time.pdf')
