@@ -195,6 +195,7 @@
       <change beforePath="$PROJECT_DIR$/ifnscripts/mcmc_results/parameter_statistics.csv" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/mcmc_results/parameter_statistics.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnscripts/model_precision.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/model_precision.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnscripts/negative_feedback_figure.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/negative_feedback_figure.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/nicholas_gillespie.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/nicholas_gillespie.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnscripts/refractoriness_figure.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/refractoriness_figure.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnscripts/results/Comparing_Detailed_to_Simple/Detailed_Model_vs_data.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/results/Comparing_Detailed_to_Simple/Detailed_Model_vs_data.pdf" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnscripts/results/Comparing_Detailed_to_Simple/SImple_vs_Detailed.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/results/Comparing_Detailed_to_Simple/SImple_vs_Detailed.pdf" afterDir="false" />
@@ -241,7 +242,7 @@
       <file leaf-file-name="fit_all_GAB_data.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/ifnscripts/fit_all_GAB_data.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="120">
+            <state relative-caret-position="714">
               <caret line="48" column="80" selection-start-line="46" selection-start-column="28" selection-end-line="48" selection-end-column="80" />
               <folding>
                 <element signature="e#0#51#0" expanded="true" />
@@ -253,8 +254,8 @@
       <file leaf-file-name="subpopulations_analysis.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/ifnscripts/subpopulations_analysis.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="217">
-              <caret line="184" column="77" selection-start-line="184" selection-start-column="77" selection-end-line="184" selection-end-column="77" />
+            <state relative-caret-position="98">
+              <caret line="116" selection-start-line="116" selection-end-line="116" />
               <folding>
                 <element signature="e#0#51#0" expanded="true" />
               </folding>
@@ -903,12 +904,8 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ifnclass/mcmc_results/progress.txt">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/ifnclass/mcmc_results/simulation_summary.txt">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnclass/mcmc_results/progress.txt" />
+    <entry file="file://$PROJECT_DIR$/ifnclass/mcmc_results/simulation_summary.txt" />
     <entry file="file://$PROJECT_DIR$/ifnscripts/align_GAB_data.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="153">
@@ -920,9 +917,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="268">
           <caret line="155" column="48" selection-start-line="155" selection-start-column="48" selection-end-line="155" selection-end-column="48" />
-          <folding>
-            <element signature="e#0#51#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -930,9 +924,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="255">
           <caret line="92" column="35" lean-forward="true" selection-start-line="92" selection-start-column="8" selection-end-line="92" selection-end-column="35" />
-          <folding>
-            <element signature="e#285#345#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -959,7 +950,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/ifnscripts/fit_all_GAB_data.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="120">
+        <state relative-caret-position="714">
           <caret line="48" column="80" selection-start-line="46" selection-start-column="28" selection-end-line="48" selection-end-column="80" />
           <folding>
             <element signature="e#0#51#0" expanded="true" />
@@ -969,8 +960,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/ifnscripts/subpopulations_analysis.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="217">
-          <caret line="184" column="77" selection-start-line="184" selection-start-column="77" selection-end-line="184" selection-end-column="77" />
+        <state relative-caret-position="98">
+          <caret line="116" selection-start-line="116" selection-end-line="116" />
           <folding>
             <element signature="e#0#51#0" expanded="true" />
           </folding>

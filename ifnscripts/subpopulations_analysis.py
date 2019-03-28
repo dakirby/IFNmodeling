@@ -107,7 +107,6 @@ class DualMixedPopulation:
 
         # Fit each parameter, ordered from most important to least
         initial_score, _ = self.score_mixed_models({}, [{}, {}], data)
-
         for i in range(number_of_parameters):
             print("{}% of the way done".format(i * 100 / number_of_parameters))
             reference_score = 0
@@ -119,7 +118,7 @@ class DualMixedPopulation:
                 scale_factor_list = []
                 # Try all test values for current parameter
                 for j in np.linspace(min_test_val, max_test_val, ntest_per_param):
-                    test_parameters = {**{p: j}, **final_fit}  # Includes previously fit parameters
+                    test_parameters = {p: j, **final_fit}  # Includes previously fit parameters
                     base_parameters, subpopulation_parameters = separate_parameters(test_parameters, mixed_p)
                     score, scale_factor = self.score_mixed_models(base_parameters, subpopulation_parameters, data)
                     residuals.append(score)
@@ -186,7 +185,7 @@ if __name__ == '__main__':
                          'krec_a1': (1e-03, 1e-02), 'krec_a2': (0.1, 0.01),
                          'krec_b1': (0.005, 0.0005), 'krec_b2': (0.05, 0.005)}
     mixed_parameters = ['R1', 'R2']
-    best_shared_params, best_mixed_params, best_sf = het_model.stepwise_fit(mean_data, parameters_to_fit, 10,
+    best_shared_params, best_mixed_params, best_sf = het_model.stepwise_fit(mean_data, parameters_to_fit, 2,
                                                                             mixed_parameters)
 
     # -------------------------
