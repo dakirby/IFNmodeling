@@ -8,6 +8,8 @@ import pandas as pd
 from ifnclass.ifnfit import StepwiseFit
 from scipy.optimize import minimize
 from collections import OrderedDict
+import os
+import json
 
 
 class DualMixedPopulation:
@@ -235,6 +237,13 @@ if __name__ == '__main__':
     new_fit.axes[0].set_title(r"IFN$\alpha$")
     new_fit.axes[1].set_title(r"IFN$\beta$")
     new_fit.show_figure(save_flag=False)
+    print(str(best_shared_params))
+    print(str(best_mixed_params[0]))
+    print(str(best_mixed_params[1]))
+    with open(os.path.join('results','GAB_NewData','stepwise_params.txt'),'w') as f:
+        f.write(json.dumps(best_shared_params))
+        f.write(json.dumps(best_mixed_params[0]))
+        f.write(json.dumps(best_mixed_params[1]))
 
     """
     # ----------------------
