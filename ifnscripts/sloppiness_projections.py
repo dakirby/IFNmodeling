@@ -5,6 +5,7 @@ from numpy import linspace, logspace, log10, nan
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 import pickle
 import numdifftools as nd
 import os
@@ -66,6 +67,21 @@ def heatmap(data, row_labels, col_labels, ax=None,
 
     return im, cbar
 
+def discrete_cmap(N, base_cmap=None):
+    # By Jake VanderPlas
+    # License: BSD-style
+    """Create an N-bin discrete colormap from the specified input map"""
+
+    # Note that if base_cmap is a string or None, you can simply do
+    #    return plt.cm.get_cmap(base_cmap, N)
+    # The following works for string, None, or a colormap instance:
+
+    base = plt.cm.get_cmap(base_cmap)
+    color_list = base(np.linspace(0, 1, N))
+    cmap_name = base.name + str(N)
+    return base.from_list(cmap_name, color_list, N)
+
+
 if __name__ == '__main__':
     Detailed_Model = IfnModel('Mixed_IFN_detailed')
     # Put detailed model into parameter state best fit for Ratnadeep's data (20181113_B6_IFNs_Dose_Response_Bcells)
@@ -100,6 +116,6 @@ if __name__ == '__main__':
     fig, ax = plt.subplots()
     # Plot the heatmap
     im, cbar = heatmap(evecs, parameters_to_test, ["{:.2E}".format(el) for el in evals], ax=ax,
-                   cmap="viridis", cbarlabel="projections onto parameter space")
+                   cmap=discrete_cmap(8,base_cmap="PuOr"), cbarlabel="projections onto parameter space")
     fig.tight_layout()
     plt.show()
