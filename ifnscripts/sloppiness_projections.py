@@ -8,7 +8,9 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 import pickle
 import numdifftools as nd
+import json
 import os
+
 
 def heatmap(data, row_labels, col_labels, ax=None,
             cbar_kw={}, cbarlabel="", **kwargs):
@@ -106,16 +108,33 @@ if __name__ == '__main__':
     best_parameters = np.log([Detailed_Model.parameters[key] * np.random.uniform(0.97, 1.03) for key in parameters_to_test])
 
     H = pickle.load(open('results/Sloppiness/Detailed_Model_Hessian.pkl','rb'))    
+    # -----------------
+    # Plot eigenvectors
+    # -----------------
     evals, evecs = np.linalg.eig(H)
     idx = evals.argsort()[::-1]   
     evals = evals[idx]
     evecs = evecs[:,idx]
-    print(np.shape(evecs))
-    print(np.shape(parameters_to_test))
-    # Plot eigenvectors
     fig, ax = plt.subplots()
     # Plot the heatmap
     im, cbar = heatmap(evecs, parameters_to_test, ["{:.2E}".format(el) for el in evals], ax=ax,
                    cmap=discrete_cmap(8,base_cmap="PuOr"), cbarlabel="projections onto parameter space")
     fig.tight_layout()
     plt.show()
+    # ------------------------------------
+    # Get major components of eigenvectors
+    # ------------------------------------
+    component_list = {}
+    for idx in range(5):
+        coverage = 0
+        components = []
+        particular_evec = np.array(evecs[:,idx]).flatten()
+        sorted_components = particular_evec[np.abs(particular_evec).argsort()[::-1]]
+        while np.sqrt(coverage)<0.8:
+            next_dimension = sorted_components[0]
+            sorted_components = np.delete(sorted_components, 0)
+            components.append((parameters_to_test[np.where(particular_evec == next_dimension)[0][0]], next_dimension))
+            coverage += next_dimension ** 2
+        component_list.update({idx:components})    
+    with open(os.path.join('results','sloppiness_projections.txt'),'w') as f:
+        f.write(json.dumps(component_list))

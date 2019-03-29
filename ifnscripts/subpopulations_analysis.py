@@ -167,7 +167,7 @@ if __name__ == '__main__':
                        'kint_a': 0.000124, 'kint_b': 0.00086,
                        'krec_a1': 0.0028, 'krec_a2': 0.01, 'krec_b1': 0.005, 'krec_b2': 0.05}
 
-    mixed_parameters = [{'R2': 5700, 'R1': 1800}, {'R2': 570, 'R1': 180}]
+    mixed_parameters = [{'R2': 570, 'R1': 180}, {'R2': 5700, 'R1': 8000} ]
 
     het_model = DualMixedPopulation('Mixed_IFN_ppCompatible', 0.8, 0.2)
     het_model.model_1.set_parameters(base_parameters)
@@ -185,7 +185,7 @@ if __name__ == '__main__':
                          'krec_a1': (1e-03, 1e-02), 'krec_a2': (0.1, 0.01),
                          'krec_b1': (0.005, 0.0005), 'krec_b2': (0.05, 0.005)}
     mixed_parameters = ['R1', 'R2']
-    best_shared_params, best_mixed_params, best_sf = het_model.stepwise_fit(mean_data, parameters_to_fit, 2,
+    best_shared_params, best_mixed_params, best_sf = het_model.stepwise_fit(mean_data, parameters_to_fit, 10,
                                                                             mixed_parameters)
 
     # -------------------------
