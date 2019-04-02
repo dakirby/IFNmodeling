@@ -34,7 +34,7 @@ if __name__ == '__main__':
                                 'kSOCSon': 5e-08, 'kpu': 0.0022, 'kpa': 2.36e-06,
                                 'ka1': 3.3e-15, 'ka2': 1.85e-12, 'kd4': 2.0,
                                 'kd3': 6.52e-05,
-                                'kint_a':  0.00048, 'kint_b': 0.00086,
+                                'kint_a':  0.0015, 'kint_b': 0.002,
                                 'krec_a1': 0.01, 'krec_a2': 0.01, 'krec_b1': 0.005, 'krec_b2': 0.05})
     scale_factor = 1.46182313424
     scale_data = lambda q: (scale_factor * q[0], scale_factor * q[1])
@@ -78,11 +78,9 @@ if __name__ == '__main__':
 
     dr_plot = DoseresponsePlot((6, 2))
     for idx, t in enumerate(newdata_4.get_times('Alpha')):
-        dr_plot.add_trajectory(mean_data, t, 'errorbar', alpha_palette[0], (idx, 0), 'Alpha')
-        dr_plot.add_trajectory(mean_data, t, 'scatter', 'ro', (idx, 0), 'Alpha', color=alpha_palette[0], label='Alpha ' + str(t))
+        dr_plot.add_trajectory(mean_data, t, 'errorbar', 'o--', (idx, 0), 'Alpha', label = '', color = alpha_palette[0])
     for idx, t in enumerate(newdata_4.get_times('Beta')):
-        dr_plot.add_trajectory(mean_data, t, 'errorbar', beta_palette[0], (idx, 1), 'Beta')
-        dr_plot.add_trajectory(mean_data, t, 'scatter', 'go', (idx, 1), 'Beta', color=beta_palette[0], label='Beta ' + str(t))
+        dr_plot.add_trajectory(mean_data, t, 'errorbar', 'o--', (idx, 1), 'Beta', label = '', color = beta_palette[0])
 
     # ----------------------------------
     # Plot best fit for each time slice
@@ -108,19 +106,16 @@ if __name__ == '__main__':
     # Add fits
     for idx, t in enumerate(times):
         if t not in alpha_mask:
-            dr_plot_mean_fit.add_trajectory(dra60, t, 'plot', alpha_palette[idx], (0, 0), 'Alpha', label='Alpha ' + str(t))
+            dr_plot_mean_fit.add_trajectory(dra60, t, 'plot', alpha_palette[idx], (0, 0), 'Alpha', label='Alpha ' + str(t), linewidth=2)
         if t not in beta_mask:
-            dr_plot_mean_fit.add_trajectory(drb60, t, 'plot', beta_palette[idx], (0, 1), 'Beta', label='Beta ' + str(t))
+            dr_plot_mean_fit.add_trajectory(drb60, t, 'plot', beta_palette[idx], (0, 1), 'Beta', label='Beta ' + str(t), linewidth=2)
     # Add data
+    times = [2.5, 5.0, 7.5, 10.0, 20.0, 60.0]
     for idx, t in enumerate(times):
         if t not in alpha_mask:
-            dr_plot_mean_fit.add_trajectory(mean_data, t, 'plot', '--', (0, 0), 'Alpha', label='Alpha ' + str(t),
-                                            color=alpha_palette[idx])
-            dr_plot_mean_fit.add_trajectory(mean_data, t, 'scatter', 'ro', (0, 0), 'Alpha', label='', color=alpha_palette[idx])
+            dr_plot_mean_fit.add_trajectory(mean_data, t, 'errorbar', 'o--', (0, 0), 'Alpha', label='', color=alpha_palette[idx], linewidth=2)
         if t not in beta_mask:
-            dr_plot_mean_fit.add_trajectory(mean_data, t, 'plot', '--', (0, 1), 'Beta', label='Beta ' + str(t),
-                                            color=beta_palette[idx])
-            dr_plot_mean_fit.add_trajectory(mean_data, t, 'scatter', 'go', (0, 1), 'Beta', label='', color=beta_palette[idx])
+            dr_plot_mean_fit.add_trajectory(mean_data, t, 'errorbar', 'o--', (0, 1), 'Beta', label='', color=beta_palette[idx], linewidth=2)
 
     dr_plot_mean_fit.show_figure(save_flag=False)
 

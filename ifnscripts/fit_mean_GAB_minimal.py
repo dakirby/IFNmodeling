@@ -30,25 +30,25 @@ if __name__ == '__main__':
     doses_beta = newdata_4.get_doses('Beta')
     Mixed_Model = IfnModel('Mixed_IFN_ppCompatible')
     Mixed_Model.set_parameters({'R2': 4920, 'R1': 1200,
-                                'kSOCSon': 5e-08, 'kpu': 0.0022, 'kpa': 2.36e-06,
-                                'kint_a':  0.00048, 'kint_b': 0.00086,
-                                'krec_a1': 0.01, 'krec_a2': 0.01, 'krec_b1': 0.005, 'krec_b2': 0.05})
+                                'kSOCSon': 6.4e-08, 'kpu': 0.0022, 'kpa': 1e-06,
+                                'kint_a':  0.0001, 'kint_b': 0.00086,
+                                'krec_a1': 0.05, 'krec_a2': 0.01, 'krec_b1': 0.005, 'krec_b2': 0.05})
     scale_factor = 1.46182313424
     scale_data = lambda q: (scale_factor * q[0], scale_factor * q[1])
 
     # -------------------------------
     # Perform stepwise fit
     # -------------------------------
-    stepfit = StepwiseFit(Mixed_Model, mean_data,
-                          {'R2': (200, 12000), 'R1': (200, 12000),
-                           'kSOCSon': (1e-08, 1e-07), 'kpu': (0.001, 0.01), 'kpa': (1e-06, 1e-05),
-                           'kint_a':  (0.0001, 0.001), 'kint_b': (0.0001, 0.001),
-                           'krec_a1': (0.005, 0.05), 'krec_a2': (0.005, 0.05),
-                           'krec_b1': (0.001, 0.01), 'krec_b2': (0.001, 0.01)}, n=6)
-    best_parameters, scale_factor = stepfit.fit()
-    print(best_parameters)
-    print(scale_factor)
-    Mixed_Model = stepfit.model
+    #stepfit = StepwiseFit(Mixed_Model, mean_data,
+    #                      {'R2': (200, 12000), 'R1': (200, 12000),
+    #                       'kSOCSon': (1e-08, 1e-07), 'kpu': (0.001, 0.01), 'kpa': (1e-06, 1e-05),
+    #                       'kint_a':  (0.0001, 0.001), 'kint_b': (0.0001, 0.001),
+    #                       'krec_a1': (0.005, 0.05), 'krec_a2': (0.005, 0.05),
+    #                       'krec_b1': (0.001, 0.01), 'krec_b2': (0.001, 0.01)}, n=6)
+    #best_parameters, scale_factor = stepfit.fit()
+    #print(best_parameters)
+    #print(scale_factor)
+    #Mixed_Model = stepfit.model
 
     # -------------------------------
     # Make predictions

@@ -185,7 +185,7 @@ if __name__ == '__main__':
                          'krec_a1': (1e-03, 1e-02), 'krec_a2': (0.1, 0.01),
                          'krec_b1': (0.005, 0.0005), 'krec_b2': (0.05, 0.005)}
     mixed_parameters = ['R1', 'R2']
-    best_shared_params, best_mixed_params, best_sf = het_model.stepwise_fit(mean_data, parameters_to_fit, 2,
+    best_shared_params, best_mixed_params, best_sf = het_model.stepwise_fit(mean_data, parameters_to_fit, 10,
                                                                             mixed_parameters)
 
     # -------------------------

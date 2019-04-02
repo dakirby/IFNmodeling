@@ -215,7 +215,10 @@ class TimecoursePlot:
                     ax.errorbar(x, y, yerr=sigmas, fmt='--', label=trajectory.label, color=trajectory.line_style)
                 ax.legend()
         if save_flag:
-            plt.savefig(os.path.join(save_dir, 'fig{}.pdf'.format(int(time.time()))))
+            if save_dir == '':
+                plt.savefig(os.path.join(save_dir, 'fig{}.pdf'.format(int(time.time()))))
+            else:
+                plt.savefig(save_dir)
         if show_flag:
             plt.legend()
             plt.show()
@@ -371,7 +374,10 @@ class DoseresponsePlot:
                 else:
                     ax.errorbar(x, z, yerr=sigmas, fmt='--', label=trajectory.label, color=trajectory.line_style)
         if save_flag:
-            plt.savefig(os.path.join(save_dir, 'fig{}.pdf'.format(int(time.time()))))
+            if save_dir == '':
+                plt.savefig(os.path.join(save_dir, 'fig{}.pdf'.format(int(time.time()))))
+            else:
+                plt.savefig(save_dir)
         if show_flag:
             plt.show()
         return self.fig, self.axes
