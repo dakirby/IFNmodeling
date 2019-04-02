@@ -167,7 +167,7 @@ if __name__ == '__main__':
                        'kint_a': 0.000124, 'kint_b': 0.00086,
                        'krec_a1': 0.0028, 'krec_a2': 0.01, 'krec_b1': 0.005, 'krec_b2': 0.05}
 
-    mixed_parameters = [{'R2': 5700, 'R1': 1800}, {'R2': 570, 'R1': 180}]
+    mixed_parameters = [{'R2': 570, 'R1': 180}, {'R2': 5700, 'R1': 8000} ]
 
     het_model = DualMixedPopulation('Mixed_IFN_ppCompatible', 0.8, 0.2)
     het_model.model_1.set_parameters(base_parameters)
