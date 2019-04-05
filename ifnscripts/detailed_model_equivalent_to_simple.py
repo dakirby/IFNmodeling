@@ -45,7 +45,7 @@ if __name__ == '__main__':
         drbdf.loc['Beta'].iloc[:, i] = drbdf.loc['Beta'].iloc[:, i].apply(scale_data)
     dra60 = IfnData('custom', df=dradf, conditions={'Alpha': {'Ib': 0}})
     drb60 = IfnData('custom', df=drbdf, conditions={'Beta': {'Ia': 0}})
-    print(pd.concat([dradf, dradf]))
+
     total_data = IfnData('custom', df=pd.concat([dradf, dradf]), conditions={'Alpha': {'Ib': 0}, 'Beta': {'Ia': 0}})
     # Plot detailed model vs data to validate parameter choices
     new_fit = DoseresponsePlot((1, 2))
@@ -96,7 +96,7 @@ if __name__ == '__main__':
     scale_data = lambda q: (scale_factor * q[0], scale_factor * q[1])
 
     # Make detailed model predictions
-    times = [2.5, 5., 7.5, 10., 20., 60.]
+    times = [2.5, 5.0, 7.5, 10.0, 20.0, 60.0]
     dradf = Detailed_Model.doseresponse(times, 'TotalpSTAT', 'Ia', list(logspace(-1, 5)),
                                      parameters={'Ib': 0}, return_type='dataframe', dataframe_labels='Alpha')
     drbdf = Detailed_Model.doseresponse(times, 'TotalpSTAT', 'Ib', list(logspace(-2, log10(2000))),
@@ -142,10 +142,10 @@ if __name__ == '__main__':
             new_fit.add_trajectory(drb60, t, 'plot', beta_palette[idx], (0, 1), 'Beta')
             new_fit.add_trajectory(drb60_d, t, 'plot', '--', (0, 1), 'Beta', color=beta_palette[idx])
 
-    new_fit.add_trajectory(dra60, 60., 'plot', alpha_palette[idx], (0, 0), 'Alpha', label='Alpha Simple Model')
-    new_fit.add_trajectory(dra60_d, 60., 'plot', '--', (0, 0), 'Alpha', color=alpha_palette[idx], label='Alpha Detailed Model')
-    new_fit.add_trajectory(drb60, 60., 'plot', beta_palette[idx], (0, 1), 'Beta', label='Beta Simple Model')
-    new_fit.add_trajectory(drb60_d, 60., 'plot', '--', (0, 1), 'Beta', color=beta_palette[idx], label='Beta Detailed Model')
+    new_fit.add_trajectory(dra60, 60.0, 'plot', alpha_palette[idx], (0, 0), 'Alpha', label='Alpha Simple Model')
+    new_fit.add_trajectory(dra60_d, 60.0, 'plot', '--', (0, 0), 'Alpha', color=alpha_palette[idx], label='Alpha Detailed Model')
+    new_fit.add_trajectory(drb60, 60.0, 'plot', beta_palette[idx], (0, 1), 'Beta', label='Beta Simple Model')
+    new_fit.add_trajectory(drb60_d, 60.0, 'plot', '--', (0, 1), 'Beta', color=beta_palette[idx], label='Beta Detailed Model')
     new_fit.show_figure(save_flag=False)
 
 

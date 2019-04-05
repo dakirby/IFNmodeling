@@ -29,22 +29,19 @@ if __name__ == '__main__':
     doses_alpha = newdata_4.get_doses('Alpha')
     doses_beta = newdata_4.get_doses('Beta')
     Mixed_Model = IfnModel('Mixed_IFN_ppCompatible')
-    Mixed_Model.set_parameters({'R2': 4920, 'R1': 1200,
-                                'kSOCSon': 6.4e-08, 'kpu': 0.0022, 'kpa': 1e-06,
-                                'kint_a':  0.0001, 'kint_b': 0.00086,
-                                'krec_a1': 0.05, 'krec_a2': 0.01, 'krec_b1': 0.005, 'krec_b2': 0.05})
-    scale_factor = 1.46182313424
+    Mixed_Model.set_parameters({'R2': 7280, 'R1': 4920,
+                                'kSOCSon': 1e-7, 'kpu': 0.001, 'kpa': 1e-06,
+                                'kSOCS': 0.0046,
+                                'kint_a':  0, 'kint_b': 0})
+    scale_factor = 0.472732426722
     scale_data = lambda q: (scale_factor * q[0], scale_factor * q[1])
 
     # -------------------------------
     # Perform stepwise fit
     # -------------------------------
     #stepfit = StepwiseFit(Mixed_Model, mean_data,
-    #                      {'R2': (200, 12000), 'R1': (200, 12000),
-    #                       'kSOCSon': (1e-08, 1e-07), 'kpu': (0.001, 0.01), 'kpa': (1e-06, 1e-05),
-    #                       'kint_a':  (0.0001, 0.001), 'kint_b': (0.0001, 0.001),
-    #                       'krec_a1': (0.005, 0.05), 'krec_a2': (0.005, 0.05),
-    #                       'krec_b1': (0.001, 0.01), 'krec_b2': (0.001, 0.01)}, n=6)
+    #                      {'kSOCSon': (1e-07, 1e-06), 'kpu': (1E-4, 1E-3), 'kpa': (1e-07, 1e-06),
+    #                       'kSOCS': (1E-3, 1E-2)}, n=6)
     #best_parameters, scale_factor = stepfit.fit()
     #print(best_parameters)
     #print(scale_factor)
@@ -112,13 +109,11 @@ if __name__ == '__main__':
     # Add data
     for idx, t in enumerate(times):
         if t not in alpha_mask:
-            dr_plot_mean_fit.add_trajectory(mean_data, t, 'plot', '--', (0, 0), 'Alpha', label='Alpha ' + str(t),
+            dr_plot_mean_fit.add_trajectory(mean_data, t, 'errorbar', 'o--', (0, 0), 'Alpha', label='Alpha ' + str(t),
                                             color=alpha_palette[idx])
-            dr_plot_mean_fit.add_trajectory(mean_data, t, 'scatter', 'ro', (0, 0), 'Alpha', label='', color=alpha_palette[idx])
         if t not in beta_mask:
-            dr_plot_mean_fit.add_trajectory(mean_data, t, 'plot', '--', (0, 1), 'Beta', label='Beta ' + str(t),
+            dr_plot_mean_fit.add_trajectory(mean_data, t, 'errorbar', 'p--', (0, 1), 'Beta', label='Beta ' + str(t),
                                             color=beta_palette[idx])
-            dr_plot_mean_fit.add_trajectory(mean_data, t, 'scatter', 'go', (0, 1), 'Beta', label='', color=beta_palette[idx])
 
     dr_plot_mean_fit.show_figure(save_flag=False)
 
@@ -161,24 +156,20 @@ if __name__ == '__main__':
     # Add fits
     for j, dose in enumerate(doses_alpha):
         if dose not in alpha_mask:
-            time_course_paper_fig.add_trajectory(alpha_IfnData_objects[j], 'plot', alpha_palette[j], (0, 0),
-                                                 label='Alpha ' + str(dose))
+            time_course_paper_fig.add_trajectory(alpha_IfnData_objects[j], 'plot', alpha_palette[j], (0, 0), label='')
     for j, dose in enumerate(doses_beta):
         if dose not in beta_mask:
-            time_course_paper_fig.add_trajectory(beta_IfnData_objects[j], 'plot', beta_palette[j], (0, 1),
-                                                 label='Beta ' + str(dose))
+            time_course_paper_fig.add_trajectory(beta_IfnData_objects[j], 'plot', beta_palette[j], (0, 1), label='')
     # Add data
     for idx, d in enumerate(doses_alpha):
         # Optional mask:
         if d not in alpha_mask:
             atc = IfnData('custom', df=mean_data.data_set.loc['Alpha', d, :])
-            time_course_paper_fig.add_trajectory(atc, 'scatter', 'o', (0, 0), label='Alpha ' + str(d), color=alpha_palette[idx])
-            time_course_paper_fig.add_trajectory(atc, 'errorbar', alpha_palette[idx], (0, 0), color=alpha_palette[idx])
+            time_course_paper_fig.add_trajectory(atc, 'errorbar', 'o--', (0, 0), label='Alpha ' + str(d), color=alpha_palette[idx])
     for idx, d in enumerate(doses_beta):
         if d not in beta_mask:
             btc = IfnData('custom', df=mean_data.data_set.loc['Beta', d, :])
-            time_course_paper_fig.add_trajectory(btc, 'scatter', 'o', (0, 1), label='Beta ' + str(d), color=beta_palette[idx])
-            time_course_paper_fig.add_trajectory(btc, 'errorbar', beta_palette[idx], (0, 1), color=beta_palette[idx])
+            time_course_paper_fig.add_trajectory(btc, 'errorbar', 'o--', (0, 1), label='Beta ' + str(d), color=beta_palette[idx])
 
     time_course_paper_fig.show_figure()
 

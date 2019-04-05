@@ -1,7 +1,7 @@
 from pysb.export import export
 from collections import OrderedDict
 import copy
-from numpy import multiply, zeros, nan
+from numpy import multiply, zeros, nan, asarray
 import pandas as pd
 import pickle
 import time
@@ -222,7 +222,7 @@ class IfnModel:
     def reset_parameters(self):
         self.parameters = copy.deepcopy(self.default_parameters)
 
-    def timecourse(self, times, observable, parameters=None, return_type='list', dataframe_labels=[]):
+    def timecourse(self, times, observable, parameters=None, return_type='list', dataframe_labels=[], scale_factor=1):
         # Keep current parameter state
         initial_parameters = copy.deepcopy(self.parameters)
         # Substitute in new simulation-specific values
@@ -244,30 +244,55 @@ class IfnModel:
         # Return trajectory(ies)
         if return_type == 'list':
             if type(observable) == list:
-                return {obs: sim[obs] for obs in observable}
+                if scale_factor == 1:
+                    return {obs: sim[obs] for obs in observable}
+                else:
+                    return {obs: multiply(scale_factor, sim[obs]).tolist() for obs in observable}
             else:
-                return {observable: sim[observable]}
+                if scale_factor == 1:
+                    return {observable: sim[observable]}
+                else:
+                    return {observable: multiply(scale_factor, sim[observable]).tolist()}
         elif return_type == 'dataframe':
             # Check if mandatory labels also provided; return as list if not provided
             if dataframe_labels == []:
                 print("Insufficient labels provided for dataframe return type")
                 if type(observable) == list:
-                    return {obs: sim[obs] for obs in observable}
+                    if scale_factor == 1:
+                        return {obs: sim[obs] for obs in observable}
+                    else:
+                        return {obs: multiply(scale_factor, sim[obs]).tolist() for obs in observable}
                 else:
-                    return {observable: sim[observable]}
+                    if scale_factor == 1:
+                        return {observable: sim[observable]}
+                    else:
+                        return {observable: multiply(scale_factor, sim[observable]).tolist()}
             # Build dataframe
             if type(observable) == list:
                 rows = [[obs, dataframe_labels[0], dataframe_labels[1]] + [(val, nan) for val in sim[obs]] for obs in observable]
                 dataframe = pd.DataFrame.from_records(rows, columns=['Observable', 'Dose_Species', 'Dose (pM)']+times)
                 dataframe.set_index(['Observable', 'Dose_Species', 'Dose (pM)'], inplace=True)
-                return dataframe
+                if scale_factor == 1:
+                    return dataframe
+                else:
+                    scale_data = lambda q: (scale_factor * q[0], scale_factor * q[1])
+                    for obs in observable:
+                        dataframe.loc[obs].loc[dataframe_labels[0]].iloc[:, i] = dataframe.loc[obs].loc[dataframe_labels[0]].iloc[:, i].apply(scale_data)
+                    return dataframe
             else:
                 row = [(dataframe_labels[0], dataframe_labels[1], *[(val, nan) for val in sim[observable]])]
                 dataframe = pd.DataFrame.from_records(row, columns=['Dose_Species', 'Dose (pM)']+times)
                 dataframe.set_index(['Dose_Species', 'Dose (pM)'], inplace=True)
-                return dataframe
+                if scale_factor == 1:
+                    return dataframe
+                else:
+                    scale_data = lambda q: (scale_factor * q[0], scale_factor * q[1])
+                    dataframe.loc[dataframe_labels[0]].iloc[:, i] = dataframe.loc[dataframe_labels[0]].iloc[:, i].apply(scale_data)
+                    return dataframe
 
-    def doseresponse(self, times, observable, dose_species, doses, parameters={}, return_type='list', dataframe_labels=None):
+
+    def doseresponse(self, times, observable, dose_species, doses, parameters={}, return_type='list',
+                     dataframe_labels=None, scale_factor=1):
         # create dose_response_table dictionary
         if type(observable) == list:
             dose_response_table = {obs: zeros((len(doses), len(times))) for obs in observable}
@@ -287,7 +312,10 @@ class IfnModel:
         if return_type == 'list':
             for observable_species in dose_response_table.keys():
                 dose_response_table[observable_species] = dose_response_table[observable_species].tolist()
-            return dose_response_table
+            if scale_factor == 1:
+                return dose_response_table
+            else:
+                return multiply(scale_factor, asarray(dose_response_table)).tolist()
         elif return_type == 'dataframe':
             if type(observable) != list:
                 if dataframe_labels is None:
@@ -298,7 +326,18 @@ class IfnModel:
                     data_dict.update({str(times[t]): [(dose_response_table[observable][d][t], nan) for d in range(len(doses))]})
                 df = pd.DataFrame.from_dict(data_dict)
                 df.set_index(['Dose_Species', 'Dose (pM)'], inplace=True)
-                return df
+                if scale_factor == 1:
+                    return df
+                else:
+                    scale_data = lambda q: (scale_factor * q[0], scale_factor * q[1])
+                    if dose_species == 'Ia':
+                        dose_species = 'Alpha'
+                    elif dose_species == 'Ib':
+                        dose_species = 'Beta'
+
+                    for i in range(len(times)):
+                        df.loc[dose_species].iloc[:, i] = df.loc[dose_species].iloc[:, i].apply(scale_data)
+                    return df
             else:
                 if dataframe_labels is None:
                     dataframe_labels == dose_species
@@ -312,7 +351,18 @@ class IfnModel:
                     df = pd.DataFrame.from_dict(data_dict)
                     total_df = total_df.append(df)
                 total_df.set_index(['Observable_Species', 'Dose_Species', 'Dose (pM)'], inplace=True)
-                return total_df
+                if scale_factor == 1:
+                    return total_df
+                else:
+                    scale_data = lambda q: (scale_factor * q[0], scale_factor * q[1])
+                    if dose_species == 'Ia':
+                        dose_species = 'Alpha'
+                    elif dose_species == 'Ib':
+                        dose_species = 'Beta'
+                    for obs in observable:
+                        for i in range(len(times)):
+                            total_df.loc[obs].loc[dose_species].iloc[:, i] = total_df.loc[obs].loc[dose_species].iloc[:, i].apply(scale_data)
+                    return total_df
 
 if __name__ == '__main__':
     testModel = IfnModel('Mixed_IFN_ppCompatible')
