@@ -49,14 +49,14 @@ if __name__ == '__main__':
                                 'kSOCS': 0.005, 'kSOCSon': 1e-3, 'SOCSdeg': 0,
                                 'kint_b': 0.0009, 'kint_a': 0.001})
     """
-    Mixed_Model.set_parameters({'kpu': 0.00025, 'kpa': 5e-7,
+    Mixed_Model.set_parameters({'kpu': 0.00025, 'kpa': 6e-7,
                                 'R2': 1742, 'R1': 1785,
                                 'k_d4': 0.06, 'kd4': 0.803, 'kd3': 0.008,
                                 'k_a2': 8.3e-13 * 0.1,
-                                'ka2': 4.98173364330787e-13 * 0.1, 'ka1': 3.321155762205247e-14,
-                                'ka4': 0.2,
+                                'ka2': 4.98173364330787e-13 * 0.05, 'ka1': 3.321155762205247e-14*4,
+                                'ka4': 0.4,
                                 'kSOCS': 0.005, 'kSOCSon': 1e-3, 'SOCSdeg': 0,
-                                'kint_b': 0.0009, 'kint_a': 0.001})
+                                'kint_b': 0.002, 'kint_a': 0.001})
 
     scale_factor = 20
     # Additional fitting
@@ -124,8 +124,7 @@ if __name__ == '__main__':
     # Scale simulations
     for i in range(25):
         for j in range(5):
-            alpha_time_courses[j].loc['Alpha'].iloc[:, i] = alpha_time_courses[j].loc['Alpha'].iloc[:, i].apply(
-                scale_data)
+            alpha_time_courses[j].loc['Alpha'].iloc[:, i] = alpha_time_courses[j].loc['Alpha'].iloc[:, i].apply(scale_data)
             beta_time_courses[j].loc['Beta'].iloc[:, i] = beta_time_courses[j].loc['Beta'].iloc[:, i].apply(scale_data)
     # Turn into IfnData objects
     alpha_IfnData_objects = []
@@ -139,12 +138,10 @@ if __name__ == '__main__':
     # Add fits
     for j, dose in enumerate([10, 90, 600, 4000, 8000]):
         if dose not in alpha_mask:
-            new_fit.add_trajectory(alpha_IfnData_objects[j], 'plot', alpha_palette[j], (0, 0),
-                                   label='Alpha ' + str(dose))
+            new_fit.add_trajectory(alpha_IfnData_objects[j], 'plot', alpha_palette[j], (0, 0))
     for j, dose in enumerate([10, 90, 600, 2000, 11000]):
         if dose not in beta_mask:
-            new_fit.add_trajectory(beta_IfnData_objects[j], 'plot', beta_palette[j], (0, 1),
-                                   label='Beta ' + str(dose))
+            new_fit.add_trajectory(beta_IfnData_objects[j], 'plot', beta_palette[j], (0, 1))
     # Add data
     for idx, d in enumerate([10, 90, 600, 4000, 8000]):
         # Optional mask:

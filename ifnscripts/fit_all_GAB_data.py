@@ -106,17 +106,18 @@ if __name__ == '__main__':
     # Add fits
     for idx, t in enumerate(times):
         if t not in alpha_mask:
-            dr_plot_mean_fit.add_trajectory(dra60, t, 'plot', alpha_palette[idx], (0, 0), 'Alpha', label='Alpha ' + str(t), linewidth=2)
+            dr_plot_mean_fit.add_trajectory(dra60, t, 'plot', alpha_palette[idx], (0, 0), 'Alpha',
+                                            label='Alpha '+str(t)+' min', linewidth=2)
         if t not in beta_mask:
-            dr_plot_mean_fit.add_trajectory(drb60, t, 'plot', beta_palette[idx], (0, 1), 'Beta', label='Beta ' + str(t), linewidth=2)
+            dr_plot_mean_fit.add_trajectory(drb60, t, 'plot', beta_palette[idx], (0, 1), 'Beta',
+                                            label='Beta '+str(t)+' min', linewidth=2)
     # Add data
     times = [2.5, 5.0, 7.5, 10.0, 20.0, 60.0]
     for idx, t in enumerate(times):
         if t not in alpha_mask:
-            dr_plot_mean_fit.add_trajectory(mean_data, t, 'errorbar', 'o--', (0, 0), 'Alpha', label='', color=alpha_palette[idx], linewidth=2)
+            dr_plot_mean_fit.add_trajectory(mean_data, t, 'errorbar', 'o--', (0, 0), 'Alpha', color=alpha_palette[idx], linewidth=2)
         if t not in beta_mask:
-            dr_plot_mean_fit.add_trajectory(mean_data, t, 'errorbar', 'o--', (0, 1), 'Beta', label='', color=beta_palette[idx], linewidth=2)
-
+            dr_plot_mean_fit.add_trajectory(mean_data, t, 'errorbar', 'o--', (0, 1), 'Beta', color=beta_palette[idx], linewidth=2)
     dr_plot_mean_fit.show_figure(save_flag=False)
 
     # -------------------------------
@@ -158,12 +159,10 @@ if __name__ == '__main__':
     # Add fits
     for j, dose in enumerate(doses_alpha):
         if dose not in alpha_mask:
-            time_course_paper_fig.add_trajectory(alpha_IfnData_objects[j], 'plot', alpha_palette[j], (0, 0),
-                                                 label='Alpha ' + str(dose))
+            time_course_paper_fig.add_trajectory(alpha_IfnData_objects[j], 'plot', alpha_palette[j], (0, 0))
     for j, dose in enumerate(doses_beta):
         if dose not in beta_mask:
-            time_course_paper_fig.add_trajectory(beta_IfnData_objects[j], 'plot', beta_palette[j], (0, 1),
-                                                 label='Beta ' + str(dose))
+            time_course_paper_fig.add_trajectory(beta_IfnData_objects[j], 'plot', beta_palette[j], (0, 1))
     # Add data
     for idx, d in enumerate(doses_alpha):
         # Optional mask:

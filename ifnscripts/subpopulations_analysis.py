@@ -5,13 +5,13 @@ from numpy import linspace, logspace, log10, nan
 import numpy as np
 import seaborn as sns
 import pandas as pd
-from ifnclass.ifnfit import StepwiseFit
+from ifnclass.ifnfit import DualMixedPopulation
 from scipy.optimize import minimize
 from collections import OrderedDict
 import os
 import json
 
-
+"""
 class DualMixedPopulation:
     def __init__(self, name, pop1_weight, pop2_weight):
         self.name = name
@@ -78,7 +78,7 @@ class DualMixedPopulation:
                         diff_table[r][c] = (sim[r][c][0] * scf - data[r][c][0])
             return np.sum(np.square(diff_table))
 
-        opt = minimize(score_target, [0.1], args=(mean_data.data_set.values, total_response.values))
+        opt = minimize(score_target, [0.1], args=(data.data_set.values, total_response.values))
         sf = opt['x'][0]
         score = opt['fun']
 
@@ -139,7 +139,7 @@ class DualMixedPopulation:
                                                                         reference_score, number_of_parameters))
         final_shared_parameters, final_mixed_parameters = separate_parameters(final_fit, mixed_p)
         return final_shared_parameters, final_mixed_parameters, final_scale_factor
-
+"""
 
 if __name__ == '__main__':
     # ------------------------------
@@ -239,10 +239,12 @@ if __name__ == '__main__':
     print(str(best_shared_params))
     print(str(best_mixed_params[0]))
     print(str(best_mixed_params[1]))
+    print(str(best_sf))
     with open(os.path.join('results','GAB_NewData','stepwise_params.txt'),'w') as f:
         f.write(json.dumps(best_shared_params))
         f.write(json.dumps(best_mixed_params[0]))
         f.write(json.dumps(best_mixed_params[1]))
+        f.write(json.dumps(best_sf))
 
     """
     # ----------------------

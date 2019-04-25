@@ -112,7 +112,7 @@ if __name__ == '__main__':
             dr_plot_mean_fit.add_trajectory(mean_data, t, 'errorbar', 'o--', (0, 0), 'Alpha', label='Alpha ' + str(t),
                                             color=alpha_palette[idx])
         if t not in beta_mask:
-            dr_plot_mean_fit.add_trajectory(mean_data, t, 'errorbar', 'p--', (0, 1), 'Beta', label='Beta ' + str(t),
+            dr_plot_mean_fit.add_trajectory(mean_data, t, 'errorbar', 'o--', (0, 1), 'Beta', label='Beta ' + str(t),
                                             color=beta_palette[idx])
 
     dr_plot_mean_fit.show_figure(save_flag=False)
