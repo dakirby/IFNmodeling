@@ -126,12 +126,13 @@ if __name__ == '__main__':
 
     ax = dr_axes[2]
     ax.set_xscale('log')
-    xlabels = np.divide(radii, 30E-6)
-    ax.plot(radii, alpha_cell_size_curve, color=alpha_palette[-1], label='Alpha')
-    ax.plot(radii, beta_cell_size_curve, color=beta_palette[-1], label='Beta')
+    xlabels = np.divide(radii, 1E-6)
+    ax.plot(xlabels, alpha_cell_size_curve, color=alpha_palette[-1], label='Alpha')
+    ax.plot(xlabels, beta_cell_size_curve, color=beta_palette[-1], label='Beta')
     ax.legend()
-    ax.set_xlabel('Cell radius (m)')
+    ax.set_xlabel(r'Cell radius ($\mu$m)')
     ax.set_ylabel('pSTAT/STAT')
+    ax.set_xlim((1, 300))
     ax.set_title('Fraction pSTAT vs Cell Radius\n 20 pM IFN at 60 minutes')
 
     dr_fig.set_size_inches(24, 8)
