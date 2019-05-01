@@ -14,22 +14,26 @@ if __name__ == '__main__':
     # Initialize model
     # -------------------------------
     Mixed_Model = IfnModel('Mixed_IFN_ppCompatible')
-    Mixed_Model.set_parameters({'R2': 4920, 'R1': 1200,
-                                'k_a1': 2.0e-13, 'k_a2': 1.328e-12, 'k_d3': 1.13e-4, 'k_d4': 0.9,
-                                'kSOCSon': 5e-08, 'kpu': 0.0022, 'kpa': 2.36e-06,
-                                'ka1': 3.3e-15, 'ka2': 1.85e-12, 'kd4': 2.0,
-                                'kd3': 6.52e-05,
-                                'kint_a': 0.0015, 'kint_b': 0.002,
-                                'krec_a1': 0.01, 'krec_a2': 0.01, 'krec_b1': 0.005, 'krec_b2': 0.05})
-    scale_factor = 1.46182313424
+    initial_parameters = {'k_a1': 4.98E-14 * 2, 'k_a2': 1.328e-12, 'k_d3': 2.4e-06, 'k_d4': 0.228,
+                       'kSOCSon': 8e-07, 'kpu': 0.0011,
+                       'ka1': 3.3e-15, 'ka2': 1.22e-12, 'kd4': 0.86,
+                       'kd3': 1.74e-05,
+                       'kint_a': 0.000124, 'kint_b': 0.00086,
+                       'krec_a1': 0.0028, 'krec_a2': 0.01, 'krec_b1': 0.005, 'krec_b2': 0.05}
+    dual_parameters = {'kint_a': 0.00052, 'kSOCSon': 6e-07, 'kint_b': 0.00052, 'krec_a1': 0.001, 'krec_a2': 0.1,
+                       'krec_b1': 0.005, 'krec_b2': 0.05}
+    Mixed_Model.set_parameters(initial_parameters)
+    Mixed_Model.set_parameters(dual_parameters)
+
+    scale_factor = 1.227
     times = [60.0]
     doses_alpha = np.logspace(0, 7)
     doses_beta = np.logspace(0, 6)
-    # --------------------------------------------------------------
-    # Two dose response curves
-    # Large cells are 20% of population
-    # Small cells have 20% R1 and R2 but are 80% of the population
-    # --------------------------------------------------------------
+    # ------------------------------------------------------------------------------
+    # Population heterogeneity
+    # Large cells are 20% of population and have {'R1': 6755.56, 'R2': 1511.1}
+    # Small cells are 80% of the population and have {'R1': 12000.0, 'R2': 1511.1}
+    # ------------------------------------------------------------------------------
     # Small cells
     radius = 1E-6
     volPM = 2 * radius ** 2 + 4 * radius * 8E-6
@@ -37,15 +41,15 @@ if __name__ == '__main__':
     small_cells_alpha = Mixed_Model.doseresponse(times, 'TotalpSTAT', 'Ia',
                                                  list(np.logspace(np.log10(doses_alpha[0]), np.log10(doses_alpha[-1]))),
                                                  parameters={'Ib': 0,
-                                                             'R1': 1200 * 0.20,
-                                                             'R2': 4920 * 0.20},
+                                                             'R1': 12000,
+                                                             'R2': 1511},
                                                  return_type='dataframe', dataframe_labels='Alpha',
                                                  scale_factor=scale_factor * 0.8)
     small_cells_beta = Mixed_Model.doseresponse(times, 'TotalpSTAT', 'Ib',
                                                 list(np.logspace(np.log10(doses_beta[0]), np.log10(doses_beta[-1]))),
                                                 parameters={'Ia': 0,
-                                                            'R1': 1200 * 0.20,
-                                                            'R2': 4920 * 0.20},
+                                                            'R1': 12000,
+                                                            'R2': 1511},
                                                 return_type='dataframe', dataframe_labels='Beta',
                                                 scale_factor=scale_factor * 0.8)
     small_cells_alpha_IFNdata = IfnData('custom', df=small_cells_alpha, conditions={'Alpha': {'Ib': 0}})
@@ -58,15 +62,15 @@ if __name__ == '__main__':
     large_cells_alpha = Mixed_Model.doseresponse(times, 'TotalpSTAT', 'Ia',
                                                  list(np.logspace(np.log10(doses_alpha[0]), np.log10(doses_alpha[-1]))),
                                                  parameters={'Ib': 0,
-                                                             'R1': 1200,
-                                                             'R2': 4920},
+                                                             'R1': 6755,
+                                                             'R2': 1511},
                                                  return_type='dataframe', dataframe_labels='Alpha',
                                                  scale_factor=scale_factor * 0.2)
     large_cells_beta = Mixed_Model.doseresponse(times, 'TotalpSTAT', 'Ib',
                                                 list(np.logspace(np.log10(doses_beta[0]), np.log10(doses_beta[-1]))),
                                                 parameters={'Ia': 0,
-                                                            'R1': 1200,
-                                                            'R2': 4920},
+                                                            'R1': 6755,
+                                                            'R2': 1511},
                                                 return_type='dataframe', dataframe_labels='Beta',
                                                 scale_factor=scale_factor * 0.2)
     large_cells_alpha_IFNdata = IfnData('custom', df=large_cells_alpha, conditions={'Alpha': {'Ib': 0}})
@@ -76,19 +80,20 @@ if __name__ == '__main__':
     alpha_palette = sns.color_palette("Reds", 6)
     beta_palette = sns.color_palette("Greens", 6)
 
-    dr_plot = DoseresponsePlot((1, 3))
+    dr_plot = DoseresponsePlot((1, 2))
     # Add fits
-    dr_plot.add_trajectory(large_cells_alpha_IFNdata, 60.0, 'plot', alpha_palette[5], (0, 0), 'Alpha',
-                           label='Large Cells at 60 minutes', linewidth=2)
-    dr_plot.add_trajectory(small_cells_alpha_IFNdata, 60.0, 'plot', alpha_palette[2], (0, 0), 'Alpha',
-                           label='Small Cells at 60 minutes', linewidth=2)
+    dr_plot.add_trajectory(large_cells_alpha_IFNdata, 60.0, 'plot', alpha_palette[5], (0, 1), 'Alpha',
+                           label=r'IFN$\alpha$ Large Cells (80% of population)', linewidth=2)
+    dr_plot.add_trajectory(small_cells_alpha_IFNdata, 60.0, 'plot', alpha_palette[2], (0, 1), 'Alpha',
+                           label=r'IFN$\alpha$ Small Cells (20% of population)', linewidth=2)
 
     dr_plot.add_trajectory(large_cells_beta_IFNdata, 60.0, 'plot', beta_palette[5], (0, 1), 'Beta',
-                           label='Large Cells at 60 minutes', linewidth=2)
+                           label=r'IFN$\beta$ Large Cells (80% of population)', linewidth=2)
     dr_plot.add_trajectory(small_cells_beta_IFNdata, 60.0, 'plot', beta_palette[2], (0, 1), 'Beta',
-                           label='Small Cells at 60 minutes', linewidth=2)
+                           label=r'IFN$\beta$ Small Cells (20% of population)', linewidth=2)
 
     dr_fig, dr_axes = dr_plot.show_figure(save_flag=False)
+    dr_axes[0].set_title('Breakdown of heterogeneous population\nat 60 minutes')
     # -------------------------------
     # Scanning effect of cell size
     # 60 minute IFN dosed at 20 pM
@@ -124,7 +129,7 @@ if __name__ == '__main__':
     alpha_palette = sns.color_palette("Reds", 8)
     beta_palette = sns.color_palette("Greens", 8)
 
-    ax = dr_axes[2]
+    ax = dr_axes[0]
     ax.set_xscale('log')
     xlabels = np.divide(radii, 1E-6)
     ax.plot(xlabels, alpha_cell_size_curve, color=alpha_palette[-1], label='Alpha')
@@ -135,5 +140,5 @@ if __name__ == '__main__':
     ax.set_xlim((1, 300))
     ax.set_title('Fraction pSTAT vs Cell Radius\n 20 pM IFN at 60 minutes')
 
-    dr_fig.set_size_inches(24, 8)
+    dr_fig.set_size_inches(16, 8)
     dr_fig.savefig(os.path.join(os.getcwd(), 'results', 'Figures', 'Figure_4', 'Figure_4.pdf'))

@@ -57,6 +57,7 @@ if __name__ == '__main__':
     # Plotting
     alpha_palette = sns.color_palette("deep", 6)
     beta_palette = sns.color_palette("deep", 6)
+    plt.rcParams.update({'font.size': 18})
     new_fit = DoseresponsePlot((1, 2))
     new_fit.fig.set_size_inches(16, 8)
     alpha_mask = [7.5]
