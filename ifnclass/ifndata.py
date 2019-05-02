@@ -157,7 +157,7 @@ class IfnData:
                     doses, responses = augment_data(self.get_doses()[key][1:],  response_array[t[0]][1:])
                     results, covariance = curve_fit(self.__MM__, doses, responses,
                                                     p0=[max(responses), hill_coeff_guess, doses[int(len(doses)/2)]])
-                    if results[2] > 1E4:
+                    if results[2] > 4E3 or results[2] < 1E2:
                         top = max(responses) * 0.5
                         for i, r in enumerate(responses):
                             if r > top:
@@ -171,7 +171,7 @@ class IfnData:
                     doses, responses = augment_data(self.get_doses()[key],  response_array[t[0]])
                     results, covariance = curve_fit(self.__MM__, doses, responses,
                                                     p0=[max(responses), hill_coeff_guess, doses[int(len(doses)/2)]])
-                    if results[2] > 1E4:
+                    if results[2] > 4E3:
                         top = max(responses) * 0.5
                         for i, r in enumerate(responses):
                             if r > top:

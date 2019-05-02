@@ -79,9 +79,9 @@ class Trajectory:
                     return self.data.data_set.xs(self.dose_species).loc[:, temp].values
                 except KeyError:
                     print(self.data.data_set.xs(self.dose_species).columns)
-                    print(self.data.data_set.xs(self.dose_species).loc[:, self.timeslice])
-                    print("Something went wrong indexing times")
-                    return self.data.data_set.xs(self.dose_species).loc[:, [float(el) for el in self.timeslice][0]].values
+                    #print(self.data.data_set.xs(self.dose_species).loc[:, self.timeslice])
+                    raise KeyError("Something went wrong indexing times")
+                    #return self.data.data_set.xs(self.dose_species).loc[:, [float(el) for el in self.timeslice][0]].values
 
 
 class TimecoursePlot:
@@ -139,6 +139,7 @@ class TimecoursePlot:
         else:
             self.axes.set_xlabel('Time (min)')
             self.axes.set_ylabel('Response')
+        self.match_axes = False
 
     # Instance methods
     def add_trajectory(self, data: IfnData, plot_type: str, line_style, subplot_idx: tuple, label='', **kwargs):
@@ -214,6 +215,17 @@ class TimecoursePlot:
                 else:
                     ax.errorbar(x, y, yerr=sigmas, fmt='--', label=trajectory.label, color=trajectory.line_style)
                 ax.legend()
+
+        if self.match_axes:
+            ymax = 0
+            ymin = 0
+            for ax in self.axes.flat:
+                if ymax < ax.get_ylim()[1]:
+                    ymax = ax.get_ylim()[1]
+                if ymin > ax.get_ylim()[0]:
+                    ymin = ax.get_ylim()[0]
+            for ax in self.axes.flat:
+                ax.set_ylim([ymin, ymax])
         if save_flag:
             if save_dir == '':
                 plt.savefig(os.path.join(save_dir, 'fig{}.pdf'.format(int(time.time()))))
@@ -373,6 +385,7 @@ class DoseresponsePlot:
                         ax.errorbar(x, z, yerr=sigmas, fmt=trajectory.line_style, label=trajectory.label)
                 else:
                     ax.errorbar(x, z, yerr=sigmas, fmt='--', label=trajectory.label, color=trajectory.line_style)
+
         if save_flag:
             if save_dir == '':
                 plt.savefig(os.path.join(save_dir, 'fig{}.pdf'.format(int(time.time()))))

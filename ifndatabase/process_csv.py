@@ -325,8 +325,8 @@ def build_database(data_wd: str) -> None:
     df = pd.read_csv('20190214_pSTAT1_IFN.csv').drop('Unnamed: 0', axis=1)
     # Just FYI, these are the values of df levels:
     # times_20190214 = [2.5, 5, 7.5, 10, 20, 60]
-    alpha_doses_20190214 = [0, 10, 100, 300, 1000, 3000, 10000, 100000]
-    beta_doses_20190214 = [0, 0.2, 6, 20, 60, 200, 600, 2000]
+    # alpha_doses_20190214 = [0, 10, 100, 300, 1000, 3000, 10000, 100000]
+    # beta_doses_20190214 = [0, 0.2, 6, 20, 60, 200, 600, 2000]
     df = df.sort_values(['Cytokine', 'Well'])
     df.replace('IFN-alpha', 'Alpha', inplace=True)
     df.replace('IFN-beta', 'Beta', inplace=True)
@@ -380,7 +380,6 @@ def build_database(data_wd: str) -> None:
     CD4Tcell_df.columns.name = None
     # Save
     pickle.dump(CD4Tcell_df, open(os.path.join(data_wd, '20190214_pSTAT1_IFN_CD4Tcell.p'), 'wb'))
-
 
     print("Initialized DataFrame objects")
 
