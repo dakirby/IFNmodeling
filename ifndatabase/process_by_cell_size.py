@@ -61,6 +61,7 @@ def build_database(data_wd: str) -> None:
     Bcell_df = pd.DataFrame.from_records(record, columns=col_labels)
     # Put in standard form
     Bcell_df.set_index(['Dose_Species', 'Dose (pM)'], inplace=True)
+    Bcell_df.drop(0.0, level=1, axis=0, inplace=True)
 
     # Save
     pickle.dump(Bcell_df, open(os.path.join(data_wd, '20190108_pSTAT1_IFN_Small_Bcells.p'), 'wb'))
@@ -98,6 +99,7 @@ def build_database(data_wd: str) -> None:
     Bcell_df = pd.DataFrame.from_records(record, columns=col_labels)
     # Put in standard form
     Bcell_df.set_index(['Dose_Species', 'Dose (pM)'], inplace=True)
+    Bcell_df.drop(0.0, level=1, axis=0, inplace=True)
 
     # Save
     pickle.dump(Bcell_df, open(os.path.join(data_wd, '20190108_pSTAT1_IFN_Large_Bcells.p'), 'wb'))
@@ -150,6 +152,7 @@ def build_database(data_wd: str) -> None:
     Bcell_df = pd.DataFrame.from_records(record, columns=col_labels)
     # Put in standard form
     Bcell_df.set_index(['Dose_Species', 'Dose (pM)'], inplace=True)
+    Bcell_df.drop(0.0, level=1, axis=0, inplace=True)
 
     # Save
     pickle.dump(Bcell_df, open(os.path.join(data_wd, '20190119_pSTAT1_IFN_Small_Bcells.p'), 'wb'))
@@ -187,6 +190,7 @@ def build_database(data_wd: str) -> None:
     Bcell_df = pd.DataFrame.from_records(record, columns=col_labels)
     # Put in standard form
     Bcell_df.set_index(['Dose_Species', 'Dose (pM)'], inplace=True)
+    Bcell_df.drop(0.0, level=1, axis=0, inplace=True)
 
     # Save
     pickle.dump(Bcell_df, open(os.path.join(data_wd, '20190119_pSTAT1_IFN_Large_Bcells.p'), 'wb'))
@@ -235,6 +239,7 @@ def build_database(data_wd: str) -> None:
     Bcell_df = pd.DataFrame.from_records(record, columns=col_labels)
     # Put in standard form
     Bcell_df.set_index(['Dose_Species', 'Dose (pM)'], inplace=True)
+    Bcell_df.drop(0.0, level=1, axis=0, inplace=True)
 
     # Save
     pickle.dump(Bcell_df, open(os.path.join(data_wd, '20190121_pSTAT1_IFN_Small_Bcells.p'), 'wb'))
@@ -272,6 +277,7 @@ def build_database(data_wd: str) -> None:
     Bcell_df = pd.DataFrame.from_records(record, columns=col_labels)
     # Put in standard form
     Bcell_df.set_index(['Dose_Species', 'Dose (pM)'], inplace=True)
+    Bcell_df.drop(0.0, level=1, axis=0, inplace=True)
 
     # Save
     pickle.dump(Bcell_df, open(os.path.join(data_wd, '20190121_pSTAT1_IFN_Large_Bcells.p'), 'wb'))
@@ -319,6 +325,7 @@ def build_database(data_wd: str) -> None:
     Bcell_df = pd.DataFrame.from_records(record, columns=col_labels)
     # Put in standard form
     Bcell_df.set_index(['Dose_Species', 'Dose (pM)'], inplace=True)
+    Bcell_df.drop(0.0, level=1, axis=0, inplace=True)
 
     # Save
     pickle.dump(Bcell_df, open(os.path.join(data_wd, '20190214_pSTAT1_IFN_Small_Bcells.p'), 'wb'))
@@ -356,6 +363,7 @@ def build_database(data_wd: str) -> None:
     Bcell_df = pd.DataFrame.from_records(record, columns=col_labels)
     # Put in standard form
     Bcell_df.set_index(['Dose_Species', 'Dose (pM)'], inplace=True)
+    Bcell_df.drop(0.0, level=1, axis=0, inplace=True)
 
     # Save
     pickle.dump(Bcell_df, open(os.path.join(data_wd, '20190214_pSTAT1_IFN_Large_Bcells.p'), 'wb'))
