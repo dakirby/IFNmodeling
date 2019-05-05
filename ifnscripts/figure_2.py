@@ -252,7 +252,7 @@ if __name__ == '__main__':
     # Format Figure_2
     # Dose response aesthetics
     for ax in Figure_2.axes[4:6]:
-        ax.set_ylim((0, 5500))
+        ax.set_ylim((0, 5000))
     Figure_2.axes[4].set_title(r'IFN$\alpha$')
     Figure_2.axes[5].set_title(r'IFN$\beta$')
 

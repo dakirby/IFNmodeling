@@ -12,7 +12,6 @@ import numpy as np
 import pickle
 import os
 
-
 def build_database(data_wd: str) -> None:
     # ---------------------
     # 20190108

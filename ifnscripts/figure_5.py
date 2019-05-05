@@ -50,9 +50,9 @@ if __name__ == '__main__':
     # Plot
     fig, axes = plt.subplots(nrows=1, ncols=1)
     fig.set_size_inches(16, 8)
-    axes.set_xlabel("Dose (pM)")
-    axes.set_title("Relative Refractory Response")
-    axes.set_ylabel("pSTAT1 Relative to Primary Response")
+    axes.set_xlabel("Dose (pM)", fontsize=14)
+    axes.set_title("Relative Refractory Response", fontsize=16)
+    axes.set_ylabel("pSTAT1 Relative to Primary Response", fontsize=14)
     axes.set(xscale='log', yscale='linear')
     axes.plot(dose_list, np.divide(dr_curve_a20, dr_curve_a),
                  label=r'IFN$\alpha$ $K_{D4}\times$'+'{}'.format(k4sf1), color=alpha_palette[4], linewidth=2)
