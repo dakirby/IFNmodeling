@@ -49,7 +49,9 @@ if __name__ == '__main__':
                 dr_plot.add_trajectory(cell_size, time, 'errorbar', 'o--', (r_idx, c_idx), species,
                                        label=str(time)+" min", color=c)
     dr_plot.axes[0][0].set_title(r'IFN$\alpha$')
-    dr_plot.axes[0][0].set_title(r'IFN$\beta$')
+    dr_plot.axes[0][0].set_ylabel('Small cell response')
+    dr_plot.axes[0][1].set_title(r'IFN$\beta$')
+    dr_plot.axes[1][0].set_ylabel('Large cell response')
 
     for ax in [item for sublist in dr_plot.axes for item in sublist]:
         ax.set_ylim(top=6000)

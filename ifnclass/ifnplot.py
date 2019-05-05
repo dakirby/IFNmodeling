@@ -385,7 +385,7 @@ class DoseresponsePlot:
                         ax.errorbar(x, z, yerr=sigmas, fmt=trajectory.line_style, label=trajectory.label)
                 else:
                     ax.errorbar(x, z, yerr=sigmas, fmt='--', label=trajectory.label, color=trajectory.line_style)
-
+                ax.legend()
         if save_flag:
             if save_dir == '':
                 plt.savefig(os.path.join(save_dir, 'fig{}.pdf'.format(int(time.time()))))
