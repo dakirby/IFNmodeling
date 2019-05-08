@@ -1,68 +1,86 @@
+from ifnclass.ifndata import IfnData
 from ifnclass.ifnmodel import IfnModel
-from numpy import linspace, logspace
+from ifnclass.ifnplot import Trajectory, TimecoursePlot, DoseresponsePlot
+from numpy import linspace, logspace, log10, nan
 import seaborn as sns
-import matplotlib.pyplot as plt
-import numpy as np
 import os
+
 
 if __name__ == '__main__':
     alpha_palette = sns.color_palette("Reds", 6)
     beta_palette = sns.color_palette("Greens", 6)
 
+    # This is the best fit parameters for GAB aligned data
     Mixed_Model = IfnModel('Mixed_IFN_ppCompatible')
-    USP18_Model = IfnModel('Mixed_IFN_explicitUSP18')
+    # Optimal parameters for fitting mean GAB data
+    default_parameters = {'R2': 4920, 'R1': 1200,
+     'k_a1': 2.0e-13, 'k_a2': 1.328e-12, 'k_d3': 1.13e-4, 'k_d4': 0.9,
+     'kSOCSon': 5e-08, 'kpu': 0.0022, 'kpa': 2.36e-06,
+     'ka1': 3.3e-15, 'ka2': 1.85e-12, 'kd4': 2.0,
+     'kd3': 6.52e-05,
+     'kint_a': 0.0015, 'kint_b': 0.002,
+     'krec_a1': 0.01, 'krec_a2': 0.01, 'krec_b1': 0.005, 'krec_b2': 0.05}
 
-    Mixed_Model.set_parameters(
-        {'R2': 2300 * 2.5,
-         'R1': 1800 * 1.8, 'k_d4': 0.06, 'kint_b': 0.0003,
-         'kpu': 0.0028,
-         'krec_b1': 0.001, 'krec_b2': 0.01,
-         'k_a1': 4.98E-14, 'k_a2': 8.30e-13 * 4, 'kSOCSon': 0.9e-8,
-         'ka1': 3.321155762205247e-14 * 0.3, 'ka2': 4.98173364330787e-13 * 0.3, 'kd4': 1.0, 'kd3': 0.001,
-         'kint_a': 0.0014, 'krec_a1': 9e-03, 'krec_a2': 0.05})
+    scale_factor = 1.46182313424
 
-    dose_list = list(logspace(-2, 8, num=35))
+    Mixed_Model.set_parameters(default_parameters)
+    Mixed_Model.default_parameters.update(default_parameters)
 
-    # ---------------------------------------------------
-    # First make the figure where we increase K4
-    # ---------------------------------------------------
-    dr_curve_a = [el[0] for el in Mixed_Model.doseresponse([60], 'TotalpSTAT', 'Ia', dose_list,
-                                                   parameters={'Ib': 0}, return_type='list')['TotalpSTAT']]
-    dr_curve_b = [el[0] for el in Mixed_Model.doseresponse([60], 'TotalpSTAT', 'Ib', dose_list,
-                                                   parameters={'Ia': 0}, return_type='list')['TotalpSTAT']]
-    # Now compute the 20* refractory response
-    k4sf1 = 2
-    Mixed_Model.set_parameters({'kd4': 1.0*k4sf1, 'k_d4': 0.06*k4sf1})
+    # Produce plots
+    times = [60]
+    # No Negative Feedback
+    Mixed_Model.set_parameters({'kSOCSon': 0, 'kIntBasal_r1': 0, 'kIntBasal_r2': 0, 'kint_a': 0, 'kint_b': 0})
 
-    dr_curve_a20 = [el[0] for el in Mixed_Model.doseresponse([60], 'TotalpSTAT', 'Ia', dose_list,
-                                                   parameters={'Ib': 0}, return_type='list')['TotalpSTAT']]
-    dr_curve_b20 = [el[0] for el in Mixed_Model.doseresponse([60], 'TotalpSTAT', 'Ib', dose_list,
-                                                   parameters={'Ia': 0}, return_type='list')['TotalpSTAT']]
-    # Now compute the 60* refractory response
-    k4sf2 = 5
-    Mixed_Model.set_parameters({'kd4': 1.0*k4sf2, 'k_d4': 0.06*k4sf2})
+    dradf = Mixed_Model.doseresponse(times, 'TotalpSTAT', 'Ia', list(logspace(-2, 8)),
+                                     parameters={'Ib': 0}, return_type='dataframe', dataframe_labels='Alpha',
+                                     scale_factor=scale_factor)
+    drbdf = Mixed_Model.doseresponse(times, 'TotalpSTAT', 'Ib', list(logspace(-2, 8)),
+                                     parameters={'Ia': 0}, return_type='dataframe', dataframe_labels='Beta',
+                                     scale_factor=scale_factor)
 
-    dr_curve_a60 = [el[0] for el in Mixed_Model.doseresponse([60], 'TotalpSTAT', 'Ia', dose_list,
-                                                   parameters={'Ib': 0}, return_type='list')['TotalpSTAT']]
-    dr_curve_b60 = [el[0] for el in Mixed_Model.doseresponse([60], 'TotalpSTAT', 'Ib', dose_list,
-                                                   parameters={'Ia': 0}, return_type='list')['TotalpSTAT']]
+    # Show internalization effects
+    Mixed_Model.reset_parameters()
+    Mixed_Model.set_parameters({'kSOCSon': 0})
+    dradf_int = Mixed_Model.doseresponse(times, 'TotalpSTAT', 'Ia', list(logspace(-2, 8)),
+                                         parameters={'Ib': 0}, return_type='dataframe', dataframe_labels='Alpha',
+                                         scale_factor=scale_factor)
+    drbdf_int = Mixed_Model.doseresponse(times, 'TotalpSTAT', 'Ib', list(logspace(-2, 8)),
+                                         parameters={'Ia': 0}, return_type='dataframe', dataframe_labels='Beta',
+                                         scale_factor=scale_factor)
 
-    # Plot
-    fig, axes = plt.subplots(nrows=1, ncols=1)
-    fig.set_size_inches(16, 8)
-    axes.set_xlabel("Dose (pM)", fontsize=14)
-    axes.set_title("Relative Refractory Response", fontsize=16)
-    axes.set_ylabel("pSTAT1 Relative to Primary Response", fontsize=14)
-    axes.set(xscale='log', yscale='linear')
-    axes.plot(dose_list, np.divide(dr_curve_a20, dr_curve_a),
-                 label=r'IFN$\alpha$ $K_{D4}\times$'+'{}'.format(k4sf1), color=alpha_palette[4], linewidth=2)
-    axes.plot(dose_list, np.divide(dr_curve_a60, dr_curve_a),
-                 label=r'IFN$\alpha$ $K_{D4}\times$'+'{}'.format(k4sf2), color=alpha_palette[4], linestyle='dashed', linewidth=2)
-    axes.plot(dose_list, np.divide(dr_curve_b20, dr_curve_b),
-                 label=r'IFN$\beta$ $K_{D4}\times$'+'{}'.format(k4sf1), color=beta_palette[4], linewidth=2)
-    axes.plot(dose_list, np.divide(dr_curve_b60, dr_curve_b),
-                 label=r'IFN$\beta$ $K_{D4}\times$'+'{}'.format(k4sf2), color=beta_palette[4], linestyle='dashed', linewidth=2)
+    # Show SOCS effects
+    Mixed_Model.reset_parameters()
+    Mixed_Model.set_parameters({'kIntBasal_r1': 0, 'kIntBasal_r2': 0, 'kint_a': 0, 'kint_b': 0})
+    # Uncomment this line to tune IFN alpha internalization to match SOCS
+    #Mixed_Model.set_parameters({'kSOCS': Mixed_Model.parameters['kSOCS'] * 2.5})
+    dradf_rec = Mixed_Model.doseresponse(times, 'TotalpSTAT', 'Ia', list(logspace(-2, 8)),
+                                         parameters={'Ib': 0}, return_type='dataframe', dataframe_labels='Alpha',
+                                         scale_factor = scale_factor)
+    drbdf_rec = Mixed_Model.doseresponse(times, 'TotalpSTAT', 'Ib', list(logspace(-2, 8)),
+                                         parameters={'Ia': 0}, return_type='dataframe', dataframe_labels='Beta',
+                                         scale_factor=scale_factor)
 
-    axes.legend(loc=2, prop={'size': 8})
-    fig.set_size_inches(8, 8)
-    fig.savefig(os.path.join(os.getcwd(), 'results', 'Figures', 'Figure_5', 'Figure_5.pdf'))
+    dra60 = IfnData('custom', df=dradf, conditions={'Alpha': {'Ib': 0}})
+    drb60 = IfnData('custom', df=drbdf, conditions={'Beta': {'Ia': 0}})
+    dra60_int = IfnData('custom', df=dradf_int, conditions={'Alpha': {'Ib': 0}})
+    drb60_int = IfnData('custom', df=drbdf_int, conditions={'Beta': {'Ia': 0}})
+    dra60_rec = IfnData('custom', df=dradf_rec, conditions={'Alpha': {'Ib': 0}})
+    drb60_rec = IfnData('custom', df=drbdf_rec, conditions={'Beta': {'Ia': 0}})
+
+    dr_plot = DoseresponsePlot((1, 1))
+    alpha_mask = []
+    beta_mask = []
+    # Add fits
+    for idx, t in enumerate([el for el in times]):
+        if t not in alpha_mask:
+            dr_plot.add_trajectory(dra60, t, 'plot', alpha_palette[5], (0, 0), 'Alpha', label='Alpha - No Feedback', linewidth=2.0)
+            dr_plot.add_trajectory(dra60_int, t, 'plot', '--', (0, 0), 'Alpha', color=alpha_palette[3],
+                                   label='Internalization only', linewidth=2.0, )
+            dr_plot.add_trajectory(dra60_rec, t, 'plot', ':', (0, 0), 'Alpha', color=alpha_palette[1], label='SOCS only', linewidth=2.0)
+        if t not in beta_mask:
+            dr_plot.add_trajectory(drb60, t, 'plot', beta_palette[5], (0, 0), 'Beta', label='Beta - No Feedback', linewidth=2.0)
+            dr_plot.add_trajectory(drb60_int, t, 'plot', '--', (0, 0), 'Beta', color=beta_palette[3],
+                                   label='Internalization only', linewidth=2.0)
+            dr_plot.add_trajectory(drb60_rec, t, 'plot', ':', (0, 0), 'Beta', color=beta_palette[1], label='SOCS only', linewidth=2.0)
+    dr_plot.fig.suptitle('Internalization vs SOCS')
+    dr_plot.save_figure(save_dir=os.path.join(os.getcwd(), 'results', 'Figures', 'Figure_5', 'Figure_5.pdf'))

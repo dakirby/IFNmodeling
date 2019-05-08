@@ -118,7 +118,6 @@ if __name__ == '__main__':
                                 'kint_a': 0.0015, 'kint_b': 0.002,
                                 'krec_a1': 0.01, 'krec_a2': 0.01, 'krec_b1': 0.005, 'krec_b2': 0.05})
     scale_factor = 1.46182313424
-    scale_data = lambda q: (scale_factor * q[0], scale_factor * q[1])
 
     alpha_peak_aggregate, alpha_ec_aggregate = get_ec50(Mixed_Model, time_list, 'Ia', 'TotalpSTAT',
                                                         custom_parameters={'Ib': 0}, rflag=True)
@@ -230,7 +229,11 @@ if __name__ == '__main__':
     new_fit = DoseresponsePlot((1, 2))
     new_fit.axes = [Figure_2.add_subplot(gs[0, 0:2]), Figure_2.add_subplot(gs[0, 2:4])]
     new_fit.axes[0].set_xscale('log')
+    new_fit.axes[0].set_xlabel('Dose (pM)')
+    new_fit.axes[0].set_ylabel('pSTAT (MFI)')
     new_fit.axes[1].set_xscale('log')
+    new_fit.axes[1].set_xlabel('Dose (pM)')
+    new_fit.axes[1].set_ylabel('pSTAT (MFI)')
     new_fit.fig = Figure_2
 
     alpha_mask = [7.5]
