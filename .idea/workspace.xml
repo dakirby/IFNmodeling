@@ -193,6 +193,7 @@
       <change beforePath="$PROJECT_DIR$/ifnscripts/ifnmodels" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/ifnmodels" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnscripts/internalization_theory_phase_figure.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/internalization_theory_phase_figure.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnscripts/internalization_theory_tc_figure.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/internalization_theory_tc_figure.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/kimmel_sensitivity_analysis.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/kimmel_sensitivity_analysis.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnscripts/mcmc_results/chain_results/0chain.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/mcmc_results/chain_results/0chain.p" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnscripts/mcmc_results/chain_results/1chain.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/mcmc_results/chain_results/1chain.p" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnscripts/mcmc_results/gelman-rubin_statistics.csv" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/mcmc_results/gelman-rubin_statistics.csv" afterDir="false" />
@@ -250,20 +251,14 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="kimmel_sensitivity_analysis.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="kimmel_sensitivity_analysis.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/ifnscripts/kimmel_sensitivity_analysis.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="251">
-              <caret line="50" column="42" selection-start-line="50" selection-start-column="42" selection-end-line="50" selection-end-column="42" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="ifnplot.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/ifnclass/ifnplot.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="404">
-              <caret line="419" column="23" lean-forward="true" selection-start-line="419" selection-start-column="23" selection-end-line="419" selection-end-column="23" />
+            <state relative-caret-position="169">
+              <caret line="59" column="31" selection-start-line="59" selection-start-column="31" selection-end-line="59" selection-end-column="31" />
+              <folding>
+                <element signature="e#0#51#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -407,8 +402,8 @@
         <option value="$PROJECT_DIR$/ifnscripts/figure_4.py" />
         <option value="$PROJECT_DIR$/ifnscripts/figure_5.py" />
         <option value="$PROJECT_DIR$/ifnscripts/figure_2.py" />
-        <option value="$PROJECT_DIR$/ifnscripts/kimmel_sensitivity_analysis.py" />
         <option value="$PROJECT_DIR$/ifnclass/ifnplot.py" />
+        <option value="$PROJECT_DIR$/ifnscripts/kimmel_sensitivity_analysis.py" />
       </list>
     </option>
   </component>
@@ -623,12 +618,12 @@
     <frame x="-7" y="-7" width="1550" height="838" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.14453125" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.14453125" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.22786458" side_tool="true" visible="true" weight="0.32965517" />
       <window_info anchor="bottom" id="Version Control" order="9" />
       <window_info anchor="bottom" id="Python Console" order="7" />
-      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.77213544" visible="true" weight="0.32965517" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.77213544" visible="true" weight="0.32965517" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="bottom" id="Terminal" order="8" />
       <window_info id="Favorites" order="2" side_tool="true" />
@@ -992,17 +987,20 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ifnscripts/kimmel_sensitivity_analysis.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="251">
-          <caret line="50" column="42" selection-start-line="50" selection-start-column="42" selection-end-line="50" selection-end-column="42" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/ifnclass/ifnplot.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="404">
           <caret line="419" column="23" lean-forward="true" selection-start-line="419" selection-start-column="23" selection-end-line="419" selection-end-column="23" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnscripts/kimmel_sensitivity_analysis.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="169">
+          <caret line="59" column="31" selection-start-line="59" selection-start-column="31" selection-end-line="59" selection-end-column="31" />
+          <folding>
+            <element signature="e#0#51#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
