@@ -71,7 +71,7 @@ if __name__ == '__main__':
             for idx, t in enumerate(times):
                 new_fit.add_trajectory(response, t, 'plot', beta_palette[idx], (0, 1), 'Beta', label='', linewidth=1, alpha=0.2)
             # Decrease by 20%
-            subpop.set_parameters({p: subpop.parameters[p] * 0.666})
+            subpop.set_parameters({p: subpop.parameters[p] * 0.8/1.2})
             response = IfnData('custom',
                                df=Mixed_Model.mixed_dose_response(times, 'TotalpSTAT', 'Ia', list(logspace(1, 5.2)),
                                                                   parameters={'Ib': 0}, sf=scale_factor),
@@ -86,6 +86,7 @@ if __name__ == '__main__':
             for idx, t in enumerate(times):
                 new_fit.add_trajectory(response, t, 'plot', beta_palette[idx], (0, 1), 'Beta', label='', linewidth=1,
                                    alpha=0.2)
+            subpop.set_parameters({p: subpop.parameters[p] * 1.0/0.8})
 
     # Aesthetics
     new_fit.axes[0].set_title(r'IFN$\alpha$')
