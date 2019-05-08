@@ -63,29 +63,33 @@ if __name__ == '__main__':
             response = IfnData('custom', df=Mixed_Model.mixed_dose_response(times, 'TotalpSTAT', 'Ia', list(logspace(1, 5.2)),
                                             parameters={'Ib': 0}, sf=scale_factor),
                                conditions={'Alpha': {'Ib': 0}})
-            new_fit.add_trajectory(response, t, 'plot', alpha_palette[0], (0, 0), 'Alpha', label='', linewidth=2, alpha=0.2)
+            for idx, t in enumerate(times):
+                new_fit.add_trajectory(response, t, 'plot', alpha_palette[idx], (0, 0), 'Alpha', label='', linewidth=1, alpha=0.2)
             response = IfnData('custom', df=Mixed_Model.mixed_dose_response(times, 'TotalpSTAT', 'Ib', list(logspace(-1, 4)),
                                             parameters={'Ia': 0}, sf=scale_factor),
                                conditions={'Beta': {'Ia': 0}})
-            new_fit.add_trajectory(response, t, 'plot', beta_palette[0], (0, 0), 'Beta', label='', linewidth=2, alpha=0.2)
+            for idx, t in enumerate(times):
+                new_fit.add_trajectory(response, t, 'plot', beta_palette[idx], (0, 1), 'Beta', label='', linewidth=1, alpha=0.2)
             # Decrease by 20%
             subpop.set_parameters({p: subpop.parameters[p] * 0.666})
             response = IfnData('custom',
                                df=Mixed_Model.mixed_dose_response(times, 'TotalpSTAT', 'Ia', list(logspace(1, 5.2)),
                                                                   parameters={'Ib': 0}, sf=scale_factor),
                                conditions={'Alpha': {'Ib': 0}})
-            new_fit.add_trajectory(response, t, 'plot', alpha_palette[0], (0, 0), 'Alpha', label='', linewidth=2,
+            for idx, t in enumerate(times):
+                new_fit.add_trajectory(response, t, 'plot', alpha_palette[idx], (0, 0), 'Alpha', label='', linewidth=1,
                                    alpha=0.2)
             response = IfnData('custom',
                                df=Mixed_Model.mixed_dose_response(times, 'TotalpSTAT', 'Ib', list(logspace(-1, 4)),
                                                                   parameters={'Ia': 0}, sf=scale_factor),
                                conditions={'Beta': {'Ia': 0}})
-            new_fit.add_trajectory(response, t, 'plot', beta_palette[0], (0, 0), 'Beta', label='', linewidth=2,
+            for idx, t in enumerate(times):
+                new_fit.add_trajectory(response, t, 'plot', beta_palette[idx], (0, 1), 'Beta', label='', linewidth=1,
                                    alpha=0.2)
 
     # Aesthetics
     new_fit.axes[0].set_title(r'IFN$\alpha$')
     new_fit.axes[1].set_title(r'IFN$\beta$')
     for ax in new_fit.axes:
-        ax.set_ylim((0, 4500))
-    new_fit.show_figure()
+        ax.set_ylim((0, 6000))
+    new_fit.show_figure(save_flag=True, save_dir=os.path.join(os.getcwd(), 'results', 'kimmel_sensitivity.pdf'))
