@@ -251,11 +251,32 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="detailed_model_equivalent_to_simple.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/ifnscripts/detailed_model_equivalent_to_simple.py">
+      <file leaf-file-name="fit-12-12-2018.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/ifnscripts/fit-12-12-2018.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="302">
-              <caret line="90" selection-start-line="90" selection-end-line="90" />
+            <state relative-caret-position="238">
+              <caret line="21" column="42" selection-start-line="21" selection-start-column="42" selection-end-line="21" selection-end-column="42" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="figure_S3.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/ifnscripts/figure_S3.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="272">
+              <caret line="49" column="56" selection-start-line="49" selection-start-column="56" selection-end-line="49" selection-end-column="56" />
+              <folding>
+                <element signature="e#0#36#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="subpopulations_analysis.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/ifnscripts/subpopulations_analysis.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="136">
+              <caret line="79" column="60" lean-forward="true" selection-start-line="67" selection-start-column="4" selection-end-line="79" selection-end-column="60" />
               <folding>
                 <element signature="e#0#51#0" expanded="true" />
               </folding>
@@ -274,7 +295,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>key[</find>
       <find>initial</find>
       <find>errorbar</find>
       <find>times</find>
@@ -304,6 +324,7 @@
       <find>print</find>
       <find>scale_data</find>
       <find>Mixed_Model</find>
+      <find>ec50</find>
     </findStrings>
     <replaceStrings>
       <replace>beta_data</replace>
@@ -344,7 +365,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/ifnscripts/fitting_2_5.py" />
         <option value="$PROJECT_DIR$/ifnscripts/fit-27-01-2019-README.txt" />
         <option value="$PROJECT_DIR$/ifnscripts/fitting_2_5_README.txt" />
         <option value="$PROJECT_DIR$/ifnscripts/model_precision.py" />
@@ -371,14 +391,12 @@
         <option value="$PROJECT_DIR$/ifnscripts/mixed_IFN_nonlinearity_prediction.py" />
         <option value="$PROJECT_DIR$/ifnclass/ifnmodel.py" />
         <option value="$PROJECT_DIR$/ifnscripts/cell_size.py" />
-        <option value="$PROJECT_DIR$/ifnscripts/fit-12-12-2018.py" />
         <option value="$PROJECT_DIR$/ifnscripts/fit-10-12-2018.py" />
         <option value="$PROJECT_DIR$/ifnscripts/fit_all_GAB_data.py" />
         <option value="$PROJECT_DIR$/ifnclass/ifndata.py" />
         <option value="$PROJECT_DIR$/ifnscripts/ec50.py" />
         <option value="$PROJECT_DIR$/ifnscripts/fit_mean_GAB_minimal.py" />
         <option value="$PROJECT_DIR$/ifnclass/ifnfit.py" />
-        <option value="$PROJECT_DIR$/ifnscripts/subpopulations_analysis.py" />
         <option value="$PROJECT_DIR$/ifndatabase/process_csv.py" />
         <option value="$PROJECT_DIR$/ifndatabase/20190214_raw_data/Processing/Pipeline_pSTAT.py" />
         <option value="$PROJECT_DIR$/ifndatabase/20190121_raw_data/Processing/Pipeline_pSTAT.py" />
@@ -395,6 +413,9 @@
         <option value="$PROJECT_DIR$/ifnscripts/kimmel_sensitivity_analysis.py" />
         <option value="$PROJECT_DIR$/ifnscripts/negative_feedback_figure.py" />
         <option value="$PROJECT_DIR$/ifnscripts/detailed_model_equivalent_to_simple.py" />
+        <option value="$PROJECT_DIR$/ifnscripts/fit-12-12-2018.py" />
+        <option value="$PROJECT_DIR$/ifnscripts/subpopulations_analysis.py" />
+        <option value="$PROJECT_DIR$/ifnscripts/figure_S3.py" />
       </list>
     </option>
   </component>
@@ -452,7 +473,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.detailed_model_equivalent_to_simple">
+  <component name="RunManager" selected="Python.figure_S3">
     <configuration name="detailed_model_equivalent_to_simple" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="IFNmodeling" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -471,7 +492,7 @@
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
     </configuration>
-    <configuration name="figure_3" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration name="figure_S3" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="IFNmodeling" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -483,13 +504,13 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/ifnscripts/figure_3.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/ifnscripts/figure_S3.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
     </configuration>
-    <configuration name="figure_5" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration name="fit-12-12-2018" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="IFNmodeling" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -501,7 +522,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/ifnscripts/figure_5.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/ifnscripts/fit-12-12-2018.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -563,19 +584,19 @@
     </configuration>
     <list>
       <item itemvalue="Python.process_csv" />
-      <item itemvalue="Python.figure_3" />
-      <item itemvalue="Python.figure_5" />
       <item itemvalue="Python.kimmel_sensitivity_analysis" />
       <item itemvalue="Python.detailed_model_equivalent_to_simple" />
       <item itemvalue="Python.negative_feedback_figure" />
+      <item itemvalue="Python.fit-12-12-2018" />
+      <item itemvalue="Python.figure_S3" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.figure_S3" />
+        <item itemvalue="Python.fit-12-12-2018" />
         <item itemvalue="Python.detailed_model_equivalent_to_simple" />
         <item itemvalue="Python.negative_feedback_figure" />
         <item itemvalue="Python.kimmel_sensitivity_analysis" />
-        <item itemvalue="Python.figure_5" />
-        <item itemvalue="Python.figure_3" />
       </list>
     </recent_temporary>
   </component>
@@ -602,13 +623,14 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-7" y="-7" width="1550" height="838" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.14453125" />
       <window_info anchor="bottom" id="TODO" order="6" />
-      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.22851562" side_tool="true" visible="true" weight="0.32965517" />
+      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.22916667" side_tool="true" visible="true" weight="0.32965517" />
       <window_info anchor="bottom" id="Version Control" order="9" />
       <window_info anchor="bottom" id="Python Console" order="7" />
-      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.7714844" visible="true" weight="0.32965517" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.7708333" visible="true" weight="0.32965517" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="bottom" id="Terminal" order="8" />
       <window_info id="Favorites" order="2" side_tool="true" />
@@ -657,7 +679,6 @@
     </expressions>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/ifnscripts/smooth_20190119.py" />
     <entry file="file://$PROJECT_DIR$/ifnscripts/fit-20190119_pSTAT1_IFN.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="153">
@@ -730,11 +751,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ifnscripts/internalization_theory_phase_figure.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-989" />
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/ifnscripts/model_precision.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="235">
@@ -770,13 +786,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ifnscripts/fit-12-12-2018.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="186">
-          <caret line="52" column="4" selection-start-line="52" selection-start-column="4" selection-end-line="52" selection-end-column="4" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/ifnscripts/fit-20190214_pSTAT1_IFN.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="323">
@@ -791,31 +800,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ifnclass/ifndata.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="302">
-          <caret line="173" column="39" selection-start-line="173" selection-start-column="39" selection-end-line="173" selection-end-column="39" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/ifnscripts/ec50.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="204">
-          <caret line="60" column="69" lean-forward="true" selection-start-line="60" selection-start-column="69" selection-end-line="60" selection-end-column="69" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/ifnscripts/fit_all_GAB_data.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="187">
           <caret line="37" column="101" lean-forward="true" selection-start-line="37" selection-start-column="101" selection-end-line="37" selection-end-column="101" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/ifnclass/ifnmodel.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3405">
-          <caret line="289" column="77" selection-start-line="289" selection-start-column="77" selection-end-line="289" selection-end-column="77" />
         </state>
       </provider>
     </entry>
@@ -826,24 +814,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ifnscripts/subpopulations_analysis.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="489">
-          <caret line="171" column="70" selection-start-line="171" selection-start-column="60" selection-end-line="171" selection-end-column="70" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/ifnscripts/refractoriness_figure.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="170">
           <caret line="10" column="21" lean-forward="true" selection-start-line="10" selection-start-column="21" selection-end-line="10" selection-end-column="21" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/ifnscripts/fit_mean_GAB_minimal.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1564">
-          <caret line="116" lean-forward="true" selection-start-line="116" selection-end-line="116" />
         </state>
       </provider>
     </entry>
@@ -958,13 +932,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ifnscripts/figure_2.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="183">
-          <caret line="224" column="14" lean-forward="true" selection-start-line="224" selection-start-column="14" selection-end-line="224" selection-end-column="14" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/ifnmodels/Mixed_IFN_ppCompatible.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-2528">
@@ -981,10 +948,79 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/ifnscripts/detailed_model_equivalent_to_simple.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="302">
-          <caret line="90" selection-start-line="90" selection-end-line="90" />
+        <state relative-caret-position="289">
+          <caret line="17" column="26" lean-forward="true" selection-start-line="17" selection-start-column="26" selection-end-line="17" selection-end-column="26" />
           <folding>
             <element signature="e#0#51#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnclass/ifnmodel.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="17">
+          <caret line="289" column="77" selection-start-line="289" selection-start-column="77" selection-end-line="289" selection-end-column="77" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnclass/ifndata.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="647">
+          <caret line="177" column="46" selection-start-line="177" selection-start-column="42" selection-end-line="177" selection-end-column="46" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnscripts/internalization_theory_phase_figure.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="319">
+          <caret line="91" column="28" lean-forward="true" selection-start-line="91" selection-start-column="28" selection-end-line="91" selection-end-column="28" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnscripts/ec50.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-85">
+          <caret line="96" column="41" lean-forward="true" selection-start-line="96" selection-start-column="41" selection-end-line="96" selection-end-column="41" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnscripts/fit-12-12-2018.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="238">
+          <caret line="21" column="42" selection-start-line="21" selection-start-column="42" selection-end-line="21" selection-end-column="42" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnscripts/figure_2.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="234">
+          <caret line="245" column="12" selection-start-line="245" selection-start-column="12" selection-end-line="245" selection-end-column="108" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnscripts/fit_mean_GAB_minimal.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1870">
+          <caret line="116" lean-forward="true" selection-start-line="116" selection-end-line="116" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnscripts/subpopulations_analysis.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="136">
+          <caret line="79" column="60" lean-forward="true" selection-start-line="67" selection-start-column="4" selection-end-line="79" selection-end-column="60" />
+          <folding>
+            <element signature="e#0#51#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnscripts/figure_S3.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="272">
+          <caret line="49" column="56" selection-start-line="49" selection-start-column="56" selection-end-line="49" selection-end-column="56" />
+          <folding>
+            <element signature="e#0#36#0" expanded="true" />
           </folding>
         </state>
       </provider>

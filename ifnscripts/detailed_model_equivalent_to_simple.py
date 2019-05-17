@@ -6,6 +6,13 @@ import seaborn as sns
 from ifnclass.ifnfit import StepwiseFit
 import pandas as pd
 from collections import OrderedDict
+import matplotlib
+font = {'family' : 'normal',
+        'weight' : 'normal',
+        'size'   : 14}
+matplotlib.rc('font', **font)
+matplotlib.rc('xtick', labelsize=14)
+matplotlib.rc('ytick', labelsize=14)
 
 
 if __name__ == '__main__':
@@ -88,6 +95,7 @@ if __name__ == '__main__':
 
     new_fit.add_trajectory(drb60, 60.0, 'plot', beta_palette[idx], (0, 1), 'Beta', label='Simple Model')
     new_fit.add_trajectory(drb60_d, 60.0, 'plot', '--', (0, 1), 'Beta', color=beta_palette[idx], label='Detailed Model')
+    matplotlib.rc
     new_fit.show_figure(save_flag=False)
 
 
