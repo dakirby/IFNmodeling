@@ -45,9 +45,15 @@ if __name__ == '__main__':
                          'krec_a1': (1e-03, 1e-02), 'krec_a2': (0.1, 0.01),
                          'krec_b1': (0.005, 0.0005), 'krec_b2': (0.05, 0.005)}
     mixed_parameters = ['R1', 'R2']
+    """
     best_shared_params, best_mixed_params, best_sf = het_model.stepwise_fit(Sagar_data, parameters_to_fit, 10,
                                                                             mixed_parameters)
     print(best_shared_params, best_mixed_params, best_sf)
+    """
+    best_shared_params = {'kSOCSon': 1e-07, 'kint_a': 0.0001, 'kint_b': 0.002, 'krec_a1': 0.001, 'krec_a2': 0.1, 'krec_b1': 0.005, 'krec_b2': 0.05}
+    best_mixed_params = [{'R1': 200.0, 'R2': 200.0}, {'R1': 200.0, 'R2': 200.0}]
+    best_sf = 10
+    
     # Predictions
     best_fit_model = het_model
     best_fit_model.model_1.set_parameters(best_shared_params)
@@ -58,9 +64,9 @@ if __name__ == '__main__':
     times = [5, 15, 30, 60]
 
     alpha_response = best_fit_model.mixed_dose_response(times, 'TotalpSTAT', 'Ia',
-                                                        np.logspace(1, 5), parameters={'Ib': 0}, sf=best_sf)
+                                                        np.logspace(1, 3), parameters={'Ib': 0}, sf=best_sf)
     beta_response = best_fit_model.mixed_dose_response(times, 'TotalpSTAT', 'Ib',
-                                                       np.logspace(np.log10(0.2), np.log10(2000)),
+                                                       np.logspace(np.log10(0.2), 4),
                                                        parameters={'Ia': 0}, sf=best_sf)
     total_response_df = pd.concat([alpha_response, beta_response])
     total_response = IfnData('custom', df=total_response_df)
