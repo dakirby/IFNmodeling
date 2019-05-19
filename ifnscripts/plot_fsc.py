@@ -1,6 +1,8 @@
+from ifnclass.ifndata import IfnData, DataAlignment
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
 import pickle
 import seaborn as sns
 import os
@@ -120,24 +122,38 @@ def grab_subpop_dose_response(q, fname):
            beta_doses, beta_response_sub_pop[::-1], beta_response_super_pop[::-1]
 
 if __name__ == '__main__':
+    newdata_1 = IfnData("20190108_pSTAT1_IFN_Bcell")
+    newdata_2 = IfnData("20190119_pSTAT1_IFN_Bcell")
+    newdata_3 = IfnData("20190121_pSTAT1_IFN_Bcell")
+    newdata_4 = IfnData("20190214_pSTAT1_IFN_Bcell")
+    alignment = DataAlignment()
+    alignment.add_data([newdata_4, newdata_3, newdata_2, newdata_1])
+    alignment.align()
+    alignment.get_scaled_data()
+    #mean_data = alignment.summarize_data()
+    print(alignment.get_ec50s())
+    exit()
     # Well code:
+    #  |    2.5 min | 5 min  |  7.5 min | 10 min |  20 min  |    60 min   |
     #   ____1____2____3____4____5____6____7____8____9____10____11____12___
     # A| alpha  beta alpha beta
-    #  | 1E-7   2E-9 1E-7  1E-9
-    # B| alpha
-    #  | 1E-8                        -----------> increasing
-    # C| alpha                      |               time
-    #  | 3E-9                       |
-    # D| alpha                      V
-    #  | 1E-9                    decreasing
-    # E|                        concentration
-    #  |
-    # F|
-    #  |
-    # G|
-    #  |
-    # H|
+    #  | 1E-7   2E-9 1E-7  2E-9
+    # B| alpha  beta
+    #  | 1E-8   6E-10                -----------> increasing
+    # C| alpha  beta                |               time
+    #  | 3E-9   2E-10               |
+    # D| alpha  beta                V
+    #  | 1E-9   6E-11            decreasing
+    # E| alpha  beta             concentration
+    #  | 3E-10  2E-11
+    # F| alpha  beta
+    #  | 1E-10  6E-12
+    # G| alpha  beta
+    #  | 1E-11  2E-13
+    # H| alpha  beta
+    #  | 0 pM   0 pM
 
+    """
     # I want time = 60 min so that means columns 11 (alpha) and 12 (beta)
 
     # Check the joint distribution of pSTAT1 vs FSC
@@ -151,7 +167,8 @@ if __name__ == '__main__':
     plt.ylabel('pSTAT1', fontsize=16)
     plt.show()
     exit()
-
+    """
+    """
     # Check distribution of FSC
     # data = grab_data('20190214', 'A11')
     #data.hist('FSC', bins=250)
@@ -167,4 +184,119 @@ if __name__ == '__main__':
     axes[0].plot(a, c, 'k--')
     axes[1].plot(d, e, 'g--')
     axes[1].plot(d, f, 'k--')
+    plt.show()
+    exit()
+    """
+    # Get dose-response data
+    dataset_names = ['20190214', '20190121']#, '20190119', '20190108']
+    times = [2.5, 2.5, 5.0, 5.0, 7.5, 7.5, 10.0, 10.0, 20.0, 20.0, 60.0, 60.0]
+    doses = {'Alpha': np.divide([1E-7, 1E-8, 3E-9, 1E-9, 3E-10, 1E-10, 1E-11], 1E-12),
+             'Beta': np.divide([2E-9, 6E-10, 2E-10, 6E-11, 2E-11, 6E-12, 2E-13], 1E-12)}
+    large_cell_percentile = 0.2
+    average_large_fraction_dict = {}
+    small_IfnData_list = []
+    large_IfnData_list = []
+    for dataset in dataset_names:
+        column_labels = ['Dose_Species', 'Dose (pM)', 'time', 'pSTAT']
+        small_df = []
+        large_df = []
+        # Gates:
+        upper_cutoff = 50000
+
+        average_large_fraction = 0
+        for dose_idx, concentration in enumerate(['A', 'B', 'C', 'D', 'E', 'F', 'G']):
+            for time_idx, time in enumerate(times):
+                # Annotate
+                if time_idx % 2 == 0:
+                    species = 'Beta'
+                else:
+                    species = 'Alpha'
+                well = concentration+str(time_idx+1)
+                # Clean data
+                data = grab_data(dataset, well)
+                outliers = (data['FSC'] > upper_cutoff) | (data['pSTAT1 in B cells'] < 0)
+                data = data.loc[~outliers]
+                small_large_threshold = data.quantile(q=1 - large_cell_percentile).loc['FSC']
+                # Partition data
+                small_cells = data[(data['FSC'] <= small_large_threshold)]
+                large_cells = data[(data['FSC'] > small_large_threshold)]
+                average_large_fraction += len(large_cells)/(len(small_cells) + len(large_cells))
+                pSTAT_small = small_cells.mean().loc['pSTAT1 in B cells']
+                pSTAT_large = large_cells.mean().loc['pSTAT1 in B cells']
+                small_df.append([species, doses[species][dose_idx], time, pSTAT_small])
+                large_df.append([species, doses[species][dose_idx], time, pSTAT_large])
+        average_large_fraction_dict[dataset] = average_large_fraction = average_large_fraction/(12*7)
+
+        # Make dataframes
+        small_df = pd.DataFrame.from_records(small_df, columns=column_labels)
+        small_df.set_index(['Dose_Species', 'Dose (pM)'], inplace=True)
+        small_df.columns.name = None
+        small_df = pd.pivot_table(small_df, values='pSTAT', index=['Dose_Species', 'Dose (pM)'], columns=['time'],
+                                  aggfunc=np.sum)
+        large_df = pd.DataFrame.from_records(large_df, columns=column_labels)
+        large_df.set_index(['Dose_Species', 'Dose (pM)'], inplace=True)
+        large_df = pd.pivot_table(large_df, values='pSTAT', index=['Dose_Species', 'Dose (pM)'], columns=['time'],
+                                  aggfunc=np.sum)
+        large_df.columns.name = None
+
+        # Make IfnData object
+        small_cell_IfnData = IfnData('custom', df=small_df, conditions={'Alpha': {'Ib': 0}, 'Beta': {'Ia': 0}})
+        large_cell_IfnData = IfnData('custom', df=large_df, conditions={'Alpha': {'Ib': 0}, 'Beta': {'Ia': 0}})
+        small_IfnData_list.append(small_cell_IfnData)
+        large_IfnData_list.append(large_cell_IfnData)
+
+    # Check that thresholding worked (it works)
+    #print(average_large_fraction_dict)
+
+    # EC50 lists
+    #ec50_small_cells = {dataset_names[i]: small_cell_IfnData[i].get_ec50s() for i in range(len(dataset_names))}
+    #ec50_large_cells = {dataset_names[i]: large_cell_IfnData[i].get_ec50s() for i in range(len(dataset_names))}
+
+    # Align data
+    small_alignment = DataAlignment()
+    small_alignment.add_data(small_cell_IfnData)
+    print(small_alignment.data[0].dataset)
+    small_alignment.align()
+    small_alignment.get_scaled_data()
+    mean_small_data = small_alignment.summarize_data()
+
+    large_alignment = DataAlignment()
+    large_alignment.add_data(large_cell_IfnData)
+    large_alignment.align()
+    large_alignment.get_scaled_data()
+    mean_large_data = large_alignment.summarize_data()
+
+    # ----------------------
+    # Set up Figure layout
+    # ----------------------
+    Figure_3 = plt.figure(tight_layout=True)
+    gs = gridspec.GridSpec(nrows=2, ncols=2, height_ratios=[1, 1])
+    Figure_3.align_labels()  # same as fig.align_xlabels(); fig.align_ylabels()
+
+    # Set up EC50 figures
+    alpha_palette = sns.color_palette("Reds", 6)
+    beta_palette = sns.color_palette("Greens", 6)
+    data_palette = sns.color_palette("muted", 6)
+    marker_shape = ["o", "v", "s", "P", "d", "1", "x", "*"]
+    # Plot EC50 vs time
+    ec50_axes = [Figure_3.add_subplot(gs[1, 0]), Figure_3.add_subplot(gs[1, 1])]
+    ec50_axes[0].set_xlabel("Time (min)")
+    ec50_axes[1].set_xlabel("Time (min)")
+    ec50_axes[0].set_title(r"EC50 vs Time for IFN$\alpha$")
+    ec50_axes[1].set_title(r"EC50 vs Time for IFN$\beta$")
+    ec50_axes[0].set_ylabel("EC50 (pM)")
+    ec50_axes[0].set_yscale('log')
+    ec50_axes[1].set_yscale('log')
+    # Add data
+    small_ec50, small_errorbars = mean_small_data.get_ec50s()
+    large_ec50, large_errorbars = mean_large_data.get_ec50s()
+    line_style_idx=0
+    line_styles = ['-', '--']
+    for ec50, errorbars, fmt in [[small_ec50, small_errorbars], [large_ec50, large_errorbars]]:
+        ec50_axes[0].errorbar([el[0] for el in ec50['Alpha']], [el[1] for el in ec50['Alpha']],
+                              yerr=errorbars['Alpha'], fmt=line_styles[line_style_idx], color=data_palette[3])
+        ec50_axes[1].errorbar([el[0] for el in ec50['Beta']], [el[1] for el in ec50['Beta']],
+                              yerr=errorbars['Beta'], fmt=line_styles[line_style_idx], color=data_palette[3])
+        line_style_idx += 1
+
     plt.show()

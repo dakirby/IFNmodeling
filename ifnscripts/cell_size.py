@@ -75,8 +75,8 @@ if __name__ == '__main__':
 
     fig, ax = plt.subplots(nrows=1, ncols=1)
     plt.xscale('log')
-    plt.plot(radii, alpha_cell_size_curve, color=alpha_palette[-1], label='Alpha')
-    plt.plot(radii, beta_cell_size_curve, color=beta_palette[-1], label='Beta')
+    plt.plot(radii, alpha_cell_size_curve, color=alpha_palette[-1], label='Alpha', linewidth=2)
+    plt.plot(radii, beta_cell_size_curve, color=beta_palette[-1], label='Beta', linewidth=2)
     plt.legend()
     plt.xlabel('Cell radius (m)')
     plt.ylabel('pSTAT/STAT')

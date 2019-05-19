@@ -13,8 +13,8 @@ if __name__ == '__main__':
     USP18_Model = IfnModel('Mixed_IFN_explicitUSP18')
 
     Mixed_Model.set_parameters(
-        {'R2': 2300 * 2.5,
-         'R1': 1800 * 1.8, 'k_d4': 0.06, 'kint_b': 0.0003,
+        {'R2': 5750 * 2,
+         'R1': 3240 * 2, 'k_d4': 0.06, 'kint_b': 0.0003,
          'kpu': 0.0028,
          'krec_b1': 0.001, 'krec_b2': 0.01,
          'k_a1': 4.98E-14, 'k_a2': 8.30e-13 * 4, 'kSOCSon': 0.9e-8,
@@ -32,7 +32,12 @@ if __name__ == '__main__':
                                                    parameters={'Ia': 0}, return_type='list')['TotalpSTAT']]
     # Now compute the 20* refractory response
     k4sf1 = 2
-    Mixed_Model.set_parameters({'kd4': 1.0*k4sf1, 'k_d4': 0.06*k4sf1})
+    kd4_reference = Mixed_Model.parameters['kd4']
+    kd3_reference = Mixed_Model.parameters['kd3']
+    k_d4_reference = Mixed_Model.parameters['k_d4']
+    k_d3_reference = Mixed_Model.parameters['k_d3']
+    Mixed_Model.set_parameters({'kd4': kd4_reference*k4sf1, 'k_d4': k_d4_reference*k4sf1,
+                                'kd3': kd3_reference * k4sf1, 'k_d3': k_d3_reference * k4sf1})
 
     dr_curve_a20 = [el[0] for el in Mixed_Model.doseresponse([60], 'TotalpSTAT', 'Ia', dose_list,
                                                    parameters={'Ib': 0}, return_type='list')['TotalpSTAT']]
@@ -40,7 +45,8 @@ if __name__ == '__main__':
                                                    parameters={'Ia': 0}, return_type='list')['TotalpSTAT']]
     # Now compute the 60* refractory response
     k4sf2 = 5
-    Mixed_Model.set_parameters({'kd4': 1.0*k4sf2, 'k_d4': 0.06*k4sf2})
+    Mixed_Model.set_parameters({'kd4': kd4_reference*k4sf2, 'k_d4': k_d4_reference*k4sf2,
+                                'kd3': kd3_reference * k4sf2, 'k_d3': k_d3_reference * k4sf2})
 
     dr_curve_a60 = [el[0] for el in Mixed_Model.doseresponse([60], 'TotalpSTAT', 'Ia', dose_list,
                                                    parameters={'Ib': 0}, return_type='list')['TotalpSTAT']]
@@ -65,4 +71,4 @@ if __name__ == '__main__':
 
     axes.legend(loc=2, prop={'size': 8})
     fig.set_size_inches(8, 8)
-    fig.savefig(os.path.join(os.getcwd(), 'results', 'Figures', 'Figure_4', 'Figure_4.pdf'))
+    fig.savefig(os.path.join(os.getcwd(), 'results', 'Figures', 'Figure_4', 'Figure_4_new.pdf'))

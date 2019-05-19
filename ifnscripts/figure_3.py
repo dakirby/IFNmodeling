@@ -166,7 +166,7 @@ if __name__ == '__main__':
 
     # -------------------------------
     # Scanning effect of cell size
-    # 60 minute IFN dosed at 20 pM
+    # 60 minute IFN dosed at 10 pM
     # -------------------------------
     alpha_cell_size_curve = []
     beta_cell_size_curve = []
@@ -178,7 +178,7 @@ if __name__ == '__main__':
         volCP = 8E-6 * radius ** 2
         # Alpha
         response = Mixed_Model.timecourse(list(np.linspace(0, 60)), 'TotalpSTAT',
-                                          parameters={'Ia': 1E-9 * 6.022E23 * 1E-5, 'Ib': 0,
+                                          parameters={'Ia': 10E-12 * 6.022E23 * 1E-5, 'Ib': 0,
                                                       'R1': (volPM / volPM_typical) * 1200,
                                                       'R2': (volPM / volPM_typical) * 4920,
                                                       'S': (volCP / volCP_typical) * 1E4},
@@ -187,7 +187,7 @@ if __name__ == '__main__':
         alpha_cell_size_curve.append(normalized_response)
         # Beta
         response = Mixed_Model.timecourse(list(np.linspace(0, 60)), 'TotalpSTAT',
-                                          parameters={'Ib': 20 * 1E-12 * 6.022E23 * 1E-5, 'Ia': 0,
+                                          parameters={'Ib': 10 * 1E-12 * 6.022E23 * 1E-5, 'Ia': 0,
                                                       'R1': (volPM / volPM_typical) * 1200,
                                                       'R2': (volPM / volPM_typical) * 4920,
                                                       'S': (volCP / volCP_typical) * 1E4},
@@ -211,36 +211,37 @@ if __name__ == '__main__':
     ax.set_xlabel(r'Cell radius ($\mu$m)', fontsize=14)
     ax.set_ylabel('pSTAT/STAT', fontsize=14)
     ax.set_xlim((1, 300))
-    ax.set_title('Fraction pSTAT vs Cell Radius\n 1 nM IFN at 60 minutes', fontsize=16)
+    ax.set_title('Fraction pSTAT vs Cell Radius\n 10 pM IFN at 60 minutes', fontsize=16)
 
     # -----------------------------
     # Investigate cell variability
     # in data
     # -----------------------------
     # Well code:
+    #  |    2.5 min | 5 min  |  7.5 min | 10 min |  20 min  |    60 min   |
     #   ____1____2____3____4____5____6____7____8____9____10____11____12___
     # A| alpha  beta alpha beta
-    #  | 1E-7   2E-9 1E-7  1E-9
-    # B| alpha
-    #  | 1E-8                        -----------> increasing
-    # C| alpha                      |               time
-    #  | 3E-9                       |
-    # D| alpha                      V
-    #  | 1E-9                    decreasing
-    # E| alpha                   concentration
-    #  | 3E-10
-    # F| alpha
-    #  | 1E-10
-    # G| alpha
-    #  | 1E-11
-    # H| alpha
-    #  | 0 pM
+    #  | 1E-7   2E-9 1E-7  2E-9
+    # B| alpha  beta
+    #  | 1E-8   6E-10                -----------> increasing
+    # C| alpha  beta                |               time
+    #  | 3E-9   2E-10               |
+    # D| alpha  beta                V
+    #  | 1E-9   6E-11            decreasing
+    # E| alpha  beta             concentration
+    #  | 3E-10  2E-11
+    # F| alpha  beta
+    #  | 1E-10  6E-12
+    # G| alpha  beta
+    #  | 1E-11  2E-13
+    # H| alpha  beta
+    #  | 0 pM   0 pM
     dr_fig.axes[1].set_xscale('linear')
-    data = grab_data('20190214', 'D11')
+    data = grab_data('20190214', 'G11')
     outliers = (data['FSC'] > 80000) | (data['pSTAT1 in B cells'] > 30000) | (data['pSTAT1 in B cells'] < -5000)
     #sns.regplot('FSC', 'pSTAT1 in B cells', data=data.loc[~outliers], ax=dr_fig.axes[1],
     #              line_kws={'color': 'red'}, scatter_kws={'alpha': 0.05, 'edgecolor':''})
-    dr_fig.axes[1].set_title('Dependence on Cell Size at 60 minutes\n' + r'for 1 nM IFN$\alpha$', fontsize=16)
+    dr_fig.axes[1].set_title('Dependence on Cell Size at 60 minutes\n' + r'for 10 pM IFN$\alpha$', fontsize=16)
     dr_fig.axes[1].set_xlabel('Forward Scatter', fontsize=14)
     dr_fig.axes[1].set_ylabel('pSTAT1', fontsize=14)
     scatter_density_plot(x=data.loc[~outliers]['FSC'], y=data.loc[~outliers]['pSTAT1 in B cells'],

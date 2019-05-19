@@ -70,7 +70,6 @@ if __name__ == '__main__':
     gs = gridspec.GridSpec(nrows=2, ncols=4, height_ratios=[3, 2])
 
     Figure_2.align_labels()  # same as fig.align_xlabels(); fig.align_ylabels()
-    Figure_2.show()
 
     # --------------------
     # Set up EC50 figures

@@ -221,6 +221,8 @@ class DataAlignment:
                         values as per the alignment
      summarize_data(): finds the mean and variance of each data point and returns the IfnData object continaing this
                         computed information
+     get_ec50s(): finds the ec50 at each time point for each data set and returns the ec50 vs time curve with error bars
+                    computed by comparing between data sets
      """
 
     # Initializer / Instance Attributes
@@ -296,3 +298,17 @@ class DataAlignment:
         df.set_index(['Dose_Species', 'Dose (pM)'], inplace=True)
         summary_IfnData = IfnData('custom', df=df, conditions=self.scaled_data[0].conditions)
         return summary_IfnData
+
+    def get_ec50s(self):
+        temp = self.data[0].get_ec50s()
+        times = [el[0] for el in temp[list(temp.keys())[0]]]
+        mean_ec50 = {key: [] for key in temp.keys()}
+        error_bars = {key: [] for key in temp.keys()}
+        for d in self.data:
+            ec50 = d.get_ec50s()
+            for key in ec50.keys():
+                mean_ec50[key].append([el[1] for el in ec50[key]])
+        for key in mean_ec50.keys():
+            error_bars[key] = list(zip(times, np.std(mean_ec50[key], axis=0)))
+            mean_ec50[key] = list(zip(times, np.mean(mean_ec50[key], axis=0)))
+        return mean_ec50, error_bars
