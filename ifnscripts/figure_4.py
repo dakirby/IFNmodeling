@@ -10,16 +10,13 @@ if __name__ == '__main__':
     beta_palette = sns.color_palette("Greens", 6)
 
     Mixed_Model = IfnModel('Mixed_IFN_ppCompatible')
-    USP18_Model = IfnModel('Mixed_IFN_explicitUSP18')
+    #USP18_Model = IfnModel('Mixed_IFN_explicitUSP18')
 
-    Mixed_Model.set_parameters(
-        {'R2': 5750 * 2,
-         'R1': 3240 * 2, 'k_d4': 0.06, 'kint_b': 0.0003,
-         'kpu': 0.0028,
-         'krec_b1': 0.001, 'krec_b2': 0.01,
-         'k_a1': 4.98E-14, 'k_a2': 8.30e-13 * 4, 'kSOCSon': 0.9e-8,
-         'ka1': 3.321155762205247e-14 * 0.3, 'ka2': 4.98173364330787e-13 * 0.3, 'kd4': 1.0, 'kd3': 0.001,
-         'kint_a': 0.0014, 'krec_a1': 9e-03, 'krec_a2': 0.05})
+    # Minimal fit parameters
+    Mixed_Model.set_parameters({'R2': 7280 * 0.5, 'R1': 4920 * 0.5,
+                                'kSOCSon': 1e-7, 'kpu': 0.001, 'kpa': 1e-06,
+                                'kSOCS': 0.0046,
+                                'kint_a': 0.0001, 'kint_b': 0.01})
 
     dose_list = list(logspace(-2, 8, num=35))
 
@@ -31,7 +28,7 @@ if __name__ == '__main__':
     dr_curve_b = [el[0] for el in Mixed_Model.doseresponse([60], 'TotalpSTAT', 'Ib', dose_list,
                                                    parameters={'Ia': 0}, return_type='list')['TotalpSTAT']]
     # Now compute the 20* refractory response
-    k4sf1 = 2
+    k4sf1 = 20
     kd4_reference = Mixed_Model.parameters['kd4']
     kd3_reference = Mixed_Model.parameters['kd3']
     k_d4_reference = Mixed_Model.parameters['k_d4']
@@ -44,7 +41,7 @@ if __name__ == '__main__':
     dr_curve_b20 = [el[0] for el in Mixed_Model.doseresponse([60], 'TotalpSTAT', 'Ib', dose_list,
                                                    parameters={'Ia': 0}, return_type='list')['TotalpSTAT']]
     # Now compute the 60* refractory response
-    k4sf2 = 5
+    k4sf2 = 60
     Mixed_Model.set_parameters({'kd4': kd4_reference*k4sf2, 'k_d4': k_d4_reference*k4sf2,
                                 'kd3': kd3_reference * k4sf2, 'k_d3': k_d3_reference * k4sf2})
 

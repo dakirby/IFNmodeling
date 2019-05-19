@@ -122,17 +122,6 @@ def grab_subpop_dose_response(q, fname):
            beta_doses, beta_response_sub_pop[::-1], beta_response_super_pop[::-1]
 
 if __name__ == '__main__':
-    newdata_1 = IfnData("20190108_pSTAT1_IFN_Bcell")
-    newdata_2 = IfnData("20190119_pSTAT1_IFN_Bcell")
-    newdata_3 = IfnData("20190121_pSTAT1_IFN_Bcell")
-    newdata_4 = IfnData("20190214_pSTAT1_IFN_Bcell")
-    alignment = DataAlignment()
-    alignment.add_data([newdata_4, newdata_3, newdata_2, newdata_1])
-    alignment.align()
-    alignment.get_scaled_data()
-    #mean_data = alignment.summarize_data()
-    print(alignment.get_ec50s())
-    exit()
     # Well code:
     #  |    2.5 min | 5 min  |  7.5 min | 10 min |  20 min  |    60 min   |
     #   ____1____2____3____4____5____6____7____8____9____10____11____12___
@@ -187,8 +176,10 @@ if __name__ == '__main__':
     plt.show()
     exit()
     """
+
+
     # Get dose-response data
-    dataset_names = ['20190214', '20190121']#, '20190119', '20190108']
+    dataset_names = ['20190121', '20190214', '20190119', '20190108']
     times = [2.5, 2.5, 5.0, 5.0, 7.5, 7.5, 10.0, 10.0, 20.0, 20.0, 60.0, 60.0]
     doses = {'Alpha': np.divide([1E-7, 1E-8, 3E-9, 1E-9, 3E-10, 1E-10, 1E-11], 1E-12),
              'Beta': np.divide([2E-9, 6E-10, 2E-10, 6E-11, 2E-11, 6E-12, 2E-13], 1E-12)}
@@ -223,16 +214,17 @@ if __name__ == '__main__':
                 average_large_fraction += len(large_cells)/(len(small_cells) + len(large_cells))
                 pSTAT_small = small_cells.mean().loc['pSTAT1 in B cells']
                 pSTAT_large = large_cells.mean().loc['pSTAT1 in B cells']
-                small_df.append([species, doses[species][dose_idx], time, pSTAT_small])
-                large_df.append([species, doses[species][dose_idx], time, pSTAT_large])
+                small_df.append([species, doses[species][dose_idx], time, (pSTAT_small, np.nan)])
+                large_df.append([species, doses[species][dose_idx], time, (pSTAT_large, np.nan)])
         average_large_fraction_dict[dataset] = average_large_fraction = average_large_fraction/(12*7)
 
         # Make dataframes
         small_df = pd.DataFrame.from_records(small_df, columns=column_labels)
         small_df.set_index(['Dose_Species', 'Dose (pM)'], inplace=True)
-        small_df.columns.name = None
         small_df = pd.pivot_table(small_df, values='pSTAT', index=['Dose_Species', 'Dose (pM)'], columns=['time'],
                                   aggfunc=np.sum)
+        small_df.columns.name = None
+
         large_df = pd.DataFrame.from_records(large_df, columns=column_labels)
         large_df.set_index(['Dose_Species', 'Dose (pM)'], inplace=True)
         large_df = pd.pivot_table(large_df, values='pSTAT', index=['Dose_Species', 'Dose (pM)'], columns=['time'],
@@ -255,16 +247,16 @@ if __name__ == '__main__':
     # Align data
     small_alignment = DataAlignment()
     small_alignment.add_data(small_cell_IfnData)
-    print(small_alignment.data[0].dataset)
     small_alignment.align()
     small_alignment.get_scaled_data()
-    mean_small_data = small_alignment.summarize_data()
 
     large_alignment = DataAlignment()
     large_alignment.add_data(large_cell_IfnData)
     large_alignment.align()
     large_alignment.get_scaled_data()
-    mean_large_data = large_alignment.summarize_data()
+
+    small_ec50, small_errorbars = small_alignment.get_ec50s()
+    large_ec50, large_errorbars = large_alignment.get_ec50s()
 
     # ----------------------
     # Set up Figure layout
@@ -288,8 +280,6 @@ if __name__ == '__main__':
     ec50_axes[0].set_yscale('log')
     ec50_axes[1].set_yscale('log')
     # Add data
-    small_ec50, small_errorbars = mean_small_data.get_ec50s()
-    large_ec50, large_errorbars = mean_large_data.get_ec50s()
     line_style_idx=0
     line_styles = ['-', '--']
     for ec50, errorbars, fmt in [[small_ec50, small_errorbars], [large_ec50, large_errorbars]]:

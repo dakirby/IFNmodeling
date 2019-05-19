@@ -253,11 +253,20 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="plot_fsc.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="figure_4.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/ifnscripts/figure_4.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="170">
+              <caret line="15" column="66" selection-start-line="15" selection-start-column="66" selection-end-line="15" selection-end-column="66" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="plot_fsc.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/ifnscripts/plot_fsc.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="200">
-              <caret line="133" column="32" selection-start-line="133" selection-start-column="32" selection-end-line="133" selection-end-column="32" />
+            <state relative-caret-position="102">
+              <caret line="181" column="45" selection-start-line="181" selection-start-column="45" selection-end-line="181" selection-end-column="45" />
               <folding>
                 <element signature="e#0#51#0" expanded="true" />
               </folding>
@@ -265,23 +274,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="ifndata.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="ifndata.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/ifnclass/ifndata.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="319">
-              <caret line="312" column="45" selection-start-line="312" selection-start-column="45" selection-end-line="312" selection-end-column="45" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="figure_2.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/ifnscripts/figure_2.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="200">
-              <caret line="105" column="42" lean-forward="true" selection-start-line="101" selection-start-column="4" selection-end-line="105" selection-end-column="42" />
-              <folding>
-                <element signature="e#0#51#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="149">
+              <caret line="304" column="31" selection-start-line="304" selection-start-column="20" selection-end-line="304" selection-end-column="31" />
             </state>
           </provider>
         </entry>
@@ -412,12 +409,12 @@
         <option value="$PROJECT_DIR$/ifnmodels/Mixed_IFN_explicitUSP18.py" />
         <option value="$PROJECT_DIR$/ifnscripts/figure_S4.py" />
         <option value="$PROJECT_DIR$/ifnscripts/figure_S3.py" />
-        <option value="$PROJECT_DIR$/ifnscripts/figure_4.py" />
         <option value="$PROJECT_DIR$/ifnscripts/cell_size.py" />
         <option value="$PROJECT_DIR$/ifnscripts/figure_3.py" />
         <option value="$PROJECT_DIR$/ifnscripts/figure_2.py" />
-        <option value="$PROJECT_DIR$/ifnscripts/plot_fsc.py" />
         <option value="$PROJECT_DIR$/ifnclass/ifndata.py" />
+        <option value="$PROJECT_DIR$/ifnscripts/figure_4.py" />
+        <option value="$PROJECT_DIR$/ifnscripts/plot_fsc.py" />
       </list>
     </option>
   </component>
@@ -600,10 +597,10 @@
     <recent_temporary>
       <list>
         <item itemvalue="Python.plot_fsc" />
+        <item itemvalue="Python.figure_4" />
         <item itemvalue="Python.figure_2" />
         <item itemvalue="Python.figure_3" />
         <item itemvalue="Python.cell_size" />
-        <item itemvalue="Python.figure_4" />
       </list>
     </recent_temporary>
   </component>
@@ -919,13 +916,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ifnscripts/fit_mean_GAB_minimal.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1870">
-          <caret line="116" lean-forward="true" selection-start-line="116" selection-end-line="116" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/ifnscripts/subpopulations_analysis.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="136">
@@ -982,13 +972,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ifnscripts/figure_4.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="319">
-          <caret line="48" column="92" selection-start-line="48" selection-start-column="92" selection-end-line="48" selection-end-column="92" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/ifnscripts/figure_3.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="727">
@@ -996,20 +979,24 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ifnscripts/figure_2.py">
+    <entry file="file://$PROJECT_DIR$/ifnscripts/fit_mean_GAB_minimal.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="200">
-          <caret line="105" column="42" lean-forward="true" selection-start-line="101" selection-start-column="4" selection-end-line="105" selection-end-column="42" />
-          <folding>
-            <element signature="e#0#51#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="155">
+          <caret line="34" column="59" lean-forward="true" selection-start-line="31" selection-start-column="4" selection-end-line="34" selection-end-column="59" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ifnscripts/plot_fsc.py">
+    <entry file="file://$PROJECT_DIR$/ifnscripts/figure_4.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="200">
-          <caret line="133" column="32" selection-start-line="133" selection-start-column="32" selection-end-line="133" selection-end-column="32" />
+        <state relative-caret-position="170">
+          <caret line="15" column="66" selection-start-line="15" selection-start-column="66" selection-end-line="15" selection-end-column="66" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnscripts/figure_2.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="217">
+          <caret line="220" column="29" lean-forward="true" selection-start-line="220" selection-start-column="20" selection-end-line="220" selection-end-column="29" />
           <folding>
             <element signature="e#0#51#0" expanded="true" />
           </folding>
@@ -1018,8 +1005,18 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/ifnclass/ifndata.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="319">
-          <caret line="312" column="45" selection-start-line="312" selection-start-column="45" selection-end-line="312" selection-end-column="45" />
+        <state relative-caret-position="149">
+          <caret line="304" column="31" selection-start-line="304" selection-start-column="20" selection-end-line="304" selection-end-column="31" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnscripts/plot_fsc.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="102">
+          <caret line="181" column="45" selection-start-line="181" selection-start-column="45" selection-end-line="181" selection-end-column="45" />
+          <folding>
+            <element signature="e#0#51#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
