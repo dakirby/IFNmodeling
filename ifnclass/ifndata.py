@@ -300,13 +300,13 @@ class DataAlignment:
         return summary_IfnData
 
     def get_ec50s(self):
-        if self.scaled_data == []:
-            raise AttributeError('Align data first using self.align() and then self.get_scaled_data()')
-        temp = self.scaled_data[0].get_ec50s()
+        #if self.scaled_data == []:
+        #    raise AttributeError('Align data first using self.align() and then self.get_scaled_data()')
+        temp = self.data[0].get_ec50s()
         times = [el[0] for el in temp[list(temp.keys())[0]]]
         mean_ec50 = {key: [] for key in temp.keys()}
         error_bars = {key: [] for key in temp.keys()}
-        for d in self.scaled_data:
+        for d in self.data:
             ec50 = d.get_ec50s()
             for key in ec50.keys():
                 mean_ec50[key].append([el[1] for el in ec50[key]])

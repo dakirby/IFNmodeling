@@ -1,4 +1,5 @@
 from ifnclass.ifndata import IfnData, DataAlignment
+from ifnclass.ifnplot import DoseresponsePlot
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -181,8 +182,8 @@ if __name__ == '__main__':
     # Get dose-response data
     dataset_names = ['20190121', '20190214', '20190119', '20190108']
     times = [2.5, 2.5, 5.0, 5.0, 7.5, 7.5, 10.0, 10.0, 20.0, 20.0, 60.0, 60.0]
-    doses = {'Alpha': np.divide([1E-7, 1E-8, 3E-9, 1E-9, 3E-10, 1E-10, 1E-11], 1E-12),
-             'Beta': np.divide([2E-9, 6E-10, 2E-10, 6E-11, 2E-11, 6E-12, 2E-13], 1E-12)}
+    doses = {'Alpha': np.divide([1E-7, 1E-8, 3E-9, 1E-9, 3E-10, 1E-10, 1E-11][::-1], 1E-12),
+             'Beta': np.divide([2E-9, 6E-10, 2E-10, 6E-11, 2E-11, 6E-12, 2E-13][::-1], 1E-12)}
     large_cell_percentile = 0.2
     average_large_fraction_dict = {}
     small_IfnData_list = []
@@ -249,14 +250,13 @@ if __name__ == '__main__':
     small_alignment.add_data(small_cell_IfnData)
     small_alignment.align()
     small_alignment.get_scaled_data()
+    mean_small_data = small_alignment.summarize_data()
 
     large_alignment = DataAlignment()
     large_alignment.add_data(large_cell_IfnData)
     large_alignment.align()
     large_alignment.get_scaled_data()
-
-    small_ec50, small_errorbars = small_alignment.get_ec50s()
-    large_ec50, large_errorbars = large_alignment.get_ec50s()
+    mean_large_data = large_alignment.summarize_data()
 
     # ----------------------
     # Set up Figure layout
@@ -265,11 +265,42 @@ if __name__ == '__main__':
     gs = gridspec.GridSpec(nrows=2, ncols=2, height_ratios=[1, 1])
     Figure_3.align_labels()  # same as fig.align_xlabels(); fig.align_ylabels()
 
+    # Set up dose response figures
+    new_fit = DoseresponsePlot((1, 2))
+    new_fit.fig = Figure_3
+    plt.figure(Figure_3.number)
+    new_fit.axes = [Figure_3.add_subplot(gs[0, 0]), Figure_3.add_subplot(gs[0, 1])]
+    new_fit.axes[0].set_xscale('log')
+    new_fit.axes[0].set_xlabel('Dose (pM)')
+    new_fit.axes[0].set_ylabel('pSTAT (MFI)')
+    new_fit.axes[1].set_xscale('log')
+    new_fit.axes[1].set_xlabel('Dose (pM)')
+    new_fit.axes[1].set_ylabel('pSTAT (MFI)')
+
+    # Plot Dose respsonse data
+    times = [2.5, 5.0, 7.5, 10.0, 20.0, 60.0]
+    alpha_palette = sns.color_palette("deep", 6)
+    beta_palette = sns.color_palette("deep", 6)
+    alpha_mask = [7.5]
+    beta_mask = [5.0, 7.5, 10.0]
+    for idx, t in enumerate(times):
+        if t not in alpha_mask:
+            new_fit.add_trajectory(mean_large_data, t, 'errorbar', 'o--', (0, 0), 'Alpha', color=alpha_palette[idx],
+                                   label='{} min'.format(t))
+            new_fit.add_trajectory(mean_small_data, t, 'errorbar', 'o-', (0, 0), 'Alpha', color=alpha_palette[idx])
+        if t not in beta_mask:
+            new_fit.add_trajectory(mean_large_data, t, 'errorbar', 'o--', (0, 1), 'Beta', color=beta_palette[idx],
+                                   label='{} min'.format(t))
+            new_fit.add_trajectory(mean_small_data, t, 'errorbar', 'o-', (0, 1), 'Beta', color=beta_palette[idx])
+
     # Set up EC50 figures
     alpha_palette = sns.color_palette("Reds", 6)
     beta_palette = sns.color_palette("Greens", 6)
     data_palette = sns.color_palette("muted", 6)
     marker_shape = ["o", "v", "s", "P", "d", "1", "x", "*"]
+    # Get EC50s
+    small_ec50, small_errorbars = small_alignment.get_ec50s()
+    large_ec50, large_errorbars = large_alignment.get_ec50s()
     # Plot EC50 vs time
     ec50_axes = [Figure_3.add_subplot(gs[1, 0]), Figure_3.add_subplot(gs[1, 1])]
     ec50_axes[0].set_xlabel("Time (min)")

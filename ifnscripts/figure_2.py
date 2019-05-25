@@ -186,7 +186,7 @@ if __name__ == '__main__':
                              color=data_palette[colour_idx], marker=marker_shape[colour_idx])
 
     # ----------------------------
-    # Make theory time course plot
+    # Make theory dose response plot
     # ----------------------------
     # Model
     # Parameters found by stepwise fitting GAB mean data
