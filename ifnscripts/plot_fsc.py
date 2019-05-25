@@ -15,7 +15,7 @@ warnings.filterwarnings("ignore", category=UserWarning)
 
 def grab_data(fname, well=None):
     path_RawFiles = os.path.join(os.path.abspath(os.path.join(os.getcwd(), os.pardir)),
-                                 "ifndatabase", "{}_raw_data".format(fname), "Compensated Export\\")
+                                 "ifndatabase", "{}_raw_data".format(fname), "Compensated Export")
 
     Experiment = 'pSTAT1 kinetics [{}]'.format(fname)
 
@@ -59,7 +59,7 @@ def grab_data(fname, well=None):
     markers = []
 
     for ff in FileNames:
-        meta, df = fcsparser.parse(path_RawFiles + ff, reformat_meta=True)
+        meta, df = fcsparser.parse(os.path.join(path_RawFiles, ff), reformat_meta=True)
         if len(AllData) == 0:
             Fluorophores = [x for x in meta['_channel_names_'] if (x.find('FJComp') > -1) or (x.find('FSC') > -1)]
             channels = list(meta['_channels_']['$PnN'].values)
