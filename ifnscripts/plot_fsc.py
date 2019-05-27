@@ -178,25 +178,28 @@ if __name__ == '__main__':
     exit()
     """
 
-
+    """
     # Get dose-response data
-    dataset_names = ['20190121', '20190214', '20190119', '20190108']
+    dataset_names = ['20190214', '20190121', '20190119', '20190108']
     times = [2.5, 2.5, 5.0, 5.0, 7.5, 7.5, 10.0, 10.0, 20.0, 20.0, 60.0, 60.0]
-    doses = {'Alpha': np.divide([1E-7, 1E-8, 3E-9, 1E-9, 3E-10, 1E-10, 1E-11][::-1], 1E-12),
-             'Beta': np.divide([2E-9, 6E-10, 2E-10, 6E-11, 2E-11, 6E-12, 2E-13][::-1], 1E-12)}
+    well_IDs = ['H', 'A', 'B', 'C', 'D', 'E', 'F', 'G']
+    doses = {'Alpha': np.divide([0, 1E-7, 1E-8, 3E-9, 1E-9, 3E-10, 1E-10, 1E-11], 1E-12),
+             'Beta': np.divide([0, 2E-9, 6E-10, 2E-10, 6E-11, 2E-11, 6E-12, 2E-13], 1E-12)}
+    column_labels = ['Dose_Species', 'Dose (pM)', 'time', 'pSTAT']
     large_cell_percentile = 0.2
     average_large_fraction_dict = {}
     small_IfnData_list = []
     large_IfnData_list = []
     for dataset in dataset_names:
-        column_labels = ['Dose_Species', 'Dose (pM)', 'time', 'pSTAT']
         small_df = []
         large_df = []
+        small_zeros = []
+        large_zeros = []
         # Gates:
         upper_cutoff = 50000
 
         average_large_fraction = 0
-        for dose_idx, concentration in enumerate(['A', 'B', 'C', 'D', 'E', 'F', 'G']):
+        for dose_idx, concentration in enumerate(well_IDs):
             for time_idx, time in enumerate(times):
                 # Annotate
                 if time_idx % 2 == 0:
@@ -215,45 +218,89 @@ if __name__ == '__main__':
                 average_large_fraction += len(large_cells)/(len(small_cells) + len(large_cells))
                 pSTAT_small = small_cells.mean().loc['pSTAT1 in B cells']
                 pSTAT_large = large_cells.mean().loc['pSTAT1 in B cells']
-                small_df.append([species, doses[species][dose_idx], time, (pSTAT_small, np.nan)])
-                large_df.append([species, doses[species][dose_idx], time, (pSTAT_large, np.nan)])
-        average_large_fraction_dict[dataset] = average_large_fraction = average_large_fraction/(12*7)
-
+                # Recognize zero dose data and set aside
+                if doses[species][dose_idx] == 0.0:
+                    small_zeros.append([species, doses[species][dose_idx], time, pSTAT_small])
+                    large_zeros.append([species, doses[species][dose_idx], time, pSTAT_large])
+                else:
+                    small_zero_value = 0
+                    for item in small_zeros:
+                        if item[0] == species and item[1] == doses[species][dose_idx] and item[2] == time:
+                            small_zero_value = item[3]
+                    large_zero_value = 0
+                    for item in large_zeros:
+                        if item[0] == species and item[1] == doses[species][dose_idx] and item[2] == time:
+                            large_zero_value = item[3]
+                    small_df.append([species, doses[species][dose_idx], time, (pSTAT_small-small_zero_value, np.nan)])
+                    large_df.append([species, doses[species][dose_idx], time, (pSTAT_large-large_zero_value, np.nan)])
+        average_large_fraction_dict[dataset] = average_large_fraction = average_large_fraction/(len(times)*len(well_IDs))
         # Make dataframes
         small_df = pd.DataFrame.from_records(small_df, columns=column_labels)
+        large_df = pd.DataFrame.from_records(large_df, columns=column_labels)
+
+        # Zero the data
+        #for i in range(small_df.shape[0]):
+        #    index = (small_df['Dose_Species']==small_df.loc[i]['Dose_Species'])&\
+        #            (small_df['time']==small_df.loc[i]['time'])&(small_df['Dose (pM)'] == 0.0)
+        #    temp = [small_df.loc[i]['pSTAT'] - small_df.loc[index]['pSTAT'], np.nan]
+        #    small_df.iat[i, 3] = temp
+        #for i in range(large_df.shape[0]):
+        #    index = (large_df['Dose_Species']==large_df.loc[i]['Dose_Species'])&\
+        #            (large_df['time']==large_df.loc[i]['time'])&(large_df['Dose (pM)'] == 0.0)
+        #    temp = [large_df.loc[i]['pSTAT'] - large_df.loc[index]['pSTAT'], np.nan]
+        #    large_df.iat[i, 3] = temp
+        
+
+        # Convert to multiindex
         small_df.set_index(['Dose_Species', 'Dose (pM)'], inplace=True)
         small_df = pd.pivot_table(small_df, values='pSTAT', index=['Dose_Species', 'Dose (pM)'], columns=['time'],
                                   aggfunc=np.sum)
         small_df.columns.name = None
 
-        large_df = pd.DataFrame.from_records(large_df, columns=column_labels)
         large_df.set_index(['Dose_Species', 'Dose (pM)'], inplace=True)
         large_df = pd.pivot_table(large_df, values='pSTAT', index=['Dose_Species', 'Dose (pM)'], columns=['time'],
                                   aggfunc=np.sum)
         large_df.columns.name = None
 
+        # Drop zero dose data
+        #small_df = small_df.drop(index=0.0, level=1)
+        #large_df = large_df.drop(index=0.0, level=1)
+
         # Make IfnData object
         small_cell_IfnData = IfnData('custom', df=small_df, conditions={'Alpha': {'Ib': 0}, 'Beta': {'Ia': 0}})
+        small_cell_IfnData.name = dataset
         large_cell_IfnData = IfnData('custom', df=large_df, conditions={'Alpha': {'Ib': 0}, 'Beta': {'Ia': 0}})
+        large_cell_IfnData.name = dataset
         small_IfnData_list.append(small_cell_IfnData)
         large_IfnData_list.append(large_cell_IfnData)
-
     # Check that thresholding worked (it works)
     #print(average_large_fraction_dict)
 
-    # EC50 lists
-    #ec50_small_cells = {dataset_names[i]: small_cell_IfnData[i].get_ec50s() for i in range(len(dataset_names))}
-    #ec50_large_cells = {dataset_names[i]: large_cell_IfnData[i].get_ec50s() for i in range(len(dataset_names))}
-
     # Align data
     small_alignment = DataAlignment()
-    small_alignment.add_data(small_cell_IfnData)
+    small_alignment.add_data(small_IfnData_list)
     small_alignment.align()
     small_alignment.get_scaled_data()
     mean_small_data = small_alignment.summarize_data()
 
     large_alignment = DataAlignment()
-    large_alignment.add_data(large_cell_IfnData)
+    large_alignment.add_data(large_IfnData_list)
+    large_alignment.align()
+    large_alignment.get_scaled_data()
+    mean_large_data = large_alignment.summarize_data()
+
+    # Save results
+    small_alignment.save('small_alignment', save_dir=os.path.join(os.getcwd(), 'small_alignment'))
+    large_alignment.save('large_alignment', save_dir=os.path.join(os.getcwd(), 'large_alignment'))
+    """
+    # Load saved DataAlignment
+    small_alignment = DataAlignment()
+    small_alignment.load_from_save_file('small_alignment', os.path.join(os.getcwd(), 'small_alignment'))
+    large_alignment = DataAlignment()
+    large_alignment.load_from_save_file('large_alignment', os.path.join(os.getcwd(), 'large_alignment'))
+    small_alignment.align()
+    small_alignment.get_scaled_data()
+    mean_small_data = small_alignment.summarize_data()
     large_alignment.align()
     large_alignment.get_scaled_data()
     mean_large_data = large_alignment.summarize_data()
@@ -281,7 +328,7 @@ if __name__ == '__main__':
     times = [2.5, 5.0, 7.5, 10.0, 20.0, 60.0]
     alpha_palette = sns.color_palette("deep", 6)
     beta_palette = sns.color_palette("deep", 6)
-    alpha_mask = [7.5]
+    alpha_mask = [5.0, 7.5, 10.0]
     beta_mask = [5.0, 7.5, 10.0]
     for idx, t in enumerate(times):
         if t not in alpha_mask:
@@ -292,15 +339,15 @@ if __name__ == '__main__':
             new_fit.add_trajectory(mean_large_data, t, 'errorbar', 'o--', (0, 1), 'Beta', color=beta_palette[idx],
                                    label='{} min'.format(t))
             new_fit.add_trajectory(mean_small_data, t, 'errorbar', 'o-', (0, 1), 'Beta', color=beta_palette[idx])
-
+    new_fit.show_figure()
     # Set up EC50 figures
     alpha_palette = sns.color_palette("Reds", 6)
     beta_palette = sns.color_palette("Greens", 6)
     data_palette = sns.color_palette("muted", 6)
     marker_shape = ["o", "v", "s", "P", "d", "1", "x", "*"]
     # Get EC50s
-    small_ec50, small_errorbars = small_alignment.get_ec50s()
-    large_ec50, large_errorbars = large_alignment.get_ec50s()
+    small_ec50, small_errorbars = mean_small_data.get_ec50s()
+    large_ec50, large_errorbars = mean_large_data.get_ec50s()
     # Plot EC50 vs time
     ec50_axes = [Figure_3.add_subplot(gs[1, 0]), Figure_3.add_subplot(gs[1, 1])]
     ec50_axes[0].set_xlabel("Time (min)")
@@ -319,5 +366,5 @@ if __name__ == '__main__':
         ec50_axes[1].errorbar([el[0] for el in ec50['Beta']], [el[1] for el in ec50['Beta']],
                               yerr=errorbars['Beta'], fmt=line_styles[line_style_idx], color=data_palette[3])
         line_style_idx += 1
-
+    plt.figure(Figure_3.number)
     plt.show()

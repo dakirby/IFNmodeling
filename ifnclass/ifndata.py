@@ -8,6 +8,7 @@ from scipy.optimize import minimize
 from copy import deepcopy
 import seaborn as sns
 import pandas as pd
+import pickle
 
 """
 Created on Sun Nov 25 10:05:14 2018
@@ -198,7 +199,6 @@ class IfnData:
             Tmax_dict[key] = Tmax_array
         return Tmax_dict
 
-
 class DataAlignment:
     """
      Documentation - A DataAlignment object contains several IfnData objects and the scale factors needed to align them.
@@ -254,6 +254,40 @@ class DataAlignment:
                     raise TypeError("Must add IfnData instance or a list of such instances")
         else:
             raise TypeError("Must add IfnData instance or a list of such instances")
+
+    def save(self, fname, save_dir=os.getcwd()):
+        ifn_name_list = []
+        if save_dir != os.getcwd():
+            if not os.path.exists(save_dir):
+                os.makedirs(save_dir)
+        for ifndata_obj in self.data:
+            ifn_name_list.append(ifndata_obj.name)
+            ifndata_obj.data_set.to_hdf(os.path.join(save_dir, ifndata_obj.name + '.h5'), key='data_set', mode='w')
+            with open(os.path.join(save_dir, ifndata_obj.name + '.p'), 'wb') as fp:
+                pickle.dump(ifndata_obj.conditions, fp)
+        for ifndata_obj in self.scaled_data:
+            ifndata_obj.data_set.to_hdf(os.path.join(save_dir, ifndata_obj.name + '_scaled.h5'), key='data_set', mode='w')
+            with open(os.path.join(save_dir, ifndata_obj.name + '.p'), 'wb') as fp:
+                pickle.dump(ifndata_obj.conditions, fp)
+
+        with open(os.path.join(save_dir, fname + '_scalefactors.p'), 'wb') as fp:
+            pickle.dump(self.scale_factors, fp)
+        with open(os.path.join(save_dir, 'IfnData_names.p'), 'wb') as fp:
+            pickle.dump(ifn_name_list, fp)
+
+    def load_from_save_file(self, fname, save_dir):
+        with open(os.path.join(save_dir, 'IfnData_names.p'), 'rb') as fp:
+            ifn_name_list = pickle.load(fp)
+        with open(os.path.join(save_dir, fname + '_scalefactors.p'), 'rb') as fp:
+            self.scale_factors = pickle.load(fp)
+        for name in ifn_name_list:
+            temp = IfnData('custom', df=pd.read_hdf(os.path.join(save_dir, name + '.h5'), 'data_set'))
+            temp.name = name
+            self.data.append(temp)
+        for name in ifn_name_list:
+            temp = IfnData('custom', df=pd.read_hdf(os.path.join(save_dir, name + '_scaled.h5'), 'data_set'))
+            temp.name = name
+            self.data.append(temp)
 
     def align(self):
         self.scale_factors = np.zeros(len(self.data))
