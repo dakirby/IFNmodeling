@@ -4,7 +4,13 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
-import pickle
+import matplotlib
+matplotlib.rc('xtick', labelsize=14)
+matplotlib.rc('ytick', labelsize=14)
+font = {'family' : 'normal',
+        'weight' : 'normal',
+        'size'   : 14}
+matplotlib.rc('font', **font)
 import seaborn as sns
 import os
 import warnings
@@ -317,9 +323,11 @@ if __name__ == '__main__':
     new_fit.fig = Figure_3
     plt.figure(Figure_3.number)
     new_fit.axes = [Figure_3.add_subplot(gs[0, 0]), Figure_3.add_subplot(gs[0, 1])]
+    new_fit.axes[0].set_label(r'IFN$\alpha$')
     new_fit.axes[0].set_xscale('log')
     new_fit.axes[0].set_xlabel('Dose (pM)')
     new_fit.axes[0].set_ylabel('pSTAT (MFI)')
+    new_fit.axes[1].set_label(r'IFN$\beta$')
     new_fit.axes[1].set_xscale('log')
     new_fit.axes[1].set_xlabel('Dose (pM)')
     new_fit.axes[1].set_ylabel('pSTAT (MFI)')
@@ -333,21 +341,22 @@ if __name__ == '__main__':
     for idx, t in enumerate(times):
         if t not in alpha_mask:
             new_fit.add_trajectory(mean_large_data, t, 'errorbar', 'o--', (0, 0), 'Alpha', color=alpha_palette[idx],
-                                   label='{} min'.format(t))
-            new_fit.add_trajectory(mean_small_data, t, 'errorbar', 'o-', (0, 0), 'Alpha', color=alpha_palette[idx])
+                                   label='{} min'.format(t), linewidth=2.0)
+            new_fit.add_trajectory(mean_small_data, t, 'errorbar', 'o-', (0, 0), 'Alpha', color=alpha_palette[idx],
+                                   linewidth=2.0)
         if t not in beta_mask:
             new_fit.add_trajectory(mean_large_data, t, 'errorbar', 'o--', (0, 1), 'Beta', color=beta_palette[idx],
-                                   label='{} min'.format(t))
-            new_fit.add_trajectory(mean_small_data, t, 'errorbar', 'o-', (0, 1), 'Beta', color=beta_palette[idx])
-    new_fit.show_figure()
+                                   label='{} min'.format(t), linewidth=2.0)
+            new_fit.add_trajectory(mean_small_data, t, 'errorbar', 'o-', (0, 1), 'Beta', color=beta_palette[idx],
+                                   linewidth=2.0)
     # Set up EC50 figures
     alpha_palette = sns.color_palette("Reds", 6)
     beta_palette = sns.color_palette("Greens", 6)
     data_palette = sns.color_palette("muted", 6)
     marker_shape = ["o", "v", "s", "P", "d", "1", "x", "*"]
     # Get EC50s
-    small_ec50, small_errorbars = mean_small_data.get_ec50s()
-    large_ec50, large_errorbars = mean_large_data.get_ec50s()
+    small_ec50 = mean_small_data.get_ec50s(errorbars=True)
+    large_ec50 = mean_large_data.get_ec50s(errorbars=True)
     # Plot EC50 vs time
     ec50_axes = [Figure_3.add_subplot(gs[1, 0]), Figure_3.add_subplot(gs[1, 1])]
     ec50_axes[0].set_xlabel("Time (min)")
@@ -360,11 +369,20 @@ if __name__ == '__main__':
     # Add data
     line_style_idx=0
     line_styles = ['-', '--']
-    for ec50, errorbars, fmt in [[small_ec50, small_errorbars], [large_ec50, large_errorbars]]:
+    labels = ['Small cells', 'Large cells']
+    #for ec50 in [small_ec50, large_ec50]:
+    #    ec50_axes[0].errorbar([el[0] for el in ec50['Alpha']], [el[1] for el in ec50['Alpha']],
+    #                         fmt=line_styles[line_style_idx], color=data_palette[3], label=labels[line_style_idx])
+    #    ec50_axes[1].errorbar([el[0] for el in ec50['Beta']], [el[1] for el in ec50['Beta']],
+    #                         fmt=line_styles[line_style_idx], color=data_palette[2], label=labels[line_style_idx])
+    #    line_style_idx += 1
+    for ec50 in [small_ec50, large_ec50]:
         ec50_axes[0].errorbar([el[0] for el in ec50['Alpha']], [el[1] for el in ec50['Alpha']],
-                              yerr=errorbars['Alpha'], fmt=line_styles[line_style_idx], color=data_palette[3])
+                              yerr=[el[2] for el in ec50['Alpha']], fmt=line_styles[line_style_idx], color=data_palette[3],
+                              label=labels[line_style_idx])
         ec50_axes[1].errorbar([el[0] for el in ec50['Beta']], [el[1] for el in ec50['Beta']],
-                              yerr=errorbars['Beta'], fmt=line_styles[line_style_idx], color=data_palette[3])
+                              yerr=[el[2] for el in ec50['Beta']], fmt=line_styles[line_style_idx], color=data_palette[2],
+                              label=labels[line_style_idx])
         line_style_idx += 1
     plt.figure(Figure_3.number)
-    plt.show()
+    new_fit.show_figure()

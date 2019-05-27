@@ -196,6 +196,20 @@
       <change beforePath="$PROJECT_DIR$/ifnscripts/internalization_theory_phase_figure.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/internalization_theory_phase_figure.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnscripts/internalization_theory_tc_figure.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/internalization_theory_tc_figure.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnscripts/kimmel_sensitivity_analysis.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/kimmel_sensitivity_analysis.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/large_alignment/20190108.h5" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/large_alignment/20190108.h5" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/large_alignment/20190108.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/large_alignment/20190108.p" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/large_alignment/20190108_scaled.h5" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/large_alignment/20190108_scaled.h5" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/large_alignment/20190119.h5" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/large_alignment/20190119.h5" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/large_alignment/20190119.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/large_alignment/20190119.p" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/large_alignment/20190119_scaled.h5" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/large_alignment/20190119_scaled.h5" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/large_alignment/20190121.h5" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/large_alignment/20190121.h5" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/large_alignment/20190121.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/large_alignment/20190121.p" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/large_alignment/20190121_scaled.h5" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/large_alignment/20190121_scaled.h5" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/large_alignment/20190214.h5" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/large_alignment/20190214.h5" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/large_alignment/20190214.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/large_alignment/20190214.p" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/large_alignment/20190214_scaled.h5" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/large_alignment/20190214_scaled.h5" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/large_alignment/IfnData_names.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/large_alignment/IfnData_names.p" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/large_alignment/large_alignment_scalefactors.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/large_alignment/large_alignment_scalefactors.p" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnscripts/mcmc_results/chain_results/0chain.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/mcmc_results/chain_results/0chain.p" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnscripts/mcmc_results/chain_results/1chain.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/mcmc_results/chain_results/1chain.p" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnscripts/mcmc_results/gelman-rubin_statistics.csv" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/mcmc_results/gelman-rubin_statistics.csv" afterDir="false" />
@@ -219,6 +233,20 @@
       <change beforePath="$PROJECT_DIR$/ifnscripts/results/Sloppiness/Hessian.pkl" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/results/Sloppiness/Hessian.pkl" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnscripts/results/Sloppiness/Simplified_Model_Hessian.pkl" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/results/Sloppiness/Simplified_Model_Hessian.pkl" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnscripts/sloppiness_analysis.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/sloppiness_analysis.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/small_alignment/20190108.h5" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/small_alignment/20190108.h5" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/small_alignment/20190108.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/small_alignment/20190108.p" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/small_alignment/20190108_scaled.h5" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/small_alignment/20190108_scaled.h5" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/small_alignment/20190119.h5" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/small_alignment/20190119.h5" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/small_alignment/20190119.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/small_alignment/20190119.p" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/small_alignment/20190119_scaled.h5" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/small_alignment/20190119_scaled.h5" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/small_alignment/20190121.h5" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/small_alignment/20190121.h5" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/small_alignment/20190121.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/small_alignment/20190121.p" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/small_alignment/20190121_scaled.h5" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/small_alignment/20190121_scaled.h5" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/small_alignment/20190214.h5" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/small_alignment/20190214.h5" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/small_alignment/20190214.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/small_alignment/20190214.p" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/small_alignment/20190214_scaled.h5" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/small_alignment/20190214_scaled.h5" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/small_alignment/IfnData_names.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/small_alignment/IfnData_names.p" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/small_alignment/small_alignment_scalefactors.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/small_alignment/small_alignment_scalefactors.p" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnscripts/smooth_B6_IFN.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/smooth_B6_IFN.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnscripts/smooth_Sagar.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/smooth_Sagar.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnscripts/stepwisefit.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/stepwisefit.p" afterDir="false" />
@@ -253,18 +281,6 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="figure_4.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/ifnscripts/figure_4.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="591">
-              <caret line="98" column="22" selection-start-line="98" selection-start-column="22" selection-end-line="98" selection-end-column="22" />
-              <folding>
-                <element signature="e#0#38#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file leaf-file-name="fit_all_GAB_data.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/ifnscripts/fit_all_GAB_data.py">
           <provider selected="true" editor-type-id="text-editor">
@@ -274,11 +290,20 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="plot_fsc.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="figure_3.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/ifnscripts/figure_3.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-140">
+              <caret line="237" column="20" lean-forward="true" selection-start-line="237" selection-start-column="20" selection-end-line="237" selection-end-column="20" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="plot_fsc.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/ifnscripts/plot_fsc.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="149">
-              <caret line="349" column="44" selection-start-line="349" selection-start-column="44" selection-end-line="349" selection-end-column="44" />
+            <state relative-caret-position="1499">
+              <caret line="379" selection-start-line="379" selection-end-line="379" />
               <folding>
                 <element signature="e#0#51#0" expanded="true" />
               </folding>
@@ -289,8 +314,8 @@
       <file leaf-file-name="ifndata.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/ifnclass/ifndata.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-718">
-              <caret line="287" column="106" selection-start-line="287" selection-start-column="106" selection-end-line="287" selection-end-column="106" />
+            <state relative-caret-position="164">
+              <caret line="211" column="25" selection-start-line="211" selection-start-column="20" selection-end-line="211" selection-end-column="25" />
               <folding>
                 <element signature="e#0#9#0" expanded="true" />
               </folding>
@@ -322,7 +347,6 @@
       <find>size</find>
       <find>MM(</find>
       <find>get_ec50</find>
-      <find>rc</find>
       <find>drop</find>
       <find>Small</find>
       <find>sort</find>
@@ -338,6 +362,7 @@
       <find>mean_data</find>
       <find>small</find>
       <find>num</find>
+      <find>rc</find>
       <find>print</find>
     </findStrings>
     <replaceStrings>
@@ -639,12 +664,12 @@
     <frame x="-7" y="-7" width="1550" height="838" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.14453125" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.14453125" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.2311198" side_tool="true" visible="true" weight="0.32965517" />
       <window_info anchor="bottom" id="Version Control" order="9" />
       <window_info anchor="bottom" id="Python Console" order="7" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.7688802" visible="true" weight="0.32965517" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.7688802" visible="true" weight="0.32965517" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="bottom" id="Terminal" order="8" />
       <window_info id="Favorites" order="2" side_tool="true" />
@@ -849,13 +874,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ifnscripts/figure_5.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="234">
-          <caret line="52" column="96" selection-start-line="52" selection-start-column="96" selection-end-line="52" selection-end-column="96" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/ifnclass/ifnplot.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="404">
@@ -940,13 +958,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ifnscripts/figure_3.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="727">
-          <caret line="237" column="20" lean-forward="true" selection-start-line="237" selection-start-column="20" selection-end-line="237" selection-end-column="20" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/ifnscripts/fit_mean_GAB_minimal.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="155">
@@ -989,13 +1000,50 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/ifnscripts/figure_2.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="377">
+          <caret line="250" column="31" selection-start-line="250" selection-start-column="31" selection-end-line="250" selection-end-column="31" />
+          <folding>
+            <element signature="e#0#51#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnclass/ifndata.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="164">
+          <caret line="211" column="25" selection-start-line="211" selection-start-column="20" selection-end-line="211" selection-end-column="25" />
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnscripts/plot_fsc.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1499">
+          <caret line="379" selection-start-line="379" selection-end-line="379" />
+          <folding>
+            <element signature="e#0#51#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/ifnscripts/figure_4.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="591">
-          <caret line="98" column="22" selection-start-line="98" selection-start-column="22" selection-end-line="98" selection-end-column="22" />
+        <state relative-caret-position="-952">
+          <caret line="10" column="31" lean-forward="true" selection-start-line="10" selection-start-column="31" selection-end-line="10" selection-end-column="31" />
           <folding>
             <element signature="e#0#38#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnscripts/figure_5.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="816">
+          <caret line="53" column="49" selection-start-line="53" selection-start-column="49" selection-end-line="53" selection-end-column="49" />
         </state>
       </provider>
     </entry>
@@ -1006,33 +1054,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ifnscripts/figure_2.py">
+    <entry file="file://$PROJECT_DIR$/ifnscripts/figure_3.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="137">
-          <caret line="250" column="31" lean-forward="true" selection-start-line="250" selection-start-column="31" selection-end-line="250" selection-end-column="31" />
-          <folding>
-            <element signature="e#0#51#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/ifnclass/ifndata.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-718">
-          <caret line="287" column="106" selection-start-line="287" selection-start-column="106" selection-end-line="287" selection-end-column="106" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/ifnscripts/plot_fsc.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="149">
-          <caret line="349" column="44" selection-start-line="349" selection-start-column="44" selection-end-line="349" selection-end-column="44" />
-          <folding>
-            <element signature="e#0#51#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="-140">
+          <caret line="237" column="20" lean-forward="true" selection-start-line="237" selection-start-column="20" selection-end-line="237" selection-end-column="20" />
         </state>
       </provider>
     </entry>

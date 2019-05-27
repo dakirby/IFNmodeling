@@ -144,43 +144,83 @@ class IfnData:
         ydata = [top * x ** n / (k ** n + x ** n) for x in xdata]
         return ydata
 
-    def get_ec50s(self, hill_coeff_guess = 1):
-        def augment_data(x_data, y_data):
-            new_xdata = [x_data[0]*0.1, x_data[0]*0.3, x_data[0]*0.8, *x_data, x_data[-1]*2, x_data[-1]*5, x_data[-1]*8]
-            new_ydata = [y_data[0], y_data[0], y_data[0], *y_data, y_data[-1], y_data[-1], y_data[-1]]
-            return new_xdata, new_ydata
+    def get_ec50s(self, hill_coeff_guess = 1, errorbars=False):
+        def augment_data(x_data, y_data, errorbars=False):
+            min_response = min(y_data)
+            min_response_idx = y_data.tolist().index(min_response)
+            new_xdata = [x_data[min_response_idx]*0.1, x_data[min_response_idx]*0.3, x_data[min_response_idx]*0.8,
+                         *x_data[min_response_idx:], x_data[-1]*2, x_data[-1]*5, x_data[-1]*8]
+            new_ydata = [min_response, min_response, min_response, *y_data[min_response_idx:],
+                         y_data[-1], y_data[-1], y_data[-1]]
+            if isinstance(errorbars, type(False)):
+                if errorbars == False:
+                    return new_xdata, new_ydata
+                else:
+                    raise ValueError
+            else:
+                new_errs = [errorbars[min_response_idx], errorbars[min_response_idx], errorbars[min_response_idx],
+                            *errorbars[min_response_idx:], errorbars[-1], errorbars[-1], errorbars[-1]]
+                return new_xdata, new_ydata, new_errs
         ec50_dict = {}
         for key in self.get_dose_species():
             response_array = np.transpose([[el[0] for el in row] for row in self.get_responses()[key]])
             ec50_array = []
-            if self.get_doses()[key][0] == 0 or self.get_doses()[key][0] == 0.:
-                for t in enumerate(self.get_times()[key]):
-                    doses, responses = augment_data(self.get_doses()[key][1:],  response_array[t[0]][1:])
-                    results, covariance = curve_fit(self.__MM__, doses, responses,
-                                                    p0=[max(responses), hill_coeff_guess, doses[int(len(doses)/2)]])
-                    if results[2] > 4E3 or results[2] < 1E2:
-                        top = max(responses) * 0.5
-                        for i, r in enumerate(responses):
-                            if r > top:
-                                realistic_ec50 = 10 ** ((np.log10(doses[i - 1]) + np.log10(doses[i])) / 2.0)
-                                ec50_array.append((t[1], realistic_ec50))
-                                break
+            for t in enumerate(self.get_times()[key]):
+                # drop 0 pM dose since it can't be included on a log axis
+                if self.get_doses()[key][0] == 0 or self.get_doses()[key][0] == 0.:
+                    doses_to_fit = self.get_doses()[key][1:]
+                    responses_to_fit = response_array[t[0]][1:]
+                else:
+                    doses_to_fit = self.get_doses()[key]
+                    responses_to_fit = response_array[t[0]]
+
+                # Try curve fitting
+                try:
+                    # Just get EC50
+                    if errorbars is False:
+                        doses, responses = augment_data(doses_to_fit, responses_to_fit, errorbars=False)
+                        results, covariance = curve_fit(self.__MM__, doses, responses,
+                                                        p0=[max(responses), hill_coeff_guess, doses[int(len(doses)/2)]])
+                    # Get EC50 and error in estimate
                     else:
-                        ec50_array.append((t[1], results[2]))
-            else:
-                for t in enumerate(self.get_times()[key]):
-                    doses, responses = augment_data(self.get_doses()[key],  response_array[t[0]])
-                    results, covariance = curve_fit(self.__MM__, doses, responses,
-                                                    p0=[max(responses), hill_coeff_guess, doses[int(len(doses)/2)]])
+                        errs_array = np.transpose([[el[1] for el in row] for row in self.get_responses()[key]])
+                        doses, responses, errs = augment_data(self.get_doses()[key], response_array[t[0]],
+                                                              errorbars=errs_array[t[0]])
+                        results, covariance = curve_fit(self.__MM__, doses, responses,
+                                                        p0=[max(responses), hill_coeff_guess, doses[int(len(doses)/2)]],
+                                                        sigma=errs)
+                    # Catch unrealistically large results
                     if results[2] > 4E3:
                         top = max(responses) * 0.5
                         for i, r in enumerate(responses):
                             if r > top:
                                 realistic_ec50 = 10 ** ((np.log10(doses[i - 1]) + np.log10(doses[i])) / 2.0)
-                                ec50_array.append((t[1], realistic_ec50))
+                                if errorbars is True:
+                                    ec50_array.append((t[1], realistic_ec50,
+                                                       2 * 10 ** ((np.log10(doses[i - 1]) - np.log10(doses[i])) / 2.0)))
+                                else:
+                                    ec50_array.append((t[1], realistic_ec50))
                                 break
+                    # Otherwise just append results to ec50_array
                     else:
-                        ec50_array.append((t[1], results[2]))
+                        if errorbars is True:
+                            ec50_array.append((t[1], results[2], np.sqrt(np.diag(covariance)[2])))
+                        else:
+                            ec50_array.append((t[1], results[2]))
+                # If curve fitting fails, use some rough estimates:
+                except RuntimeError:
+                    print('Resorted to default guesses for IFN {} at {} min'.format(key, t[1]))
+                    top = max(responses) * 0.5
+                    for i, r in enumerate(responses):
+                        if r > top:
+                            realistic_ec50 = 10 ** ((np.log10(doses[i - 1]) + np.log10(doses[i])) / 2.0)
+                            if errorbars is True:
+                                ec50_array.append((t[1], realistic_ec50,
+                                                   2 * 10 ** ((np.log10(doses[i - 1]) - np.log10(doses[i])) / 2.0)))
+                            else:
+                                ec50_array.append((t[1], realistic_ec50))
+                            break
+            # Update final dictionary with the ec50 curve
             ec50_dict.update({key: ec50_array})
         return ec50_dict
 
