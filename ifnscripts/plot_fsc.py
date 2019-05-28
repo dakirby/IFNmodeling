@@ -349,6 +349,8 @@ if __name__ == '__main__':
                                    label='{} min'.format(t), linewidth=2.0)
             new_fit.add_trajectory(mean_small_data, t, 'errorbar', 'o-', (0, 1), 'Beta', color=beta_palette[idx],
                                    linewidth=2.0)
+    new_fit.axes[0].set_label(r'IFN$\alpha$')
+    new_fit.axes[1].set_label(r'IFN$\beta$')
     # Set up EC50 figures
     alpha_palette = sns.color_palette("Reds", 6)
     beta_palette = sns.color_palette("Greens", 6)
