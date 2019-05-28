@@ -16,7 +16,7 @@ warnings.filterwarnings("ignore", category=UserWarning)
 
 def grab_data(fname, well=None):
     path_RawFiles = os.path.join(os.path.abspath(os.path.join(os.getcwd(), os.pardir)),
-                                 "ifndatabase", "{}_raw_data".format(fname), "Compensated Export")
+                                 "ifndatabase", "{}_raw_data".format(fname), "Compensated Export\\")
 
     Experiment = 'pSTAT1 kinetics [{}]'.format(fname)
 
@@ -60,7 +60,7 @@ def grab_data(fname, well=None):
     markers = []
 
     for ff in FileNames:
-        meta, df = fcsparser.parse(os.path.join(path_RawFiles, ff), reformat_meta=True)
+        meta, df = fcsparser.parse(path_RawFiles + ff, reformat_meta=True)
         if len(AllData) == 0:
             Fluorophores = [x for x in meta['_channel_names_'] if (x.find('FJComp') > -1) or (x.find('FSC') > -1)]
             channels = list(meta['_channels_']['$PnN'].values)
@@ -163,7 +163,7 @@ if __name__ == '__main__':
     times = [60.0]
     doses_alpha = np.logspace(0, 7)
     doses_beta = np.logspace(0, 6)
-    """
+
     # -------------------------------
     # Scanning effect of cell size
     # 60 minute IFN dosed at 10 pM
@@ -212,7 +212,7 @@ if __name__ == '__main__':
     ax.set_ylabel('pSTAT/STAT', fontsize=14)
     ax.set_xlim((1, 300))
     ax.set_title('Fraction pSTAT vs Cell Radius\n 10 pM IFN at 60 minutes', fontsize=16)
-    """
+
     # -----------------------------
     # Investigate cell variability
     # in data
@@ -236,216 +236,66 @@ if __name__ == '__main__':
     #  | 1E-11  2E-13
     # H| alpha  beta
     #  | 0 pM   0 pM
-    """
-       # Get dose-response data
-       dataset_names = ['20190214', '20190121', '20190119', '20190108']
-       times = [2.5, 2.5, 5.0, 5.0, 7.5, 7.5, 10.0, 10.0, 20.0, 20.0, 60.0, 60.0]
-       well_IDs = ['H', 'A', 'B', 'C', 'D', 'E', 'F', 'G']
-       doses = {'Alpha': np.divide([0, 1E-7, 1E-8, 3E-9, 1E-9, 3E-10, 1E-10, 1E-11], 1E-12),
-                'Beta': np.divide([0, 2E-9, 6E-10, 2E-10, 6E-11, 2E-11, 6E-12, 2E-13], 1E-12)}
-       column_labels = ['Dose_Species', 'Dose (pM)', 'time', 'pSTAT']
-       large_cell_percentile = 0.2
-       average_large_fraction_dict = {}
-       small_IfnData_list = []
-       large_IfnData_list = []
-       for dataset in dataset_names:
-           small_df = []
-           large_df = []
-           small_zeros = []
-           large_zeros = []
-           # Gates:
-           upper_cutoff = 50000
+    dr_fig.axes[1].set_xscale('linear')
+    data = grab_data('20190214', 'G11')
+    outliers = (data['FSC'] > 80000) | (data['pSTAT1 in B cells'] > 30000) | (data['pSTAT1 in B cells'] < -5000)
+    #sns.regplot('FSC', 'pSTAT1 in B cells', data=data.loc[~outliers], ax=dr_fig.axes[1],
+    #              line_kws={'color': 'red'}, scatter_kws={'alpha': 0.05, 'edgecolor':''})
+    dr_fig.axes[1].set_title('Dependence on Cell Size at 60 minutes\n' + r'for 10 pM IFN$\alpha$', fontsize=16)
+    dr_fig.axes[1].set_xlabel('Forward Scatter', fontsize=14)
+    dr_fig.axes[1].set_ylabel('pSTAT1', fontsize=14)
+    scatter_density_plot(x=data.loc[~outliers]['FSC'], y=data.loc[~outliers]['pSTAT1 in B cells'],
+                         ax=dr_fig.axes[1], bins=50)
+    plt.show()
 
-           average_large_fraction = 0
-           for dose_idx, concentration in enumerate(well_IDs):
-               for time_idx, time in enumerate(times):
-                   # Annotate
-                   if time_idx % 2 == 0:
-                       species = 'Beta'
-                   else:
-                       species = 'Alpha'
-                   well = concentration+str(time_idx+1)
-                   # Clean data
-                   data = grab_data(dataset, well)
-                   outliers = (data['FSC'] > upper_cutoff) | (data['pSTAT1 in B cells'] < 0)
-                   data = data.loc[~outliers]
-                   small_large_threshold = data.quantile(q=1 - large_cell_percentile).loc['FSC']
-                   # Partition data
-                   small_cells = data[(data['FSC'] <= small_large_threshold)]
-                   large_cells = data[(data['FSC'] > small_large_threshold)]
-                   average_large_fraction += len(large_cells)/(len(small_cells) + len(large_cells))
-                   pSTAT_small = small_cells.mean().loc['pSTAT1 in B cells']
-                   pSTAT_large = large_cells.mean().loc['pSTAT1 in B cells']
-                   # Recognize zero dose data and set aside
-                   if doses[species][dose_idx] == 0.0:
-                       small_zeros.append([species, doses[species][dose_idx], time, pSTAT_small])
-                       large_zeros.append([species, doses[species][dose_idx], time, pSTAT_large])
-                   else:
-                       small_zero_value = 0
-                       for item in small_zeros:
-                           if item[0] == species and item[1] == doses[species][dose_idx] and item[2] == time:
-                               small_zero_value = item[3]
-                       large_zero_value = 0
-                       for item in large_zeros:
-                           if item[0] == species and item[1] == doses[species][dose_idx] and item[2] == time:
-                               large_zero_value = item[3]
-                       small_df.append([species, doses[species][dose_idx], time, (pSTAT_small-small_zero_value, np.nan)])
-                       large_df.append([species, doses[species][dose_idx], time, (pSTAT_large-large_zero_value, np.nan)])
-           average_large_fraction_dict[dataset] = average_large_fraction = average_large_fraction/(len(times)*len(well_IDs))
-           # Make dataframes
-           small_df = pd.DataFrame.from_records(small_df, columns=column_labels)
-           large_df = pd.DataFrame.from_records(large_df, columns=column_labels)
-
-           # Zero the data
-           #for i in range(small_df.shape[0]):
-           #    index = (small_df['Dose_Species']==small_df.loc[i]['Dose_Species'])&\
-           #            (small_df['time']==small_df.loc[i]['time'])&(small_df['Dose (pM)'] == 0.0)
-           #    temp = [small_df.loc[i]['pSTAT'] - small_df.loc[index]['pSTAT'], np.nan]
-           #    small_df.iat[i, 3] = temp
-           #for i in range(large_df.shape[0]):
-           #    index = (large_df['Dose_Species']==large_df.loc[i]['Dose_Species'])&\
-           #            (large_df['time']==large_df.loc[i]['time'])&(large_df['Dose (pM)'] == 0.0)
-           #    temp = [large_df.loc[i]['pSTAT'] - large_df.loc[index]['pSTAT'], np.nan]
-           #    large_df.iat[i, 3] = temp
-
-
-           # Convert to multiindex
-           small_df.set_index(['Dose_Species', 'Dose (pM)'], inplace=True)
-           small_df = pd.pivot_table(small_df, values='pSTAT', index=['Dose_Species', 'Dose (pM)'], columns=['time'],
-                                     aggfunc=np.sum)
-           small_df.columns.name = None
-
-           large_df.set_index(['Dose_Species', 'Dose (pM)'], inplace=True)
-           large_df = pd.pivot_table(large_df, values='pSTAT', index=['Dose_Species', 'Dose (pM)'], columns=['time'],
-                                     aggfunc=np.sum)
-           large_df.columns.name = None
-
-           # Drop zero dose data
-           #small_df = small_df.drop(index=0.0, level=1)
-           #large_df = large_df.drop(index=0.0, level=1)
-
-           # Make IfnData object
-           small_cell_IfnData = IfnData('custom', df=small_df, conditions={'Alpha': {'Ib': 0}, 'Beta': {'Ia': 0}})
-           small_cell_IfnData.name = dataset
-           large_cell_IfnData = IfnData('custom', df=large_df, conditions={'Alpha': {'Ib': 0}, 'Beta': {'Ia': 0}})
-           large_cell_IfnData.name = dataset
-           small_IfnData_list.append(small_cell_IfnData)
-           large_IfnData_list.append(large_cell_IfnData)
-       # Check that thresholding worked (it works)
-       #print(average_large_fraction_dict)
-
-       # Align data
-       small_alignment = DataAlignment()
-       small_alignment.add_data(small_IfnData_list)
-       small_alignment.align()
-       small_alignment.get_scaled_data()
-       mean_small_data = small_alignment.summarize_data()
-
-       large_alignment = DataAlignment()
-       large_alignment.add_data(large_IfnData_list)
-       large_alignment.align()
-       large_alignment.get_scaled_data()
-       mean_large_data = large_alignment.summarize_data()
-
-       # Save results
-       small_alignment.save('small_alignment', save_dir=os.path.join(os.getcwd(), 'small_alignment'))
-       large_alignment.save('large_alignment', save_dir=os.path.join(os.getcwd(), 'large_alignment'))
-    """
-    # Load saved DataAlignment
-    small_alignment = DataAlignment()
-    small_alignment.load_from_save_file('small_alignment', os.path.join(os.getcwd(), 'small_alignment'))
-    large_alignment = DataAlignment()
-    large_alignment.load_from_save_file('large_alignment', os.path.join(os.getcwd(), 'large_alignment'))
-    small_alignment.align()
-    small_alignment.get_scaled_data()
-    mean_small_data = small_alignment.summarize_data()
-    large_alignment.align()
-    large_alignment.get_scaled_data()
-    mean_large_data = large_alignment.summarize_data()
-
-    # ----------------------
-    # Set up Figure layout
-    # ----------------------
-    # Set up dose response figures
-    new_fit = DoseresponsePlot((2, 2))
-    new_fit.axes[1][0].set_ylabel('pSTAT (MFI)')
-    new_fit.axes[1][1].set_ylabel('pSTAT (MFI)')
-
-    # Plot Dose respsonse data
-    times = [2.5, 5.0, 7.5, 10.0, 20.0, 60.0]
-    alpha_palette = sns.color_palette("Reds", 6)
-    beta_palette = sns.color_palette("Greens", 6)
-    alpha_mask = [2.5, 5.0, 7.5, 20.0]
-    beta_mask = [2.5, 5.0, 7.5, 20.0]
-    for idx, t in enumerate(times):
-        if t not in alpha_mask:
-            new_fit.add_trajectory(mean_large_data, t, 'errorbar', 'o--', (1, 0), 'Alpha', color=alpha_palette[idx],
-                                   label='Large cells, {} min'.format(t), linewidth=2.0)
-            new_fit.add_trajectory(mean_small_data, t, 'errorbar', 'o-', (1, 0), 'Alpha', color=alpha_palette[idx],
-                                   label='Small cells, {} min'.format(t), linewidth=2.0)
-        if t not in beta_mask:
-            new_fit.add_trajectory(mean_large_data, t, 'errorbar', 'o--', (1, 1), 'Beta', color=beta_palette[idx],
-                                   label='Large cells, {} min'.format(t), linewidth=2.0)
-            new_fit.add_trajectory(mean_small_data, t, 'errorbar', 'o-', (1, 1), 'Beta', color=beta_palette[idx],
-                                   label='Small cells, {} min'.format(t), linewidth=2.0)
-
+    # ------------------------------
+    dr_fig.fig.set_size_inches(16, 8)
+    dr_fig.fig.savefig(os.path.join(os.getcwd(), 'results', 'Figures', 'Figure_3', 'Figure_3.pdf'))
+"""
     # ------------------------------------------------------------------------------
     # Population heterogeneity
     # Large cells are 20% of population and have {'R1': 6755.56, 'R2': 1511.1}
     # Small cells are 80% of the population and have {'R1': 12000.0, 'R2': 1511.1}
     # ------------------------------------------------------------------------------
-    times = [2.5, 5.0, 7.5, 10., 20.0, 60.0]
-    alpha_doses = list(np.logspace(np.log10(doses_alpha[0]), 5))
-    beta_doses = list(np.logspace(np.log10(doses_beta[0]), 3))
     # Small cells
     radius = 1E-6
-    volPM_small = 2 * radius ** 2 + 4 * radius * 8E-6
-    volCP_small = 8E-6 * radius ** 2
-    R1 = 6755
-    R2 = 1511
-    STAT = 10000
+    volPM = 2 * radius ** 2 + 4 * radius * 8E-6
+    volCP = 8E-6 * radius ** 2
     small_cells_alpha = Mixed_Model.doseresponse(times, 'TotalpSTAT', 'Ia',
-                                                 alpha_doses,
+                                                 list(np.logspace(np.log10(doses_alpha[0]), np.log10(doses_alpha[-1]))),
                                                  parameters={'Ib': 0,
-                                                             'R1': R1,
-                                                             'R2': R2,
-                                                             'S': STAT},
+                                                             'R1': 12000,
+                                                             'R2': 1511},
                                                  return_type='dataframe', dataframe_labels='Alpha',
-                                                 scale_factor=scale_factor)
+                                                 scale_factor=scale_factor * 0.8)
     small_cells_beta = Mixed_Model.doseresponse(times, 'TotalpSTAT', 'Ib',
-                                                beta_doses,
+                                                list(np.logspace(np.log10(doses_beta[0]), np.log10(doses_beta[-1]))),
                                                 parameters={'Ia': 0,
-                                                            'R1': R1,
-                                                            'R2': R2,
-                                                            'S': STAT},
+                                                            'R1': 12000,
+                                                            'R2': 1511},
                                                 return_type='dataframe', dataframe_labels='Beta',
-                                                scale_factor=scale_factor)
+                                                scale_factor=scale_factor * 0.8)
     small_cells_alpha_IFNdata = IfnData('custom', df=small_cells_alpha, conditions={'Alpha': {'Ib': 0}})
     small_cells_beta_IFNdata = IfnData('custom', df=small_cells_beta, conditions={'Beta': {'Ia': 0}})
 
     # Large (normal) cells
-    radius = 2**0.5 * radius
-    volPM_large = 2 * radius ** 2 + 4 * radius * 8E-6
-    volCP_large = 8E-6 * radius ** 2
-    R1 = R1 * volPM_large / volPM_small
-    R2 = R2 * volPM_large / volPM_small
-    STAT = STAT * volCP_large / volCP_small
+    radius = 30E-6
+    volPM = 2 * radius ** 2 + 4 * radius * 8E-6
+    volCP = 8E-6 * radius ** 2
     large_cells_alpha = Mixed_Model.doseresponse(times, 'TotalpSTAT', 'Ia',
-                                                 alpha_doses,
+                                                 list(np.logspace(np.log10(doses_alpha[0]), np.log10(doses_alpha[-1]))),
                                                  parameters={'Ib': 0,
-                                                             'R1': R1,
-                                                             'R2': R2,
-                                                             'S': STAT},
+                                                             'R1': 6755,
+                                                             'R2': 1511},
                                                  return_type='dataframe', dataframe_labels='Alpha',
-                                                 scale_factor=scale_factor)
+                                                 scale_factor=scale_factor * 0.2)
     large_cells_beta = Mixed_Model.doseresponse(times, 'TotalpSTAT', 'Ib',
-                                                beta_doses,
+                                                list(np.logspace(np.log10(doses_beta[0]), np.log10(doses_beta[-1]))),
                                                 parameters={'Ia': 0,
-                                                            'R1': R1,
-                                                            'R2': R2,
-                                                            'S': STAT},
+                                                            'R1': 6755,
+                                                            'R2': 1511},
                                                 return_type='dataframe', dataframe_labels='Beta',
-                                                scale_factor=scale_factor)
+                                                scale_factor=scale_factor * 0.2)
     large_cells_alpha_IFNdata = IfnData('custom', df=large_cells_alpha, conditions={'Alpha': {'Ib': 0}})
     large_cells_beta_IFNdata = IfnData('custom', df=large_cells_beta, conditions={'Beta': {'Ia': 0}})
 
@@ -453,33 +303,18 @@ if __name__ == '__main__':
     alpha_palette = sns.color_palette("Reds", 6)
     beta_palette = sns.color_palette("Greens", 6)
 
-    dr_plot = new_fit
-    dr_axes = dr_plot.axes
-    # Add model predictions fits
-    # Alpha
-    dr_plot.add_trajectory(large_cells_alpha_IFNdata, 60.0, 'plot', '--', (0, 0), 'Alpha', color=alpha_palette[5],
-                           label=r'Large Cells, 60 min', linewidth=2)
-    dr_plot.add_trajectory(small_cells_alpha_IFNdata, 60.0, 'plot', alpha_palette[5], (0, 0), 'Alpha',
-                           label=r'Small Cells, 60 min', linewidth=2)
-    dr_plot.add_trajectory(large_cells_alpha_IFNdata, 10.0, 'plot', '--', (0, 0), 'Alpha', color=alpha_palette[2],
-                           label=r'Large Cells, 10 min', linewidth=2)
-    dr_plot.add_trajectory(small_cells_alpha_IFNdata, 10.0, 'plot', alpha_palette[2], (0, 0), 'Alpha',
-                           label=r'Small Cells, 10 min', linewidth=2)
-    # Beta
-    dr_plot.add_trajectory(large_cells_beta_IFNdata, 60.0, 'plot', '--', (0, 1), 'Beta', color=beta_palette[5],
-                           label=r'Large Cells, 60 min', linewidth=2)
-    dr_plot.add_trajectory(small_cells_beta_IFNdata, 60.0, 'plot', beta_palette[5], (0, 1), 'Beta',
-                           label=r'Small Cells, 60 min', linewidth=2)
-    dr_plot.add_trajectory(large_cells_beta_IFNdata, 10.0, 'plot', '--', (0, 1), 'Beta', color=beta_palette[2],
-                           label=r'Large Cells, 10 min', linewidth=2)
-    dr_plot.add_trajectory(small_cells_beta_IFNdata, 10.0, 'plot', beta_palette[2], (0, 1), 'Beta',
-                           label=r'Small Cells, 10 min', linewidth=2)
+    dr_plot = DoseresponsePlot((1, 2))
+    # Add fits
+    dr_plot.add_trajectory(large_cells_alpha_IFNdata, 60.0, 'plot', alpha_palette[5], (0, 1), 'Alpha',
+                           label=r'IFN$\alpha$ Large Cells (80% of population)', linewidth=2)
+    dr_plot.add_trajectory(small_cells_alpha_IFNdata, 60.0, 'plot', alpha_palette[2], (0, 1), 'Alpha',
+                           label=r'IFN$\alpha$ Small Cells (20% of population)', linewidth=2)
 
-    dr_axes[0][0].set_title(r'IFN$\alpha$ Predictions')
-    dr_axes[0][1].set_title(r'IFN$\beta$ Predictions')
-    dr_axes[1][0].set_title(r'IFN$\alpha$ Data')
-    dr_axes[1][1].set_title(r'IFN$\beta$ Data')
+    dr_plot.add_trajectory(large_cells_beta_IFNdata, 60.0, 'plot', beta_palette[5], (0, 1), 'Beta',
+                           label=r'IFN$\beta$ Large Cells (80% of population)', linewidth=2)
+    dr_plot.add_trajectory(small_cells_beta_IFNdata, 60.0, 'plot', beta_palette[2], (0, 1), 'Beta',
+                           label=r'IFN$\beta$ Small Cells (20% of population)', linewidth=2)
 
     dr_fig, dr_axes = dr_plot.show_figure(save_flag=False)
-    dr_fig.set_size_inches(12, 10)
-    dr_fig.savefig(os.path.join(os.getcwd(), 'results', 'Figures', 'Figure_3', 'Figure_3.pdf'))
+    dr_axes[0].set_title('Breakdown of heterogeneous population\nat 60 minutes')
+    """
