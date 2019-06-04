@@ -148,12 +148,12 @@ if __name__ == '__main__':
     # Initialize model
     # -------------------------------
     Mixed_Model = IfnModel('Mixed_IFN_ppCompatible')
-    initial_parameters = {'k_a1': 4.98E-14 * 2, 'k_a2': 1.328e-12, 'k_d3': 2.4e-06, 'k_d4': 0.228,
-                       'kSOCSon': 8e-07, 'kpu': 0.0011,
-                       'ka1': 3.3e-15, 'ka2': 1.22e-12, 'kd4': 0.86,
-                       'kd3': 1.74e-05,
-                       'kint_a': 0.000124, 'kint_b': 0.00086,
-                       'krec_a1': 0.0028, 'krec_a2': 0.01, 'krec_b1': 0.005, 'krec_b2': 0.05}
+    initial_parameters = {'k_a1': 4.98E-14 * 2, 'k_a2': 8.30e-13 * 2, 'k_d4': 0.0228,
+                          'kSOCSon': 8e-07, 'kpu': 0.0011,
+                          'ka1': 3.3e-15, 'ka2': 1.22e-12, 'kd4': 0.86,
+                          'kd3': 1.74e-05,
+                          'kint_a': 0.000124, 'kint_b': 0.00086,
+                          'krec_a1': 0.0028, 'krec_a2': 0.01, 'krec_b1': 0.005, 'krec_b2': 0.05}
     dual_parameters = {'kint_a': 0.00052, 'kSOCSon': 6e-07, 'kint_b': 0.00052, 'krec_a1': 0.001, 'krec_a2': 0.1,
                        'krec_b1': 0.005, 'krec_b2': 0.05}
     Mixed_Model.set_parameters(initial_parameters)

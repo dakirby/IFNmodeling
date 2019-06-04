@@ -78,7 +78,7 @@ if __name__ == '__main__':
     Mixed_Model.set_parameters({'R2': 4920, 'R1': 1200,
                                 'k_a1': 2.0e-13 * 5, 'k_a2': 1.328e-12 * 5, 'k_d3': 1.13e-4, 'k_d4': 0.9,
                                 'kSOCSon': 5e-08, 'kpu': 0.0022, 'kpa': 2.36e-06,
-                                'ka1': 3.3E-14*2, 'ka2': 5E-13*2, 'kd4': 2.0, 'kd3': 6.52e-05,
+                                'ka1': 3.3E-14*5, 'ka2': 5E-13*5, 'kd4': 2.0, 'kd3': 6.52e-05,
                                 'kint_a': 0.0015, 'kint_b': 0.002,
                                 'krec_a1': 0.01, 'krec_a2': 0.01, 'krec_b1': 0.005, 'krec_b2': 0.05})
 
@@ -132,7 +132,7 @@ if __name__ == '__main__':
 
     axes.legend(loc=2, prop={'size': 8})
     fig.set_size_inches(8, 8)
-    fig.savefig(os.path.join(os.getcwd(), 'results', 'Figures', 'Figure_4', 'Figure_4_new.pdf'))
+    fig.savefig(os.path.join(os.getcwd(), 'results', 'Figures', 'Figure_4', 'Figure_4_Refractoriness_By_K4.pdf'))
 
     # ---------------------------------------------------
     # Now make the figure where we explicitly model USP18
@@ -194,7 +194,6 @@ if __name__ == '__main__':
     # Finally, make a figure about how EC50 changes as a function of K3 & K4
     # -----------------------------------------------------------------------
     # Make model predictions
-    time_list = [60.0] #list(linspace(2.5, 60, num=15))
     Mixed_Model = IfnModel('Mixed_IFN_ppCompatible')
     # Optimal parameters for fitting mean GAB data
     opt_params = {'R2': 4920, 'R1': 1200,
@@ -205,18 +204,18 @@ if __name__ == '__main__':
                     'kint_a': 0.0015, 'kint_b': 0.002,
                     'krec_a1': 0.01, 'krec_a2': 0.01, 'krec_b1': 0.005, 'krec_b2': 0.05}
     Mixed_Model.set_parameters(opt_params)
-    Mixed_Model.default_parameters = opt_params
+    Mixed_Model.default_parameters.update(opt_params)
     scale_factor = 1.46182313424
     # Fold changes to test over
     fold_changes = list(np.logspace(-2, 2))
 
     def curve_builder(fold_change):
+        time_list = list(linspace(2.5, 60.0, num=15))
         Mixed_Model.set_parameters({'ka3': Mixed_Model.parameters['ka3'] / fold_change,
                                     'ka4': Mixed_Model.parameters['ka4'] / fold_change,
                                     'k_a3': Mixed_Model.parameters['k_a3'] / fold_change,
                                     'k_a4': Mixed_Model.parameters['k_a4'] / fold_change})
-        print(Mixed_Model.__check_detailed_balance__())
-        exit()
+
         alpha_peak_aggregate, alpha_ec_aggregate = get_ec50(Mixed_Model, time_list, 'Ia', 'TotalpSTAT',
                                                             custom_parameters={'Ib': 0}, rflag=True)
         beta_peak_aggregate, beta_ec_aggregate = get_ec50(Mixed_Model, time_list, 'Ib', 'TotalpSTAT',
@@ -224,7 +223,7 @@ if __name__ == '__main__':
         # alpha_peak_aggregate = np.multiply(alpha_peak_aggregate, scale_factor)
         # beta_peak_aggregate = np.multiply(beta_peak_aggregate, scale_factor)
         Mixed_Model.reset_parameters()
-        return alpha_ec_aggregate[0], beta_ec_aggregate[0]
+        return alpha_ec_aggregate[-1], beta_ec_aggregate[-1]
 
     alpha_curve = []
     beta_curve = []
@@ -234,10 +233,13 @@ if __name__ == '__main__':
         beta_curve.append(x2)
 
     # Set up plot
-    ec50_plot, ec50_axes = plt.subplots(1, 1, figsize=(8, 8))
+    ec50_plot, ec50_axes = plt.subplots(1, 1, figsize=(7.5, 6))
     ec50_axes.set_xlabel("Fold change in K3 & K4")
     ec50_axes.set_ylabel(r"$EC_{50}$ (pM)")
     plt.suptitle(r"EC50 at 60 minutes")
-    ec50_axes.plot(fold_changes, alpha_curve, color=alpha_palette[5])
-    ec50_axes.plot(fold_changes, beta_curve, color=beta_palette[5])
+    ec50_axes.set_yscale('log')
+    ec50_axes.set_xscale('log')
+    ec50_axes.plot(fold_changes, alpha_curve, color=alpha_palette[5], linewidth=2.0, label=r'IFN$\alpha$')
+    ec50_axes.plot(fold_changes, beta_curve, color=beta_palette[5], linewidth=2.0, label=r'IFN$\beta$')
+    plt.legend()
     ec50_plot.savefig(os.path.join(os.getcwd(), 'results', 'Figures', 'Figure_4', 'Figure_4_EC50_vs_K3_and_K4.pdf'))

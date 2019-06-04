@@ -283,35 +283,14 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="figure_4.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="figure_4.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/ifnscripts/figure_4.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="132">
-              <caret line="203" column="23" selection-start-line="203" selection-start-column="23" selection-end-line="203" selection-end-column="23" />
+            <state relative-caret-position="13">
+              <caret line="225" column="59" selection-start-line="225" selection-start-column="59" selection-end-line="225" selection-end-column="59" />
               <folding>
                 <element signature="e#0#38#0" expanded="true" />
               </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="figure_2.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/ifnscripts/figure_2.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="251">
-              <caret line="193" column="70" selection-start-line="193" selection-start-column="70" selection-end-line="193" selection-end-column="70" />
-              <folding>
-                <element signature="e#0#51#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Mixed_IFN_ppCompatible.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/ifnmodels/Mixed_IFN_ppCompatible.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="289">
-              <caret line="56" column="26" lean-forward="true" selection-start-line="56" selection-start-column="18" selection-end-line="56" selection-end-column="26" />
             </state>
           </provider>
         </entry>
@@ -444,10 +423,10 @@
         <option value="$PROJECT_DIR$/ifnclass/ifndata.py" />
         <option value="$PROJECT_DIR$/ifnscripts/plot_fsc.py" />
         <option value="$PROJECT_DIR$/ifnscripts/plot_fsc_window.py" />
-        <option value="$PROJECT_DIR$/ifnscripts/figure_3.py" />
-        <option value="$PROJECT_DIR$/ifnscripts/figure_4.py" />
         <option value="$PROJECT_DIR$/ifnclass/ifnmodel.py" />
         <option value="$PROJECT_DIR$/ifnscripts/figure_2.py" />
+        <option value="$PROJECT_DIR$/ifnscripts/figure_3.py" />
+        <option value="$PROJECT_DIR$/ifnscripts/figure_4.py" />
       </list>
     </option>
   </component>
@@ -510,7 +489,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.figure_2">
+  <component name="RunManager" selected="Python.figure_4">
     <configuration name="figure_2" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="IFNmodeling" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -547,7 +526,7 @@
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
     </configuration>
-    <configuration name="figure_5" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration name="figure_4" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="IFNmodeling" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -559,7 +538,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/ifnscripts/figure_5.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/ifnscripts/figure_4.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -623,17 +602,17 @@
       <item itemvalue="Python.process_csv" />
       <item itemvalue="Python.figure_2" />
       <item itemvalue="Python.figure_3" />
-      <item itemvalue="Python.figure_5" />
       <item itemvalue="Python.figure_S3" />
       <item itemvalue="Python.figure_S4" />
+      <item itemvalue="Python.figure_4" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.figure_4" />
+        <item itemvalue="Python.figure_3" />
         <item itemvalue="Python.figure_2" />
         <item itemvalue="Python.figure_S4" />
         <item itemvalue="Python.figure_S3" />
-        <item itemvalue="Python.figure_5" />
-        <item itemvalue="Python.figure_3" />
       </list>
     </recent_temporary>
   </component>
@@ -984,16 +963,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ifnscripts/figure_3.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="183">
-          <caret line="466" column="16" lean-forward="true" selection-start-line="466" selection-start-column="16" selection-end-line="466" selection-end-column="16" />
-          <folding>
-            <element signature="e#0#51#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/ifnscripts/figure_S3.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="134">
@@ -1008,36 +977,46 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/ifnscripts/figure_2.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="370">
+          <caret line="200" column="57" lean-forward="true" selection-start-line="193" selection-start-column="4" selection-end-line="200" selection-end-column="57" />
+          <folding>
+            <element signature="e#0#51#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/ifnscripts/figure_5.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="274">
+        <state relative-caret-position="580">
           <caret line="44" column="7" selection-start-line="44" selection-start-column="7" selection-end-line="44" selection-end-column="7" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ifnscripts/figure_4.py">
+    <entry file="file://$PROJECT_DIR$/ifnscripts/figure_3.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="132">
-          <caret line="203" column="23" selection-start-line="203" selection-start-column="23" selection-end-line="203" selection-end-column="23" />
+        <state relative-caret-position="-4934">
+          <caret line="165" column="4" lean-forward="true" selection-start-line="165" selection-start-column="4" selection-end-line="165" selection-end-column="4" />
           <folding>
-            <element signature="e#0#38#0" expanded="true" />
+            <element signature="e#0#51#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/ifnmodels/Mixed_IFN_ppCompatible.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="289">
-          <caret line="56" column="26" lean-forward="true" selection-start-line="56" selection-start-column="18" selection-end-line="56" selection-end-column="26" />
+        <state relative-caret-position="221">
+          <caret line="37" column="18" selection-start-line="37" selection-start-column="18" selection-end-line="37" selection-end-column="18" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ifnscripts/figure_2.py">
+    <entry file="file://$PROJECT_DIR$/ifnscripts/figure_4.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="251">
-          <caret line="193" column="70" selection-start-line="193" selection-start-column="70" selection-end-line="193" selection-end-column="70" />
+        <state relative-caret-position="13">
+          <caret line="225" column="59" selection-start-line="225" selection-start-column="59" selection-end-line="225" selection-end-column="59" />
           <folding>
-            <element signature="e#0#51#0" expanded="true" />
+            <element signature="e#0#38#0" expanded="true" />
           </folding>
         </state>
       </provider>
