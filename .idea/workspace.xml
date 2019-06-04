@@ -286,11 +286,20 @@
       <file leaf-file-name="figure_3.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/ifnscripts/figure_3.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="377">
-              <caret line="433" column="17" selection-start-line="433" selection-start-column="17" selection-end-line="433" selection-end-column="17" />
+            <state relative-caret-position="32">
+              <caret line="420" column="16" selection-start-line="420" selection-start-column="16" selection-end-line="420" selection-end-column="16" />
               <folding>
                 <element signature="e#0#51#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Pipeline_pSTAT.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/ifndatabase/20190214_raw_data/Processing/Pipeline_pSTAT.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-1258">
+              <caret line="3" column="35" selection-start-line="3" selection-start-column="35" selection-end-line="3" selection-end-column="35" />
             </state>
           </provider>
         </entry>
@@ -327,7 +336,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>plt.</find>
       <find>ec50_fig</find>
       <find>pd.Data</find>
       <find>mixed_dose_response</find>
@@ -357,6 +365,7 @@
       <find>print</find>
       <find>alpha_palette[3]</find>
       <find>doses_alpha</find>
+      <find>times</find>
     </findStrings>
     <replaceStrings>
       <replace>15</replace>
@@ -476,6 +485,24 @@
               <item name="IFNmodeling" type="b2602c69:ProjectViewProjectNode" />
               <item name="IFNmodeling" type="462c0819:PsiDirectoryNode" />
               <item name="ifnclass" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="IFNmodeling" type="b2602c69:ProjectViewProjectNode" />
+              <item name="IFNmodeling" type="462c0819:PsiDirectoryNode" />
+              <item name="ifndatabase" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="IFNmodeling" type="b2602c69:ProjectViewProjectNode" />
+              <item name="IFNmodeling" type="462c0819:PsiDirectoryNode" />
+              <item name="ifndatabase" type="462c0819:PsiDirectoryNode" />
+              <item name="20190214_raw_data" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="IFNmodeling" type="b2602c69:ProjectViewProjectNode" />
+              <item name="IFNmodeling" type="462c0819:PsiDirectoryNode" />
+              <item name="ifndatabase" type="462c0819:PsiDirectoryNode" />
+              <item name="20190214_raw_data" type="462c0819:PsiDirectoryNode" />
+              <item name="Processing" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="IFNmodeling" type="b2602c69:ProjectViewProjectNode" />
@@ -802,13 +829,6 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/ifnscripts/fit-20190214_pSTAT1_IFN.py" />
     <entry file="file://$PROJECT_DIR$/ifnscripts/fit-10-12-2018.py" />
-    <entry file="file://$PROJECT_DIR$/ifndatabase/20190214_raw_data/Processing/Pipeline_pSTAT.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="51">
-          <caret line="3" column="35" selection-start-line="3" selection-start-column="35" selection-end-line="3" selection-end-column="35" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/ifndatabase/20190119_raw_data/Processing/Pipeline_pSTAT_new.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="183">
@@ -1026,10 +1046,17 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/ifndatabase/20190214_raw_data/Processing/Pipeline_pSTAT.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1258">
+          <caret line="3" column="35" selection-start-line="3" selection-start-column="35" selection-end-line="3" selection-end-column="35" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/ifnscripts/figure_3.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="377">
-          <caret line="433" column="17" selection-start-line="433" selection-start-column="17" selection-end-line="433" selection-end-column="17" />
+        <state relative-caret-position="32">
+          <caret line="420" column="16" selection-start-line="420" selection-start-column="16" selection-end-line="420" selection-end-column="16" />
           <folding>
             <element signature="e#0#51#0" expanded="true" />
           </folding>

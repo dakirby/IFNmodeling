@@ -159,7 +159,7 @@ if __name__ == '__main__':
     Mixed_Model.set_parameters(initial_parameters)
     Mixed_Model.set_parameters(dual_parameters)
 
-    scale_factor = 1.227
+    scale_factor = 0.613 #1.227
     times = [60.0]
     doses_alpha = np.divide([0, 1E-7, 1E-8, 3E-9, 1E-9, 3E-10, 1E-10, 1E-11], 1E-12)
     doses_beta = np.divide([0, 2E-9, 6E-10, 2E-10, 6E-11, 2E-11, 6E-12, 2E-13], 1E-12)
@@ -237,120 +237,107 @@ if __name__ == '__main__':
     # H| alpha  beta
     #  | 0 pM   0 pM
     """
-       # Get dose-response data
-       dataset_names = ['20190214', '20190121', '20190119', '20190108']
-       times = [2.5, 2.5, 5.0, 5.0, 7.5, 7.5, 10.0, 10.0, 20.0, 20.0, 60.0, 60.0]
-       well_IDs = ['H', 'A', 'B', 'C', 'D', 'E', 'F', 'G']
-       doses = {'Alpha': np.divide([0, 1E-7, 1E-8, 3E-9, 1E-9, 3E-10, 1E-10, 1E-11], 1E-12),
-                'Beta': np.divide([0, 2E-9, 6E-10, 2E-10, 6E-11, 2E-11, 6E-12, 2E-13], 1E-12)}
-       column_labels = ['Dose_Species', 'Dose (pM)', 'time', 'pSTAT']
-       large_cell_percentile = 0.2
-       average_large_fraction_dict = {}
-       small_IfnData_list = []
-       large_IfnData_list = []
-       for dataset in dataset_names:
-           small_df = []
-           large_df = []
-           small_zeros = []
-           large_zeros = []
-           # Gates:
-           upper_cutoff = 50000
+    # Get dose-response data
+    dataset_names = ['20190214', '20190121', '20190119', '20190108']
+    times = [2.5, 2.5, 5.0, 5.0, 7.5, 7.5, 10.0, 10.0, 20.0, 20.0, 60.0, 60.0]
+    well_IDs = ['H', 'A', 'B', 'C', 'D', 'E', 'F', 'G']
+    doses = {'Alpha': np.divide([0, 1E-7, 1E-8, 3E-9, 1E-9, 3E-10, 1E-10, 1E-11], 1E-12),
+            'Beta': np.divide([0, 2E-9, 6E-10, 2E-10, 6E-11, 2E-11, 6E-12, 2E-13], 1E-12)}
+    column_labels = ['Dose_Species', 'Dose (pM)', 'time', 'pSTAT']
+    large_cell_percentile = 0.2
+    average_large_fraction_dict = {}
+    small_IfnData_list = []
+    large_IfnData_list = []
+    for dataset in dataset_names:
+        print("Working on dataset {}".format(dataset))
+        small_df = []
+        large_df = []
+        small_zeros = []
+        large_zeros = []
+        # Gates:
+        upper_cutoff = 50000
 
-           average_large_fraction = 0
-           for dose_idx, concentration in enumerate(well_IDs):
-               for time_idx, time in enumerate(times):
-                   # Annotate
-                   if time_idx % 2 == 0:
-                       species = 'Beta'
-                   else:
-                       species = 'Alpha'
-                   well = concentration+str(time_idx+1)
-                   # Clean data
-                   data = grab_data(dataset, well)
-                   outliers = (data['FSC'] > upper_cutoff) | (data['pSTAT1 in B cells'] < 0)
-                   data = data.loc[~outliers]
-                   small_large_threshold = data.quantile(q=1 - large_cell_percentile).loc['FSC']
-                   # Partition data
-                   small_cells = data[(data['FSC'] <= small_large_threshold)]
-                   large_cells = data[(data['FSC'] > small_large_threshold)]
-                   average_large_fraction += len(large_cells)/(len(small_cells) + len(large_cells))
-                   pSTAT_small = small_cells.mean().loc['pSTAT1 in B cells']
-                   pSTAT_large = large_cells.mean().loc['pSTAT1 in B cells']
-                   # Recognize zero dose data and set aside
-                   if doses[species][dose_idx] == 0.0:
-                       small_zeros.append([species, doses[species][dose_idx], time, pSTAT_small])
-                       large_zeros.append([species, doses[species][dose_idx], time, pSTAT_large])
-                   else:
-                       small_zero_value = 0
-                       for item in small_zeros:
-                           if item[0] == species and item[1] == doses[species][dose_idx] and item[2] == time:
-                               small_zero_value = item[3]
-                       large_zero_value = 0
-                       for item in large_zeros:
-                           if item[0] == species and item[1] == doses[species][dose_idx] and item[2] == time:
-                               large_zero_value = item[3]
-                       small_df.append([species, doses[species][dose_idx], time, (pSTAT_small-small_zero_value, np.nan)])
-                       large_df.append([species, doses[species][dose_idx], time, (pSTAT_large-large_zero_value, np.nan)])
-           average_large_fraction_dict[dataset] = average_large_fraction = average_large_fraction/(len(times)*len(well_IDs))
-           # Make dataframes
-           small_df = pd.DataFrame.from_records(small_df, columns=column_labels)
-           large_df = pd.DataFrame.from_records(large_df, columns=column_labels)
+        average_large_fraction = 0
+        for dose_idx, concentration in enumerate(well_IDs):
+           for time_idx, time in enumerate(times):
+                # Annotate
+                if time_idx % 2 == 0:
+                    species = 'Beta'
+                else:
+                    species = 'Alpha'
+                well = concentration+str(time_idx+1)
+                # Clean data
+                data = grab_data(dataset, well)
+                outliers = (data['FSC'] > upper_cutoff) | (data['pSTAT1 in B cells'] < 0)
+                data = data.loc[~outliers]
+                small_large_threshold = data.quantile(q=1 - large_cell_percentile).loc['FSC']
+                # Partition data
+                small_cells = data[(data['FSC'] <= small_large_threshold)]
+                large_cells = data[(data['FSC'] > small_large_threshold)]
+                average_large_fraction += len(large_cells)/(len(small_cells) + len(large_cells))
+                pSTAT_small = small_cells.mean().loc['pSTAT1 in B cells']
+                pSTAT_large = large_cells.mean().loc['pSTAT1 in B cells']
+                # Recognize zero dose data and set aside
+                if doses[species][dose_idx] == 0.0:
+                    small_zeros.append([species, doses[species][dose_idx], time, pSTAT_small])
+                    large_zeros.append([species, doses[species][dose_idx], time, pSTAT_large])
+                else:
+                    small_zero_value = 0
+                    for item in small_zeros:
+                        if item[0] == species and item[1] == 0.0 and item[2] == time:
+                            small_zero_value = item[3]
+                            break
+                    large_zero_value = 0
+                    for item in large_zeros:
+                        if item[0] == species and item[1] == 0.0 and item[2] == time:
+                            large_zero_value = item[3]
+                            break
+                    small_df.append([species, doses[species][dose_idx], time, (pSTAT_small-small_zero_value, np.nan)])
+                    large_df.append([species, doses[species][dose_idx], time, (pSTAT_large-large_zero_value, np.nan)])
+        average_large_fraction_dict[dataset] = average_large_fraction = average_large_fraction/(len(times)*len(well_IDs))
+        # Make dataframes
+        small_df = pd.DataFrame.from_records(small_df, columns=column_labels)
+        large_df = pd.DataFrame.from_records(large_df, columns=column_labels)
 
-           # Zero the data
-           #for i in range(small_df.shape[0]):
-           #    index = (small_df['Dose_Species']==small_df.loc[i]['Dose_Species'])&\
-           #            (small_df['time']==small_df.loc[i]['time'])&(small_df['Dose (pM)'] == 0.0)
-           #    temp = [small_df.loc[i]['pSTAT'] - small_df.loc[index]['pSTAT'], np.nan]
-           #    small_df.iat[i, 3] = temp
-           #for i in range(large_df.shape[0]):
-           #    index = (large_df['Dose_Species']==large_df.loc[i]['Dose_Species'])&\
-           #            (large_df['time']==large_df.loc[i]['time'])&(large_df['Dose (pM)'] == 0.0)
-           #    temp = [large_df.loc[i]['pSTAT'] - large_df.loc[index]['pSTAT'], np.nan]
-           #    large_df.iat[i, 3] = temp
+        # Convert to multiindex
+        small_df.set_index(['Dose_Species', 'Dose (pM)'], inplace=True)
+        small_df = pd.pivot_table(small_df, values='pSTAT', index=['Dose_Species', 'Dose (pM)'], columns=['time'],
+                                 aggfunc=np.sum)
+        small_df.columns.name = None
 
+        large_df.set_index(['Dose_Species', 'Dose (pM)'], inplace=True)
+        large_df = pd.pivot_table(large_df, values='pSTAT', index=['Dose_Species', 'Dose (pM)'], columns=['time'],
+                                 aggfunc=np.sum)
+        large_df.columns.name = None
 
-           # Convert to multiindex
-           small_df.set_index(['Dose_Species', 'Dose (pM)'], inplace=True)
-           small_df = pd.pivot_table(small_df, values='pSTAT', index=['Dose_Species', 'Dose (pM)'], columns=['time'],
-                                     aggfunc=np.sum)
-           small_df.columns.name = None
+        # Make IfnData object
+        small_cell_IfnData = IfnData('custom', df=small_df, conditions={'Alpha': {'Ib': 0}, 'Beta': {'Ia': 0}})
+        small_cell_IfnData.name = dataset
+        large_cell_IfnData = IfnData('custom', df=large_df, conditions={'Alpha': {'Ib': 0}, 'Beta': {'Ia': 0}})
+        large_cell_IfnData.name = dataset
+        small_IfnData_list.append(small_cell_IfnData)
+        large_IfnData_list.append(large_cell_IfnData)
+    # Check that thresholding worked (it works)
+    #print(average_large_fraction_dict)
 
-           large_df.set_index(['Dose_Species', 'Dose (pM)'], inplace=True)
-           large_df = pd.pivot_table(large_df, values='pSTAT', index=['Dose_Species', 'Dose (pM)'], columns=['time'],
-                                     aggfunc=np.sum)
-           large_df.columns.name = None
+    # Align data
+    small_alignment = DataAlignment()
+    small_alignment.add_data(small_IfnData_list)
+    small_alignment.align()
+    small_alignment.get_scaled_data()
+    mean_small_data = small_alignment.summarize_data()
 
-           # Drop zero dose data
-           #small_df = small_df.drop(index=0.0, level=1)
-           #large_df = large_df.drop(index=0.0, level=1)
+    large_alignment = DataAlignment()
+    large_alignment.add_data(large_IfnData_list)
+    large_alignment.align()
+    large_alignment.get_scaled_data()
+    mean_large_data = large_alignment.summarize_data()
 
-           # Make IfnData object
-           small_cell_IfnData = IfnData('custom', df=small_df, conditions={'Alpha': {'Ib': 0}, 'Beta': {'Ia': 0}})
-           small_cell_IfnData.name = dataset
-           large_cell_IfnData = IfnData('custom', df=large_df, conditions={'Alpha': {'Ib': 0}, 'Beta': {'Ia': 0}})
-           large_cell_IfnData.name = dataset
-           small_IfnData_list.append(small_cell_IfnData)
-           large_IfnData_list.append(large_cell_IfnData)
-       # Check that thresholding worked (it works)
-       #print(average_large_fraction_dict)
-
-       # Align data
-       small_alignment = DataAlignment()
-       small_alignment.add_data(small_IfnData_list)
-       small_alignment.align()
-       small_alignment.get_scaled_data()
-       mean_small_data = small_alignment.summarize_data()
-
-       large_alignment = DataAlignment()
-       large_alignment.add_data(large_IfnData_list)
-       large_alignment.align()
-       large_alignment.get_scaled_data()
-       mean_large_data = large_alignment.summarize_data()
-
-       # Save results
-       small_alignment.save('small_alignment', save_dir=os.path.join(os.getcwd(), 'small_alignment'))
-       large_alignment.save('large_alignment', save_dir=os.path.join(os.getcwd(), 'large_alignment'))
+    # Save results
+    small_alignment.save('small_alignment', save_dir=os.path.join(os.getcwd(), 'small_alignment'))
+    large_alignment.save('large_alignment', save_dir=os.path.join(os.getcwd(), 'large_alignment'))
     """
+
     # Load saved DataAlignment
     small_alignment = DataAlignment()
     small_alignment.load_from_save_file('small_alignment', os.path.join(os.getcwd(), 'small_alignment'))
@@ -431,7 +418,7 @@ if __name__ == '__main__':
     small_cells_beta_IFNdata = IfnData('custom', df=small_cells_beta, conditions={'Beta': {'Ia': 0}})
 
     # Large (normal) cells
-    radius = 1.75**0.5 * radius
+    radius = 1.6**0.5 * radius
     volPM_large = 2 * radius ** 2 + 4 * radius * 8E-6
     volCP_large = 8E-6 * radius ** 2
     R1 = R1 * volPM_large / volPM_small
