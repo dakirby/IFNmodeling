@@ -158,7 +158,7 @@ class IfnModel:
         if self.check_if_parameters_in_model(new_parameters):
             if self.check_for_detailed_balance_parameters(new_parameters):
                 # Use all input values given, default to current model values otherwise
-                detailed_balance_dict = {'ka1':1,'kd1':1,
+                detailed_balance_dict = {'ka1': 1, 'kd1': 1,
                                          'ka2': 1, 'kd2': 1,
                                          'ka3': 1, 'kd3': 1,
                                          'ka4': 1, 'kd4': 1,
