@@ -166,49 +166,139 @@ class IfnModel:
                                          'k_a2': 1, 'k_d2': 1,
                                          'k_a3': 1, 'k_d3': 1,
                                          'k_a4': 1, 'k_d4': 1}
+                # These will be used to check which parameter is free for maintaining detailed balance
+                detailed_balance_keys_alpha = ['ka1','kd1','ka2','kd2','ka3','kd3','ka4','kd4']
+                detailed_balance_keys_beta = ['k_a1','k_d1','k_a2','k_d2','k_a3','k_d3','k_a4','k_d4']
                 for key in detailed_balance_dict.keys():
                     if key in new_parameters.keys():
                         detailed_balance_dict.update({key: new_parameters[key]})
+                        # Parameter is not free, so remove from appropriate list
+                        try:
+                            detailed_balance_keys_alpha.remove(key)
+                        except ValueError:
+                            # If it is not in alpha it must be in beta
+                            detailed_balance_keys_beta.remove(key)
                     else:
                         detailed_balance_dict.update({key: self.parameters[key]})
                 # Maintain detailed balance
-                original_key_list = list(new_parameters.keys())
-                if 'kd4' in original_key_list:
-                    q1 = detailed_balance_dict['ka1'] / detailed_balance_dict['kd1']
-                    q2 = detailed_balance_dict['ka2'] / detailed_balance_dict['kd2']
-                    q4 = detailed_balance_dict['ka4'] / detailed_balance_dict['kd4']
-                    q3 = q2 * q4 / q1
-                    kd3 = detailed_balance_dict['ka3'] / q3
-                    new_parameters.update({'kd3': kd3})
-                    if 'kd4_USP18' in original_key_list:
-                        usp18_sf = new_parameters['kd4_USP18'] / detailed_balance_dict['kd4']
-                        kd3usp18 = usp18_sf * new_parameters['kd3']
-                        new_parameters.update({'kd3_USP18': kd3usp18})
-                if 'kd3' in original_key_list:
-                    q1 = detailed_balance_dict['ka1'] / detailed_balance_dict['kd1']
-                    q2 = detailed_balance_dict['ka2'] / detailed_balance_dict['kd2']
-                    q3 = detailed_balance_dict['ka3'] / detailed_balance_dict['kd3']
-                    q4 = q1 * q3 / q2
-                    kd4 = detailed_balance_dict['ka4'] / q4
-                    new_parameters.update({'kd4': kd4})
-                if 'k_d4' in original_key_list:
-                    q1 = detailed_balance_dict['k_a1'] / detailed_balance_dict['k_d1']
-                    q2 = detailed_balance_dict['k_a2'] / detailed_balance_dict['k_d2']
-                    q4 = detailed_balance_dict['k_a4'] / detailed_balance_dict['k_d4']
-                    q3 = q2 * q4 / q1
-                    k_d3 = self.parameters['k_a3'] / q3
-                    new_parameters.update({'k_d3': k_d3})
-                    if 'k_d4_USP18' in original_key_list:
-                        usp18_sf = new_parameters['k_d4_USP18'] / detailed_balance_dict['k_d4']
-                        kd3usp18 = usp18_sf * new_parameters['k_d3']
-                        new_parameters.update({'k_d3_USP18': kd3usp18})
-                if 'k_d3' in original_key_list:
-                    q1 = detailed_balance_dict['k_a1'] / detailed_balance_dict['k_d1']
-                    q2 = detailed_balance_dict['k_a2'] / detailed_balance_dict['k_d2']
-                    q3 = detailed_balance_dict['k_a3'] / detailed_balance_dict['k_d3']
-                    q4 = q1 * q3 / q2
-                    k_d4 = self.parameters['k_a4'] / q4
-                    new_parameters.update({'k_d4': k_d4})
+                if detailed_balance_keys_alpha == [] or detailed_balance_keys_beta == []:
+                    raise ValueError("Not enough free parameters to maintain detailed balance")
+                else:
+                    # Find the IFNa parameter left free to maintain detailed balance and add it to new_parameters
+                    if 'kd3' in detailed_balance_keys_alpha:
+                        q1 = detailed_balance_dict['ka1'] / detailed_balance_dict['kd1']
+                        q2 = detailed_balance_dict['ka2'] / detailed_balance_dict['kd2']
+                        q4 = detailed_balance_dict['ka4'] / detailed_balance_dict['kd4']
+                        q3 = q2 * q4 / q1
+                        kd3 = detailed_balance_dict['ka3'] / q3
+                        new_parameters.update({'kd3': kd3})
+                    elif 'kd4' in detailed_balance_keys_alpha:
+                        q1 = detailed_balance_dict['ka1'] / detailed_balance_dict['kd1']
+                        q2 = detailed_balance_dict['ka2'] / detailed_balance_dict['kd2']
+                        q3 = detailed_balance_dict['ka3'] / detailed_balance_dict['kd3']
+                        q4 = q1 * q3 / q2
+                        kd4 = detailed_balance_dict['ka4'] / q4
+                        new_parameters.update({'kd4': kd4})
+                    elif 'ka3' in detailed_balance_keys_alpha:
+                        q1 = detailed_balance_dict['ka1'] / detailed_balance_dict['kd1']
+                        q2 = detailed_balance_dict['ka2'] / detailed_balance_dict['kd2']
+                        q4 = detailed_balance_dict['ka4'] / detailed_balance_dict['kd4']
+                        q3 = q2 * q4 / q1
+                        ka3 = detailed_balance_dict['kd3'] * q3
+                        new_parameters.update({'ka3': ka3})
+                    elif 'ka4' in detailed_balance_keys_alpha:
+                        q1 = detailed_balance_dict['ka1'] / detailed_balance_dict['kd1']
+                        q2 = detailed_balance_dict['ka2'] / detailed_balance_dict['kd2']
+                        q3 = detailed_balance_dict['ka3'] / detailed_balance_dict['kd3']
+                        q4 = q1 * q3 / q2
+                        ka4 = detailed_balance_dict['kd4'] * q4
+                        new_parameters.update({'ka4': ka4})
+                    elif 'kd1' in detailed_balance_keys_alpha:
+                        q3 = detailed_balance_dict['ka3'] / detailed_balance_dict['kd3']
+                        q2 = detailed_balance_dict['ka2'] / detailed_balance_dict['kd2']
+                        q4 = detailed_balance_dict['ka4'] / detailed_balance_dict['kd4']
+                        q1 = q2 * q4 / q3
+                        kd1 = detailed_balance_dict['ka1'] / q1
+                        new_parameters.update({'kd1': kd1})
+                    elif 'kd2' in detailed_balance_keys_alpha:
+                        q1 = detailed_balance_dict['ka1'] / detailed_balance_dict['kd1']
+                        q4 = detailed_balance_dict['ka4'] / detailed_balance_dict['kd4']
+                        q3 = detailed_balance_dict['ka3'] / detailed_balance_dict['kd3']
+                        q2 = q1 * q3 / q4
+                        kd2 = detailed_balance_dict['ka2'] / q2
+                        new_parameters.update({'kd2': kd2})
+                    elif 'ka1' in detailed_balance_keys_alpha:
+                        q3 = detailed_balance_dict['ka3'] / detailed_balance_dict['kd3']
+                        q2 = detailed_balance_dict['ka2'] / detailed_balance_dict['kd2']
+                        q4 = detailed_balance_dict['ka4'] / detailed_balance_dict['kd4']
+                        q1 = q2 * q4 / q3
+                        ka1 = detailed_balance_dict['kd1'] * q1
+                        new_parameters.update({'ka1': ka1})
+                    elif 'ka2' in detailed_balance_keys_alpha:
+                        q1 = detailed_balance_dict['ka1'] / detailed_balance_dict['kd1']
+                        q4 = detailed_balance_dict['ka4'] / detailed_balance_dict['kd4']
+                        q3 = detailed_balance_dict['ka3'] / detailed_balance_dict['kd3']
+                        q2 = q1 * q3 / q4
+                        ka2 = detailed_balance_dict['kd2'] * q2
+                        new_parameters.update({'ka2': ka2})
+
+                        # Find the IFNb parameter left free to maintain detailed balance and add it to new_parameters
+                        if 'k_d3' in detailed_balance_keys_alpha:
+                            q1 = detailed_balance_dict['k_a1'] / detailed_balance_dict['k_d1']
+                            q2 = detailed_balance_dict['k_a2'] / detailed_balance_dict['k_d2']
+                            q4 = detailed_balance_dict['k_a4'] / detailed_balance_dict['k_d4']
+                            q3 = q2 * q4 / q1
+                            k_d3 = detailed_balance_dict['k_a3'] / q3
+                            new_parameters.update({'k_d3': k_d3})
+                        elif 'k_d4' in detailed_balance_keys_alpha:
+                            q1 = detailed_balance_dict['k_a1'] / detailed_balance_dict['k_d1']
+                            q2 = detailed_balance_dict['k_a2'] / detailed_balance_dict['k_d2']
+                            q3 = detailed_balance_dict['k_a3'] / detailed_balance_dict['k_d3']
+                            q4 = q1 * q3 / q2
+                            k_d4 = detailed_balance_dict['k_a4'] / q4
+                            new_parameters.update({'k_d4': k_d4})
+                        elif 'k_a3' in detailed_balance_keys_alpha:
+                            q1 = detailed_balance_dict['k_a1'] / detailed_balance_dict['k_d1']
+                            q2 = detailed_balance_dict['k_a2'] / detailed_balance_dict['k_d2']
+                            q4 = detailed_balance_dict['k_a4'] / detailed_balance_dict['k_d4']
+                            q3 = q2 * q4 / q1
+                            k_a3 = detailed_balance_dict['k_d3'] * q3
+                            new_parameters.update({'k_a3': k_a3})
+                        elif 'k_a4' in detailed_balance_keys_alpha:
+                            q1 = detailed_balance_dict['k_a1'] / detailed_balance_dict['k_d1']
+                            q2 = detailed_balance_dict['k_a2'] / detailed_balance_dict['k_d2']
+                            q3 = detailed_balance_dict['k_a3'] / detailed_balance_dict['k_d3']
+                            q4 = q1 * q3 / q2
+                            k_a4 = detailed_balance_dict['k_d4'] * q4
+                            new_parameters.update({'k_a4': k_a4})
+                        elif 'k_d1' in detailed_balance_keys_alpha:
+                            q3 = detailed_balance_dict['k_a3'] / detailed_balance_dict['k_d3']
+                            q2 = detailed_balance_dict['k_a2'] / detailed_balance_dict['k_d2']
+                            q4 = detailed_balance_dict['k_a4'] / detailed_balance_dict['k_d4']
+                            q1 = q2 * q4 / q3
+                            k_d1 = detailed_balance_dict['k_a1'] / q1
+                            new_parameters.update({'k_d1': k_d1})
+                        elif 'k_d2' in detailed_balance_keys_alpha:
+                            q1 = detailed_balance_dict['k_a1'] / detailed_balance_dict['k_d1']
+                            q4 = detailed_balance_dict['k_a4'] / detailed_balance_dict['k_d4']
+                            q3 = detailed_balance_dict['k_a3'] / detailed_balance_dict['k_d3']
+                            q2 = q1 * q3 / q4
+                            k_d2 = detailed_balance_dict['k_a2'] / q2
+                            new_parameters.update({'k_d2': k_d2})
+                        elif 'k_a1' in detailed_balance_keys_alpha:
+                            q3 = detailed_balance_dict['k_a3'] / detailed_balance_dict['k_d3']
+                            q2 = detailed_balance_dict['k_a2'] / detailed_balance_dict['k_d2']
+                            q4 = detailed_balance_dict['k_a4'] / detailed_balance_dict['k_d4']
+                            q1 = q2 * q4 / q3
+                            k_a1 = detailed_balance_dict['k_d1'] * q1
+                            new_parameters.update({'k_a1': k_a1})
+                        elif 'k_a2' in detailed_balance_keys_alpha:
+                            q1 = detailed_balance_dict['k_a1'] / detailed_balance_dict['k_d1']
+                            q4 = detailed_balance_dict['k_a4'] / detailed_balance_dict['k_d4']
+                            q3 = detailed_balance_dict['k_a3'] / detailed_balance_dict['k_d3']
+                            q2 = q1 * q3 / q4
+                            k_a2 = detailed_balance_dict['k_d2'] * q2
+                            new_parameters.update({'k_a2': k_a2})
 
             self.parameters.update(new_parameters)
             return 0

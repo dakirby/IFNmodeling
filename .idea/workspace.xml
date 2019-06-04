@@ -298,8 +298,8 @@
       <file leaf-file-name="ifnmodel.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/ifnclass/ifnmodel.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="17">
-              <caret line="160" column="51" selection-start-line="160" selection-start-column="51" selection-end-line="160" selection-end-column="51" />
+            <state relative-caret-position="235">
+              <caret line="186" column="67" selection-start-line="186" selection-start-column="67" selection-end-line="186" selection-end-column="67" />
             </state>
           </provider>
         </entry>
@@ -315,7 +315,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>ec50_fig</find>
       <find>pd.Data</find>
       <find>mixed_dose_response</find>
       <find>score_target</find>
@@ -345,10 +344,9 @@
       <find>alpha_palette[3]</find>
       <find>doses_alpha</find>
       <find>times</find>
+      <find>ka</find>
     </findStrings>
     <replaceStrings>
-      <replace>15</replace>
-      <replace>30</replace>
       <replace>Detailed_Model</replace>
       <replace>data_plot_tc</replace>
       <replace>pSTAT_max_vs_time_fig_obj</replace>
@@ -377,6 +375,8 @@
       <replace>beta_palette[2]</replace>
       <replace>large</replace>
       <replace>alpha_palette[2]</replace>
+      <replace>k_d</replace>
+      <replace>k_a</replace>
     </replaceStrings>
   </component>
   <component name="Git.Settings">
@@ -1025,8 +1025,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/ifnclass/ifnmodel.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="17">
-          <caret line="160" column="51" selection-start-line="160" selection-start-column="51" selection-end-line="160" selection-end-column="51" />
+        <state relative-caret-position="235">
+          <caret line="186" column="67" selection-start-line="186" selection-start-column="67" selection-end-line="186" selection-end-column="67" />
         </state>
       </provider>
     </entry>
