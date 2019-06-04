@@ -44,6 +44,7 @@ class IfnModel:
     reset_parameters
         sets self.parameters to the initially imported parameter values
     timecourse -> dict = keys corresponding to observable names, values are lists of trajectory values
+                        * This method does not check the input 'parameters' for maintained detailed balance *
         Inputs:
             times (list) : time points to output, in minutes
             observables (string or list) : name of model observable(s) to return
@@ -60,6 +61,7 @@ class IfnModel:
                                      [dose species (string), dose in pM (float)]
     doseresponse() -> dict = keys corresponding to observable names, values are arrays where each column is a time slice
                             and each row corresponds to a dose value
+                            * This method does not check the input 'parameters' for maintained detailed balance *
         Inputs:
             times (list) : time points to output, in minutes
             observables (string or list) : name of model observable(s) to return
@@ -128,35 +130,36 @@ class IfnModel:
         return list1 == list(test_parameters.keys())
 
     def check_for_detailed_balance_parameters(self, new_parameters):
-        # First we check if any parameters which must maintain detailed balance are even in new_parameters
+        # Check if any parameters which must maintain detailed balance are even in new_parameters
         db_parameters_present = False
         for key in ['ka1','kd1','ka2','kd2','ka3','kd3','ka4','kd4','k_a1','k_d1','k_a2','k_d2','k_a3','k_d3','k_a4','k_d4']:
             db_parameters_present = (key in new_parameters.keys()) or db_parameters_present
-        # Second we check if new_parameters is trying to over-constrain the model, violating detailed balance
-        no_db_parameters_conflict = (not ('kd4' in new_parameters.keys() and 'kd3' in new_parameters.keys())) or (
-            not ('k_d4' in new_parameters.keys() and 'k_d3' in new_parameters.keys()))
-        return no_db_parameters_conflict and db_parameters_present
+        return db_parameters_present
 
     def __check_detailed_balance__(self):
+        alpha_check = True
+        beta_check = True
         if 'kd4' in self.parameters.keys():
             q1 = self.parameters['ka1'] / self.parameters['kd1']
             q2 = self.parameters['ka2'] / self.parameters['kd2']
             q3 = self.parameters['ka3'] / self.parameters['kd3']
             q4 = self.parameters['ka4'] / self.parameters['kd4']
-            return q1 * q3 == q2 * q4
-        elif 'k_d4' in self.parameters.keys():
+            alpha_check =  (abs(q1 * q3 / (q2 * q4) - 1) < 1E-4)
+        if 'k_d4' in self.parameters.keys():
             q1 = self.parameters['k_a1'] / self.parameters['k_d1']
             q2 = self.parameters['k_a2'] / self.parameters['k_d2']
             q3 = self.parameters['k_a3'] / self.parameters['k_d3']
             q4 = self.parameters['k_a4'] / self.parameters['k_d4']
-            return q1 * q3 == q2 * q4
+            beta_check =  (abs(q1 * q3 / (q2 * q4) - 1) < 1E-4)
+        if ('kd4' in self.parameters.keys()) or ('k_d4' in self.parameters.keys()):
+            return (alpha_check and beta_check)
         else:
             print("Could not find detailed balance parameters")
             return False
 
-    def set_parameters(self, new_parameters: dict):
+    def set_parameters(self, new_parameters: dict, db_check=True):
         if self.check_if_parameters_in_model(new_parameters):
-            if self.check_for_detailed_balance_parameters(new_parameters):
+            if self.check_for_detailed_balance_parameters(new_parameters) and db_check:
                 # Use all input values given, default to current model values otherwise
                 detailed_balance_dict = {'ka1': 1, 'kd1': 1,
                                          'ka2': 1, 'kd2': 1,
@@ -166,49 +169,139 @@ class IfnModel:
                                          'k_a2': 1, 'k_d2': 1,
                                          'k_a3': 1, 'k_d3': 1,
                                          'k_a4': 1, 'k_d4': 1}
+                # These will be used to check which parameter is free for maintaining detailed balance
+                detailed_balance_keys_alpha = ['ka1','kd1','ka2','kd2','ka3','kd3','ka4','kd4']
+                detailed_balance_keys_beta = ['k_a1','k_d1','k_a2','k_d2','k_a3','k_d3','k_a4','k_d4']
                 for key in detailed_balance_dict.keys():
                     if key in new_parameters.keys():
                         detailed_balance_dict.update({key: new_parameters[key]})
+                        # Parameter is not free, so remove from appropriate list
+                        try:
+                            detailed_balance_keys_alpha.remove(key)
+                        except ValueError:
+                            # If it is not in alpha it must be in beta
+                            detailed_balance_keys_beta.remove(key)
                     else:
                         detailed_balance_dict.update({key: self.parameters[key]})
                 # Maintain detailed balance
-                original_key_list = list(new_parameters.keys())
-                if 'kd4' in original_key_list:
-                    q1 = detailed_balance_dict['ka1'] / detailed_balance_dict['kd1']
-                    q2 = detailed_balance_dict['ka2'] / detailed_balance_dict['kd2']
-                    q4 = detailed_balance_dict['ka4'] / detailed_balance_dict['kd4']
-                    q3 = q2 * q4 / q1
-                    kd3 = detailed_balance_dict['ka3'] / q3
-                    new_parameters.update({'kd3': kd3})
-                    if 'kd4_USP18' in original_key_list:
-                        usp18_sf = new_parameters['kd4_USP18'] / detailed_balance_dict['kd4']
-                        kd3usp18 = usp18_sf * new_parameters['kd3']
-                        new_parameters.update({'kd3_USP18': kd3usp18})
-                if 'kd3' in original_key_list:
-                    q1 = detailed_balance_dict['ka1'] / detailed_balance_dict['kd1']
-                    q2 = detailed_balance_dict['ka2'] / detailed_balance_dict['kd2']
-                    q3 = detailed_balance_dict['ka3'] / detailed_balance_dict['kd3']
-                    q4 = q1 * q3 / q2
-                    kd4 = detailed_balance_dict['ka4'] / q4
-                    new_parameters.update({'kd4': kd4})
-                if 'k_d4' in original_key_list:
-                    q1 = detailed_balance_dict['k_a1'] / detailed_balance_dict['k_d1']
-                    q2 = detailed_balance_dict['k_a2'] / detailed_balance_dict['k_d2']
-                    q4 = detailed_balance_dict['k_a4'] / detailed_balance_dict['k_d4']
-                    q3 = q2 * q4 / q1
-                    k_d3 = self.parameters['k_a3'] / q3
-                    new_parameters.update({'k_d3': k_d3})
-                    if 'k_d4_USP18' in original_key_list:
-                        usp18_sf = new_parameters['k_d4_USP18'] / detailed_balance_dict['k_d4']
-                        kd3usp18 = usp18_sf * new_parameters['k_d3']
-                        new_parameters.update({'k_d3_USP18': kd3usp18})
-                if 'k_d3' in original_key_list:
-                    q1 = detailed_balance_dict['k_a1'] / detailed_balance_dict['k_d1']
-                    q2 = detailed_balance_dict['k_a2'] / detailed_balance_dict['k_d2']
-                    q3 = detailed_balance_dict['k_a3'] / detailed_balance_dict['k_d3']
-                    q4 = q1 * q3 / q2
-                    k_d4 = self.parameters['k_a4'] / q4
-                    new_parameters.update({'k_d4': k_d4})
+                if detailed_balance_keys_alpha == [] or detailed_balance_keys_beta == []:
+                    raise ValueError("Not enough free parameters to maintain detailed balance")
+                else:
+                    # Find the IFNa parameter left free to maintain detailed balance and add it to new_parameters
+                    if 'kd3' in detailed_balance_keys_alpha:
+                        q1 = detailed_balance_dict['ka1'] / detailed_balance_dict['kd1']
+                        q2 = detailed_balance_dict['ka2'] / detailed_balance_dict['kd2']
+                        q4 = detailed_balance_dict['ka4'] / detailed_balance_dict['kd4']
+                        q3 = q2 * q4 / q1
+                        kd3 = detailed_balance_dict['ka3'] / q3
+                        new_parameters.update({'kd3': kd3})
+                    elif 'kd4' in detailed_balance_keys_alpha:
+                        q1 = detailed_balance_dict['ka1'] / detailed_balance_dict['kd1']
+                        q2 = detailed_balance_dict['ka2'] / detailed_balance_dict['kd2']
+                        q3 = detailed_balance_dict['ka3'] / detailed_balance_dict['kd3']
+                        q4 = q1 * q3 / q2
+                        kd4 = detailed_balance_dict['ka4'] / q4
+                        new_parameters.update({'kd4': kd4})
+                    elif 'ka3' in detailed_balance_keys_alpha:
+                        q1 = detailed_balance_dict['ka1'] / detailed_balance_dict['kd1']
+                        q2 = detailed_balance_dict['ka2'] / detailed_balance_dict['kd2']
+                        q4 = detailed_balance_dict['ka4'] / detailed_balance_dict['kd4']
+                        q3 = q2 * q4 / q1
+                        ka3 = detailed_balance_dict['kd3'] * q3
+                        new_parameters.update({'ka3': ka3})
+                    elif 'ka4' in detailed_balance_keys_alpha:
+                        q1 = detailed_balance_dict['ka1'] / detailed_balance_dict['kd1']
+                        q2 = detailed_balance_dict['ka2'] / detailed_balance_dict['kd2']
+                        q3 = detailed_balance_dict['ka3'] / detailed_balance_dict['kd3']
+                        q4 = q1 * q3 / q2
+                        ka4 = detailed_balance_dict['kd4'] * q4
+                        new_parameters.update({'ka4': ka4})
+                    elif 'kd1' in detailed_balance_keys_alpha:
+                        q3 = detailed_balance_dict['ka3'] / detailed_balance_dict['kd3']
+                        q2 = detailed_balance_dict['ka2'] / detailed_balance_dict['kd2']
+                        q4 = detailed_balance_dict['ka4'] / detailed_balance_dict['kd4']
+                        q1 = q2 * q4 / q3
+                        kd1 = detailed_balance_dict['ka1'] / q1
+                        new_parameters.update({'kd1': kd1})
+                    elif 'kd2' in detailed_balance_keys_alpha:
+                        q1 = detailed_balance_dict['ka1'] / detailed_balance_dict['kd1']
+                        q4 = detailed_balance_dict['ka4'] / detailed_balance_dict['kd4']
+                        q3 = detailed_balance_dict['ka3'] / detailed_balance_dict['kd3']
+                        q2 = q1 * q3 / q4
+                        kd2 = detailed_balance_dict['ka2'] / q2
+                        new_parameters.update({'kd2': kd2})
+                    elif 'ka1' in detailed_balance_keys_alpha:
+                        q3 = detailed_balance_dict['ka3'] / detailed_balance_dict['kd3']
+                        q2 = detailed_balance_dict['ka2'] / detailed_balance_dict['kd2']
+                        q4 = detailed_balance_dict['ka4'] / detailed_balance_dict['kd4']
+                        q1 = q2 * q4 / q3
+                        ka1 = detailed_balance_dict['kd1'] * q1
+                        new_parameters.update({'ka1': ka1})
+                    elif 'ka2' in detailed_balance_keys_alpha:
+                        q1 = detailed_balance_dict['ka1'] / detailed_balance_dict['kd1']
+                        q4 = detailed_balance_dict['ka4'] / detailed_balance_dict['kd4']
+                        q3 = detailed_balance_dict['ka3'] / detailed_balance_dict['kd3']
+                        q2 = q1 * q3 / q4
+                        ka2 = detailed_balance_dict['kd2'] * q2
+                        new_parameters.update({'ka2': ka2})
+
+                    # Find the IFNb parameter left free to maintain detailed balance and add it to new_parameters
+                    if 'k_d3' in detailed_balance_keys_beta:
+                        q1 = detailed_balance_dict['k_a1'] / detailed_balance_dict['k_d1']
+                        q2 = detailed_balance_dict['k_a2'] / detailed_balance_dict['k_d2']
+                        q4 = detailed_balance_dict['k_a4'] / detailed_balance_dict['k_d4']
+                        q3 = q2 * q4 / q1
+                        k_d3 = detailed_balance_dict['k_a3'] / q3
+                        new_parameters.update({'k_d3': k_d3})
+                    elif 'k_d4' in detailed_balance_keys_beta:
+                        q1 = detailed_balance_dict['k_a1'] / detailed_balance_dict['k_d1']
+                        q2 = detailed_balance_dict['k_a2'] / detailed_balance_dict['k_d2']
+                        q3 = detailed_balance_dict['k_a3'] / detailed_balance_dict['k_d3']
+                        q4 = q1 * q3 / q2
+                        k_d4 = detailed_balance_dict['k_a4'] / q4
+                        new_parameters.update({'k_d4': k_d4})
+                    elif 'k_a3' in detailed_balance_keys_beta:
+                        q1 = detailed_balance_dict['k_a1'] / detailed_balance_dict['k_d1']
+                        q2 = detailed_balance_dict['k_a2'] / detailed_balance_dict['k_d2']
+                        q4 = detailed_balance_dict['k_a4'] / detailed_balance_dict['k_d4']
+                        q3 = q2 * q4 / q1
+                        k_a3 = detailed_balance_dict['k_d3'] * q3
+                        new_parameters.update({'k_a3': k_a3})
+                    elif 'k_a4' in detailed_balance_keys_beta:
+                        q1 = detailed_balance_dict['k_a1'] / detailed_balance_dict['k_d1']
+                        q2 = detailed_balance_dict['k_a2'] / detailed_balance_dict['k_d2']
+                        q3 = detailed_balance_dict['k_a3'] / detailed_balance_dict['k_d3']
+                        q4 = q1 * q3 / q2
+                        k_a4 = detailed_balance_dict['k_d4'] * q4
+                        new_parameters.update({'k_a4': k_a4})
+                    elif 'k_d1' in detailed_balance_keys_beta:
+                        q3 = detailed_balance_dict['k_a3'] / detailed_balance_dict['k_d3']
+                        q2 = detailed_balance_dict['k_a2'] / detailed_balance_dict['k_d2']
+                        q4 = detailed_balance_dict['k_a4'] / detailed_balance_dict['k_d4']
+                        q1 = q2 * q4 / q3
+                        k_d1 = detailed_balance_dict['k_a1'] / q1
+                        new_parameters.update({'k_d1': k_d1})
+                    elif 'k_d2' in detailed_balance_keys_beta:
+                        q1 = detailed_balance_dict['k_a1'] / detailed_balance_dict['k_d1']
+                        q4 = detailed_balance_dict['k_a4'] / detailed_balance_dict['k_d4']
+                        q3 = detailed_balance_dict['k_a3'] / detailed_balance_dict['k_d3']
+                        q2 = q1 * q3 / q4
+                        k_d2 = detailed_balance_dict['k_a2'] / q2
+                        new_parameters.update({'k_d2': k_d2})
+                    elif 'k_a1' in detailed_balance_keys_beta:
+                        q3 = detailed_balance_dict['k_a3'] / detailed_balance_dict['k_d3']
+                        q2 = detailed_balance_dict['k_a2'] / detailed_balance_dict['k_d2']
+                        q4 = detailed_balance_dict['k_a4'] / detailed_balance_dict['k_d4']
+                        q1 = q2 * q4 / q3
+                        k_a1 = detailed_balance_dict['k_d1'] * q1
+                        new_parameters.update({'k_a1': k_a1})
+                    elif 'k_a2' in detailed_balance_keys_beta:
+                        q1 = detailed_balance_dict['k_a1'] / detailed_balance_dict['k_d1']
+                        q4 = detailed_balance_dict['k_a4'] / detailed_balance_dict['k_d4']
+                        q3 = detailed_balance_dict['k_a3'] / detailed_balance_dict['k_d3']
+                        q2 = q1 * q3 / q4
+                        k_a2 = detailed_balance_dict['k_d2'] * q2
+                        new_parameters.update({'k_a2': k_a2})
 
             self.parameters.update(new_parameters)
             return 0
@@ -227,7 +320,7 @@ class IfnModel:
         initial_parameters = copy.deepcopy(self.parameters)
         # Substitute in new simulation-specific values
         if parameters is not None:
-            self.set_parameters(parameters)
+            self.set_parameters(parameters, db_check=False)
         # Simulate
         if type(times[0]) == str:
             for i in range(len(times)):
