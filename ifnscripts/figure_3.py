@@ -161,8 +161,8 @@ if __name__ == '__main__':
 
     scale_factor = 1.227
     times = [60.0]
-    doses_alpha = np.logspace(0, 7)
-    doses_beta = np.logspace(0, 6)
+    doses_alpha = np.divide([0, 1E-7, 1E-8, 3E-9, 1E-9, 3E-10, 1E-10, 1E-11], 1E-12)
+    doses_beta = np.divide([0, 2E-9, 6E-10, 2E-10, 6E-11, 2E-11, 6E-12, 2E-13], 1E-12)
     """
     # -------------------------------
     # Scanning effect of cell size
@@ -367,27 +367,34 @@ if __name__ == '__main__':
     # Set up Figure layout
     # ----------------------
     # Set up dose response figures
-    new_fit = DoseresponsePlot((2, 2))
-    new_fit.axes[1][0].set_ylabel('pSTAT (MFI)')
-    new_fit.axes[1][1].set_ylabel('pSTAT (MFI)')
+    new_fit = DoseresponsePlot((1, 2))
+    new_fit.axes[0].set_ylabel('pSTAT (MFI)')
+    new_fit.axes[1].set_ylabel('pSTAT (MFI)')
 
     # Plot Dose respsonse data
     times = [2.5, 5.0, 7.5, 10.0, 20.0, 60.0]
-    alpha_palette = sns.color_palette("Reds", 6)
-    beta_palette = sns.color_palette("Greens", 6)
+    color_palette = sns.color_palette("Paired", 10)
     alpha_mask = [2.5, 5.0, 7.5, 20.0]
     beta_mask = [2.5, 5.0, 7.5, 20.0]
-    for idx, t in enumerate(times):
-        if t not in alpha_mask:
-            new_fit.add_trajectory(mean_large_data, t, 'errorbar', 'o--', (1, 0), 'Alpha', color=alpha_palette[idx],
-                                   label='Large cells, {} min'.format(t), linewidth=2.0)
-            new_fit.add_trajectory(mean_small_data, t, 'errorbar', 'o-', (1, 0), 'Alpha', color=alpha_palette[idx],
-                                   label='Small cells, {} min'.format(t), linewidth=2.0)
-        if t not in beta_mask:
-            new_fit.add_trajectory(mean_large_data, t, 'errorbar', 'o--', (1, 1), 'Beta', color=beta_palette[idx],
-                                   label='Large cells, {} min'.format(t), linewidth=2.0)
-            new_fit.add_trajectory(mean_small_data, t, 'errorbar', 'o-', (1, 1), 'Beta', color=beta_palette[idx],
-                                   label='Small cells, {} min'.format(t), linewidth=2.0)
+    for idx, t in enumerate([10.0, 60.0]):
+        if t is 10.0:
+            new_fit.add_trajectory(mean_large_data, t, 'errorbar', 'o', (0, 0), 'Alpha', color=color_palette[4],
+                                   linewidth=2.0)
+            new_fit.add_trajectory(mean_small_data, t, 'errorbar', 'o', (0, 0), 'Alpha', color=color_palette[5],
+                                   linewidth=2.0)
+            new_fit.add_trajectory(mean_large_data, t, 'errorbar', 'o', (0, 1), 'Beta', color=color_palette[2],
+                                   linewidth=2.0)
+            new_fit.add_trajectory(mean_small_data, t, 'errorbar', 'o', (0, 1), 'Beta', color=color_palette[3],
+                                   linewidth=2.0)
+        else:
+            new_fit.add_trajectory(mean_large_data, t, 'errorbar', 'o', (0, 0), 'Alpha', color=color_palette[6],
+                                   linewidth=2.0)
+            new_fit.add_trajectory(mean_small_data, t, 'errorbar', 'o', (0, 0), 'Alpha', color=color_palette[7],
+                                   linewidth=2.0)
+            new_fit.add_trajectory(mean_large_data, t, 'errorbar', 'o', (0, 1), 'Beta', color=color_palette[0],
+                                   linewidth=2.0)
+            new_fit.add_trajectory(mean_small_data, t, 'errorbar', 'o', (0, 1), 'Beta', color=color_palette[1],
+                                   linewidth=2.0)
 
     # ------------------------------------------------------------------------------
     # Population heterogeneity
@@ -395,8 +402,8 @@ if __name__ == '__main__':
     # Small cells are 80% of the population and have {'R1': 12000.0, 'R2': 1511.1}
     # ------------------------------------------------------------------------------
     times = [2.5, 5.0, 7.5, 10., 20.0, 60.0]
-    alpha_doses = list(np.logspace(np.log10(doses_alpha[0]), 5))
-    beta_doses = list(np.logspace(np.log10(doses_beta[0]), 3))
+    alpha_doses = list(np.logspace(np.log10(doses_alpha[1]), np.log10(doses_alpha[-1])))
+    beta_doses = list(np.logspace(np.log10(doses_beta[1]), np.log10(doses_beta[-1])))
     # Small cells
     radius = 1E-6
     volPM_small = 2 * radius ** 2 + 4 * radius * 8E-6
@@ -424,7 +431,7 @@ if __name__ == '__main__':
     small_cells_beta_IFNdata = IfnData('custom', df=small_cells_beta, conditions={'Beta': {'Ia': 0}})
 
     # Large (normal) cells
-    radius = 2**0.5 * radius
+    radius = 1.75**0.5 * radius
     volPM_large = 2 * radius ** 2 + 4 * radius * 8E-6
     volCP_large = 8E-6 * radius ** 2
     R1 = R1 * volPM_large / volPM_small
@@ -450,36 +457,32 @@ if __name__ == '__main__':
     large_cells_beta_IFNdata = IfnData('custom', df=large_cells_beta, conditions={'Beta': {'Ia': 0}})
 
     # Plot
-    alpha_palette = sns.color_palette("Reds", 6)
-    beta_palette = sns.color_palette("Greens", 6)
 
     dr_plot = new_fit
     dr_axes = dr_plot.axes
     # Add model predictions fits
     # Alpha
-    dr_plot.add_trajectory(large_cells_alpha_IFNdata, 60.0, 'plot', '--', (0, 0), 'Alpha', color=alpha_palette[5],
+    dr_plot.add_trajectory(large_cells_alpha_IFNdata, 60.0, 'plot', '--', (0, 0), 'Alpha', color=color_palette[6],
                            label=r'Large Cells, 60 min', linewidth=2)
-    dr_plot.add_trajectory(small_cells_alpha_IFNdata, 60.0, 'plot', alpha_palette[5], (0, 0), 'Alpha',
+    dr_plot.add_trajectory(small_cells_alpha_IFNdata, 60.0, 'plot', color_palette[7], (0, 0), 'Alpha',
                            label=r'Small Cells, 60 min', linewidth=2)
-    dr_plot.add_trajectory(large_cells_alpha_IFNdata, 10.0, 'plot', '--', (0, 0), 'Alpha', color=alpha_palette[2],
+    dr_plot.add_trajectory(large_cells_alpha_IFNdata, 10.0, 'plot', '--', (0, 0), 'Alpha', color=color_palette[4],
                            label=r'Large Cells, 10 min', linewidth=2)
-    dr_plot.add_trajectory(small_cells_alpha_IFNdata, 10.0, 'plot', alpha_palette[2], (0, 0), 'Alpha',
+    dr_plot.add_trajectory(small_cells_alpha_IFNdata, 10.0, 'plot', color_palette[5], (0, 0), 'Alpha',
                            label=r'Small Cells, 10 min', linewidth=2)
     # Beta
-    dr_plot.add_trajectory(large_cells_beta_IFNdata, 60.0, 'plot', '--', (0, 1), 'Beta', color=beta_palette[5],
+    dr_plot.add_trajectory(large_cells_beta_IFNdata, 60.0, 'plot', '--', (0, 1), 'Beta', color=color_palette[0],
                            label=r'Large Cells, 60 min', linewidth=2)
-    dr_plot.add_trajectory(small_cells_beta_IFNdata, 60.0, 'plot', beta_palette[5], (0, 1), 'Beta',
+    dr_plot.add_trajectory(small_cells_beta_IFNdata, 60.0, 'plot', color_palette[1], (0, 1), 'Beta',
                            label=r'Small Cells, 60 min', linewidth=2)
-    dr_plot.add_trajectory(large_cells_beta_IFNdata, 10.0, 'plot', '--', (0, 1), 'Beta', color=beta_palette[2],
+    dr_plot.add_trajectory(large_cells_beta_IFNdata, 10.0, 'plot', '--', (0, 1), 'Beta', color=color_palette[2],
                            label=r'Large Cells, 10 min', linewidth=2)
-    dr_plot.add_trajectory(small_cells_beta_IFNdata, 10.0, 'plot', beta_palette[2], (0, 1), 'Beta',
+    dr_plot.add_trajectory(small_cells_beta_IFNdata, 10.0, 'plot', color_palette[3], (0, 1), 'Beta',
                            label=r'Small Cells, 10 min', linewidth=2)
 
-    dr_axes[0][0].set_title(r'IFN$\alpha$ Predictions')
-    dr_axes[0][1].set_title(r'IFN$\beta$ Predictions')
-    dr_axes[1][0].set_title(r'IFN$\alpha$ Data')
-    dr_axes[1][1].set_title(r'IFN$\beta$ Data')
+    dr_axes[0].set_title(r'IFN$\alpha$')
+    dr_axes[1].set_title(r'IFN$\beta$')
 
     dr_fig, dr_axes = dr_plot.show_figure(save_flag=False)
-    dr_fig.set_size_inches(12, 10)
+    dr_fig.set_size_inches(12, 5)
     dr_fig.savefig(os.path.join(os.getcwd(), 'results', 'Figures', 'Figure_3', 'Figure_3.pdf'))
