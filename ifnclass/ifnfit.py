@@ -288,9 +288,9 @@ class Prior:
     type_of_distribution (str): can be 'lognormal', 'normal', or 'uniform'
     mean (float): the mean of the prior distrubiton; default is 1 (does not need to be specified for uniform priors)
                 For lognormal priors this is what is subtracted from the logarithm of the value in
-                the exponent of the Gaussian.
+                the exponent of the Gaussian (ie. this is the log_mean).
     sigma (float): the standard deviation of the prior distribution; default is 1 (does not need to be specified for
-                    uniform priors. For lognormal priors this is what the logarithm of the value is divided by in
+                    uniform priors). For lognormal priors this is what the logarithm of the value is divided by in
                     the exponent of the Gaussian.
     lower_bound, upper_bound (float): the upper and lower bounds for truncating the prior distrubution
                                       these are only used for uniform type priors, in which case defaults are 0 and 1
@@ -332,6 +332,10 @@ class Prior:
 
 
 def __unpackMCMC__(ID, jobs, result, countQ, build_model, model_parameters, temperature):
+    """
+    This function is used by the MCMC class but must be defined externally. 
+    Should not be used by any other program.
+    """
     model_name, data_name, fit_parameters, priors, jump_distributions = build_model
     model=IfnModel(model_name)
     model.set_parameters(model_parameters)
@@ -344,6 +348,7 @@ def __unpackMCMC__(ID, jobs, result, countQ, build_model, model_parameters, temp
 class MCMC:
     """
      Documentation - An MCMC instance is characterized by the IfnModel and IfnData associated with it.
+                     This class offers a way to fit parameters for an IfnModel using MCMC.
 
      Parameters
      ----------
@@ -352,6 +357,19 @@ class MCMC:
      parameters (list): the names of the model parameters to fit
      priors (dict): keys corresponding to parameters, values are Prior objects
      jump_distributions (dict): keys corresponding to parameters, values are the sigmas for jump distributions
+     * Optional parameters *
+     beta (float or int): scales the mean square error component of the cost function (in the case that MSE 
+                          is not of the same order as prior cost) (default = 1)
+     temperature (float or int): scales the entire cost, permitting worse fits (default = 1)
+     burn_in (float): the fraction of the beginning of MCMC sampling to discard (default = 0.2)
+     down_sample (int): the frequency with which to keep successful samples (ie. down_sample = 3 means keep
+                        every third sample) (default = 5)
+     num_samples (int): the number of samples to keep after burn in and down sampling (default = 100)
+     num_chains (int): the number of MCMC chains to run. Must choose greater than 1 to use G.R. statistics
+                       (default = 1)
+     filename (str): the path to the directory where results of the fit can be stored 
+                     (default = './mcmc_results/initial_model.p')
+
      Attributes
      ----------
      model (IfnModel): the model to fit
@@ -399,6 +417,52 @@ class MCMC:
 
     # Private methods
     # ---------------
+def __score_mixed_models__(self, shared_parameters, mixed_parameters, data):
+        # ------------------------------
+        # Initialize variables
+        # ------------------------------
+        times = data.get_times(species='Alpha')
+        alpha_doses = data.get_doses(species='Alpha')
+        beta_doses = data.get_doses(species='Beta')
+
+        model_1_old_parameters = self.model_1.parameters
+        model_2_old_parameters = self.model_2.parameters
+
+        # Set parameters for each population
+        self.model_1.set_parameters(shared_parameters)
+        self.model_1.set_parameters(mixed_parameters[0])
+
+        self.model_2.set_parameters(shared_parameters)
+        self.model_1.set_parameters(mixed_parameters[1])
+
+        # -------------------------
+        # Make predictions
+        # -------------------------
+        alpha_response = self.mixed_dose_response(times, 'TotalpSTAT', 'Ia', alpha_doses, parameters={'Ib': 0})
+        beta_response = self.mixed_dose_response(times, 'TotalpSTAT', 'Ib', beta_doses, parameters={'Ia': 0})
+        total_response = pd.concat([alpha_response, beta_response])
+
+        # -------------------------
+        # Score predictions vs data
+        # -------------------------
+        def __score_target__(scf, data, sim):
+            diff_table = np.zeros((len(data), len(data[0])))
+            for r in range(len(data)):
+                for c in range(len(data[r])):
+                    if not np.isnan(data[r][c][1]):
+                        diff_table[r][c] = (sim[r][c][0] * scf - data[r][c][0]) / data[r][c][1]
+                    else:
+                        diff_table[r][c] = (sim[r][c][0] * scf - data[r][c][0])
+            return np.sum(np.square(diff_table))
+
+        opt = minimize(__score_target__, [0.1], args=(data.data_set.values, total_response.values))
+        sf = opt['x'][0]
+        score = opt['fun']
+
+        self.model_1.set_parameters(model_1_old_parameters)
+        self.model_2.set_parameters(model_2_old_parameters)
+        return score, sf
+
     def __MSE_of_parametric_model__(self, parameter_dict, sf_flag=0):
         def score_target(sf, data, sim):
             diff_table = zeros(shape(sim))
@@ -408,9 +472,28 @@ class MCMC:
                         diff_table[r][c] = sim[r][c] * sf - data[r][c]
             return np.sum(square(diff_table))
 
+        # ------------------------------
+        # Initialize variables
+        # ------------------------------
+        times = self.data.get_times(species='Alpha')
+        alpha_doses = self.data.get_doses(species='Alpha')
+        beta_doses = self.data.get_doses(species='Beta')
+
+        old_parameters = self.model.parameters
+
+        # Set parameters for each population
         self.model.set_parameters(parameter_dict)
-        total_data_table = []
-        total_sim_table = []
+
+        # -------------------------
+        # Make predictions
+        # -------------------------
+        alpha_response = self.model.doseresponse(times, 'TotalpSTAT', 'Ia', alpha_doses, parameters={'Ib': 0}, return_type='dataframe')
+        beta_response = self.mixed_dose_response(times, 'TotalpSTAT', 'Ib', beta_doses, parameters={'Ia': 0}, return_type='dataframe')
+        total_response = pd.concat([alpha_response, beta_response])
+        print(total_response)
+
+
+
         for dose_species in self.data.get_dose_species():
             # Get simulation parameters
             simulation_times = self.data.get_times()[dose_species]
