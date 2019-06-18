@@ -360,7 +360,7 @@ class MCMC:
      * Optional parameters *
      beta (float or int): scales the mean square error component of the cost function (in the case that MSE 
                           is not of the same order as prior cost) (default = 1)
-     temperature (float or int): scales the entire cost, permitting worse fits (default = 1)
+     temperature (float or int): scales the acceptance rate, permitting worse fits (default = 1)
      burn_in (float): the fraction of the beginning of MCMC sampling to discard (default = 0.2)
      down_sample (int): the frequency with which to keep successful samples (ie. down_sample = 3 means keep
                         every third sample) (default = 5)
@@ -417,53 +417,7 @@ class MCMC:
 
     # Private methods
     # ---------------
-def __score_mixed_models__(self, shared_parameters, mixed_parameters, data):
-        # ------------------------------
-        # Initialize variables
-        # ------------------------------
-        times = data.get_times(species='Alpha')
-        alpha_doses = data.get_doses(species='Alpha')
-        beta_doses = data.get_doses(species='Beta')
-
-        model_1_old_parameters = self.model_1.parameters
-        model_2_old_parameters = self.model_2.parameters
-
-        # Set parameters for each population
-        self.model_1.set_parameters(shared_parameters)
-        self.model_1.set_parameters(mixed_parameters[0])
-
-        self.model_2.set_parameters(shared_parameters)
-        self.model_1.set_parameters(mixed_parameters[1])
-
-        # -------------------------
-        # Make predictions
-        # -------------------------
-        alpha_response = self.mixed_dose_response(times, 'TotalpSTAT', 'Ia', alpha_doses, parameters={'Ib': 0})
-        beta_response = self.mixed_dose_response(times, 'TotalpSTAT', 'Ib', beta_doses, parameters={'Ia': 0})
-        total_response = pd.concat([alpha_response, beta_response])
-
-        # -------------------------
-        # Score predictions vs data
-        # -------------------------
-        def __score_target__(scf, data, sim):
-            diff_table = np.zeros((len(data), len(data[0])))
-            for r in range(len(data)):
-                for c in range(len(data[r])):
-                    if not np.isnan(data[r][c][1]):
-                        diff_table[r][c] = (sim[r][c][0] * scf - data[r][c][0]) / data[r][c][1]
-                    else:
-                        diff_table[r][c] = (sim[r][c][0] * scf - data[r][c][0])
-            return np.sum(np.square(diff_table))
-
-        opt = minimize(__score_target__, [0.1], args=(data.data_set.values, total_response.values))
-        sf = opt['x'][0]
-        score = opt['fun']
-
-        self.model_1.set_parameters(model_1_old_parameters)
-        self.model_2.set_parameters(model_2_old_parameters)
-        return score, sf
-
-    def __MSE_of_parametric_model__(self, parameter_dict, sf_flag=0):
+    def __MSE_of_parametric_model__(self, parameter_dict={}, sf_flag=0):
         def score_target(sf, data, sim):
             diff_table = zeros(shape(sim))
             for r in range(len(data)):
@@ -479,7 +433,7 @@ def __score_mixed_models__(self, shared_parameters, mixed_parameters, data):
         alpha_doses = self.data.get_doses(species='Alpha')
         beta_doses = self.data.get_doses(species='Beta')
 
-        old_parameters = self.model.parameters
+        old_parameters = {key: self.model.parameters[key] for key in parameter_dict.keys()} # To ensure changes to model aren't permanent
 
         # Set parameters for each population
         self.model.set_parameters(parameter_dict)
@@ -487,46 +441,37 @@ def __score_mixed_models__(self, shared_parameters, mixed_parameters, data):
         # -------------------------
         # Make predictions
         # -------------------------
-        alpha_response = self.model.doseresponse(times, 'TotalpSTAT', 'Ia', alpha_doses, parameters={'Ib': 0}, return_type='dataframe')
-        beta_response = self.mixed_dose_response(times, 'TotalpSTAT', 'Ib', beta_doses, parameters={'Ia': 0}, return_type='dataframe')
+        alpha_response = self.model.doseresponse(times, 'TotalpSTAT', 'Ia', alpha_doses, parameters={'Ib': 0}, return_type='dataframe', dataframe_labels='Alpha')
+        beta_response = self.model.doseresponse(times, 'TotalpSTAT', 'Ib', beta_doses, parameters={'Ia': 0}, return_type='dataframe', dataframe_labels='Beta')
         total_response = pd.concat([alpha_response, beta_response])
-        print(total_response)
 
+        # -------------------------
+        # Score predictions vs data
+        # -------------------------
+        def __score_target__(scf, data, sim):
+            diff_table = np.zeros((len(data), len(data[0])))
+            for r in range(len(data)):
+                for c in range(len(data[r])):
+                    if not np.isnan(data[r][c][1]):
+                        diff_table[r][c] = (sim[r][c][0] * scf - data[r][c][0]) / data[r][c][1]
+                    else:
+                        diff_table[r][c] = (sim[r][c][0] * scf - data[r][c][0])
+            return np.sum(np.square(np.nan_to_num(diff_table)))
 
-
-        for dose_species in self.data.get_dose_species():
-            # Get simulation parameters
-            simulation_times = self.data.get_times()[dose_species]
-            simulation_doses = self.data.get_doses()[dose_species]
-            # Get data for comparison to
-            datatable = self.data.get_responses()[dose_species]
-            datatable = [[el[0] for el in r] for r in datatable]
-            if not total_data_table:
-                total_data_table = [el for el in datatable]
-            else:
-                total_data_table += datatable
-            # Perform simulation
-            if dose_species == 'Alpha':
-                spec = 'Ia'
-            else:
-                spec = 'Ib'
-            simulation = self.model.doseresponse(simulation_times, 'TotalpSTAT', spec, simulation_doses,
-                                                 parameters=self.data.conditions[dose_species],
-                                                 return_type='list', dataframe_labels=None)['TotalpSTAT']
-            if not total_sim_table:
-                total_sim_table = [el for el in list(simulation)]
-            else:
-                total_sim_table += list(simulation)
-        # Score results by mean squared error
-        opt = minimize(score_target, [40], args=(total_data_table, total_sim_table))
+        opt = minimize(__score_target__, [0.1], args=(self.data.data_set.values, total_response.values))
+        sf = opt['x'][0]
         score = opt['fun']
-        sf = opt['x']
+
+        self.model.set_parameters(old_parameters) # Reset parameters
+
         if sf_flag == 1:
             return score, opt
         else:
             return score
 
-    def __prior_penalty__(self, parameter_dict):
+    def __prior_penalty__(self, parameter_dict={}):
+        if parameter_dict == {}: 
+            parameter_dict = self.model.parameters
         penalty = 0
         for parameter, value in parameter_dict.items():
             if parameter in self.parameters_to_fit:
@@ -549,7 +494,10 @@ def __score_mixed_models__(self, shared_parameters, mixed_parameters, data):
         return True
 
     def __autochoose_beta__(self):
-        self.beta = 1
+        MSE, sf = self.__MSE_of_parametric_model__()
+        priorCost = self.__prior_penalty__()
+        order_of_magnitude = 10 ** np.floor(np.log10(MSE/priorCost))
+        self.beta = order_of_magnitude
 
     def __generate_parameters_from_priors__(self, n):
         pList = []
@@ -558,8 +506,8 @@ def __score_mixed_models__(self, shared_parameters, mixed_parameters, data):
         return pList
 
     def __score_and_sf_for_current_model__(self):
-        MSE, sf = self.__MSE_of_parametric_model__(self.model.parameters, sf_flag=1)
-        return MSE / self.beta + self.__prior_penalty__(self.model.parameters), sf
+        MSE, sf = self.__MSE_of_parametric_model__(sf_flag=1)
+        return MSE / self.beta + self.__prior_penalty__(), sf
 
     def __run_chain__(self, ID, jobs, result, countQ):
         print("Chain {} started".format(ID))
@@ -570,7 +518,7 @@ def __score_mixed_models__(self, shared_parameters, mixed_parameters, data):
             initial_parameters = initial_parameters[0]
             self.model.set_parameters(initial_parameters)
             current_score, _ = self.__score_and_sf_for_current_model__()
-            current_parameters = copy.deepcopy(self.model.parameters)
+            current_parameters = initial_parameters
 
             progress_bar = self.num_samples / 10
 
@@ -599,7 +547,7 @@ def __score_mixed_models__(self, shared_parameters, mixed_parameters, data):
 
                 new_score, new_scale_factor = self.__score_and_sf_for_current_model__()
 
-                """
+                """ Note:
                 Asymmetry factor for lognormal jumping distributions with x* proposed and x the current value: 
                     C = PDF(LogNormal(log(x*),sigma), x)/PDF(LogNormal(log(x),sigma), x*)
                     C = x*/x
