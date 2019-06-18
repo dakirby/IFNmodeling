@@ -494,7 +494,7 @@ class MCMC:
         return True
 
     def __autochoose_beta__(self):
-        MSE, sf = self.__MSE_of_parametric_model__()
+        MSE = self.__MSE_of_parametric_model__()
         priorCost = self.__prior_penalty__()
         order_of_magnitude = 10 ** np.floor(np.log10(MSE/priorCost))
         self.beta = order_of_magnitude
