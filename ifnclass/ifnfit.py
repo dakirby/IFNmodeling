@@ -331,15 +331,19 @@ class Prior:
                 return 0
 
 
-def __unpackMCMC__(ID, jobs, result, countQ, build_model, model_parameters, temperature):
+def __unpackMCMC__(ID, jobs, result, countQ, build_model, build_data, model_parameters, temperature):
     """
     This function is used by the MCMC class but must be defined externally. 
     Should not be used by any other program.
     """
-    model_name, data_name, fit_parameters, priors, jump_distributions = build_model
-    model=IfnModel(model_name)
-    model.set_parameters(model_parameters)
-    data = IfnData(data_name)
+    model_name, fit_parameters, priors, jump_distributions = build_model
+    data_set, data_name, build_conditions = build_data
+    model = IfnModel(model_name)
+    model.parameters = model_parameters
+    if data_name is None:
+        data = IfnData(name='custom', df=data_set, conditions=build_conditions)
+    else:
+        data = IfnData(data_name)
     processMCMC = MCMC(model, data, fit_parameters, priors, jump_distributions)
     processMCMC.temperature = temperature
     processMCMC.__run_chain__(ID, jobs, result, countQ)
@@ -710,7 +714,8 @@ class MCMC:
         countQ = JoinableQueue()
         # Start up chains
         # Prepare instance for multiprocessing by pickling
-        build_model = [self.model.name, self.data.name, self.parameters_to_fit, self.priors, self.jump_distributions]
+        build_model = [self.model.name, self.parameters_to_fit, self.priors, self.jump_distributions]
+        build_data = [self.data.data_set, self.data.name, self.data.conditions]
         # Run chains
         if number_of_processes == 1:
             jobs.put([initial_parameters[0]])
@@ -723,7 +728,7 @@ class MCMC:
             # Add signals for each process that there are no more jobs
             for w in range(number_of_processes):
                 jobs.put(None)
-            [Process(target=__unpackMCMC__, args=(i, jobs, result, countQ, build_model,
+            [Process(target=__unpackMCMC__, args=(i, jobs, result, countQ, build_model, build_data,
                                                   self.model.parameters, self.temperature)).start()
              for i in range(number_of_processes)]
         # Pull in the results from each thread
