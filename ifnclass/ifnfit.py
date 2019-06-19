@@ -570,14 +570,15 @@ class MCMC:
                         self.best_fit_parameters = new_parameters
                         self.best_fit_scale_factor = new_scale_factor
                     # Add to chain
+                    new_parameters = {key: new_parameters[key] for key in self.parameters_to_fit}
                     self.parameter_history.append(new_parameters)
                     self.scale_factor_history.append(new_scale_factor)
                     self.score_history.append(new_score)
                     current_score = new_score
-                    current_parameters.update(new_parameters)
+                    current_parameters = new_parameters
                     acceptance += 1
                 else:
-                    self.model.set_parameters(current_parameters)
+                    self.model.set_parameters({key: current_parameters[key] for key in self.parameters_to_fit})
 
             # Save final state
             with open(os.path.join('mcmc_results','chain_results','{}chain.p'.format(str(ID))), 'wb') as f:
