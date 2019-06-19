@@ -761,10 +761,13 @@ class MCMC:
                 self.score_history += chain[2]
         # Perform burn-in and down sampling
         for chain in pool_results:
-            sample_pattern = range(int(burn_rate*len(chain)), len(chain), down_sample_frequency)
-            self.thinned_parameter_samples += [chain[0][i] for i in sample_pattern]
-            self.thinned_parameter_scale_factors += [chain[1][i] for i in sample_pattern]
-            self.thinned_parameter_scores += [chain[2][i] for i in sample_pattern]
+            try:
+                sample_pattern = range(int(burn_rate*len(chain)), len(chain), down_sample_frequency)
+                self.thinned_parameter_samples += [chain[0][i] for i in sample_pattern]
+                self.thinned_parameter_scale_factors += [chain[1][i] for i in sample_pattern]
+                self.thinned_parameter_scores += [chain[2][i] for i in sample_pattern]
+            except IndexError:
+                pass
         # Write summary file
         with open(os.path.join("mcmc_results","simulation_summary.txt"), 'w') as f:
             f.write('Temperature used was {}\n'.format(self.beta))
