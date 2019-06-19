@@ -43,12 +43,12 @@ if __name__ == '__main__':
     # Perform MCMC
     # -------------------------------
     jump_dists = {'kpa': 1, 'kSOCSon': 1, 'kd4': 0.5, 'k_d4': 0.5, 'R1': 0.5, 'R2': 0.5}
-    mixed_IFN_priors = {'kpa': Prior('lognormal', mean=2.36E-6, sigma=2),
-                        'kSOCSon': Prior('lognormal', mean=5E-08, sigma=2),
+    mixed_IFN_priors = {'kpa': Prior('lognormal', mean=np.log(2.36E-6), sigma=2),
+                        'kSOCSon': Prior('lognormal', mean=np.log(5E-08), sigma=2),
                         'R1': Prior('uniform', lower_bound=200, upper_bound=12000),
                         'R2': Prior('uniform', lower_bound=200, upper_bound=12000),
-                        'kd4': Prior('lognormal', mean=2.0, sigma=1.8),
-                        'k_d4': Prior('lognormal', mean=0.9, sigma=1.8)}
+                        'kd4': Prior('lognormal', mean=np.log(2.0), sigma=1.8),
+                        'k_d4': Prior('lognormal', mean=np.log(0.9), sigma=1.8)}
     mcmcFit = MCMC(Mixed_Model, mean_data, ['kpa', 'kSOCSon', 'R1', 'R2', 'kd4', 'k_d4'], mixed_IFN_priors, jump_dists)
     mcmcFit.temperature = 90
     #num_accepted_steps, num_chains, burn_rate: float, down_sample_frequency: int, 
