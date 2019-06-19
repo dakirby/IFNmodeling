@@ -677,7 +677,7 @@ class MCMC:
     def fit(self, num_accepted_steps: int, num_chains: int, burn_rate: float, down_sample_frequency: int, beta: float,
             cpu=None, initialise=True):
         # Check input parameters
-        self.__check_input__
+        self.__check_input__()
         print("Performing MCMC Analysis")
         # Create results directory
         if not os.path.isdir("mcmc_results"):
@@ -696,7 +696,7 @@ class MCMC:
         if initialise == True:
             initial_parameters = self.__generate_parameters_from_priors__(self.num_chains)
         else:
-            initial_parameters = [initialise for _ in range(self.num_chains)]
+            initial_parameters = [{key: self.model.parameters[key] for key in self.parameters_to_fit} for _ in range(self.num_chains)]
         # Sample using MCMC
         print("Sampling from posterior distribution")
         # Set up simulation processes
