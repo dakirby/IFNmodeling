@@ -533,7 +533,7 @@ class MCMC:
 
             acceptance = 0
             attempts = 0
-            while acceptance < self.num_samples:
+            while acceptance < self.num_samples / (1 - self.burn_in) * self.down_sample:
                 # Identify failed chains
                 if attempts > 2000 and acceptance == 0:
                     print("Chain {} failed to start".format(ID))
