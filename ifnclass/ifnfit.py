@@ -498,7 +498,12 @@ class MCMC:
         return True
 
     def __autochoose_beta__(self):
-        MSE = self.__MSE_of_parametric_model__()
+        MSE = 0
+        for i in range(50):
+            temp = self.__MSE_of_parametric_model__()
+            if not isinstance(temp, np.inf):
+                MSE = temp
+                break
         priorCost = self.__prior_penalty__()
         order_of_magnitude = 10 ** np.floor(np.log10(MSE/priorCost))
         self.beta = order_of_magnitude
