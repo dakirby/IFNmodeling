@@ -501,7 +501,7 @@ class MCMC:
         MSE = 0
         for i in range(50):
             temp = self.__MSE_of_parametric_model__()
-            if not isinstance(temp, np.inf):
+            if not temp == np.inf:
                 MSE = temp
                 break
         priorCost = self.__prior_penalty__()
