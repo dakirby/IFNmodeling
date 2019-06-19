@@ -529,7 +529,7 @@ class MCMC:
             current_score, _ = self.__score_and_sf_for_current_model__()
             current_parameters = initial_parameters
 
-            progress_bar = self.num_samples / 10
+            progress_bar = (self.num_samples / (1 - self.burn_in) * self.down_sample) / 10
 
             acceptance = 0
             attempts = 0
