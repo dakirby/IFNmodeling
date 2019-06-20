@@ -43,10 +43,6 @@ tspan = [2.5, 5.0, 7.5, 10.0, 20.0, 60.0]
 alpha_doses = [0, 10, 100, 300, 1000, 3000, 10000, 100000]
 beta_doses = [0, 0.2, 6, 20, 60, 200, 600, 2000]
 
-print(Mixed_Model.doseresponse(tspan, 'TotalpSTAT', 'Ia', alpha_doses,
-                               parameters={'Ib': 0}, scale_factor=sf, return_type='dataframe', dataframe_labels='Alpha'))
-exit()
-
 # Load experimental data to which model will be fit.
 # The "experimental data" is the TotalpSTAT trajectory for Alpha, then Beta, at each dose.
 # Standard deviations are kept separate but match the same order.
@@ -84,12 +80,12 @@ def likelihood(parameter_vector):
     #Simulate experimentally measured TotalpSTAT values.
     # Alpha
     dfa = Mixed_Model.doseresponse(tspan, 'TotalpSTAT', 'Ia', alpha_doses,
-                                          parameters={'Ib': 0}, scale_factor=sf)
+                               parameters={'Ib': 0}, scale_factor=sf, return_type='dataframe', dataframe_labels='Alpha')
     dfa = IfnData(name='custom', df=dfa, conditions={'Ib': 0})
     # Beta
     dfb = Mixed_Model.doseresponse(tspan, 'TotalpSTAT', 'Ib', beta_doses,
-                                          parameters={'Ib': 0}, scale_factor=sf)
-    dfb = IfnData(name='custom', df=dfb, conditions={'Ib': 0})
+                               parameters={'Ia': 0}, scale_factor=sf, return_type='dataframe', dataframe_labels='Beta')
+    dfb = IfnData(name='custom', df=dfb, conditions={'Ia': 0})
     # Concatenate and flatten
     total_simulation_data = IfnData(name='custom', df=pd.concat([dfa, dfb]))
     sim_data = np.concatenate((np.array([[el[0] for el in dose] for dose in total_simulation_data.data_set.values]).flatten(),
