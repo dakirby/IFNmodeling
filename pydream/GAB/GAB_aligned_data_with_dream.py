@@ -109,7 +109,7 @@ for key in pysb_sampled_parameter_names:
     priors_list.append(SampledParam(norm, loc=np.log10(Mixed_Model.parameters[key]), scale=2.0))
 
 # Set simulation parameters
-niterations = 1000
+niterations = 10000
 converged = False
 total_iterations = niterations
 nchains = 5
@@ -131,7 +131,7 @@ if __name__ == '__main__':
     np.savetxt(sim_name + str(total_iterations) + '.txt', GR)
 
     old_samples = sampled_params
-    if np.any(GR > 1.8):
+    if np.any(GR > 1.2):
         starts = [sampled_params[chain][-1, :] for chain in range(nchains)]
         while not converged:
             total_iterations += niterations
@@ -168,7 +168,7 @@ if __name__ == '__main__':
         for dim in range(ndims):
             fig = plt.figure()
             sns.distplot(samples[:, dim], color=colors[dim])
-            fig.savefig('PyDREAM_example_Robertson_dimension_' + str(dim))
+            fig.savefig(sim_name + '_dimension_' + str(dim) + '_' + pysb_sampled_parameter_names[dim]+ '.pdf')
 
     except ImportError:
         pass
