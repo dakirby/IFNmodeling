@@ -36,8 +36,8 @@ opt_params = {'R2': 4920, 'R1': 1200,
                 'krec_a1': 0.01, 'krec_a2': 0.01, 'krec_b1': 0.005, 'krec_b2': 0.05}
 Mixed_Model.set_parameters(opt_params)
 Mixed_Model.default_parameters.update(opt_params)
-scale_factor = 1.46182313424
-model = Mixed_Model.model
+sf = 1.46182313424
+#model = Mixed_Model.model
 
 tspan = [2.5, 5.0, 7.5, 10.0, 20.0, 60.0]
 alpha_doses = [0, 10, 100, 300, 1000, 3000, 10000, 100000]
@@ -79,13 +79,13 @@ def likelihood(parameter_vector):
 
     #Simulate experimentally measured TotalpSTAT values.
     # Alpha
-    dfa = Mixed_Model.mixed_dose_response(tspan, 'TotalpSTAT', 'Ia', alpha_doses,
-                                          parameters={'Ib': 0}, sf=scale_factor)
+    dfa = Mixed_Model.doseresponse(tspan, 'TotalpSTAT', 'Ia', alpha_doses,
+                               parameters={'Ib': 0}, scale_factor=sf, return_type='dataframe', dataframe_labels='Alpha')
     dfa = IfnData(name='custom', df=dfa, conditions={'Ib': 0})
     # Beta
-    dfb = Mixed_Model.mixed_dose_response(tspan, 'TotalpSTAT', 'Ib', beta_doses,
-                                          parameters={'Ib': 0}, sf=scale_factor)
-    dfb = IfnData(name='custom', df=dfb, conditions={'Ib': 0})
+    dfb = Mixed_Model.doseresponse(tspan, 'TotalpSTAT', 'Ib', beta_doses,
+                               parameters={'Ia': 0}, scale_factor=sf, return_type='dataframe', dataframe_labels='Beta')
+    dfb = IfnData(name='custom', df=dfb, conditions={'Ia': 0})
     # Concatenate and flatten
     total_simulation_data = IfnData(name='custom', df=pd.concat([dfa, dfb]))
     sim_data = np.concatenate((np.array([[el[0] for el in dose] for dose in total_simulation_data.data_set.values]).flatten(),
@@ -118,7 +118,7 @@ sim_name = 'mixed_IFN'
 
 if __name__ == '__main__':
     #Run DREAM sampling.  Documentation of DREAM options is in Dream.py.
-    sampled_params, log_ps = run_dream(pysb_sampled_parameter_names, likelihood, niterations=niterations, nchains=nchains, multitry=False, gamma_levels=4, adapt_gamma=True, history_thin=1, model_name=sim_name, verbose=True)
+    sampled_params, log_ps = run_dream(priors_list, likelihood, niterations=niterations, nchains=nchains, multitry=False, gamma_levels=4, adapt_gamma=True, history_thin=1, model_name=sim_name, verbose=True)
     
     #Save sampling output (sampled parameter values and their corresponding logps).
     for chain in range(len(sampled_params)):
@@ -137,7 +137,7 @@ if __name__ == '__main__':
         while not converged:
             total_iterations += niterations
 
-            sampled_params, log_ps = run_dream(pysb_sampled_parameter_names, likelihood, start=starts, niterations=niterations,
+            sampled_params, log_ps = run_dream(priors_list, likelihood, start=starts, niterations=niterations,
                                                nchains=nchains, multitry=False, gamma_levels=4, adapt_gamma=True,
                                                history_thin=1, model_name=sim_name, verbose=True, restart=True)
 
