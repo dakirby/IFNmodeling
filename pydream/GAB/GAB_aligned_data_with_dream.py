@@ -44,7 +44,7 @@ alpha_doses = [0, 10, 100, 300, 1000, 3000, 10000, 100000]
 beta_doses = [0, 0.2, 6, 20, 60, 200, 600, 2000]
 
 print(Mixed_Model.doseresponse(tspan, 'TotalpSTAT', 'Ia', alpha_doses,
-                                          parameters={'Ib': 0}, scale_factor=sf))
+                               parameters={'Ib': 0}, scale_factor=sf, return_type='dataframe', dataframe_labels='Alpha'))
 exit()
 
 # Load experimental data to which model will be fit.
