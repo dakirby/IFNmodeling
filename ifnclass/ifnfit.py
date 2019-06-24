@@ -549,7 +549,7 @@ class MCMC:
                     # Save state at checkpoint
                     with open(os.path.join('mcmc_results','chain_results','{}chain.p'.format(str(ID))), 'wb') as f:
                         pickle.dump(self.__dict__, f, 2)
-                    progress_bar += self.num_samples/10
+                    progress_bar += (self.num_samples / (1 - self.burn_in) * self.down_sample) / 10
 
                 new_parameters = self.__parameter_jump__()
                 self.model.set_parameters(new_parameters)
@@ -686,10 +686,10 @@ class MCMC:
         self.__check_input__()
         print("Performing MCMC Analysis")
         # Create results directory
-        if not os.path.isdir("mcmc_results"):
-            os.mkdir("mcmc_results")
-        if not os.path.isdir("mcmc_results\chain_results"):
-            os.mkdir("mcmc_results\chain_results")
+        if not os.path.isdir(os.path.join(os.getcwd(), "mcmc_results")):
+            os.mkdir(os.path.join(os.getcwd(), "mcmc_results"))
+        if not os.path.isdir(os.path.join(os.getcwd(), "mcmc_results","chain_results")):
+            os.mkdir(os.path.join(os.getcwd(), "mcmc_results","chain_results"))
         # Define simulation parameters for instance
         self.num_samples = num_accepted_steps
         self.num_chains = num_chains
