@@ -23,6 +23,9 @@ from pydream.convergence import Gelman_Rubin
 from ifnclass.ifndata import IfnData, DataAlignment
 from ifnclass.ifnmodel import IfnModel
 import pandas as pd
+import seaborn as sns
+from matplotlib import pyplot as plt
+
 
 #Initialize PySB model object for running simulations.  Simulation timespan should match experimental data.
 Mixed_Model = IfnModel('Mixed_IFN_ppCompatible')
@@ -153,12 +156,9 @@ if __name__ == '__main__':
 
             if np.all(GR < 1.2):
                 converged = True
-
+    
     try:
         # Plot output
-        import seaborn as sns
-        from matplotlib import pyplot as plt
-
         total_iterations = len(old_samples[0])
         burnin = int(total_iterations / 2)
         samples = np.concatenate((old_samples[0][burnin:, :], old_samples[1][burnin:, :], old_samples[2][burnin:, :],  old_samples[3][burnin:, :], old_samples[4][burnin:, :]))
@@ -170,8 +170,12 @@ if __name__ == '__main__':
             sns.distplot(samples[:, dim], color=colors[dim])
             fig.savefig(sim_name + '_dimension_' + str(dim) + '_' + pysb_sampled_parameter_names[dim]+ '.pdf')
 
+        # Convert to dataframe
+	df = pd.DataFrame(samples, columns=pysb_sampled_parameter_names)
+	g = sns.pairplot(df, )
+	for i, j in zip(*np.triu_indices_from(g.axes, 1)):
+	    g.axes[i,j].set_visible(False)
+	g.savefig('corner_plot.pdf')
+
     except ImportError:
         pass
-
-else:
-    run_kwargs = {'parameters':pysb_sampled_parameter_names, 'likelihood':likelihood, 'niterations':10000, 'nchains':nchains, 'multitry':False, 'gamma_levels':4, 'adapt_gamma':True, 'history_thin':1, 'model_name':sim_name, 'verbose':True}
