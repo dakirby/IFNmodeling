@@ -14,8 +14,12 @@ burnin = int(total_iterations / 2)
 
 ndims = len(samples)
 colors = sns.color_palette(n_colors=ndims)
+
+# Convert back to true value rather than log value
+converted_samples = np.power(np.multiply(np.ones(np.shape(samples)), 10), samples)
+
 # Convert to dataframe
-df = pd.DataFrame(samples, columns=['kpa', 'kSOCSon', 'kd4', 'k_d4', 'R1', 'R2'])
+df = pd.DataFrame(converted_samples, columns=['kpa', 'kSOCSon', 'kd4', 'k_d4', 'R1', 'R2'])
 g = sns.pairplot(df, )
 for i, j in zip(*np.triu_indices_from(g.axes, 1)):
     g.axes[i,j].set_visible(False)

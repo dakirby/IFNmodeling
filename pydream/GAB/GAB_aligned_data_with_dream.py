@@ -109,7 +109,7 @@ def likelihood(parameter_vector):
 original_params = np.log10([Mixed_Model.parameters[param] for param in pysb_sampled_parameter_names])
 priors_list = []
 for key in pysb_sampled_parameter_names:
-    priors_list.append(SampledParam(norm, loc=np.log10(Mixed_Model.parameters[key]), scale=2.0))
+    priors_list.append(SampledParam(norm, loc=np.log10(Mixed_Model.parameters[key]), scale=1.0))
 
 # Set simulation parameters
 niterations = 10000
@@ -162,7 +162,7 @@ if __name__ == '__main__':
         total_iterations = len(old_samples[0])
         burnin = int(total_iterations / 2)
         samples = np.concatenate((old_samples[0][burnin:, :], old_samples[1][burnin:, :], old_samples[2][burnin:, :],  old_samples[3][burnin:, :], old_samples[4][burnin:, :]))
-
+        np.save(sim_name+'_samples', samples)
         ndims = len(old_samples[0][0])
         colors = sns.color_palette(n_colors=ndims)
         for dim in range(ndims):
@@ -170,12 +170,14 @@ if __name__ == '__main__':
             sns.distplot(samples[:, dim], color=colors[dim])
             fig.savefig(sim_name + '_dimension_' + str(dim) + '_' + pysb_sampled_parameter_names[dim]+ '.pdf')
 
+        # Convert back to true value rather than log value
+        # converted_samples = np.power(np.multiply(np.ones(np.shape(samples)), 10), samples)
         # Convert to dataframe
-	df = pd.DataFrame(samples, columns=pysb_sampled_parameter_names)
-	g = sns.pairplot(df, )
-	for i, j in zip(*np.triu_indices_from(g.axes, 1)):
-	    g.axes[i,j].set_visible(False)
-	g.savefig('corner_plot.pdf')
+        df = pd.DataFrame(samples, columns=pysb_sampled_parameter_names)
+        g = sns.pairplot(df)
+        for i, j in zip(*np.triu_indices_from(g.axes, 1)):
+            g.axes[i,j].set_visible(False)
+        g.savefig('corner_plot.pdf')
 
     except ImportError:
         pass
