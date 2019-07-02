@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 from scipy.optimize import curve_fit
+from ifnclass.ifnplot import DoseresponsePlot
 
 
 if __name__ == '__main__':
@@ -54,7 +55,7 @@ if __name__ == '__main__':
                                                                          parameters={'Ia': 0}, sf=scale_factor).values]
 
         # Now compute the 20* refractory response
-        k4sf1 = 5
+        k4sf1 = 20
         kd4_reference = Mixed_Model.model_1.parameters['kd4']
         kd3_reference = Mixed_Model.model_1.parameters['kd3']
         k_d4_reference = Mixed_Model.model_1.parameters['k_d4']
@@ -67,7 +68,7 @@ if __name__ == '__main__':
         dr_curve_b20 = [el[0][0] for el in Mixed_Model.mixed_dose_response([60], 'TotalpSTAT', 'Ib', dose_list,
                                                                          parameters={'Ia': 0}, sf=scale_factor).values]
         # Now compute the 60* refractory response
-        k4sf2 = 10
+        k4sf2 = 60
         Mixed_Model.set_global_parameters({'kd4': kd4_reference*k4sf2, 'k_d4': k_d4_reference*k4sf2,
                                            'kd3': kd3_reference * k4sf2, 'k_d3': k_d3_reference * k4sf2})
 
@@ -83,18 +84,34 @@ if __name__ == '__main__':
         axes.set_title("Relative Refractory Response", fontsize=16)
         axes.set_ylabel("pSTAT1 Relative to Primary Response", fontsize=14)
         axes.set(xscale='log', yscale='linear')
-        axes.plot(dose_list, np.divide(dr_curve_a20, dr_curve_a),
-                     label=r'IFN$\alpha$ $K_{D4}\times$'+'{}'.format(k4sf1), color=alpha_palette[4], linewidth=2)
-        axes.plot(dose_list, np.divide(dr_curve_a60, dr_curve_a),
-                     label=r'IFN$\alpha$ $K_{D4}\times$'+'{}'.format(k4sf2), color=alpha_palette[4], linestyle='dashed', linewidth=2)
-        axes.plot(dose_list, np.divide(dr_curve_b20, dr_curve_b),
-                     label=r'IFN$\beta$ $K_{D4}\times$'+'{}'.format(k4sf1), color=beta_palette[4], linewidth=2)
-        axes.plot(dose_list, np.divide(dr_curve_b60, dr_curve_b),
-                     label=r'IFN$\beta$ $K_{D4}\times$'+'{}'.format(k4sf2), color=beta_palette[4], linestyle='dashed', linewidth=2)
+        #axes.plot(dose_list, np.divide(dr_curve_a20, dr_curve_a), label=r'IFN$\alpha$ $K_{D4}\times$'+'{}'.format(k4sf1), color=alpha_palette[4], linewidth=2)
+        axes.plot(dose_list, np.divide(dr_curve_a60, dr_curve_a), label=r'IFN$\alpha$ $K_{D4}\times$'+'{}'.format(k4sf2), color=alpha_palette[4], linestyle='-', linewidth=2)
+        #axes.plot(dose_list, np.divide(dr_curve_b20, dr_curve_b), label=r'IFN$\beta$ $K_{D4}\times$'+'{}'.format(k4sf1), color=beta_palette[4], linewidth=2)
+        axes.plot(dose_list, np.divide(dr_curve_b60, dr_curve_b), label=r'IFN$\beta$ $K_{D4}\times$'+'{}'.format(k4sf2), color=beta_palette[4], linestyle='-', linewidth=2)
 
         axes.legend(loc=2, prop={'size': 8})
         fig.set_size_inches(8, 8)
         fig.savefig(os.path.join(os.getcwd(), 'results', 'Figures', 'Figure_4', 'Figure_4_Refractoriness_By_K4.pdf'))
+
+        # Also plot absolute curves
+        fig, axes = plt.subplots(nrows=1, ncols=1)
+        fig.set_size_inches(16, 8)
+        axes.set_xlabel("Dose (pM)", fontsize=14)
+        axes.set_title("Absolute Refractory Response", fontsize=16)
+        axes.set_ylabel("pSTAT1", fontsize=14)
+        axes.set(xscale='log', yscale='linear')
+
+        #axes.plot(dose_list, dr_curve_a20, label=r'IFN$\alpha$ $K_{D4}\times$' + '{}'.format(k4sf1), color=alpha_palette[4], linewidth=2)
+        axes.plot(dose_list, dr_curve_a, label=r'IFN$\alpha$', color=alpha_palette[2], linewidth=2)
+        axes.plot(dose_list, dr_curve_a60, label=r'IFN$\alpha$ $K_{D4}\times$' + '{}'.format(k4sf2), color=alpha_palette[5], linestyle='dashed', linewidth=2)
+
+        #axes.plot(dose_list, dr_curve_b20, label=r'IFN$\beta$ $K_{D4}\times$' + '{}'.format(k4sf1), color=beta_palette[4], linewidth=2)
+        axes.plot(dose_list, dr_curve_b, label=r'IFN$\beta$', color=beta_palette[2], linewidth=2)
+        axes.plot(dose_list, dr_curve_b60, label=r'IFN$\beta$ $K_{D4}\times$' + '{}'.format(k4sf2), color=beta_palette[5], linestyle='dashed', linewidth=2)
+
+        axes.legend(loc=2, prop={'size': 8})
+        fig.set_size_inches(8, 8)
+        fig.savefig(os.path.join(os.getcwd(), 'results', 'Figures', 'Figure_4', 'Figure_4_Refractoriness_By_K4_Absolute.pdf'))
 
     # ---------------------------------------------------
     # Now make the figure where we explicitly model USP18
@@ -102,7 +119,35 @@ if __name__ == '__main__':
     def explicit_UPS18_figure():
         alpha_palette = sns.color_palette("Reds", 6)
         beta_palette = sns.color_palette("Greens", 6)
+        # --------------------
+        # Set up Model
+        # --------------------
+        fraction_USP18_occupied = 0.2
+        dose_list = list(logspace(-2, 5, num=46))
 
+        # Parameters found by stepwise fitting GAB mean data
+        initial_parameters = {'k_a1': 4.98E-14 * 2, 'k_a2': 8.30e-13 * 2, 'k_d4': 0.006 * 3.8,
+                              'kpu': 0.00095,
+                              'ka2': 4.98e-13 * 2.45, 'kd4': 0.3 * 2.867,
+                              'kint_a': 0.000124, 'kint_b': 0.00086,
+                              'krec_a1': 0.0028, 'krec_a2': 0.01, 'krec_b1': 0.005, 'krec_b2': 0.05}
+        dual_parameters = {'kint_a': 0.00052, 'kSOCSon': 6e-07, 'kint_b': 0.00052, 'krec_a1': 0.001, 'krec_a2': 0.1,
+                           'krec_b1': 0.005, 'krec_b2': 0.05}
+        scale_factor = 1.227
+
+        USP18_Model = DualMixedPopulation('Mixed_IFN_explicitUSP18', 0.8, 0.2)
+        USP18_Model.model_1.set_parameters(initial_parameters)
+        USP18_Model.model_1.set_parameters(dual_parameters)
+        USP18_Model.model_1.set_parameters({'R1': 12000.0, 'R2_0': 1511.1 * (1 - fraction_USP18_occupied), 'R2USP18_0': 1511.1 * fraction_USP18_occupied})
+        USP18_Model.model_2.set_parameters(initial_parameters)
+        USP18_Model.model_2.set_parameters(dual_parameters)
+        USP18_Model.model_2.set_parameters({'R1': 6755.56, 'R2_0': 1511.1 * (1 - fraction_USP18_occupied), 'R2USP18_0': 1511.1 * fraction_USP18_occupied})
+
+        # Prepare model for reset
+        USP18_Model.model_1.default_parameters = USP18_Model.model_1.parameters
+        USP18_Model.model_2.default_parameters = USP18_Model.model_2.parameters
+
+        """
         fraction_USP18_occupied = 0.6
         dose_list = list(logspace(-2, 5, num=46))
         USP18_parameters = {'R2_0': 2300 * 2.5 * (1 - fraction_USP18_occupied),
@@ -118,6 +163,7 @@ if __name__ == '__main__':
         USP18_Model = DualMixedPopulation('Mixed_IFN_explicitUSP18', 1.0, 0.0)
         USP18_Model.model_1.set_parameters(USP18_parameters)
         USP18_Model.model_2.set_parameters(USP18_parameters)
+        """
 
         # Refractory
         dr_curve_a_refrac = [el[0][0] for el in USP18_Model.mixed_dose_response([60], 'TotalpSTAT', 'Ia', dose_list,
@@ -184,69 +230,43 @@ if __name__ == '__main__':
         Mixed_Model.model_2.set_parameters(dual_parameters)
         Mixed_Model.model_2.set_parameters({'R1': 6755.56, 'R2': 1511.1})
 
-        dose_list = list(logspace(-2, 8, num=35))
+        # Prepare model for reset
+        Mixed_Model.model_1.default_parameters = Mixed_Model.model_1.parameters
+        Mixed_Model.model_2.default_parameters = Mixed_Model.model_2.parameters
+
 
         # Fold changes to test over
         fold_changes = list(np.logspace(-2, 2))
 
-        def MM(xdata, top, k):
-            ydata = [top * x / (k + x) for x in xdata]
-            return ydata
-
-        def fit_MM(doses, responses, guesses):
-            top = guesses[0]
-            K = guesses[1]
-            results, covariance = curve_fit(MM, doses, responses, p0=[top, K])
-            top = results[0]
-            K = results[1]
-            if K > 4E3:
-                top = max(responses) * 0.5
-                for i, r in enumerate(responses):
-                    if r > top:
-                        K = 10 ** ((np.log10(doses[i - 1]) + np.log10(doses[i])) / 2.0)
-                        break
-            return top, K
-
         def curve_builder(fold_change):
-            def get_ec50(times, dose_species, response_species, custom_parameters, rflag, sf=1.0):
-                if type(times) == int or type(times) == float:
-                    times = [times]
-                dr_curve = Mixed_Model.mixed_dose_response(times, response_species, dose_species, list(logspace(-3, 5)),
-                                                           parameters=custom_parameters, sf=sf)
-
-                top_list = []
-                K_list = []
-                if dose_species == 'Ia':
-                    dose_species = 'Alpha'
-                else:
-                    dose_species = 'Beta'
-                for t in times:
-                    tslice = [el[0] for el in dr_curve.loc[dose_species, str(t)].values]
-                    top, K = fit_MM(list(logspace(-3, 5)), tslice, [max(tslice), 1000])
-                    top_list.append(top)
-                    K_list.append(K)
-                if rflag:
-                    return top_list, K_list
-                else:
-                    return K_list
-
             time_list = list(linspace(2.5, 60.0, num=15))
-            # Prepare model for reset
-            Mixed_Model.model_1.default_parameters = Mixed_Model.model_1.parameters
-            Mixed_Model.model_2.default_parameters = Mixed_Model.model_2.parameters
+            dose_list = list(logspace(-2, 8, num=35))
 
-            Mixed_Model.set_global_parameters({'ka3': Mixed_Model.model_1.parameters['ka3'] / fold_change,
-                                               'ka4': Mixed_Model.model_1.parameters['ka4'] / fold_change,
-                                               'k_a3': Mixed_Model.model_1.parameters['k_a3'] / fold_change,
-                                               'k_a4': Mixed_Model.model_1.parameters['k_a4'] / fold_change})
+            fold_change_param_dict = {'kd3': Mixed_Model.model_1.parameters['kd3'] * fold_change,
+                                               'kd4': Mixed_Model.model_1.parameters['kd4'] * fold_change,
+                                               'k_d3': Mixed_Model.model_1.parameters['k_d3'] * fold_change,
+                                               'k_d4': Mixed_Model.model_1.parameters['k_d4'] * fold_change}
 
-            alpha_peak_aggregate, alpha_ec_aggregate = get_ec50(time_list, 'Ia', 'TotalpSTAT', dict({'Ib': 0}), True, sf=scale_factor)
-            beta_peak_aggregate, beta_ec_aggregate = get_ec50(time_list, 'Ib', 'TotalpSTAT', dict({'Ia': 0}), True, sf=scale_factor)
-            # alpha_peak_aggregate = np.multiply(alpha_peak_aggregate, scale_factor)
-            # beta_peak_aggregate = np.multiply(beta_peak_aggregate, scale_factor)
+            temp1 = Mixed_Model.mixed_dose_response(time_list, 'TotalpSTAT', 'Ia', dose_list,
+                                                             parameters=dict({'Ib': 0}, **fold_change_param_dict),
+                                                             sf=scale_factor)
+            alpha_response = IfnData(name='custom', df=temp1)
+            temp2 = Mixed_Model.mixed_dose_response(time_list, 'TotalpSTAT', 'Ib', dose_list,
+                                                             parameters=dict({'Ia': 0}, **fold_change_param_dict),
+                                                             sf=scale_factor)
+            beta_response = IfnData(name='custom', df=temp2)
             Mixed_Model.reset_global_parameters()
+            alpha_ec50 = alpha_response.get_ec50s()['Cytokine'][-1][1]
+            beta_ec50 = beta_response.get_ec50s()['Cytokine'][-1][1]
 
-            return alpha_ec_aggregate[-1], beta_ec_aggregate[-1]
+            """ 
+            # For debugging purposes only
+            fig = DoseresponsePlot((1,1))
+            fig.add_trajectory(alpha_response, 60.0, 'plot', '-', (1,1), 'Cytokine', label='Alpha')
+            fig.add_trajectory(beta_response, 60.0, 'plot', '-', (1,1), 'Cytokine', label='Beta')
+            fig.show_figure()
+            """
+            return alpha_ec50, beta_ec50
 
         alpha_curve = []
         beta_curve = []
