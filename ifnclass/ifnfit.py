@@ -157,6 +157,18 @@ class DualMixedPopulation:
         self.w1 = pop1_weight
         self.w2 = pop2_weight
 
+    def set_global_parameters(self, param_dict):
+        self.model_1.set_parameters(param_dict)
+        self.model_2.set_parameters(param_dict)
+
+    def reset_global_parameters(self):
+        """
+        This method is not safe for maintaining detailed balance (ie. no D.B. check)
+        :return: None
+        """
+        self.model_1.reset_parameters()
+        self.model_2.reset_parameters()
+
     def mixed_dose_response(self, times, observable, dose_species, doses, parameters={}, sf=1):
         response_1 = self.model_1.doseresponse(times, observable, dose_species, doses, parameters=parameters)[observable]
         response_2 = self.model_1.doseresponse(times, observable, dose_species, doses, parameters=parameters)[observable]
