@@ -303,20 +303,11 @@
       <file leaf-file-name="figure_4.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/ifnscripts/figure_4.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="221">
-              <caret line="89" column="66" selection-start-line="89" selection-start-column="66" selection-end-line="89" selection-end-column="66" />
+            <state relative-caret-position="288">
+              <caret line="89" column="158" selection-start-line="89" selection-start-column="158" selection-end-line="89" selection-end-column="158" />
               <folding>
                 <element signature="e#0#38#0" expanded="true" />
               </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="ifnfit.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/ifnclass/ifnfit.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="289">
-              <caret line="173" column="108" selection-start-line="173" selection-start-column="98" selection-end-line="173" selection-end-column="108" />
             </state>
           </provider>
         </entry>
@@ -440,7 +431,6 @@
         <option value="$PROJECT_DIR$/ifnscripts/fit-12-12-2018.py" />
         <option value="$PROJECT_DIR$/ifnscripts/subpopulations_analysis.py" />
         <option value="$PROJECT_DIR$/ifnmodels/Mixed_IFN_explicitUSP18.py" />
-        <option value="$PROJECT_DIR$/ifnscripts/figure_S4.py" />
         <option value="$PROJECT_DIR$/ifnscripts/figure_S3.py" />
         <option value="$PROJECT_DIR$/ifnscripts/cell_size.py" />
         <option value="$PROJECT_DIR$/ifnscripts/refractoriness_figure.py" />
@@ -452,6 +442,7 @@
         <option value="$PROJECT_DIR$/ifnclass/ifnmodel.py" />
         <option value="$PROJECT_DIR$/pydream/GAB/GAB_aligned_data_with_dream.py" />
         <option value="$PROJECT_DIR$/ifnclass/ifnfit.py" />
+        <option value="$PROJECT_DIR$/ifnscripts/figure_S4.py" />
         <option value="$PROJECT_DIR$/ifnscripts/figure_4.py" />
       </list>
     </option>
@@ -683,14 +674,13 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-7" y="-7" width="1550" height="838" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.14453125" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.23307292" side_tool="true" visible="true" weight="0.32965517" />
       <window_info anchor="bottom" id="Version Control" order="9" />
       <window_info anchor="bottom" id="Python Console" order="7" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.76692706" visible="true" weight="0.32965517" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.76692706" weight="0.32965517" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="bottom" id="Terminal" order="8" />
       <window_info id="Favorites" order="2" side_tool="true" />
@@ -955,13 +945,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ifnscripts/figure_S4.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-242">
-          <caret line="39" column="28" selection-start-line="39" selection-start-column="28" selection-end-line="39" selection-end-column="28" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/ifnscripts/figure_5.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="580">
@@ -1014,13 +997,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ifnscripts/figure_2.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="30">
-          <caret line="31" column="26" lean-forward="true" selection-start-line="31" selection-start-column="26" selection-end-line="31" selection-end-column="26" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/ifnclass/ifnmodel.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="427">
@@ -1035,17 +1011,31 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/ifnscripts/figure_S4.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="302">
+          <caret line="107" column="89" selection-start-line="107" selection-start-column="89" selection-end-line="107" selection-end-column="89" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnscripts/figure_2.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="119">
+          <caret line="35" column="33" selection-start-line="35" selection-start-column="33" selection-end-line="35" selection-end-column="33" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/ifnclass/ifnfit.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="289">
+        <state relative-caret-position="-17">
           <caret line="173" column="108" selection-start-line="173" selection-start-column="98" selection-end-line="173" selection-end-column="108" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/ifnscripts/figure_4.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="221">
-          <caret line="89" column="66" selection-start-line="89" selection-start-column="66" selection-end-line="89" selection-end-column="66" />
+        <state relative-caret-position="288">
+          <caret line="89" column="158" selection-start-line="89" selection-start-column="158" selection-end-line="89" selection-end-column="158" />
           <folding>
             <element signature="e#0#38#0" expanded="true" />
           </folding>
