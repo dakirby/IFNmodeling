@@ -176,9 +176,9 @@ class DualMixedPopulation:
         weighted_sum_response = np.add(np.multiply(response_1, self.w1), np.multiply(response_2, self.w2))
         if sf != 1:
             weighted_sum_response = [[el*sf for el in row] for row in weighted_sum_response]
-        if parameters == {'Ib': 0}:
+        if dose_species == 'Ia':
             labelled_data = [['Alpha', doses[row], *[(el, nan) for el in weighted_sum_response[row]]] for row in range(0, len(weighted_sum_response))]
-        elif parameters == {'Ia': 0}:
+        elif dose_species == 'Ib':
             labelled_data = [['Beta', doses[row], *[(el, nan) for el in weighted_sum_response[row]]] for row in range(0, len(weighted_sum_response))]
         else:
             labelled_data = [['Cytokine', doses[row], *[(el, nan) for el in weighted_sum_response[row]]] for row in range(0, len(weighted_sum_response))]
