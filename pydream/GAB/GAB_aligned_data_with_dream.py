@@ -40,7 +40,6 @@ opt_params = {'R2': 4920, 'R1': 1200,
 Mixed_Model.set_parameters(opt_params)
 Mixed_Model.default_parameters.update(opt_params)
 sf = 1.46182313424
-#model = Mixed_Model.model
 
 tspan = [2.5, 5.0, 7.5, 10.0, 20.0, 60.0]
 alpha_doses = [10, 100, 300, 1000, 3000, 10000, 100000]
