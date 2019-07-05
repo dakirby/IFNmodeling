@@ -78,6 +78,7 @@ def likelihood(parameter_vector):
     # Change model parameter values to current location in parameter space (values are in log(value) format)
 
     param_dict = {pname: 10 ** pvalue for pname, pvalue in zip(pysb_sampled_parameter_names, parameter_vector)}
+    
     Mixed_Model.set_parameters(param_dict)
 
     #Simulate experimentally measured TotalpSTAT values.
@@ -107,6 +108,7 @@ def likelihood(parameter_vector):
 # Add vector of PySB rate parameters to be sampled as unobserved random variables to DREAM with log normal priors.
   
 original_params = np.log10([Mixed_Model.parameters[param] for param in pysb_sampled_parameter_names])
+
 priors_list = []
 for key in pysb_sampled_parameter_names:
     priors_list.append(SampledParam(norm, loc=np.log10(Mixed_Model.parameters[key]), scale=1.0))
@@ -119,19 +121,25 @@ nchains = 5
 sim_name = 'mixed_IFN'
 
 if __name__ == '__main__':
+
+    # Make save directory
+    save_dir = 'PyDREAM_27-06-2019_10000'
+    os.makedirs(os.path.join(os.getcwd(), save_dir), exist_ok=True)
+
     #Run DREAM sampling.  Documentation of DREAM options is in Dream.py.
-    sampled_params, log_ps = run_dream(priors_list, likelihood, niterations=niterations, nchains=nchains, multitry=False, gamma_levels=4, adapt_gamma=True, history_thin=1, model_name=sim_name, verbose=True)
+    sampled_params, log_ps = run_dream(priors_list, likelihood, niterations=niterations, nchains=nchains, multitry=False,
+                                       gamma_levels=4, adapt_gamma=True, history_thin=1, model_name=sim_name, verbose=True)
     
     #Save sampling output (sampled parameter values and their corresponding logps).
     for chain in range(len(sampled_params)):
-        np.save(sim_name+str(chain) + '_' + str(total_iterations), sampled_params[chain])
-        np.save(sim_name+str(chain) + '_' + str(total_iterations), log_ps[chain])
+        np.save(os.path.join(save_dir, sim_name+str(chain) + '_' + str(total_iterations)), sampled_params[chain])
+        np.save(os.path.join(save_dir, sim_name+str(chain) + '_' + str(total_iterations)), log_ps[chain])
 
     # Check convergence and continue sampling if not converged
 
     GR = Gelman_Rubin(sampled_params)
     print('At iteration: ', total_iterations, ' GR = ', GR)
-    np.savetxt(sim_name + str(total_iterations) + '.txt', GR)
+    np.savetxt(os.path.join(save_dir, sim_name + str(total_iterations) + '.txt'), GR)
 
     old_samples = sampled_params
     if np.any(GR > 1.2):
@@ -144,15 +152,15 @@ if __name__ == '__main__':
                                                history_thin=1, model_name=sim_name, verbose=True, restart=True)
 
             for chain in range(len(sampled_params)):
-                np.save(sim_name + '_' + str(chain) + '_' + str(total_iterations),
+                np.save(os.path.join(save_dir, sim_name + '_' + str(chain) + '_' + str(total_iterations)),
                             sampled_params[chain])
-                np.save(sim_name + '_' + str(chain) + '_' + str(total_iterations),
+                np.save(os.path.join(save_dir, sim_name + '_' + str(chain) + '_' + str(total_iterations)),
                             log_ps[chain])
 
             old_samples = [np.concatenate((old_samples[chain], sampled_params[chain])) for chain in range(nchains)]
             GR = Gelman_Rubin(old_samples)
             print('At iteration: ', total_iterations, ' GR = ', GR)
-            np.savetxt(sim_name + '_' + str(total_iterations)+'.txt', GR)
+            np.savetxt(os.path.join(save_dir, sim_name + '_' + str(total_iterations)+'.txt'), GR)
 
             if np.all(GR < 1.2):
                 converged = True
@@ -161,14 +169,14 @@ if __name__ == '__main__':
         # Plot output
         total_iterations = len(old_samples[0])
         burnin = int(total_iterations / 2)
-        samples = np.concatenate((old_samples[0][burnin:, :], old_samples[1][burnin:, :], old_samples[2][burnin:, :],  old_samples[3][burnin:, :], old_samples[4][burnin:, :]))
-        np.save(sim_name+'_samples', samples)
+        samples = np.concatenate(list((old_samples[i][burnin:, :] for i in range(len(old_samples)))))
+        np.save(os.path.join(save_dir, sim_name+'_samples'), samples)
         ndims = len(old_samples[0][0])
         colors = sns.color_palette(n_colors=ndims)
         for dim in range(ndims):
             fig = plt.figure()
             sns.distplot(samples[:, dim], color=colors[dim])
-            fig.savefig(sim_name + '_dimension_' + str(dim) + '_' + pysb_sampled_parameter_names[dim]+ '.pdf')
+            fig.savefig(os.path.join(save_dir, sim_name + '_dimension_' + str(dim) + '_' + pysb_sampled_parameter_names[dim]+ '.pdf'))
 
         # Convert back to true value rather than log value
         # converted_samples = np.power(np.multiply(np.ones(np.shape(samples)), 10), samples)
@@ -177,7 +185,14 @@ if __name__ == '__main__':
         g = sns.pairplot(df)
         for i, j in zip(*np.triu_indices_from(g.axes, 1)):
             g.axes[i,j].set_visible(False)
-        g.savefig('corner_plot.pdf')
+        g.savefig(os.path.join(save_dir, 'corner_plot.pdf'))
+
+        # Basic statistics
+        mean_parameters = np.mean(samples, axis=0)
+        median_parameters = np.median(samples, axis=0)
+        np.save(os.path.join(save_dir, 'mean_parameters'), mean_parameters)
+        np.save(os.path.join(save_dir, 'median_parameters'), median_parameters)
+        df.describe().to_csv(os.path.join(save_dir, 'descriptive_statistics.csv'))
 
     except ImportError:
         pass
