@@ -408,7 +408,10 @@ class IfnModel:
             if scale_factor == 1:
                 return dose_response_table
             else:
-                return multiply(scale_factor, asarray(dose_response_table)).tolist()
+                if type(observable) == list:
+                    return [multiply(scale_factor, asarray(dose_response_table[obs])).tolist() for obs in observable]
+                else:
+                    return multiply(scale_factor, asarray(dose_response_table[observable])).tolist()
         elif return_type == 'dataframe':
             if type(observable) != list:
                 if dataframe_labels is None:

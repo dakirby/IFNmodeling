@@ -263,6 +263,11 @@
       <change beforePath="$PROJECT_DIR$/mcmc_2.py" beforeDir="false" afterPath="$PROJECT_DIR$/mcmc_2.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mixed_IFN_nonlinearity.py" beforeDir="false" afterPath="$PROJECT_DIR$/mixed_IFN_nonlinearity.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/posterior_samples.csv" beforeDir="false" afterPath="$PROJECT_DIR$/posterior_samples.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pydream/GAB/GAB_aligned_data_with_dream.py" beforeDir="false" afterPath="$PROJECT_DIR$/pydream/GAB/GAB_aligned_data_with_dream.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pydream/GAB/ifnclass" beforeDir="false" afterPath="$PROJECT_DIR$/pydream/GAB/ifnclass" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pydream/GAB/ifndatabase" beforeDir="false" afterPath="$PROJECT_DIR$/pydream/GAB/ifndatabase" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pydream/GAB/ifnmodels" beforeDir="false" afterPath="$PROJECT_DIR$/pydream/GAB/ifnmodels" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pydream/example_sample_robertson_with_dream.py" beforeDir="false" afterPath="$PROJECT_DIR$/pydream/example_sample_robertson_with_dream.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pysb_parallel.py" beforeDir="false" afterPath="$PROJECT_DIR$/pysb_parallel.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pysb_parallel_testing.py" beforeDir="false" afterPath="$PROJECT_DIR$/pysb_parallel_testing.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pysbplotlib.py" beforeDir="false" afterPath="$PROJECT_DIR$/pysbplotlib.py" afterDir="false" />
@@ -283,11 +288,26 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="ifnfit.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/ifnclass/ifnfit.py">
+      <file leaf-file-name="GAB_aligned_data_with_dream.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/pydream/GAB/GAB_aligned_data_with_dream.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="404">
-              <caret line="807" lean-forward="true" selection-start-line="807" selection-end-line="807" />
+            <state relative-caret-position="326">
+              <caret line="94" selection-start-line="94" selection-end-line="94" />
+              <folding>
+                <element signature="e#183#217#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="figure_4.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/ifnscripts/figure_4.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="288">
+              <caret line="89" column="158" selection-start-line="89" selection-start-column="158" selection-end-line="89" selection-end-column="158" />
+              <folding>
+                <element signature="e#0#38#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -303,14 +323,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>legend</find>
-      <find>size</find>
-      <find>MM(</find>
-      <find>get_ec50</find>
-      <find>drop</find>
-      <find>Small</find>
-      <find>sort</find>
-      <find>Bcell_df.set_index(['Dose_Species', 'Dose (pM)'], inplace=True)</find>
       <find>Conditions</find>
       <find>alpha</find>
       <find>A</find>
@@ -333,6 +345,14 @@
       <find>scale_factor</find>
       <find>dra60</find>
       <find>__unpackMCMC__</find>
+      <find>temperature</find>
+      <find>__run</find>
+      <find>__autoc</find>
+      <find>while</find>
+      <find>inspect</find>
+      <find>get_ec50</find>
+      <find>run_dream</find>
+      <find>doseresponse</find>
     </findStrings>
     <replaceStrings>
       <replace>data_plot_tc</replace>
@@ -354,7 +374,6 @@
       <replace>__mixed_dose_response__</replace>
       <replace>__score_target__</replace>
       <replace>__score_mixed_models__</replace>
-      <replace>mixed_dose_response</replace>
       <replace>axes</replace>
       <replace>Large</replace>
       <replace>beta</replace>
@@ -365,6 +384,7 @@
       <replace>k_d</replace>
       <replace>k_a</replace>
       <replace>detailed_balance_keys_beta</replace>
+      <replace>mixed_dose_response</replace>
     </replaceStrings>
   </component>
   <component name="Git.Settings">
@@ -373,7 +393,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/ifnmodels/Mixed_IFN_detailed.py" />
         <option value="$PROJECT_DIR$/testplots.py" />
         <option value="$PROJECT_DIR$/ifnscripts/fit-27-01-2019.py" />
         <option value="$PROJECT_DIR$/ifnscripts/fit-20190121_pSTAT1_IFN.py" />
@@ -412,18 +431,19 @@
         <option value="$PROJECT_DIR$/ifnscripts/fit-12-12-2018.py" />
         <option value="$PROJECT_DIR$/ifnscripts/subpopulations_analysis.py" />
         <option value="$PROJECT_DIR$/ifnmodels/Mixed_IFN_explicitUSP18.py" />
-        <option value="$PROJECT_DIR$/ifnscripts/figure_S4.py" />
         <option value="$PROJECT_DIR$/ifnscripts/figure_S3.py" />
         <option value="$PROJECT_DIR$/ifnscripts/cell_size.py" />
         <option value="$PROJECT_DIR$/ifnscripts/refractoriness_figure.py" />
         <option value="$PROJECT_DIR$/ifnclass/ifndata.py" />
         <option value="$PROJECT_DIR$/ifnscripts/plot_fsc.py" />
         <option value="$PROJECT_DIR$/ifnscripts/plot_fsc_window.py" />
-        <option value="$PROJECT_DIR$/ifnclass/ifnmodel.py" />
         <option value="$PROJECT_DIR$/ifnscripts/figure_3.py" />
-        <option value="$PROJECT_DIR$/ifnscripts/figure_4.py" />
         <option value="$PROJECT_DIR$/ifnscripts/figure_2.py" />
+        <option value="$PROJECT_DIR$/ifnclass/ifnmodel.py" />
+        <option value="$PROJECT_DIR$/pydream/GAB/GAB_aligned_data_with_dream.py" />
         <option value="$PROJECT_DIR$/ifnclass/ifnfit.py" />
+        <option value="$PROJECT_DIR$/ifnscripts/figure_S4.py" />
+        <option value="$PROJECT_DIR$/ifnscripts/figure_4.py" />
       </list>
     </option>
   </component>
@@ -459,6 +479,24 @@
               <item name="IFNmodeling" type="462c0819:PsiDirectoryNode" />
               <item name="ifnscripts" type="462c0819:PsiDirectoryNode" />
             </path>
+            <path>
+              <item name="IFNmodeling" type="b2602c69:ProjectViewProjectNode" />
+              <item name="IFNmodeling" type="462c0819:PsiDirectoryNode" />
+              <item name="pydream" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="IFNmodeling" type="b2602c69:ProjectViewProjectNode" />
+              <item name="IFNmodeling" type="462c0819:PsiDirectoryNode" />
+              <item name="pydream" type="462c0819:PsiDirectoryNode" />
+              <item name="GAB" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="IFNmodeling" type="b2602c69:ProjectViewProjectNode" />
+              <item name="IFNmodeling" type="462c0819:PsiDirectoryNode" />
+              <item name="pydream" type="462c0819:PsiDirectoryNode" />
+              <item name="GAB" type="462c0819:PsiDirectoryNode" />
+              <item name="PyDREAM1000" type="462c0819:PsiDirectoryNode" />
+            </path>
           </expand>
           <select />
         </subPane>
@@ -486,7 +524,43 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.ifnfit">
+  <component name="RunManager" selected="Python.figure_4">
+    <configuration name="GAB_aligned_data_with_dream" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="IFNmodeling" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/pydream/GAB" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/pydream/GAB/GAB_aligned_data_with_dream.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+    </configuration>
+    <configuration name="example_sample_robertson_with_dream" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="IFNmodeling" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/pydream" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/pydream/example_sample_robertson_with_dream.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+    </configuration>
     <configuration name="figure_2" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="IFNmodeling" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -505,24 +579,6 @@
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
     </configuration>
-    <configuration name="figure_3" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <module name="IFNmodeling" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/ifnscripts" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/ifnscripts/figure_3.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-    </configuration>
     <configuration name="figure_4" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="IFNmodeling" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -536,24 +592,6 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/ifnscripts/figure_4.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-    </configuration>
-    <configuration name="figure_S4" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <module name="IFNmodeling" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/ifnscripts" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/ifnscripts/figure_S4.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -598,18 +636,18 @@
     <list>
       <item itemvalue="Python.process_csv" />
       <item itemvalue="Python.figure_2" />
-      <item itemvalue="Python.figure_3" />
-      <item itemvalue="Python.figure_S4" />
       <item itemvalue="Python.figure_4" />
       <item itemvalue="Python.ifnfit" />
+      <item itemvalue="Python.example_sample_robertson_with_dream" />
+      <item itemvalue="Python.GAB_aligned_data_with_dream" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.ifnfit" />
-        <item itemvalue="Python.figure_2" />
         <item itemvalue="Python.figure_4" />
-        <item itemvalue="Python.figure_3" />
-        <item itemvalue="Python.figure_S4" />
+        <item itemvalue="Python.GAB_aligned_data_with_dream" />
+        <item itemvalue="Python.figure_2" />
+        <item itemvalue="Python.example_sample_robertson_with_dream" />
+        <item itemvalue="Python.ifnfit" />
       </list>
     </recent_temporary>
   </component>
@@ -636,18 +674,17 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-7" y="-7" width="1550" height="838" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.14453125" />
       <window_info anchor="bottom" id="TODO" order="6" />
-      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.23242188" side_tool="true" visible="true" weight="0.32965517" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.7675781" visible="true" weight="0.32965517" />
+      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.23307292" side_tool="true" visible="true" weight="0.32965517" />
       <window_info anchor="bottom" id="Version Control" order="9" />
       <window_info anchor="bottom" id="Python Console" order="7" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.76692706" weight="0.32965517" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="bottom" id="Terminal" order="8" />
-      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info id="Favorites" order="2" side_tool="true" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
@@ -692,21 +729,6 @@
     </expressions>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/20190108_GAB/Processing/Pipeline_pSTAT.py" />
-    <entry file="file://$PROJECT_DIR$/ifndatabase/20190119_raw_data/Processing/Pipeline_pSTAT.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1802">
-          <caret line="118" column="45" selection-start-line="118" selection-start-column="45" selection-end-line="118" selection-end-column="45" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/ifnscripts/comparing_GAB_data.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="308">
-          <caret line="166" column="19" selection-start-line="166" selection-start-column="4" selection-end-line="166" selection-end-column="19" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/ifnscripts/fit-27-01-2019.py" />
     <entry file="file://$PROJECT_DIR$/ifndatabase/20190121_raw_data/Samples/Specimen_001_A1_A01_001.fcs">
       <provider selected="true" editor-type-id="text-editor" />
@@ -909,13 +931,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ifnclass/ifnplot.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="765">
-          <caret line="46" column="43" selection-start-line="46" selection-start-column="43" selection-end-line="46" selection-end-column="43" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/ifndatabase/20190214_raw_data/Processing/Pipeline_pSTAT.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-1258">
@@ -930,55 +945,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ifnscripts/figure_S4.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-242">
-          <caret line="39" column="28" selection-start-line="39" selection-start-column="28" selection-end-line="39" selection-end-column="28" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/ifnscripts/figure_5.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="580">
           <caret line="44" column="7" selection-start-line="44" selection-start-column="7" selection-end-line="44" selection-end-column="7" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/ifnscripts/figure_4.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="931">
-          <caret line="225" column="59" selection-start-line="225" selection-start-column="59" selection-end-line="225" selection-end-column="59" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/ifnscripts/figure_3.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-3761">
-          <caret line="165" column="4" lean-forward="true" selection-start-line="165" selection-start-column="4" selection-end-line="165" selection-end-column="4" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/ifnclass/ifnmodel.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="356">
-          <caret line="46" column="109" selection-start-line="46" selection-start-column="109" selection-end-line="46" selection-end-column="109" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/ifnclass/ifndata.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1053">
-          <caret line="226" column="25" selection-start-line="226" selection-start-column="8" selection-end-line="226" selection-end-column="25" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/ifnscripts/figure_2.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="130">
-          <caret line="36" column="37" selection-start-line="36" selection-start-column="37" selection-end-line="36" selection-end-column="37" />
-          <folding>
-            <element signature="e#0#51#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -989,10 +959,86 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/pydream/example_sample_robertson_with_dream.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="85">
+          <caret line="11" lean-forward="true" selection-start-line="11" selection-end-line="11" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnscripts/figure_3.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-3213">
+          <caret line="149" column="4" selection-start-line="149" selection-start-column="4" selection-end-line="149" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnscripts/mcmc_all_GAB_data.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="81">
+          <caret line="44" column="82" lean-forward="true" selection-start-line="44" selection-start-column="18" selection-end-line="44" selection-end-column="82" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pydream/GAB/GAB_aligned_data_with_dream.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="326">
+          <caret line="94" selection-start-line="94" selection-end-line="94" />
+          <folding>
+            <element signature="e#183#217#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnclass/ifnplot.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-6566">
+          <caret line="46" column="43" selection-start-line="46" selection-start-column="43" selection-end-line="46" selection-end-column="43" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnclass/ifnmodel.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="427">
+          <caret line="417" column="36" selection-start-line="417" selection-start-column="20" selection-end-line="417" selection-end-column="36" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnclass/ifndata.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="189">
+          <caret line="164" column="40" selection-start-line="164" selection-start-column="24" selection-end-line="164" selection-end-column="40" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnscripts/figure_S4.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="302">
+          <caret line="107" column="89" selection-start-line="107" selection-start-column="89" selection-end-line="107" selection-end-column="89" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnscripts/figure_2.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="119">
+          <caret line="35" column="33" selection-start-line="35" selection-start-column="33" selection-end-line="35" selection-end-column="33" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/ifnclass/ifnfit.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="404">
-          <caret line="807" lean-forward="true" selection-start-line="807" selection-end-line="807" />
+        <state relative-caret-position="-17">
+          <caret line="173" column="108" selection-start-line="173" selection-start-column="98" selection-end-line="173" selection-end-column="108" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ifnscripts/figure_4.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="288">
+          <caret line="89" column="158" selection-start-line="89" selection-start-column="158" selection-end-line="89" selection-end-column="158" />
+          <folding>
+            <element signature="e#0#38#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
