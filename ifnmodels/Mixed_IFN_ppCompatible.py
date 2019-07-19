@@ -74,12 +74,13 @@ Parameter('kIntBasal_r1', 0.0001)#0.0002
 Parameter('kIntBasal_r2', 0.00002)#0.000012
 Parameter('krec_r1', 0.0001)
 Parameter('krec_r2', 0.0001)
+Parameter('kdeg_a', 0.0008)
+Parameter('kdeg_b', 0.0008)
+
 # Alpha:
 # Asymmetric:
 Parameter('kint_a', 0.0005)
 Parameter('kint_b', 0.0002)
-Parameter('kdeg_a', 0.0008)
-Parameter('kdeg_b', 0.0008)
 Parameter('krec_a1', 0.0003)
 Parameter('krec_a2', 0.005)
 Parameter('krec_b1', 0.0001)

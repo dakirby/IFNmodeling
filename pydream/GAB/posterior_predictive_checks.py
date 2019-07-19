@@ -4,7 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from ifnclass.ifnfit import DualMixedPopulation
-from ifnclass.ifndata import IfnData
+from ifnclass.ifndata import IfnData, DataAlignment
 from ifnclass.ifnplot import DoseresponsePlot
 
 # User input
@@ -55,6 +55,19 @@ for p in parameters_to_check:
     pp = posterior_prediction(param_dict)
     posterior_trajectories.append(pp)
 
+# Get aligned data
+newdata_1 = IfnData("20190108_pSTAT1_IFN_Bcell")
+newdata_2 = IfnData("20190119_pSTAT1_IFN_Bcell")
+newdata_3 = IfnData("20190121_pSTAT1_IFN_Bcell")
+newdata_4 = IfnData("20190214_pSTAT1_IFN_Bcell")
+
+# Aligned data, to get scale factors for each data set
+alignment = DataAlignment()
+alignment.add_data([newdata_4, newdata_3, newdata_2, newdata_1])
+alignment.align()
+alignment.get_scaled_data()
+mean_data = alignment.summarize_data()
+
 # Plot posterior samples
 alpha_palette = sns.color_palette("deep", 6)
 beta_palette = sns.color_palette("deep", 6)
@@ -63,14 +76,19 @@ new_fit = DoseresponsePlot((1, 2))
 
 alpha_mask = [2.5, 7.5, 10.0] #[2.5, 5.0, 7.5, 10.0, 20.0, 60.0]
 beta_mask = [2.5, 7.5, 10.0]
+plot_data = True
 # Add fits
 for idx, t in enumerate(times):
     if t not in alpha_mask:
         for p in posterior_trajectories[1:]:
             new_fit.add_trajectory(p, t, 'plot', alpha_palette[idx], (0, 0), 'Alpha', label='', linewidth=2, alpha=0.2)
+            if plot_data == True:
+                new_fit.add_trajectory(mean_data, t, 'errorbar', 'o', (0, 0), 'Alpha', color=alpha_palette[idx])
     if t not in beta_mask:
         for p in posterior_trajectories[1:]:
             new_fit.add_trajectory(p, t, 'plot', beta_palette[idx], (0, 1), 'Beta', label='', linewidth=2, alpha=0.2)
+            if plot_data == True:
+                new_fit.add_trajectory(mean_data, t, 'errorbar', 'o', (0, 1), 'Beta', color=beta_palette[idx])
 for idx, t in enumerate(times):
     if t not in alpha_mask:
         new_fit.add_trajectory(posterior_trajectories[0], t, 'plot', alpha_palette[idx], (0, 0), 'Alpha',
@@ -85,7 +103,12 @@ for lh in leg.legendHandles:
     lh._legmarker.set_alpha(1)
 
 dr_fig, dr_axes = new_fit.show_figure()
-dr_fig.set_size_inches(14.75, 8)
+dr_fig.set_size_inches(14, 6)
+dr_axes[0].set_title(r'IFN$\alpha$')
+dr_axes[1].set_title(r'IFN$\beta$')
 
-dr_fig.savefig(os.path.join(os.getcwd(), output_dir, 'posterior_predictions.pdf'))
+if plot_data == True:
+    dr_fig.savefig(os.path.join(os.getcwd(), output_dir, 'posterior_predictions_with_data.pdf'))
+else:
+    dr_fig.savefig(os.path.join(os.getcwd(), output_dir, 'posterior_predictions.pdf'))
 
