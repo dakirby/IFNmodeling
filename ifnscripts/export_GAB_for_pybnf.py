@@ -25,7 +25,7 @@ if __name__ == '__main__':
             data_string = "time    pSTAT    pSTAT_SD\n" # headers
             responses = mean_data.data_set.xs(s).loc[d].values
             for tidx, t in enumerate(times[s]):
-                data_string += "{}    {}    {}\n".format(t, responses[tidx][0], responses[tidx][1])
+                data_string += "{}    {}    {}\n".format(int(60 * t), responses[tidx][0], responses[tidx][1])
 
             # Write to file
             with open(os.path.join(os.getcwd(), 'results', 'pybnf_data', file_name), 'w') as f:

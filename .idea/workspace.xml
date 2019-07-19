@@ -185,6 +185,7 @@
       <change beforePath="$PROJECT_DIR$/ifnscripts/dra60df.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/dra60df.p" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnscripts/drb60df.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/drb60df.p" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnscripts/ec50.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/ec50.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/export_GAB_for_pybnf.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/export_GAB_for_pybnf.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnscripts/figure_2.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/figure_2.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnscripts/figure_3.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/figure_3.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnscripts/figure_4.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/figure_4.py" afterDir="false" />
@@ -235,6 +236,20 @@
       <change beforePath="$PROJECT_DIR$/ifnscripts/results/Sloppiness/Detailed_Model_Hessian.pkl" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/results/Sloppiness/Detailed_Model_Hessian.pkl" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnscripts/results/Sloppiness/Hessian.pkl" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/results/Sloppiness/Hessian.pkl" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnscripts/results/Sloppiness/Simplified_Model_Hessian.pkl" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/results/Sloppiness/Simplified_Model_Hessian.pkl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/results/pybnf_data/alpha10.exp" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/results/pybnf_data/alpha10.exp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/results/pybnf_data/alpha100.exp" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/results/pybnf_data/alpha100.exp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/results/pybnf_data/alpha1000.exp" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/results/pybnf_data/alpha1000.exp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/results/pybnf_data/alpha10000.exp" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/results/pybnf_data/alpha10000.exp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/results/pybnf_data/alpha100000.exp" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/results/pybnf_data/alpha100000.exp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/results/pybnf_data/alpha300.exp" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/results/pybnf_data/alpha300.exp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/results/pybnf_data/alpha3000.exp" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/results/pybnf_data/alpha3000.exp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/results/pybnf_data/beta02.exp" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/results/pybnf_data/beta02.exp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/results/pybnf_data/beta20.exp" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/results/pybnf_data/beta20.exp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/results/pybnf_data/beta200.exp" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/results/pybnf_data/beta200.exp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/results/pybnf_data/beta2000.exp" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/results/pybnf_data/beta2000.exp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/results/pybnf_data/beta6.exp" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/results/pybnf_data/beta6.exp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/results/pybnf_data/beta60.exp" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/results/pybnf_data/beta60.exp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ifnscripts/results/pybnf_data/beta600.exp" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/results/pybnf_data/beta600.exp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnscripts/sloppiness_analysis.py" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/sloppiness_analysis.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnscripts/small_alignment/20190108.h5" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/small_alignment/20190108.h5" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ifnscripts/small_alignment/20190108.p" beforeDir="false" afterPath="$PROJECT_DIR$/ifnscripts/small_alignment/20190108.p" afterDir="false" />
@@ -265,6 +280,7 @@
       <change beforePath="$PROJECT_DIR$/posterior_samples.csv" beforeDir="false" afterPath="$PROJECT_DIR$/posterior_samples.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pydream/GAB/GAB_aligned_data_with_dream.py" beforeDir="false" afterPath="$PROJECT_DIR$/pydream/GAB/GAB_aligned_data_with_dream.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pydream/GAB/ODE_system_20190705-112205_226438.py" beforeDir="false" afterPath="$PROJECT_DIR$/pydream/GAB/ODE_system_20190705-112205_226438.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pydream/GAB/PyDREAM_27-06-2019_10000/corner_plot.PNG" beforeDir="false" afterPath="$PROJECT_DIR$/pydream/GAB/PyDREAM_27-06-2019_10000/corner_plot.PNG" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pydream/GAB/ifnclass" beforeDir="false" afterPath="$PROJECT_DIR$/pydream/GAB/ifnclass" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pydream/GAB/ifndatabase" beforeDir="false" afterPath="$PROJECT_DIR$/pydream/GAB/ifndatabase" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pydream/GAB/ifnmodels" beforeDir="false" afterPath="$PROJECT_DIR$/pydream/GAB/ifnmodels" afterDir="false" />
@@ -290,11 +306,23 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="align_GAB_data.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="align_GAB_data.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/ifnscripts/align_GAB_data.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="289">
-              <caret line="17" column="42" selection-start-line="17" selection-start-column="42" selection-end-line="17" selection-end-column="42" />
+            <state relative-caret-position="374">
+              <caret line="63" column="27" selection-start-line="63" selection-start-column="27" selection-end-line="63" selection-end-column="27" />
+              <folding>
+                <element signature="e#0#51#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="export_GAB_for_pybnf.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/ifnscripts/export_GAB_for_pybnf.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="291">
+              <caret line="27" column="62" selection-start-line="27" selection-start-column="62" selection-end-line="27" selection-end-column="62" />
               <folding>
                 <element signature="e#0#51#0" expanded="true" />
               </folding>
@@ -317,7 +345,7 @@
       <file leaf-file-name="figure_4.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/ifnscripts/figure_4.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="152">
+            <state relative-caret-position="1751">
               <caret line="108" column="25" selection-start-line="108" selection-start-column="25" selection-end-line="108" selection-end-column="25" />
             </state>
           </provider>
@@ -677,14 +705,14 @@
     <layout>
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.14453125" />
       <window_info anchor="bottom" id="TODO" order="6" />
-      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.23632812" side_tool="true" visible="true" weight="0.32965517" />
-      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.7636719" weight="0.32965517" />
+      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.23697917" side_tool="true" visible="true" weight="0.32965517" />
       <window_info anchor="bottom" id="Version Control" order="9" />
       <window_info anchor="bottom" id="Python Console" order="7" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.7630208" weight="0.32965517" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="bottom" id="Terminal" order="8" />
-      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info id="Favorites" order="2" side_tool="true" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
@@ -1020,7 +1048,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/ifnscripts/figure_4.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="152">
+        <state relative-caret-position="1751">
           <caret line="108" column="25" selection-start-line="108" selection-start-column="25" selection-end-line="108" selection-end-column="25" />
         </state>
       </provider>
@@ -1032,10 +1060,11 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ifnscripts/export_GAB.py">
+    <entry file="file://$PROJECT_DIR$/ifnscripts/export_GAB.py" />
+    <entry file="file://$PROJECT_DIR$/ifnscripts/align_GAB_data.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="187">
-          <caret line="11" column="4" lean-forward="true" selection-start-line="11" selection-start-column="4" selection-end-line="11" selection-end-column="4" />
+        <state relative-caret-position="374">
+          <caret line="63" column="27" selection-start-line="63" selection-start-column="27" selection-end-line="63" selection-end-column="27" />
           <folding>
             <element signature="e#0#51#0" expanded="true" />
           </folding>
@@ -1044,18 +1073,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/ifnscripts/export_GAB_for_pybnf.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="336">
-          <caret line="31" column="36" selection-start-line="31" selection-start-column="36" selection-end-line="31" selection-end-column="36" />
-          <folding>
-            <element signature="e#0#51#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/ifnscripts/align_GAB_data.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="289">
-          <caret line="17" column="42" selection-start-line="17" selection-start-column="42" selection-end-line="17" selection-end-column="42" />
+        <state relative-caret-position="291">
+          <caret line="27" column="62" selection-start-line="27" selection-start-column="62" selection-end-line="27" selection-end-column="62" />
           <folding>
             <element signature="e#0#51#0" expanded="true" />
           </folding>
