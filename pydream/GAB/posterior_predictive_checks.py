@@ -46,7 +46,7 @@ def posterior_prediction(parameter_vector):
                                             parameters=dict({'Ia': 0}, **parameter_vector), sf=scale_factor)
 
     posterior = IfnData('custom', df=pd.concat((dradf, drbdf)), conditions={'Alpha': {'Ib': 0}, 'Beta': {'Ia': 0}})
-
+    posterior.drop_sigmas()
     return posterior
 
 posterior_trajectories = []
@@ -54,7 +54,9 @@ for p in parameters_to_check:
     param_dict = {key: value for key, value in zip(parameter_names, p)}
     pp = posterior_prediction(param_dict)
     posterior_trajectories.append(pp)
-
+print(posterior_trajectories[0].data_set)
+print(type(posterior_trajectories[0].data_set))
+exit()
 # Get aligned data
 newdata_1 = IfnData("20190108_pSTAT1_IFN_Bcell")
 newdata_2 = IfnData("20190119_pSTAT1_IFN_Bcell")
@@ -111,4 +113,11 @@ if plot_data == True:
     dr_fig.savefig(os.path.join(os.getcwd(), output_dir, 'posterior_predictions_with_data.pdf'))
 else:
     dr_fig.savefig(os.path.join(os.getcwd(), output_dir, 'posterior_predictions.pdf'))
+
+fig, axes = plt.subplots(nrows=1, ncols=2)
+axes[0].set_xlabel(r'IFN\alpha')
+axes[1].set_xlabel(r'IFN\betas')
+axes[0].set_ylabel('pSTAT-1')
+for i in range(2):
+    axes[i].set_xscale('log')
 

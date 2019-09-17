@@ -239,6 +239,18 @@ class IfnData:
             Tmax_dict[key] = Tmax_array
         return Tmax_dict
 
+    def drop_sigmas(self):
+        """
+        Remove measurement errors from data entries, convert tuples to floats. Conversion is done in-place.
+        :return: None
+        """
+        for s in self.get_dose_species():
+            for d in self.get_doses()[s]:
+                for t in self.get_times()[s]:
+                    self.data_set.loc[s][str(t)].loc[d] = self.data_set.loc[s][str(t)].loc[d][0]
+
+
+
 class DataAlignment:
     """
      Documentation - A DataAlignment object contains several IfnData objects and the scale factors needed to align them.
