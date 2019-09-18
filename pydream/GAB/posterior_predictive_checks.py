@@ -1,5 +1,6 @@
 import numpy as np
 import os
+import copy
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -54,9 +55,27 @@ for p in parameters_to_check:
     param_dict = {key: value for key, value in zip(parameter_names, p)}
     pp = posterior_prediction(param_dict)
     posterior_trajectories.append(pp)
-print(posterior_trajectories[0].data_set)
-print(type(posterior_trajectories[0].data_set))
-exit()
+
+# Make aggregate predicitions
+mean_alpha_predictions = np.mean([posterior_trajectories[i].data_set.loc['Alpha'].values for i in
+                                  range(len(posterior_trajectories))], axis=0)
+mean_beta_predictions = np.mean([posterior_trajectories[i].data_set.loc['Beta'].values for i in
+                                 range(len(posterior_trajectories))], axis=0)
+
+std_alpha_predictions = np.std([posterior_trajectories[i].data_set.loc['Alpha'].values.astype(np.float64) for i in
+                                range(len(posterior_trajectories))], axis=0)
+std_beta_predictions = np.std([posterior_trajectories[i].data_set.loc['Beta'].values.astype(np.float64) for i in
+                               range(len(posterior_trajectories))], axis=0)
+
+std_predictions = {'Alpha': std_alpha_predictions, 'Beta': std_beta_predictions}
+mean_predictions = {'Alpha': mean_alpha_predictions, 'Beta': mean_beta_predictions}
+
+mean_model = copy.deepcopy(posterior_trajectories[0])
+for s in ['Alpha', 'Beta']:
+    for didx, d in enumerate(mean_model.get_doses()[s]):
+        for tidx, t in enumerate(mean_model.get_times()[s]):
+            mean_model.data_set.loc[s][str(t)].loc[d] = (mean_predictions[s][didx][tidx], std_predictions[s][didx][tidx])
+
 # Get aligned data
 newdata_1 = IfnData("20190108_pSTAT1_IFN_Bcell")
 newdata_2 = IfnData("20190119_pSTAT1_IFN_Bcell")
@@ -82,22 +101,15 @@ plot_data = True
 # Add fits
 for idx, t in enumerate(times):
     if t not in alpha_mask:
-        for p in posterior_trajectories[1:]:
-            new_fit.add_trajectory(p, t, 'plot', alpha_palette[idx], (0, 0), 'Alpha', label='', linewidth=2, alpha=0.2)
-            if plot_data == True:
-                new_fit.add_trajectory(mean_data, t, 'errorbar', 'o', (0, 0), 'Alpha', color=alpha_palette[idx])
+        new_fit.add_trajectory(mean_model, t, 'envelope', alpha_palette[idx], (0, 0), 'Alpha', label='{} min'.format(t),
+                               linewidth=2, alpha=0.2)
+        if plot_data == True:
+            new_fit.add_trajectory(mean_data, t, 'errorbar', 'o', (0, 0), 'Alpha', color=alpha_palette[idx])
     if t not in beta_mask:
-        for p in posterior_trajectories[1:]:
-            new_fit.add_trajectory(p, t, 'plot', beta_palette[idx], (0, 1), 'Beta', label='', linewidth=2, alpha=0.2)
-            if plot_data == True:
-                new_fit.add_trajectory(mean_data, t, 'errorbar', 'o', (0, 1), 'Beta', color=beta_palette[idx])
-for idx, t in enumerate(times):
-    if t not in alpha_mask:
-        new_fit.add_trajectory(posterior_trajectories[0], t, 'plot', alpha_palette[idx], (0, 0), 'Alpha',
-                               label='{} min'.format(t), linewidth=2, alpha=0.2)
-    if t not in beta_mask:
-        new_fit.add_trajectory(posterior_trajectories[0], t, 'plot', beta_palette[idx], (0, 1), 'Beta',
-                               label='{} min'.format(t), linewidth=2, alpha=0.2)
+        new_fit.add_trajectory(mean_model, t, 'envelope', beta_palette[idx], (0, 1), 'Beta', label='{} min'.format(t),
+                               linewidth=2, alpha=0.2)
+        if plot_data == True:
+            new_fit.add_trajectory(mean_data, t, 'errorbar', 'o', (0, 1), 'Beta', color=beta_palette[idx])
 
 # Change legend transparency
 leg = new_fit.fig.legend()
@@ -113,11 +125,3 @@ if plot_data == True:
     dr_fig.savefig(os.path.join(os.getcwd(), output_dir, 'posterior_predictions_with_data.pdf'))
 else:
     dr_fig.savefig(os.path.join(os.getcwd(), output_dir, 'posterior_predictions.pdf'))
-
-fig, axes = plt.subplots(nrows=1, ncols=2)
-axes[0].set_xlabel(r'IFN\alpha')
-axes[1].set_xlabel(r'IFN\betas')
-axes[0].set_ylabel('pSTAT-1')
-for i in range(2):
-    axes[i].set_xscale('log')
-

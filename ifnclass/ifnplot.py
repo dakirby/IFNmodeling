@@ -390,6 +390,32 @@ class DoseresponsePlot:
                 else:
                     ax.errorbar(x, z, yerr=sigmas, fmt='--', label=trajectory.label, color=trajectory.line_style)
                 ax.legend()
+            elif trajectory.plot_type == 'envelope':
+                x = trajectory.d()
+                z = [el[0] for el in trajectory.z()]
+                if x[0] == 0:
+                    x = x[1:]
+                    z = z[1:]
+                sigmas = [el[1] for el in trajectory.z()]
+                z_plus_sigma = [z[i] + sigmas[i] for i in range(len(sigmas))]
+                z_minus_sigma = [z[i] - sigmas[i] for i in range(len(sigmas))]
+                if type(trajectory.line_style) == str:
+                    if trajectory.color is not None:
+                        ax.plot(x, z, trajectory.line_style, label=trajectory.label, color=trajectory.color,
+                                linewidth=trajectory.linewidth, alpha=1.0)
+                        ax.fill_between(x, z_plus_sigma, z_minus_sigma, facecolor=trajectory.color,
+                                        alpha=trajectory.alpha)
+                    else:
+                        ax.plot(x, z, trajectory.line_style, label=trajectory.label, color=trajectory.color,
+                                linewidth=trajectory.linewidth, alpha=1.0)
+                        ax.fill_between(x, z_plus_sigma, z_minus_sigma, facecolor=trajectory.color,
+                                        alpha=trajectory.alpha)
+                else:
+                    ax.plot(x, z, c=trajectory.line_style, label=trajectory.label, linewidth=trajectory.linewidth,
+                            alpha=1.0)
+                    ax.fill_between(x, z_plus_sigma, z_minus_sigma, facecolor=trajectory.line_style,
+                                    alpha=trajectory.alpha)
+                ax.legend()
         if save_flag:
             if save_dir == '':
                 plt.savefig(os.path.join(save_dir, 'fig{}.pdf'.format(int(time.time()))))

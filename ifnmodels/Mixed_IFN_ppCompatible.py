@@ -42,7 +42,7 @@ Parameter('kd1', 1)#*10
 Parameter('ka2', 4.98173364330787e-13) # = (3e6)/(NA*volEC)
 Parameter('kd2', 0.015) #*10              # ligand-monomer dissociation
 
-Parameter('ka4', 3.623188E-4) # = (2E5)/(NA*volEC)
+Parameter('ka4', 3.623188E-4) # = 4*pi*D = 4*pi*(0.049 um^2/(molecules*s))
 Parameter('kd4', 0.3) #*20
 
 
