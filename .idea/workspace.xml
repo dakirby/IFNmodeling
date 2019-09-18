@@ -310,72 +310,6 @@
       </list>
     </option>
   </component>
-  <component name="FindInProjectRecents">
-    <findStrings>
-      <find>A</find>
-      <find>11</find>
-      <find>scale_data</find>
-      <find>Mixed_Model</find>
-      <find>ec50</find>
-      <find>beta_palette[4]</find>
-      <find>mean_data</find>
-      <find>small</find>
-      <find>num</find>
-      <find>rc</find>
-      <find>print</find>
-      <find>alpha_palette[3]</find>
-      <find>doses_alpha</find>
-      <find>times</find>
-      <find>ka</find>
-      <find>check_for_detailed_balance_parameters</find>
-      <find>detailed_balance_keys_alpha</find>
-      <find>scale_factor</find>
-      <find>dra60</find>
-      <find>__unpackMCMC__</find>
-      <find>temperature</find>
-      <find>__run</find>
-      <find>__autoc</find>
-      <find>while</find>
-      <find>inspect</find>
-      <find>get_ec50</find>
-      <find>run_dream</find>
-      <find>doseresponse</find>
-      <find>mixed_dose_response</find>
-      <find>Cytokine</find>
-    </findStrings>
-    <replaceStrings>
-      <replace>data_plot_tc</replace>
-      <replace>pSTAT_max_vs_time_fig_obj</replace>
-      <replace>pSTAT_max_vs_time_axes_obj</replace>
-      <replace>alpha_pSTATmax</replace>
-      <replace>pSTATmax</replace>
-      <replace>20190108</replace>
-      <replace>alpha_doses_20190108</replace>
-      <replace>self.scaled_data</replace>
-      <replace>current_IfnData_object</replace>
-      <replace>alignment</replace>
-      <replace>stddev</replace>
-      <replace>doses_alpha</replace>
-      <replace>doses_beta</replace>
-      <replace>maxpSTAT</replace>
-      <replace>mean_data</replace>
-      <replace>mixed_p</replace>
-      <replace>__mixed_dose_response__</replace>
-      <replace>__score_target__</replace>
-      <replace>__score_mixed_models__</replace>
-      <replace>axes</replace>
-      <replace>Large</replace>
-      <replace>beta</replace>
-      <replace>12</replace>
-      <replace>beta_palette[2]</replace>
-      <replace>large</replace>
-      <replace>alpha_palette[2]</replace>
-      <replace>k_d</replace>
-      <replace>k_a</replace>
-      <replace>detailed_balance_keys_beta</replace>
-      <replace>mixed_dose_response</replace>
-    </replaceStrings>
-  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
@@ -404,7 +338,28 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.posterior_predictive_checks">
+  <component name="RunManager" selected="Python.GAB_aligned_data_with_dream">
+    <configuration name="GAB_aligned_data_with_dream" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="IFNmodeling" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/pydream/GAB" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/pydream/GAB/GAB_aligned_data_with_dream.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="export_GAB" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="IFNmodeling" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -439,27 +394,6 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/ifnscripts/export_GAB_for_pybnf.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="figure_2" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <module name="IFNmodeling" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/ifnscripts" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/ifnscripts/figure_2.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -533,21 +467,24 @@
     </configuration>
     <list>
       <item itemvalue="Python.process_csv" />
-      <item itemvalue="Python.figure_2" />
       <item itemvalue="Python.figure_4" />
       <item itemvalue="Python.posterior_predictive_checks" />
       <item itemvalue="Python.export_GAB" />
       <item itemvalue="Python.export_GAB_for_pybnf" />
+      <item itemvalue="Python.GAB_aligned_data_with_dream" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.GAB_aligned_data_with_dream" />
         <item itemvalue="Python.posterior_predictive_checks" />
         <item itemvalue="Python.export_GAB_for_pybnf" />
         <item itemvalue="Python.export_GAB" />
         <item itemvalue="Python.figure_4" />
-        <item itemvalue="Python.figure_2" />
       </list>
     </recent_temporary>
+  </component>
+  <component name="ServiceViewManager">
+    <option name="showServicesTree" value="false" />
   </component>
   <component name="SvnConfiguration">
     <configuration />

@@ -169,6 +169,37 @@ class DualMixedPopulation:
         self.model_1.reset_parameters()
         self.model_2.reset_parameters()
 
+    def update_parameters(self, param_dict):
+        """
+        This method will act like set_global_parameters for any parameters that do not end in '_1' or '_2'.
+        Parameters with names ending in '_1' or '_2' will be updated only in Model 1 or Model 2 respectively.
+        :param param_dict: dictionary of parameter names and the values to use
+        :return: 0
+        """
+        shared_parameters = {key: value for key, value in param_dict.items() if key[-2] != '_'}
+        model1_parameters = {key: value for key, value in param_dict.items() if key[-2:] == '_1'}
+        model2_parameters = {key: value for key, value in param_dict.items() if key[-2:] == '_2'}
+        self.model_1.set_parameters(shared_parameters)
+        self.model_1.set_parameters(model1_parameters)
+        self.model_2.set_parameters(model2_parameters)
+        return 0
+
+    def get_parameters(self):
+        """
+        This method will retrieve all parameters from each of model_1 and model_2, and return a parameter dictionary
+        of the form {pname: pvalue} where the pname will have '_1' if its value is unique to model_1 and '_2' if it is
+        unique to model_2.
+        :return: dict
+        """
+        all_parameters = {}
+        for key, value in self.model_1.parameters.items():
+            if self.model_1.parameters[key] != self.model_2.parameters[key]:
+                all_parameters[key+'_1'] = self.model_1.parameters[key]
+                all_parameters[key+'_2'] = self.model_2.parameters[key]
+            else:
+                all_parameters[key] = self.model_1.parameters[key]
+        return all_parameters
+
     def mixed_dose_response(self, times, observable, dose_species, doses, parameters={}, sf=1):
         response_1 = self.model_1.doseresponse(times, observable, dose_species, doses, parameters=parameters)[observable]
         response_2 = self.model_1.doseresponse(times, observable, dose_species, doses, parameters=parameters)[observable]
