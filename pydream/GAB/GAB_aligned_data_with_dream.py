@@ -1,14 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Mar 23 16:58:34 2016
-@author: Erin
-"""
-
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Dec  9 15:26:46 2014
-@author: Erin
-"""
 # Pydream imports
 from pydream.core import run_dream
 from pysb.integrate import Solver
@@ -16,30 +5,36 @@ import numpy as np
 from pydream.parameters import SampledParam
 from scipy.stats import norm, uniform
 import os
+from datetime import datetime
+
 import inspect
 from pydream.convergence import Gelman_Rubin
 
 # PySB imports
 from ifnclass.ifndata import IfnData, DataAlignment
-from ifnclass.ifnmodel import IfnModel
+from ifnclass.ifnfit import DualMixedPopulation
 import pandas as pd
 import seaborn as sns
 from matplotlib import pyplot as plt
 
 
 #Initialize PySB model object for running simulations.  Simulation timespan should match experimental data.
-Mixed_Model = IfnModel('Mixed_IFN_ppCompatible')
-# Optimal parameters for fitting mean GAB data
-opt_params = {'R2': 4920, 'R1': 1200,
-                'k_a1': 2.0e-13, 'k_a2': 1.328e-12, 'k_d3': 1.13e-4, 'k_d4': 0.9,
-                'kSOCSon': 5e-08, 'kpu': 0.0022, 'kpa': 2.36e-06,
-                'ka1': 3.3e-15, 'ka2': 1.85e-12, 'kd4': 2.0,
-                'kd3': 6.52e-05,
-                'kint_a': 0.0015, 'kint_b': 0.002,
-                'krec_a1': 0.01, 'krec_a2': 0.01, 'krec_b1': 0.005, 'krec_b2': 0.05}
-Mixed_Model.set_parameters(opt_params)
-Mixed_Model.default_parameters.update(opt_params)
-sf = 1.46182313424
+initial_parameters = {'k_a1': 4.98E-14 * 2, 'k_a2': 8.30e-13 * 2, 'k_d4': 0.006 * 3.8,
+                       'kpu': 0.00095,
+                       'ka2': 4.98e-13 * 2.45, 'kd4': 0.3 * 2.867,
+                       'kint_a': 0.000124, 'kint_b': 0.00086,
+                       'krec_a1': 0.0028, 'krec_a2': 0.01, 'krec_b1': 0.005, 'krec_b2': 0.05}
+dual_parameters = {'kint_a': 0.00052, 'kSOCSon': 6e-07, 'kint_b': 0.00052, 'krec_a1': 0.001, 'krec_a2': 0.1,
+                   'krec_b1': 0.005, 'krec_b2': 0.05}
+scale_factor = 1.227
+
+Mixed_Model = DualMixedPopulation('Mixed_IFN_ppCompatible', 0.8, 0.2)
+Mixed_Model.model_1.set_parameters(initial_parameters)
+Mixed_Model.model_1.set_parameters(dual_parameters)
+Mixed_Model.model_1.set_parameters({'R1': 12000.0, 'R2': 1511.1})
+Mixed_Model.model_2.set_parameters(initial_parameters)
+Mixed_Model.model_2.set_parameters(dual_parameters)
+Mixed_Model.model_2.set_parameters({'R1': 6755.56, 'R2': 1511.2})
 
 tspan = [2.5, 5.0, 7.5, 10.0, 20.0, 60.0]
 alpha_doses = [10, 100, 300, 1000, 3000, 10000, 100000]
@@ -65,32 +60,38 @@ exp_data_std = np.array([[el[1] for el in dose] for dose in mean_data.data_set.v
 like_ctot = norm(loc=exp_data, scale=exp_data_std)
 
 #Create lists of sampled pysb parameter names to use for subbing in parameter values in likelihood function.
-pysb_sampled_parameter_names = ['kpa', 'kSOCSon', 'kd4', 'k_d4', 'R1', 'R2']
+pysb_sampled_parameter_names = ['kpa', 'kSOCSon', 'kd4', 'k_d4', 'R1_1', 'R2_1', 'R1_2', 'R2_2']
 
 #Define likelihood function to generate simulated data that corresponds to experimental time points.  
 #This function should take as input a parameter vector (parameter values are in the same order as
 # pysb_sampled_parameter_names).
 #The function returns a log probability value for the parameter vector given the experimental data.
 
-def likelihood(parameter_vector):
+def likelihood(parameter_vector, sampled_parameter_names=pysb_sampled_parameter_names,
+               model=Mixed_Model):
 
     # Change model parameter values to current location in parameter space (values are in log(value) format)
 
-    param_dict = {pname: 10 ** pvalue for pname, pvalue in zip(pysb_sampled_parameter_names, parameter_vector)}
-    
-    Mixed_Model.set_parameters(param_dict)
+    shared_param_dict = {pname: 10 ** pvalue for pname, pvalue in zip(sampled_parameter_names, parameter_vector)
+                         if pname[-2] != '_'}
+    pop1_param_dict = {pname: 10 ** pvalue for pname, pvalue in zip(sampled_parameter_names, parameter_vector)
+                         if pname[-2:] == '_1'}
+    pop2_param_dict = {pname: 10 ** pvalue for pname, pvalue in zip(sampled_parameter_names, parameter_vector)
+                         if pname[-2:] == '_2'}
+
+    model.set_global_parameters(shared_param_dict)
+    model.model_1.set_parameters(pop1_param_dict)
+    model.model_2.set_parameters(pop2_param_dict)
 
     #Simulate experimentally measured TotalpSTAT values.
     # Alpha
-    dfa = Mixed_Model.doseresponse(tspan, 'TotalpSTAT', 'Ia', alpha_doses,
-                               parameters={'Ib': 0}, scale_factor=sf, return_type='dataframe', dataframe_labels='Alpha')
-    #dfa = IfnData(name='custom', df=dfa, conditions={'Ib': 0})
-    # Beta
-    dfb = Mixed_Model.doseresponse(tspan, 'TotalpSTAT', 'Ib', beta_doses,
-                               parameters={'Ia': 0}, scale_factor=sf, return_type='dataframe', dataframe_labels='Beta')
-    #dfb = IfnData(name='custom', df=dfb, conditions={'Ia': 0})
+    dradf = model.mixed_dose_response(tspan, 'TotalpSTAT', 'Ia', alpha_doses,
+                                            parameters={'Ib': 0}, sf=scale_factor)
+    drbdf = model.mixed_dose_response(tspan, 'TotalpSTAT', 'Ib', beta_doses,
+                                            parameters={'Ia': 0}, sf=scale_factor)
+
     # Concatenate and flatten
-    total_simulation_data = IfnData(name='custom', df=pd.concat([dfa, dfb]))
+    total_simulation_data = IfnData(name='custom', df=pd.concat([dradf, drbdf]))
     sim_data = np.array([[el[0] for el in dose] for dose in total_simulation_data.data_set.values]).flatten()
 
     #Calculate log probability contribution from simulated experimental values.
@@ -105,12 +106,11 @@ def likelihood(parameter_vector):
 
 
 # Add vector of PySB rate parameters to be sampled as unobserved random variables to DREAM with log normal priors.
-  
-original_params = np.log10([Mixed_Model.parameters[param] for param in pysb_sampled_parameter_names])
+original_params = np.log10([Mixed_Model.get_parameters()[param] for param in pysb_sampled_parameter_names])
 
 priors_list = []
 for key in pysb_sampled_parameter_names:
-    priors_list.append(SampledParam(norm, loc=np.log10(Mixed_Model.parameters[key]), scale=1.0))
+    priors_list.append(SampledParam(norm, loc=np.log10(Mixed_Model.get_parameters()[key]), scale=1.0))
 
 # Set simulation parameters
 niterations = 10000
@@ -122,12 +122,15 @@ sim_name = 'mixed_IFN'
 if __name__ == '__main__':
 
     # Make save directory
-    save_dir = 'PyDREAM_27-06-2019_10000'
+    today = datetime.now()
+    save_dir = "PyDREAM_" + today.strftime('%d-%m-%Y') + "_" + str(niterations)
     os.makedirs(os.path.join(os.getcwd(), save_dir), exist_ok=True)
 
     #Run DREAM sampling.  Documentation of DREAM options is in Dream.py.
-    sampled_params, log_ps = run_dream(priors_list, likelihood, niterations=niterations, nchains=nchains, multitry=False,
-                                       gamma_levels=4, adapt_gamma=True, history_thin=1, model_name=sim_name, verbose=True)
+    sampled_params, log_ps = run_dream(priors_list, likelihood, start=original_params,
+                                       niterations=niterations, nchains=nchains, multitry=False,
+                                       gamma_levels=4, adapt_gamma=True, history_thin=1, model_name=sim_name,
+                                       verbose=True)
     
     #Save sampling output (sampled parameter values and their corresponding logps).
     for chain in range(len(sampled_params)):
