@@ -77,9 +77,9 @@ def likelihood(parameter_vector, sampled_parameter_names=pysb_sampled_parameter_
 
     shared_param_dict = {pname: 10 ** pvalue for pname, pvalue in zip(sampled_parameter_names, parameter_vector)
                          if pname[-2] != '_'}
-    pop1_param_dict = {pname: 10 ** pvalue for pname, pvalue in zip(sampled_parameter_names, parameter_vector)
+    pop1_param_dict = {pname[:-2]: 10 ** pvalue for pname, pvalue in zip(sampled_parameter_names, parameter_vector)
                          if pname[-2:] == '_1'}
-    pop2_param_dict = {pname: 10 ** pvalue for pname, pvalue in zip(sampled_parameter_names, parameter_vector)
+    pop2_param_dict = {pname[:-2]: 10 ** pvalue for pname, pvalue in zip(sampled_parameter_names, parameter_vector)
                          if pname[-2:] == '_2'}
 
     model.set_global_parameters(shared_param_dict)
