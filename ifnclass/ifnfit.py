@@ -202,7 +202,7 @@ class DualMixedPopulation:
 
     def mixed_dose_response(self, times, observable, dose_species, doses, parameters={}, sf=1):
         response_1 = self.model_1.doseresponse(times, observable, dose_species, doses, parameters=parameters)[observable]
-        response_2 = self.model_1.doseresponse(times, observable, dose_species, doses, parameters=parameters)[observable]
+        response_2 = self.model_2.doseresponse(times, observable, dose_species, doses, parameters=parameters)[observable]
 
         weighted_sum_response = np.add(np.multiply(response_1, self.w1), np.multiply(response_2, self.w2))
         if sf != 1:

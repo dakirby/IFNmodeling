@@ -69,10 +69,10 @@ if __name__ == '__main__':
     beta_palette = sns.color_palette("deep", 6)
 
     new_fit = DoseresponsePlot((2, 2))
-    new_fit.axes[0][0].set_label(r'IFN$\alpha$ at 15 $\mu$L')
-    new_fit.axes[0][1].set_label(r'IFN$\beta$ at 15 $\mu$L')
-    new_fit.axes[1][0].set_label(r'IFN$\alpha$ at 15 mL')
-    new_fit.axes[1][1].set_label(r'IFN$\beta$ at 15 mL')
+    new_fit.axes[0][0].set_title(r'IFN$\alpha$ at 15 $\mu$L')
+    new_fit.axes[0][1].set_title(r'IFN$\beta$ at 15 $\mu$L')
+    new_fit.axes[1][0].set_title(r'IFN$\alpha$ at 15 mL')
+    new_fit.axes[1][1].set_title(r'IFN$\beta$ at 15 mL')
 
     alpha_mask = [7.5]
     beta_mask = [7.5]
@@ -93,3 +93,8 @@ if __name__ == '__main__':
     dr_fig, dr_axes = new_fit.show_figure()
 
     new_fit.save_figure('varying_reaction_volume_dr.pdf')
+
+    # -------------------------------
+    # Plot model dose response curves
+    # -------------------------------
+
