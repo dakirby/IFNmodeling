@@ -338,7 +338,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.GAB_aligned_data_with_dream">
+  <component name="RunManager" selected="Python.posterior_predictive_checks">
     <configuration name="GAB_aligned_data_with_dream" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="IFNmodeling" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -475,8 +475,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.GAB_aligned_data_with_dream" />
         <item itemvalue="Python.posterior_predictive_checks" />
+        <item itemvalue="Python.GAB_aligned_data_with_dream" />
         <item itemvalue="Python.export_GAB_for_pybnf" />
         <item itemvalue="Python.export_GAB" />
         <item itemvalue="Python.figure_4" />

@@ -36,6 +36,9 @@ Mixed_Model.model_2.set_parameters(initial_parameters)
 Mixed_Model.model_2.set_parameters(dual_parameters)
 Mixed_Model.model_2.set_parameters({'R1': 6755.56, 'R2': 1511.2})
 
+Mixed_Model.model_1.default_parameters = Mixed_Model.model_1.parameters
+Mixed_Model.model_2.default_parameters = Mixed_Model.model_2.parameters
+
 tspan = [2.5, 5.0, 7.5, 10.0, 20.0, 60.0]
 alpha_doses = [10, 100, 300, 1000, 3000, 10000, 100000]
 beta_doses = [0.2, 6, 20, 60, 200, 600, 2000]
