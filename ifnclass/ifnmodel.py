@@ -395,8 +395,11 @@ class IfnModel:
         dose_parameters = copy.deepcopy(self.parameters)
         dose_parameters.update(parameters)
         # iterate through all doses
+        picoMolar = 1E-12
+        Avogadro = 6.022E23
+        volEC = self.parameters['volEC']
         for idx, d in enumerate(doses):
-            dose_parameters.update({dose_species: d*1E-12*6.022E23*1E-5})
+            dose_parameters.update({dose_species: d*picoMolar*Avogadro*volEC})
             trajectories = self.timecourse(times, observable, parameters=dose_parameters)
             # add results to dose_response_table dictionary
             for observable_species in trajectories.keys():
