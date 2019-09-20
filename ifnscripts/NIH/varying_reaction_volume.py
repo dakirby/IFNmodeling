@@ -7,7 +7,7 @@ import seaborn as sns
 from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
 import os
-from ifnclass.ifnplot import Trajectory, DoseresponsePlot
+from ifnclass.ifnplot import TimecoursePlot, DoseresponsePlot
 import matplotlib.gridspec as gridspec
 
 
@@ -69,10 +69,6 @@ if __name__ == '__main__':
     beta_palette = sns.color_palette("deep", 6)
 
     new_fit = DoseresponsePlot((2, 2))
-    new_fit.axes[0][0].set_title(r'IFN$\alpha$ at 15 $\mu$L')
-    new_fit.axes[0][1].set_title(r'IFN$\beta$ at 15 $\mu$L')
-    new_fit.axes[1][0].set_title(r'IFN$\alpha$ at 15 mL')
-    new_fit.axes[1][1].set_title(r'IFN$\beta$ at 15 mL')
 
     alpha_mask = [7.5]
     beta_mask = [7.5]
@@ -91,10 +87,31 @@ if __name__ == '__main__':
                                    linewidth=2)
 
     dr_fig, dr_axes = new_fit.show_figure()
+    dr_axes[0][0].set_title(r'IFN$\alpha$ at 15 $\mu$L')
+    dr_axes[0][1].set_title(r'IFN$\beta$ at 15 $\mu$L')
+    dr_axes[1][0].set_title(r'IFN$\alpha$ at 15 mL')
+    dr_axes[1][1].set_title(r'IFN$\beta$ at 15 mL')
 
-    new_fit.save_figure('varying_reaction_volume_dr.pdf')
+    dr_fig.savefig('varying_reaction_volume_dr.pdf')
 
     # -------------------------------
     # Plot model dose response curves
     # -------------------------------
+    tc_figure = TimecoursePlot((1, 2))
 
+    alpha_doses_20190108 = [0, 10, 100, 300, 1000, 3000, 10000, 100000]
+    beta_doses_20190108 = [0, 0.2, 6, 20, 60, 200, 600, 2000]
+
+    print("Using {} for IFNalpha".format(list(logspace(1, 5.2))[24]))
+    print("Using {} for IFNbeta".format(list(logspace(-1, 4))[21]))
+
+    tc_figure.add_trajectory(dra15uL, 'plot', '-', subplot_idx=(0, 0), label=r'Alpha 15 $\mu$L',
+                             doseslice=list(logspace(1, 5.2))[24], dose_species='Alpha', color=alpha_palette[1])
+    tc_figure.add_trajectory(dra5mL, 'plot', '-', subplot_idx=(0, 0), label='Alpha 5 mL',
+                             doseslice=list(logspace(1, 5.2))[24], dose_species='Alpha', color=alpha_palette[4])
+
+    tc_figure.add_trajectory(drb15uL, 'plot', '-', subplot_idx=(0, 1), label=r'Beta 15 $\mu$L',
+                             doseslice=list(logspace(-1, 4))[21], dose_species='Beta', color=beta_palette[0])
+    tc_figure.add_trajectory(drb5mL, 'plot', '-', subplot_idx=(0, 1), label='Beta 5 mL',
+                             doseslice=list(logspace(-1, 4))[21], dose_species='Beta', color=beta_palette[2])
+    tc_figure.show_figure(save_flag=True, save_dir='varying_reaction_volume_tc.pdf')

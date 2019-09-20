@@ -40,6 +40,7 @@ class Trajectory:
         self.line_style = line_style
         self.label = label
         self.timeslice = kwargs.get('timeslice', None)
+        self.doseslice = kwargs.get('doseslice', None)
         self.dose_species = kwargs.get('dose_species', None)
         self.dose_norm = kwargs.get('dose_norm', 1)
         self.color = kwargs.get('color', None)
@@ -49,7 +50,10 @@ class Trajectory:
     def t(self):  # times
         if self.timeslice is None:
             if type(self.data.data_set.columns[0]) == str:
-                return [int(el) for el in self.data.data_set.columns if el is not 'Dose_Species' and el is not 'Dose (pM)']
+                try:
+                    return [int(el) for el in self.data.data_set.columns if el is not 'Dose_Species' and el is not 'Dose (pM)']
+                except ValueError:
+                    return [float(el) for el in self.data.data_set.columns if el is not 'Dose_Species' and el is not 'Dose (pM)']
             else:
                 return [el for el in self.data.data_set.columns if el is not 'Dose_Species' and el is not 'Dose (pM)']
         else:
@@ -57,7 +61,15 @@ class Trajectory:
 
     def y(self):  # timecourse response values
         idx = self.t()
-        return self.data.data_set[idx].values[0]
+        if self.doseslice is None:
+            return self.data.data_set[idx].values[0]
+        else:
+            try:
+                return self.data.data_set.loc[self.dose_species].loc[self.doseslice].values
+            except KeyError:
+                print(self.data.data_set.loc[self.dose_species])
+                print(self.data.data_set.loc[self.dose_species].index)
+                raise KeyError
 
     def d(self):  # doses
         if self.timeslice is None:

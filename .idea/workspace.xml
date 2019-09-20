@@ -338,7 +338,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.figure_2">
+  <component name="RunManager" selected="Python.varying_reaction_volume">
     <configuration name="GAB_aligned_data_with_dream" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="IFNmodeling" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -475,8 +475,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.figure_2" />
         <item itemvalue="Python.varying_reaction_volume" />
+        <item itemvalue="Python.figure_2" />
         <item itemvalue="Python.posterior_predictive_checks" />
         <item itemvalue="Python.GAB_aligned_data_with_dream" />
         <item itemvalue="Python.export_GAB_for_pybnf" />
