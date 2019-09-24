@@ -15,7 +15,7 @@ Parameter('width_PM', 1E-6) # effective width of membrane , m
 #vol. extracellular space , L
 Parameter('volEC', 1E-5) # = 1/cell_dens 
 
-# virtual vol. of plasma membrane , L 
+# virtual vol. of plasma membrane , m**2
 Parameter('volPM', 2.76e-09 ) # = 2*rad_cell**2 + rad_cell*cell_thickness*4
 
 # vol. of cytoplasm , L 
