@@ -11,7 +11,7 @@ from ifnclass.ifnplot import TimecoursePlot, DoseresponsePlot
 import matplotlib.gridspec as gridspec
 
 
-if __name__ == '__main__':
+def experimental_panel():
     # Experimental parameters
     cell_densities = [1E9, 10E9, 20E9]
     volume_panel = [1/i for i in cell_densities]
@@ -140,3 +140,6 @@ if __name__ == '__main__':
     fig.set_size_inches(16, 9)
     fig.tight_layout()
     fig.savefig('varying_reaction_volume_IFNtc.pdf')
+
+if __name__ == '__main__':
+    experimental_panel()
