@@ -67,6 +67,7 @@ class Trajectory:
             try:
                 return self.data.data_set.loc[self.dose_species].loc[self.doseslice].values
             except KeyError:
+                print(self.data.data_set)
                 print(self.data.data_set.loc[self.dose_species])
                 print(self.data.data_set.loc[self.dose_species].index)
                 raise KeyError
