@@ -92,13 +92,14 @@ Monomer('Tyk2', ['s1'])
 # Gamma_chain family
 # multiple receptor assembly methods available to IL2
 # IL2RA + IL2 <-> IL2RA.IL2 + IL2RB <-> IL2RA.IL2.IL2RB + Gamma_chain <-> IL2RA.IL2.IL2RB.Gamma_chain + Jak1 + Jak3 -> pSTAT5
+# IL4RA + IL4 + Gamma_chain <-> Jak1 + IL4RA.IL4.Gamma_chain + Jak3 -> STAT6 # Jak1 binds to IL4RA and Jak3 to Gamma_c
+# IL7RA + IL7 + Gamma_chain <-> Jak1 + IL7RA.IL7.Gamma_chain + Jak3 -> STAT5 # Jak1 binds to IL4RA and Jak3 to Gamma_c
 
 # 2x(IL10RA.IL10.IL10RB) + Tyk2 + Jak1 -> pSTAT1 + pSTAT3
 # IL12RB1 + IL12RB2 + IL12 + Jak2 + Tyk2 -> pSTAT4 dimers
 # IL13RA1 + IL13 + IL13RA2 <-> IL13RA1.IL13.IL13RA2
 # IL13RA1 + IL13 <-> IL13RA1.IL13 + IL4RA -> IL13RA1.IL13.IL4RA + Jak1 -> STAT6
 # IL4RA + IL4 <-> IL4RA.IL4 + IL13RA1 -> IL13RA1.IL4.IL4RA + Jak1 -> STAT6
-# IL4RA + IL4 + Gamma_chain <-> IL4RA.IL4.Gamma_chain + Jak1 + Jak3 -> STAT6
 # IL20RA + IL20 + IL20RB + Jak1 + Jak2 -> STAT3
 # IL22RA1 + IL22 + IL10RA + Jak1 + Jak2 -> STAT3
 
