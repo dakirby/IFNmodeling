@@ -338,8 +338,8 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.varying_reaction_volume">
-    <configuration name="GAB_aligned_data_with_dream" type="PythonConfigurationType" factoryName="Python" temporary="true">
+  <component name="RunManager" selected="Python.run_immune_cell">
+    <configuration name="Immune_Cell_model" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="IFNmodeling" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -347,32 +347,11 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/pydream/GAB" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/ifnmodels" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/pydream/GAB/GAB_aligned_data_with_dream.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="export_GAB_for_pybnf" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <module name="IFNmodeling" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/ifnscripts" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/ifnscripts/export_GAB_for_pybnf.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/ifnmodels/Immune_Cell_model.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -444,6 +423,27 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="run_immune_cell" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="IFNmodeling" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/ifnscripts/NIH" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/ifnscripts/NIH/run_immune_cell.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="varying_reaction_volume" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="IFNmodeling" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -468,18 +468,18 @@
     <list>
       <item itemvalue="Python.process_csv" />
       <item itemvalue="Python.posterior_predictive_checks" />
-      <item itemvalue="Python.export_GAB_for_pybnf" />
-      <item itemvalue="Python.GAB_aligned_data_with_dream" />
       <item itemvalue="Python.varying_reaction_volume" />
       <item itemvalue="Python.figure_2" />
+      <item itemvalue="Python.run_immune_cell" />
+      <item itemvalue="Python.Immune_Cell_model" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.run_immune_cell" />
+        <item itemvalue="Python.Immune_Cell_model" />
         <item itemvalue="Python.varying_reaction_volume" />
         <item itemvalue="Python.figure_2" />
         <item itemvalue="Python.posterior_predictive_checks" />
-        <item itemvalue="Python.GAB_aligned_data_with_dream" />
-        <item itemvalue="Python.export_GAB_for_pybnf" />
       </list>
     </recent_temporary>
   </component>

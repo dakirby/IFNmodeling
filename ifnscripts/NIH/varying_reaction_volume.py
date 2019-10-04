@@ -237,7 +237,7 @@ def run_smooth_trajectories(cell_densities, IFNAlpha_panel, IFNBeta_panel, times
     return predictions
 
 
-def experimental_panel(cell_densities, IFNAlpha_panel, IFNBeta_panel, times):
+def experimental_panel(cell_densities, IFNAlpha_panel, IFNBeta_panel, times, IFN_in_concentration=True):
     # ----------
     # Run model
     # ----------
@@ -314,6 +314,41 @@ def experimental_panel(cell_densities, IFNAlpha_panel, IFNBeta_panel, times):
     fig.tight_layout()
     fig.savefig('varying_reaction_volume_IFNtc.pdf')
 
+def time_to_reach_robot_threshold(cell_densities, IFNAlpha_panel, IFNBeta_panel, times, threshold=1E-3):
+    predictions = run_smooth_trajectories(cell_densities, IFNAlpha_panel, IFNBeta_panel, times,
+                                          IFN_in_concentration=True)
+    alpha_times = {}
+    beta_times = {}
+    for cd in cell_densities:
+        Iadf = predictions[cd][2]
+        tau_record = []
+        for d in Iadf.data_set.loc['Alpha'].index:
+            tc = [i[0] for i in Iadf.data_set.loc['Alpha'].loc[d].values]
+            time_pt = np.inf
+            for pt_idx, pt in enumerate(tc):
+                if pt < threshold:
+                    time_pt = times[pt_idx]
+                    break
+            tau_record.append(time_pt)
+        alpha_times[cd / 1E9] = tau_record
+    for cd in cell_densities:
+        Ibdf = predictions[cd][3]
+        tau_record = []
+        for d in Ibdf.data_set.loc['Beta'].index:
+            tc = [i[0] for i in Ibdf.data_set.loc['Beta'].loc[d].values]
+            time_pt = np.inf
+            for pt_idx, pt in enumerate(tc):
+                if pt < threshold:
+                    time_pt = times[pt_idx]
+                    break
+            tau_record.append(time_pt)
+        beta_times[cd / 1E9] = tau_record
+    alpha_df = pd.DataFrame.from_dict(alpha_times, orient='index', columns=IFNAlpha_panel)
+    beta_df = pd.DataFrame.from_dict(beta_times, orient='index', columns=IFNBeta_panel)
+    alpha_df.to_csv('alpha_threshold_times.txt', sep='\t')
+    beta_df.to_csv('beta_threshold_times.txt', sep='\t')
+    return alpha_df, beta_df
+
 
 def characteristic_time_figures(cell_densities, IFNAlpha_panel, IFNBeta_panel, times):
     predictions = run_smooth_trajectories(cell_densities, IFNAlpha_panel, IFNBeta_panel, times,
@@ -348,6 +383,7 @@ def characteristic_time_figures(cell_densities, IFNAlpha_panel, IFNBeta_panel, t
             #yvals = [t for t in tc if t <= tc[0]/2]
             #plt.plot([tau for _ in range(len(yvals))], yvals, 'k--')
             #plt.show()
+
         alpha_half_lives[cd/1E9] = tau_record
 
         Ibdf = predictions[cd][3]
@@ -368,10 +404,10 @@ def characteristic_time_figures(cell_densities, IFNAlpha_panel, IFNBeta_panel, t
     # Plot heatmaps
     f, (ax1, ax2, axcb) = plt.subplots(1, 3, gridspec_kw={'width_ratios': [1, 1, 0.08]})
     ax1.get_shared_y_axes().join(ax2)
-    g1 = sns.heatmap(alpha_heatmap_df, cmap="viridis", cbar=False, ax=ax1, vmax=1000)
+    g1 = sns.heatmap(alpha_heatmap_df, cmap="viridis", cbar=False, ax=ax1, vmin=100, vmax=5000)
     g1.set_ylabel('')
     g1.set_xlabel('')
-    g2 = sns.heatmap(beta_heatmap_df, cmap="viridis", ax=ax2, cbar_ax=axcb, vmax=800)
+    g2 = sns.heatmap(beta_heatmap_df, cmap="viridis", ax=ax2, cbar_ax=axcb, vmin=100, vmax=5000)
     g2.set_ylabel('')
     g2.set_xlabel('')
     g2.set_yticks([])
@@ -394,15 +430,21 @@ def characteristic_time_figures(cell_densities, IFNAlpha_panel, IFNBeta_panel, t
 
 if __name__ == '__main__':
     # Experimental parameters
-    cell_densities = [0.5E9, 5E9, 10E9, 20E9]
+    #cell_densities = [0.5E9, 5E9, 10E9, 20E9]
+    cell_densities = [0.25E9, 2.5E9, 5E9, 10E9] # divide by 2
+    #cell_densities = [0.33E9, 3.33E9, 6.67E9, 13.33E9] # divide by 1.5
+    cell_densities = [0.75*i for i in cell_densities]
+
     volume_panel = [1/i for i in cell_densities]
     IFNBeta_EC50 = 4  # pM
     IFNAlpha_EC50 = 1000  # pM
-    IFNBeta_panel = [0.1 * IFNBeta_EC50, IFNBeta_EC50, 5 * IFNBeta_EC50, 10 * IFNBeta_EC50]
+    IFNBeta_panel = [0.5 * IFNBeta_EC50, IFNBeta_EC50, 5 * IFNBeta_EC50, 10 * IFNBeta_EC50]
     IFNAlpha_panel = [0.1 * IFNAlpha_EC50, IFNAlpha_EC50, 5 * IFNAlpha_EC50, 10 * IFNAlpha_EC50]
-    times = np.arange(0, 60 * 24 + 0.5, 0.5)
 
     # Model predictions
+    times = np.arange(0, 60 * 12 + 0.5, 0.5)
+    time_to_reach_robot_threshold(cell_densities, IFNAlpha_panel, IFNBeta_panel, times)
     characteristic_time_figures(cell_densities, IFNAlpha_panel, IFNBeta_panel, times)
-    #experimental_panel(cell_densities, IFNAlpha_panel, IFNBeta_panel, times)
+    times = [0, 20, 40, 60, 80, 100, 120, 160, 200, 300, 400, 500, 720] # 12 hours total, 20 min intervals minimum
+    experimental_panel(cell_densities, IFNAlpha_panel, IFNBeta_panel, times)
     #testing_specific_values()
