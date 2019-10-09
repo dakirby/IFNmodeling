@@ -1,5 +1,7 @@
 from ifnclass.ifnmodel import IfnModel
+import numpy as np
 from numpy import logspace
+import matplotlib.pyplot as plt
 
 ImmuneCell_Model = IfnModel('Immune_Cell_model')
 #IL10test = ImmuneCell_Model.doseresponse([60], 'Active_IL10_Receptor', 'IL10_IC', list(logspace(-6, 1, num=10)))
@@ -19,7 +21,7 @@ ImmuneCell_Model = IfnModel('Immune_Cell_model')
 #Il13test1 = ImmuneCell_Model.doseresponse([60], 'Active_Tyk2_IL13_Receptor', 'IL13_IC', list(logspace(-6, 1, num=10)))
 #Il13test2 = ImmuneCell_Model.doseresponse([60], 'Active_Jak2_IL13_Receptor', 'IL13_IC', list(logspace(-6, 1, num=10)))
 #Il13test3 = ImmuneCell_Model.doseresponse([60], 'Inactive_IL13_Receptor', 'IL13_IC', list(logspace(-6, 1, num=10)))
-IL2test = ImmuneCell_Model.doseresponse([60], 'Active_IL2_Receptor', 'IL2_IC', list(logspace(-6, 1, num=10)))
+#IL2test = ImmuneCell_Model.doseresponse([60], 'Active_IL2_Receptor', 'IL2_IC', list(logspace(-6, 1, num=10)))
 #BetaCtest = ImmuneCell_Model.doseresponse([60], 'Beta_c_dimer', 'Beta_c_IC', list(logspace(-6, 1, num=10)))
 #GMCSFtest1 = ImmuneCell_Model.doseresponse([60], 'GM_CSF_BetaC_dimer_GM_CSF', 'GMCSF_IC', list(logspace(-6, 1, num=10)))
 #GMCSFtest2 = ImmuneCell_Model.doseresponse([60], 'GM_CSF_Dodecamer', 'GMCSF_IC', list(logspace(-6, 1, num=10)))
@@ -30,5 +32,15 @@ IL2test = ImmuneCell_Model.doseresponse([60], 'Active_IL2_Receptor', 'IL2_IC', l
 #IL11test = ImmuneCell_Model.doseresponse([60], 'IL11_Receptor', 'IL11_IC', list(logspace(-6, 1, num=10)))
 #IL27test = ImmuneCell_Model.doseresponse([60], 'IL27_Receptor', 'IL27_IC', list(logspace(-6, 1, num=10)))
 
+doses = list(logspace(-9, -4, num=8))
+times = [60]
+IFNg_pSTAT1 = ImmuneCell_Model.doseresponse(times, 'pSTAT1', 'IFN_gamma_IC', doses)['pSTAT1']
 
-#print(IL2test)
+fig = plt.figure()
+ax = plt.gca()
+ax.set_xscale('log')
+plt.plot(doses, IFNg_pSTAT1)
+ax.set_xlabel('Dose (pM)')
+ax.set_ylabel('Response (#)')
+ax.set_title('Dose Response')
+plt.show()

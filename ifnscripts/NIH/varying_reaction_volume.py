@@ -8,6 +8,13 @@ from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
 import pandas as pd
 from ifnclass.ifnplot import TimecoursePlot, DoseresponsePlot
+from matplotlib.colors import LogNorm
+import matplotlib
+font = {'family' : 'normal',
+        'size'   : 14}
+
+matplotlib.rc('font', **font)
+
 
 def testing_specific_values():
     volEC1 = 1 / (25E9)
@@ -270,7 +277,7 @@ def experimental_panel(cell_densities, IFNAlpha_panel, IFNBeta_panel, times, IFN
     for i in range(len(IFNAlpha_panel)):
         axes[i][0].set_title(r'IFN$\alpha$ at {} pM'.format(IFNAlpha_panel[i]))
         axes[i][1].set_title(r'IFN$\beta$ at {} pM'.format(IFNBeta_panel[i]))
-    fig.set_size_inches(16, 9)
+    fig.set_size_inches(12, 9)
     fig.tight_layout()
     fig.savefig('varying_reaction_volume_STATtc.pdf')
 
@@ -280,8 +287,8 @@ def experimental_panel(cell_densities, IFNAlpha_panel, IFNBeta_panel, times, IFN
         ax.set_yscale('log')
     for i in range(len(IFNAlpha_panel)):
         if IFN_in_concentration:
-            IFN_plot.axes[i][0].set_ylim(bottom=1E-4, top=max(IFNAlpha_panel)*1E-2)
-            IFN_plot.axes[i][1].set_ylim(bottom=1E-4, top=max(IFNBeta_panel)*1E-2)
+            IFN_plot.axes[i][0].set_ylim(bottom=1E-3, top=max(IFNAlpha_panel)*1E-2)
+            IFN_plot.axes[i][1].set_ylim(bottom=1E-3, top=max(IFNBeta_panel)*1E-2)
         else:
             IFN_plot.axes[i][0].set_ylim(bottom=1, top=max(IFNAlpha_panel) * 10 ** -12 * max(volume_panel) * 6.022E23)
             IFN_plot.axes[i][1].set_ylim(bottom=1, top=max(IFNBeta_panel) * 10 ** -12 * max(volume_panel) * 6.022E23)
@@ -313,6 +320,7 @@ def experimental_panel(cell_densities, IFNAlpha_panel, IFNBeta_panel, times, IFN
     fig.set_size_inches(16, 12)
     fig.tight_layout()
     fig.savefig('varying_reaction_volume_IFNtc.pdf')
+
 
 def time_to_reach_robot_threshold(cell_densities, IFNAlpha_panel, IFNBeta_panel, times, threshold=1E-3):
     predictions = run_smooth_trajectories(cell_densities, IFNAlpha_panel, IFNBeta_panel, times,
@@ -402,14 +410,13 @@ def characteristic_time_figures(cell_densities, IFNAlpha_panel, IFNBeta_panel, t
     beta_heatmap_df = pd.DataFrame.from_dict(beta_half_lives, orient='index', columns=IFNBeta_panel)
 
     # Plot heatmaps
-    f, (ax1, ax2, axcb) = plt.subplots(1, 3, gridspec_kw={'width_ratios': [1, 1, 0.08]})
-    ax1.get_shared_y_axes().join(ax2)
-    g1 = sns.heatmap(alpha_heatmap_df, cmap="viridis", cbar=False, ax=ax1, vmin=100, vmax=5000)
-    g1.set_ylabel('')
-    g1.set_xlabel('')
-    g2 = sns.heatmap(beta_heatmap_df, cmap="viridis", ax=ax2, cbar_ax=axcb, vmin=100, vmax=5000)
+    f, (ax1, ax2, axcb) = plt.subplots(1, 3, gridspec_kw={'width_ratios': [1, 1, 0.08]}, figsize=(12,15))
+    g1 = sns.heatmap(alpha_heatmap_df, cmap="viridis", cbar=False, ax=ax1, annot=True, fmt=".1f", norm=LogNorm(vmin=10, vmax=10000))
+    g1.set_ylabel('cell density (million cells per mL)')
+    g1.set_xlabel(r'[IFN$\alpha$] (pM)')
+    g2 = sns.heatmap(beta_heatmap_df, cmap="viridis", ax=ax2, cbar_ax=axcb, annot=True, fmt=".1f", norm=LogNorm(vmin=10, vmax=10000))
     g2.set_ylabel('')
-    g2.set_xlabel('')
+    g2.set_xlabel(r'[IFN$\beta$] (pM)')
     g2.set_yticks([])
 
     # may be needed to rotate the ticklabels correctly:
@@ -429,22 +436,42 @@ def characteristic_time_figures(cell_densities, IFNAlpha_panel, IFNBeta_panel, t
 
 
 if __name__ == '__main__':
+    # Existing stock of IFNa is a limiting factor
+    existing_IFNa_stock = 500E-9*5E-6*6.022E23
+    well_volume = 25E-6 # L
     # Experimental parameters
     #cell_densities = [0.5E9, 5E9, 10E9, 20E9]
     cell_densities = [0.25E9, 2.5E9, 5E9, 10E9] # divide by 2
     #cell_densities = [0.33E9, 3.33E9, 6.67E9, 13.33E9] # divide by 1.5
-    cell_densities = [0.75*i for i in cell_densities]
+    #cell_densities = [0.75*i for i in cell_densities]
+    print("cell densities: ", [i/1E9 for i in cell_densities], " (million cells per mL)")
 
     volume_panel = [1/i for i in cell_densities]
     IFNBeta_EC50 = 4  # pM
     IFNAlpha_EC50 = 1000  # pM
     IFNBeta_panel = [0.5 * IFNBeta_EC50, IFNBeta_EC50, 5 * IFNBeta_EC50, 10 * IFNBeta_EC50]
-    IFNAlpha_panel = [0.1 * IFNAlpha_EC50, IFNAlpha_EC50, 5 * IFNAlpha_EC50, 10 * IFNAlpha_EC50]
+    IFNAlpha_panel = [0.05 * IFNAlpha_EC50, 0.1*IFNAlpha_EC50, 0.5 * IFNAlpha_EC50, IFNAlpha_EC50]
+
 
     # Model predictions
-    times = np.arange(0, 60 * 12 + 0.5, 0.5)
-    time_to_reach_robot_threshold(cell_densities, IFNAlpha_panel, IFNBeta_panel, times)
-    characteristic_time_figures(cell_densities, IFNAlpha_panel, IFNBeta_panel, times)
-    times = [0, 20, 40, 60, 80, 100, 120, 160, 200, 300, 400, 500, 720] # 12 hours total, 20 min intervals minimum
-    experimental_panel(cell_densities, IFNAlpha_panel, IFNBeta_panel, times)
+    #times = np.arange(0, 60 * 12 + 0.5, 0.5)
+    #time_to_reach_robot_threshold(cell_densities, IFNAlpha_panel, IFNBeta_panel, times)
+    #characteristic_time_figures(cell_densities, IFNAlpha_panel, IFNBeta_panel, times)
+    ##   Back before I realized how little IFNa we have
+    ##   times = [0, 20, 40, 60, 80, 100, 120, 160, 200, 300, 400, 500, 720] # 12 hours total, 20 min intervals minimum
+    times = [0, 20, 40, 80, 170, 350, 720]
+
+    total_IFNAlpha = np.sum([i*1E-12*well_volume*6.022E23*len(times)*len(cell_densities) for i in IFNAlpha_panel[0:2]])
+    print("Fraction of existing IFNa stock used: ", total_IFNAlpha/existing_IFNa_stock)
+    with open('set_up.txt', 'w') as f:
+        f.write("times (min): \n")
+        f.write(str(times))
+        f.write("\n\n" + "cell densities (million cells in" +  " {:.1f} ".format(well_volume/1E-6) + "microlitres):" + "\n")
+        f.write(str([i*well_volume/1E-3 for i in cell_densities]))
+        f.write("\n\n" + r"IFN$\alpha$ concentrations (pM):" + "\n")
+        f.write(str(IFNAlpha_panel[0:2]))
+        f.write("\n\n" + r"IFN$\beta$ concentrations (pM):" + "\n")
+        f.write(str(IFNBeta_panel))
+
+    #experimental_panel(cell_densities, IFNAlpha_panel, IFNBeta_panel, times)
     #testing_specific_values()
