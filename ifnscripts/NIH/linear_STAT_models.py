@@ -78,6 +78,10 @@ for a in alpha_tests:
     s = r2_score(linear_res_test, STAT_pred)
     r2_array.append(s)
 best_alpha = alpha_tests[np.where(r2_array==max(r2_array))]
+clf = Lasso(alpha=best_alpha)
+clf.fit(linear_var_train, linear_res_train)
+STAT_pred = clf.predict(linear_var_test)
+
 print("Lasso linear regression best alpha value: {}".format(best_alpha))
 print("Lasso linear regression best r2 score: {}".format(max(r2_array)))
 plt.figure()
@@ -85,3 +89,22 @@ ax=plt.gca()
 ax.set_xscale('log')
 plt.plot(alpha_tests, r2_array)
 plt.show()
+
+fig, ax = plt.subplots(nrows=1,ncols=2, figsize=(8,4))
+ax[0].scatter(linear_res_test[:,0], STAT_pred[:,0])
+ax[0].plot(np.linspace(min(linear_res_test[:,0]), max(linear_res_test[:,0])),
+           np.linspace(min(linear_res_test[:,0]), max(linear_res_test[:,0])), 'k--')
+ax[0].set_title('pSTAT1')
+ax[0].set_xlabel('measured')
+ax[0].set_ylabel('predicted')
+
+ax[1].scatter(linear_res_test[:,1], STAT_pred[:,1])
+ax[1].set_title('pSTAT3')
+ax[1].set_xlabel('measured')
+ax[1].set_ylabel('predicted')
+ax[1].plot(np.linspace(min(linear_res_test[:,1]), max(linear_res_test[:,1])),
+           np.linspace(min(linear_res_test[:,1]), max(linear_res_test[:,1])), 'k--')
+plt.show()
+
+print(linear_res_test)
+print(STAT_pred)
