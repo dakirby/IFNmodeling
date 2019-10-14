@@ -770,23 +770,23 @@ Rule('STAT5_dephos', STAT5(p1='P') >> STAT5(p1='U'), ku_STAT5)
 
 # Type 1 IFN
 # IFNAR2 + IFNa + IFNAR1 <-> Jak1.IFNAR2.IFNa.IFNAR1.Tyk2 -> STAT1  # Same activation for IFNb
-#Rule('IFNAR1_binds_Tyk2', IFNAR1(r3=None) + Tyk2(s1=None, status='inactive') | IFNAR1(r3=1)%Tyk2(s1=1, status='inactive'), ka_IFNAR1_Tyk2, kd_IFNAR1_Tyk2)
-#Rule('IFNAR2_binds_Jak1', IFNAR2(r3=None) + Jak1(s1=None, status='inactive') | IFNAR2(r3=1)%Jak1(s1=1, status='inactive'), ka_IFNAR2_Jak1, kd_IFNAR2_Jak1)
+Rule('IFNAR1_binds_Tyk2', IFNAR1(r3=None) + Tyk2(s1=None, status='inactive') | IFNAR1(r3=1)%Tyk2(s1=1, status='inactive'), ka_IFNAR1_Tyk2, kd_IFNAR1_Tyk2)
+Rule('IFNAR2_binds_Jak1', IFNAR2(r3=None) + Jak1(s1=None, status='inactive') | IFNAR2(r3=1)%Jak1(s1=1, status='inactive'), ka_IFNAR2_Jak1, kd_IFNAR2_Jak1)
 
-#Rule('IFNa_bind_R1', IFNAR1(r1=None) + IFN_alpha2(s1=None,s2=None) | IFNAR1(r1=1)%IFN_alpha2(s1=1,s2=None), ka_IFNa_R1, kd_IFNa_R1)
-#Rule('IFNa_bind_R2', IFNAR2(r1=None) + IFN_alpha2(s1=None,s2=None) | IFNAR2(r1=1)%IFN_alpha2(s1=1,s2=None), ka_IFNa_R2, kd_IFNa_R2)
-#Rule('IaR1_bind_R2', IFNAR1(r1=1)%IFN_alpha2(s1=1,s2=None) + IFNAR2(r1=None) | IFNAR1(r1=1)%IFN_alpha2(s1=1,s2=2)%IFNAR2(r1=2), ka_IFNaR1_R2, kd_IFNaR1_R2)
-#Rule('IaR2_bind_R1', IFNAR2(r1=1)%IFN_alpha2(s1=1,s2=None) + IFNAR1(r1=None) | IFNAR1(r1=1)%IFN_alpha2(s1=1,s2=2)%IFNAR2(r1=2), ka_IFNaR2_R1, kd_IFNaR2_R1)
+Rule('IFNa_bind_R1', IFNAR1(r1=None) + IFN_alpha2(s1=None,s2=None) | IFNAR1(r1=1)%IFN_alpha2(s1=1,s2=None), ka_IFNa_R1, kd_IFNa_R1)
+Rule('IFNa_bind_R2', IFNAR2(r1=None) + IFN_alpha2(s1=None,s2=None) | IFNAR2(r1=1)%IFN_alpha2(s1=1,s2=None), ka_IFNa_R2, kd_IFNa_R2)
+Rule('IaR1_bind_R2', IFNAR1(r1=1)%IFN_alpha2(s1=1,s2=None) + IFNAR2(r1=None) | IFNAR1(r1=1)%IFN_alpha2(s1=1,s2=2)%IFNAR2(r1=2), ka_IFNaR1_R2, kd_IFNaR1_R2)
+Rule('IaR2_bind_R1', IFNAR2(r1=1)%IFN_alpha2(s1=1,s2=None) + IFNAR1(r1=None) | IFNAR1(r1=1)%IFN_alpha2(s1=1,s2=2)%IFNAR2(r1=2), ka_IFNaR2_R1, kd_IFNaR2_R1)
 
-#Rule('IFNb_bind_R1', IFNAR1(r1=None) + IFN_beta(s1=None,s2=None) | IFNAR1(r1=1)%IFN_beta(s1=1,s2=None), ka_IFNb_R1, kd_IFNb_R1)
-#Rule('IFNb_bind_R2', IFNAR2(r1=None) + IFN_beta(s1=None,s2=None) | IFNAR2(r1=1)%IFN_beta(s1=1,s2=None), ka_IFNb_R2, kd_IFNb_R2)
-#Rule('IbR1_bind_R2', IFNAR1(r1=1)%IFN_beta(s1=1,s2=None) + IFNAR2(r1=None) | IFNAR1(r1=1)%IFN_beta(s1=1,s2=2)%IFNAR2(r1=2), ka_IFNbR1_R2, kd_IFNbR1_R2)
-#Rule('IbR2_bind_R1', IFNAR2(r1=1)%IFN_beta(s1=1,s2=None) + IFNAR1(r1=None) | IFNAR1(r1=1)%IFN_beta(s1=1,s2=2)%IFNAR2(r1=2), ka_IFNbR2_R1, kd_IFNbR2_R1)
+Rule('IFNb_bind_R1', IFNAR1(r1=None) + IFN_beta(s1=None,s2=None) | IFNAR1(r1=1)%IFN_beta(s1=1,s2=None), ka_IFNb_R1, kd_IFNb_R1)
+Rule('IFNb_bind_R2', IFNAR2(r1=None) + IFN_beta(s1=None,s2=None) | IFNAR2(r1=1)%IFN_beta(s1=1,s2=None), ka_IFNb_R2, kd_IFNb_R2)
+Rule('IbR1_bind_R2', IFNAR1(r1=1)%IFN_beta(s1=1,s2=None) + IFNAR2(r1=None) | IFNAR1(r1=1)%IFN_beta(s1=1,s2=2)%IFNAR2(r1=2), ka_IFNbR1_R2, kd_IFNbR1_R2)
+Rule('IbR2_bind_R1', IFNAR2(r1=1)%IFN_beta(s1=1,s2=None) + IFNAR1(r1=None) | IFNAR1(r1=1)%IFN_beta(s1=1,s2=2)%IFNAR2(r1=2), ka_IFNbR2_R1, kd_IFNbR2_R1)
 
-#Rule('IFNa_receptor_state_change', Tyk2(s1=3, status='inactive')%IFNAR1(r1=1, r3=3)%IFN_alpha2(s1=1,s2=2)%IFNAR2(r1=2, r3=4)%Jak1(s1=4, status='inactive') |\
-#     Tyk2(s1=3, status='active')%IFNAR1(r1=1, r3=3)%IFN_alpha2(s1=1,s2=2)%IFNAR2(r1=2, r3=4)%Jak1(s1=4, status='active'), IFNa_activation, IFNa_deactivation)
-#Rule('IFNb_receptor_state_change', Tyk2(s1=3, status='inactive')%IFNAR1(r1=1, r3=3)%IFN_beta(s1=1,s2=2)%IFNAR2(r1=2, r3=4)%Jak1(s1=4, status='inactive') |\
-#     Tyk2(s1=3, status='active')%IFNAR1(r1=1, r3=3)%IFN_beta(s1=1,s2=2)%IFNAR2(r1=2, r3=4)%Jak1(s1=4, status='active'), IFNb_activation, IFNb_deactivation)
+Rule('IFNa_receptor_state_change', Tyk2(s1=3, status='inactive')%IFNAR1(r1=1, r3=3)%IFN_alpha2(s1=1,s2=2)%IFNAR2(r1=2, r3=4)%Jak1(s1=4, status='inactive') |\
+     Tyk2(s1=3, status='active')%IFNAR1(r1=1, r3=3)%IFN_alpha2(s1=1,s2=2)%IFNAR2(r1=2, r3=4)%Jak1(s1=4, status='active'), IFNa_activation, IFNa_deactivation)
+Rule('IFNb_receptor_state_change', Tyk2(s1=3, status='inactive')%IFNAR1(r1=1, r3=3)%IFN_beta(s1=1,s2=2)%IFNAR2(r1=2, r3=4)%Jak1(s1=4, status='inactive') |\
+     Tyk2(s1=3, status='active')%IFNAR1(r1=1, r3=3)%IFN_beta(s1=1,s2=2)%IFNAR2(r1=2, r3=4)%Jak1(s1=4, status='active'), IFNb_activation, IFNb_deactivation)
 
 # Type 2 IFN
 # IFNg + 2x(IFNGR1.Jak1) <-> Jak1.IFNGR1.IFNg.IFNGR1.Jak1 + 2x(Jak2.IFNGR2) -> STAT1
