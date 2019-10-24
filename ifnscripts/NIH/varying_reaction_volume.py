@@ -438,7 +438,7 @@ def characteristic_time_figures(cell_densities, IFNAlpha_panel, IFNBeta_panel, t
 if __name__ == '__main__':
     # Existing stock of IFNa is a limiting factor
     existing_IFNa_stock = 500E-9*5E-6*6.022E23
-    well_volume = 25E-6 # L
+    well_volume = 50E-6 # L
     # Experimental parameters
     #cell_densities = [0.5E9, 5E9, 10E9, 20E9]
     cell_densities = [0.25E9, 2.5E9, 5E9, 10E9] # divide by 2
@@ -450,7 +450,7 @@ if __name__ == '__main__':
     IFNBeta_EC50 = 4  # pM
     IFNAlpha_EC50 = 1000  # pM
     IFNBeta_panel = [0.5 * IFNBeta_EC50, IFNBeta_EC50, 5 * IFNBeta_EC50, 10 * IFNBeta_EC50]
-    IFNAlpha_panel = [0.05 * IFNAlpha_EC50, 0.1*IFNAlpha_EC50, 0.5 * IFNAlpha_EC50, IFNAlpha_EC50]
+    IFNAlpha_panel = [0.1 * IFNAlpha_EC50, IFNAlpha_EC50, 2*IFNAlpha_EC50, 3*IFNAlpha_EC50]
 
 
     # Model predictions
@@ -459,19 +459,25 @@ if __name__ == '__main__':
     #characteristic_time_figures(cell_densities, IFNAlpha_panel, IFNBeta_panel, times)
     ##   Back before I realized how little IFNa we have
     ##   times = [0, 20, 40, 60, 80, 100, 120, 160, 200, 300, 400, 500, 720] # 12 hours total, 20 min intervals minimum
-    times = [0, 20, 40, 80, 170, 350, 720]
+    #times = [0, 20, 40, 80, 170, 350, 720] # 12 hours
+    times = [20, 45, 110, 260, 480, 1440] # 24 hours
 
     total_IFNAlpha = np.sum([i*1E-12*well_volume*6.022E23*len(times)*len(cell_densities) for i in IFNAlpha_panel[0:2]])
+    total_cells = np.sum([cell_densities[i]*well_volume*len(times)*(len(IFNBeta_panel)+len(IFNAlpha_panel[0:2])) for i in range(len(cell_densities))])
     print("Fraction of existing IFNa stock used: ", total_IFNAlpha/existing_IFNa_stock)
+    print("Total cells required: ", total_cells)
+
     with open('set_up.txt', 'w') as f:
         f.write("times (min): \n")
         f.write(str(times))
         f.write("\n\n" + "cell densities (million cells in" +  " {:.1f} ".format(well_volume/1E-6) + "microlitres):" + "\n")
-        f.write(str([i*well_volume/1E-3 for i in cell_densities]))
+        f.write(str([i*well_volume/1E6 for i in cell_densities]))
         f.write("\n\n" + r"IFN$\alpha$ concentrations (pM):" + "\n")
         f.write(str(IFNAlpha_panel[0:2]))
         f.write("\n\n" + r"IFN$\beta$ concentrations (pM):" + "\n")
         f.write(str(IFNBeta_panel))
+        f.write("\n\n" + r"Total number of cells required" + "\n")
+        f.write(str(total_cells))
 
     #experimental_panel(cell_densities, IFNAlpha_panel, IFNBeta_panel, times)
     #testing_specific_values()

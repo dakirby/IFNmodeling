@@ -37,7 +37,9 @@ ImmuneCell_Model = IfnModel('Immune_Cell_model')
 
 doses = list(logspace(-2, 2, num=15))
 times = [15, 30, 60]
-model_res = ImmuneCell_Model.doseresponse(times, ['pSTAT1','pSTAT3'], 'IFN_gamma_IC', doses, return_type='dataframe', dataframe_labels='IFNgamma')
+model_res = ImmuneCell_Model.doseresponse(times, ['pSTAT1', 'pSTAT3'], 'IFN_gamma_IC', doses,
+                                               parameters={'IFNAR1_IC':0, 'IFNAR2_IC':0, 'IFN_alpha2_IC':0, 'IFN_beta_IC':0},
+                                               return_type='dataframe', dataframe_labels='IFNgamma')
 
 pSTAT1_df = IfnData(name='custom', df=model_res.xs(['pSTAT1']))
 pSTAT3_df = IfnData(name='custom', df=model_res.xs(['pSTAT3']))
