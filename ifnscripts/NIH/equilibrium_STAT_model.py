@@ -2,13 +2,12 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-from sklearn.preprocessing import scale
+from sklearn.model_selection import KFold
 from scipy.optimize import curve_fit
 
 # Import data set and split into predictor variables (receptors, JAKs, SOCS, etc.) and response variables (STATs)
 IFNg_dose = 100 # pM
 ImmGen_df = pd.read_excel('ImmGen_signaling_with_protein_response.xlsx', sheet_name='Sheet1', axis=1)
-cell_type_to_index = pd.Series(ImmGen_df.index, index=ImmGen_df.Cell_type.values).to_dict()
 
 #create df of results and features from full dataframe
 response_variable_names = ['pSTAT1', 'pSTAT3']
@@ -16,10 +15,6 @@ response_variables = ImmGen_df[response_variable_names]
 
 predictor_variable_names = [c for c in ImmGen_df.columns.values if c not in response_variable_names + ['Cell_type']]
 predictor_variables = ImmGen_df[predictor_variable_names]
-
-#center the variables
-x_centered = scale(predictor_variables, with_mean='True', with_std='False')
-centered_predictor_variables = pd.DataFrame(x_centered, columns=predictor_variables.columns)
 
 # Compute pairwise correlations between all variables
 def pairwise_correlation():
@@ -31,8 +26,8 @@ def pairwise_correlation():
     cb = plt.colorbar()
     cb.ax.tick_params(labelsize=14)
     plt.title('Correlation Matrix', fontsize=16);
+    plt.tight_layout()
     plt.show()
-#pairwise_correlation()
 
 # Create the receptor models
 #global variables applicable to all receptors
@@ -206,8 +201,9 @@ def equilibrium_pSTAT1_and_pSTAT3(dose, K_Jak1=1E6 / (NA * volCP), K_Jak2=1E6 / 
 
 
 def SOCS_pSTAT1_and_pSTAT3(dose, SOCS_name, K_Jak1=1E6/(NA*volCP), K_Jak2=1E6/(NA*volCP),
-                              K_M_STAT1=1000/volPM, K_M_STAT3=1000/volPM, K_um_STAT1=1, K_um_STAT3=1, K_S=1/300):
-    cell_types = ImmGen_df['Cell_type'].values
+                              K_M_STAT1=1000/volPM, K_M_STAT3=1000/volPM, K_um_STAT1=1, K_um_STAT3=1, K_S=1/300,
+                           df=ImmGen_df):
+    cell_types = df['Cell_type'].values
 
     # Set input parameters for model
     default_parameters = IFNg_parameters.copy()
@@ -226,7 +222,7 @@ def SOCS_pSTAT1_and_pSTAT3(dose, SOCS_name, K_Jak1=1E6/(NA*volCP), K_Jak2=1E6/(N
 
     response = {'Cell_type': [], 'pSTAT1': [], 'pSTAT3': []}
     for c in cell_types:
-        IFNg_ImmGen_parameters = infer_protein(ImmGen_df, c, ['IFNGR1', 'IFNGR2', 'JAK1', 'JAK2', 'STAT1', 'STAT3', SOCS_name])
+        IFNg_ImmGen_parameters = infer_protein(df, c, ['IFNGR1', 'IFNGR2', 'JAK1', 'JAK2', 'STAT1', 'STAT3', SOCS_name])
         for S in ['pSTAT1', 'pSTAT3']:
             default_parameters[S]['R_total'] = IFNg_ImmGen_parameters['IFNGR1'] + IFNg_ImmGen_parameters['IFNGR2']
             default_parameters[S]['Delta'] = IFNg_ImmGen_parameters['IFNGR1'] - IFNg_ImmGen_parameters['IFNGR2']
@@ -257,55 +253,140 @@ def fit_IFNg_equilibrium():
     return pfit, pcov
 
 
-def make_SOCS_model(SOCS_name):
+def make_SOCS_model(SOCS_name, df=ImmGen_df):
     def SOCS_model(dose, p1, p2, p3, p4, p5, p6, p7, scale_factor):
         y_pred = SOCS_pSTAT1_and_pSTAT3(dose, SOCS_name, K_Jak1=p1, K_Jak2=p2, K_M_STAT1=p3, K_M_STAT3=p4,
-                                               K_um_STAT1=p5, K_um_STAT3=p6, K_S=p7)[['pSTAT1', 'pSTAT3']]
+                                               K_um_STAT1=p5, K_um_STAT3=p6, K_S=p7, df=df)[['pSTAT1', 'pSTAT3']]
         return np.divide(y_pred.values.flatten(), scale_factor)
     return SOCS_model
 
-def fit_IFNg_with_SOCS(SOCS_name):
-    NK_SOCS_expression = infer_protein(ImmGen_df, 'NK', [SOCS_name])[SOCS_name]
-    default_parameters = [1E6 / (NA * volCP), 1E6 / (NA * volCP), 1000 / volPM, 1000 / volPM, 1, 1, 1/NK_SOCS_expression, 15]
-    y_true = ImmGen_df[['pSTAT1', 'pSTAT3']].values.flatten()
-    pfit, pcov = curve_fit(make_SOCS_model(SOCS_name), IFNg_dose, y_true, p0=default_parameters,
+def fit_IFNg_with_SOCS(SOCS_name, df=ImmGen_df):
+    min_response_row = df.loc[df[response_variable_names[0]].idxmin()]
+    min_response_SOCS_expression = infer_protein(df, min_response_row.loc['Cell_type'], [SOCS_name])[SOCS_name]
+    default_parameters = [1E6 / (NA * volCP), 1E6 / (NA * volCP), 1000 / volPM, 1000 / volPM, 1, 1, 1/min_response_SOCS_expression, 15]
+    y_true = df[['pSTAT1', 'pSTAT3']].values.flatten()
+    pfit, pcov = curve_fit(make_SOCS_model(SOCS_name, df), IFNg_dose, y_true, p0=default_parameters,
                            bounds=(np.multiply(default_parameters, 0.1), np.multiply(default_parameters, 10)))
     return pfit, pcov
 
+
+def k_fold_cross_validate_SOCS_model(k=10, df=ImmGen_df, neg_feedback_name='SOCS2'):
+    """
+    Validate the estimated R^2 value for the SOCS model fit using k-fold cross validation
+    :param k: (int) number of folds to split data into
+    :param df: (DataFrame) combined predictor and response variables
+    :return r2, r2_variance: (floats) the estimated R^2 value and variance in the estimate
+    """
+    kf = KFold(n_splits=k, shuffle=True, random_state=2)
+    result = next(kf.split(df), None)
+    r2_samples = []
+    for i in range(k):
+        # Split data
+        train = df.iloc[result[0]]
+        test = df.iloc[result[1]]
+
+        # Fit
+        pfit, pcov = fit_IFNg_with_SOCS(neg_feedback_name, df=train)
+
+        # Predict
+        SOCS_model = make_SOCS_model(neg_feedback_name, df=test)
+        fit_pred = np.reshape(SOCS_model(IFNg_dose, *pfit), (test.shape[0], len(response_variable_names)))
+        fit_pred_labelled = [[test['Cell_type'].values[j], fit_pred[j][0], fit_pred[j][1]] for j in range(test.shape[0])]
+
+        # Compute R**2 value
+        residuals = np.subtract(fit_pred, test[['pSTAT1', 'pSTAT3']].values)
+        ss_res = np.sum(residuals**2)
+        ss_tot = np.sum((test[['pSTAT1', 'pSTAT3']].values-np.mean(test[['pSTAT1', 'pSTAT3']].values))**2)
+        r_squared = 1 - (ss_res / ss_tot)
+        r2_samples.append(r_squared)
+    return np.mean(r2_samples), np.var(r2_samples)
+
 # Fit
-neg_feedback_name = 'SOCS2'
-pfit, pcov = fit_IFNg_with_SOCS(neg_feedback_name)
-print(pfit)
+def fit_without_SOCS(df=ImmGen_df):
+    pfit, pcov = fit_IFNg_equilibrium()
+    print(pfit)
 
-# Predict
-SOCS_model = make_SOCS_model(neg_feedback_name)
-fit_pred = np.reshape(SOCS_model(IFNg_dose, *pfit), (19, 2))
-fit_pred_labelled = [[ImmGen_df['Cell_type'].values[i], fit_pred[i][0], fit_pred[i][1]] for i in range(19)]
+    # Predict
+    fit_pred = np.reshape(equilibrium_model(IFNg_dose, *pfit), (19, len(response_variable_names)))
+    fit_pred_labelled = [[df['Cell_type'].values[i], fit_pred[i][0], fit_pred[i][1]] for i in range(df.shape[0])]
 
-# Compute R**2 value
-residuals = np.subtract(fit_pred, ImmGen_df[['pSTAT1', 'pSTAT3']].values)
-ss_res = np.sum(residuals**2)
-ss_tot = np.sum((ImmGen_df[['pSTAT1', 'pSTAT3']].values-np.mean(ImmGen_df[['pSTAT1', 'pSTAT3']].values))**2)
-r_squared = 1 - (ss_res / ss_tot)
-print("r-squared value: ", r_squared)
+    # Compute R**2 value
+    residuals = np.subtract(fit_pred, df[['pSTAT1', 'pSTAT3']].values)
+    ss_res = np.sum(residuals ** 2)
+    ss_tot = np.sum((df[['pSTAT1', 'pSTAT3']].values - np.mean(df[['pSTAT1', 'pSTAT3']].values)) ** 2)
+    r_squared = 1 - (ss_res / ss_tot)
+    print("r-squared value: ", r_squared)
 
-# Plot
-fit_prediction = pd.DataFrame.from_records(fit_pred_labelled, columns=['Cell_type', 'pSTAT1', 'pSTAT3'])
-fit_prediction.insert(0, 'Class', ['Model' for _ in range(19)])
-measured_response = ImmGen_df[['Cell_type', 'pSTAT1', 'pSTAT3']]
-measured_response.insert(0, 'Class', ['CyTOF' for _ in range(19)])
+    # Plot
+    fit_prediction = pd.DataFrame.from_records(fit_pred_labelled, columns=['Cell_type', 'pSTAT1', 'pSTAT3'])
+    fit_prediction.insert(0, 'Class', ['Model' for _ in range(df.shape[0])])
+    measured_response = df[['Cell_type', 'pSTAT1', 'pSTAT3']]
+    measured_response.insert(0, 'Class', ['CyTOF' for _ in range(df.shape[0])])
 
-df = pd.concat([fit_prediction, measured_response])
+    df = pd.concat([fit_prediction, measured_response])
 
-fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(12.8, 5))
-subplot_titles = ['pSTAT1', 'pSTAT3']
-sns.barplot(x="Cell_type", y="pSTAT1", data=df, hue='Class', ax=ax[0])
-sns.barplot(x="Cell_type", y="pSTAT3", data=df, hue='Class', ax=ax[1])
-for i in [0,1]:
-    ax[i].set_xticklabels(ax[i].get_xticklabels(), rotation=90)
-    ax[i].set_title(subplot_titles[i])
+    fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(12.8, 5))
+    subplot_titles = ['pSTAT1', 'pSTAT3']
+    sns.barplot(x="Cell_type", y="pSTAT1", data=df, hue='Class', ax=ax[0])
+    sns.barplot(x="Cell_type", y="pSTAT3", data=df, hue='Class', ax=ax[1])
+    for i in [0, 1]:
+        ax[i].set_xticklabels(ax[i].get_xticklabels(), rotation=90)
+        ax[i].set_title(subplot_titles[i])
 
-plt.suptitle(r"$R^{2}$ = "+ "{:.2f}".format(r_squared))
-plt.tight_layout()
-plt.show()
+    plt.suptitle(r"$R^{2}$ = " + "{:.2f}".format(r_squared))
+    plt.tight_layout()
+    plt.show()
 
+
+def fit_with_SOCS(df=ImmGen_df, k_fold=1):
+    neg_feedback_name = 'SOCS2'
+    pfit, pcov = fit_IFNg_with_SOCS(neg_feedback_name, df)
+    print(pfit)
+
+    # Predict
+    SOCS_model = make_SOCS_model(neg_feedback_name)
+    fit_pred = np.reshape(SOCS_model(IFNg_dose, *pfit), (df.shape[0], len(response_variable_names)))
+    fit_pred_labelled = [[df['Cell_type'].values[i], fit_pred[i][0], fit_pred[i][1]] for i in range(df.shape[0])]
+
+    # Compute R**2 value
+    if k_fold==1:
+        residuals = np.subtract(fit_pred, df[['pSTAT1', 'pSTAT3']].values)
+        ss_res = np.sum(residuals**2)
+        ss_tot = np.sum((df[['pSTAT1', 'pSTAT3']].values-np.mean(df[['pSTAT1', 'pSTAT3']].values))**2)
+        r_squared = 1 - (ss_res / ss_tot)
+        print("r-squared value: ", r_squared)
+    else:
+        r_squared, r2_var = k_fold_cross_validate_SOCS_model(k=k_fold)
+        print("k-fold cross validation of R2 value is estimated to be {:.2f} +/- {:.2f}".format(r_squared, np.sqrt(r2_var)))
+
+    # Plot
+    fit_prediction = pd.DataFrame.from_records(fit_pred_labelled, columns=['Cell_type', 'pSTAT1', 'pSTAT3'])
+    fit_prediction.insert(0, 'Class', ['Model' for _ in range(df.shape[0])])
+    measured_response = df[['Cell_type', 'pSTAT1', 'pSTAT3']]
+    measured_response.insert(0, 'Class', ['CyTOF' for _ in range(df.shape[0])])
+
+    df = pd.concat([fit_prediction, measured_response])
+
+    fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(12.8, 5))
+    subplot_titles = ['pSTAT1', 'pSTAT3']
+    sns.barplot(x="Cell_type", y="pSTAT1", data=df, hue='Class', ax=ax[0])
+    sns.barplot(x="Cell_type", y="pSTAT3", data=df, hue='Class', ax=ax[1])
+    for i in [0,1]:
+        ax[i].set_xticklabels(ax[i].get_xticklabels(), rotation=90)
+        ax[i].set_title(subplot_titles[i])
+
+    if k_fold==1:
+        plt.suptitle(r"$R^{2}$ = "+ "{:.2f}".format(r_squared))
+    else:
+        plt.suptitle(r"$R^{2}$ = " + "{:.2f}".format(r_squared) + " ({}-fold cross-validation)".format(k_fold))
+    plt.tight_layout()
+    plt.show()
+
+if __name__ == "__main__":
+    # Check variance in predictors
+    # df = ImmGen_df[response_variable_names + predictor_variable_names]
+    # print(pd.Series(np.diag(df.cov().values), index=df.columns))
+
+    #pairwise_correlation()
+    
+    fit_with_SOCS(k_fold=6)
