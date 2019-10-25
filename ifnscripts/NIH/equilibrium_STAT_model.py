@@ -277,10 +277,9 @@ def k_fold_cross_validate_SOCS_model(k=10, df=ImmGen_df, neg_feedback_name='SOCS
     :param df: (DataFrame) combined predictor and response variables
     :return r2, r2_variance: (floats) the estimated R^2 value and variance in the estimate
     """
-    kf = KFold(n_splits=k, shuffle=True, random_state=2)
-    result = next(kf.split(df), None)
+    kf = KFold(n_splits=k, shuffle=True, random_state=1)
     r2_samples = []
-    for i in range(k):
+    for result in kf.split(df):
         # Split data
         train = df.iloc[result[0]]
         test = df.iloc[result[1]]
@@ -299,6 +298,7 @@ def k_fold_cross_validate_SOCS_model(k=10, df=ImmGen_df, neg_feedback_name='SOCS
         ss_tot = np.sum((test[['pSTAT1', 'pSTAT3']].values-np.mean(test[['pSTAT1', 'pSTAT3']].values))**2)
         r_squared = 1 - (ss_res / ss_tot)
         r2_samples.append(r_squared)
+
     return np.mean(r2_samples), np.var(r2_samples)
 
 # Fit
@@ -384,9 +384,9 @@ def fit_with_SOCS(df=ImmGen_df, k_fold=1):
 
 if __name__ == "__main__":
     # Check variance in predictors
-    # df = ImmGen_df[response_variable_names + predictor_variable_names]
-    # print(pd.Series(np.diag(df.cov().values), index=df.columns))
+    #df = ImmGen_df[response_variable_names + predictor_variable_names]
+    #print(pd.Series(np.diag(df.cov().values), index=df.columns))
 
     #pairwise_correlation()
-    
-    fit_with_SOCS(k_fold=6)
+
+    fit_with_SOCS()
