@@ -151,8 +151,7 @@ def plot_dose_response(IFNg_parameters, SOCS_name, model=1):
 
 def infer_protein(dataset, cell_type, protein_names):
     """
-    Assumes that the steady-state protein level is twice the mean for each order-of-magnitude the transcript level is
-     from the mean. This is just a temporary choice and should be improved based on translation models.
+    Assumes that the steady-state protein level is simply one-to-one with the transcript level measured.
     :param dataset: pandas dataframe with ImmGen transcript levels for the cell_type of interest
     :param cell_type: row label to select from dataset
     :param protein_names: column names to extract transcript values from dataset
@@ -160,9 +159,9 @@ def infer_protein(dataset, cell_type, protein_names):
             Cytokine_Receptor.parameters
     """
     transcripts = dataset.loc[dataset['Cell_type'] == cell_type][protein_names].values.flatten()
-    mean_transcripts = dataset.mean()[protein_names].values
-    proteins = [mean_transcripts[i] * 2**(np.log10(transcripts[i]/mean_transcripts[i])) for i in range(len(protein_names))]
-    return dict(zip(protein_names, proteins))
+    #mean_transcripts = dataset.mean()[protein_names].values
+    #proteins = [mean_transcripts[i] * 2**(np.log10(transcripts[i]/mean_transcripts[i])) for i in range(len(protein_names))]
+    return dict(zip(protein_names, transcripts))
 
 
 def equilibrium_pSTAT1_and_pSTAT3(dose, K_Jak1=1E6 / (NA * volCP), K_Jak2=1E6 / (NA * volCP),
@@ -382,6 +381,51 @@ def fit_with_SOCS(df=ImmGen_df, k_fold=1):
     plt.tight_layout()
     plt.show()
 
+
+def compare_model_errors(df=ImmGen_df):
+    # ------------
+    # With SOCS
+    # ------------
+    neg_feedback_name = 'SOCS2'
+    pfit, pcov = fit_IFNg_with_SOCS(neg_feedback_name, df)
+
+    # Predict
+    SOCS_model = make_SOCS_model(neg_feedback_name)
+    SOCS_fit_pred = np.reshape(SOCS_model(IFNg_dose, *pfit), (df.shape[0], len(response_variable_names)))
+
+    # Residual
+    SOCS_residuals = np.subtract(SOCS_fit_pred, df[['pSTAT1', 'pSTAT3']].values)
+    #SOCS_res_pred_labelled = [[df['Cell_type'].values[i], SOCS_residuals[i][0], SOCS_residuals[i][1]] for i in range(df.shape[0])]
+
+    # ------------
+    # Without SOCS
+    # ------------
+    pfit, pcov = fit_IFNg_equilibrium()
+
+    # Predict
+    fit_pred = np.reshape(equilibrium_model(IFNg_dose, *pfit), (df.shape[0], len(response_variable_names)))
+
+    # Residual
+    residuals = np.subtract(fit_pred, df[['pSTAT1', 'pSTAT3']].values)
+    #res_pred_labelled = [[df['Cell_type'].values[i], residuals[i][0], residuals[i][1]] for i in range(df.shape[0])]
+
+    # ------------
+    # Plot
+    # ------------
+    fig, ax = plt.subplots(nrows=1, ncols=2)
+    for i in [0, 1]:
+        ax[i].set_title('pSTAT{}'.format(i*2 + 1))
+        ax[i].set_xscale('log')
+        ax[i].set_yscale('log')
+        ax[i].set_xlabel(r'abs($\delta$) in no-SOCS model')
+        ax[i].set_ylabel(r'abs($\delta$) in SOCS model')
+        ax[i].scatter(np.abs(residuals[:, i]), np.abs(SOCS_residuals[:, i]))
+        ax[i].plot(np.logspace(np.log10(min(np.abs(residuals[:, i]))), np.log10(max(np.abs(residuals[:, i])))),
+                   np.logspace(np.log10(min(np.abs(residuals[:, i]))), np.log10(max(np.abs(residuals[:, i])))), 'k--')
+    plt.tight_layout()
+    plt.show()
+
+
 if __name__ == "__main__":
     # Check variance in predictors
     #df = ImmGen_df[response_variable_names + predictor_variable_names]
@@ -390,3 +434,5 @@ if __name__ == "__main__":
     #pairwise_correlation()
 
     fit_with_SOCS()
+
+    compare_model_errors()
