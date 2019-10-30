@@ -1,4 +1,5 @@
 from pysb.export import export
+from pysb import bng
 from collections import OrderedDict
 import copy
 from numpy import multiply, zeros, nan, asarray
@@ -101,10 +102,11 @@ class IfnModel:
             os.remove(ODE_filename)
             return model_obj
 
-
     def save_model(self, name):
-        with open(name, 'wb') as f:
-            pickle.dump(self.__dict__, f,2)
+        file_text = export(self.model, 'bng_net')
+        print(file_text)
+        with open(name, 'w') as f:
+            f.write(file_text)
 
     def load_model(self, name):
         try:
@@ -112,9 +114,15 @@ class IfnModel:
                 tmp_dict = pickle.load(f)
             self.__dict__.update(tmp_dict)
         except FileNotFoundError:
-            with open(name, 'rb') as f:
-                tmp_dict = pickle.load(f)
-            self.__dict__.update(tmp_dict)
+            try:
+                with open(name, 'rb') as f:
+                    tmp_dict = pickle.load(f)
+                self.__dict__.update(tmp_dict)
+            except:
+                with open(name, 'r') as f:
+                    netfile = f.read()
+                    bng.load_equations(self.model, netfile)
+
 
     def build_parameters(self, pysb_model):
         if pysb_model is not None:

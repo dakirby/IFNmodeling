@@ -68,7 +68,7 @@ Methods:
         self.STAT_names = STAT_names
         self.parameters = parameters
         self.cytokine_name = cytokine_name
-        if not all(elem in self.STAT_names  for elem in self.parameters.keys()):
+        if not all(elem in self.STAT_names for elem in self.parameters.keys()):
             print("Not all parameters were defined for all STAT outputs")
             raise KeyError
 
@@ -103,13 +103,38 @@ Methods:
             STAT_response[STAT] = response
         return STAT_response
 
-default_SOCS_name = 'PIAS2'
+    def equilibrium_model_ec50(self, SOCS_name):
+        ec50_dict = {}
+        for STAT in self.STAT_names:
+            term1 = volPM * self.parameters[STAT]['K_M'] * self.parameters[STAT]['K_um']
+            num = 2 * term1 * self.parameters[STAT]['K_ligand'] * (1/self.parameters[STAT]['K_S']-self.parameters[STAT][SOCS_name] > 0)
+            ec50 = num / (4 * term1 - (2 * term1 + self.parameters[STAT]['Jak1'] * self.parameters[STAT]['K_Jak1'] * self.parameters[STAT]['K_Jak2'] * self.parameters[STAT]['Jak2'] * \
+                                       (-1 + self.parameters[STAT]['K_S'] * self.parameters[STAT][SOCS_name]) *\
+                                       (self.parameters[STAT]['K_R1R2'] + self.parameters[STAT]['R_total'] + self.parameters[STAT]['K_R1R2']*\
+                                        np.sqrt((self.parameters[STAT]['K_R1R2']**2 + 2*self.parameters[STAT]['K_R1R2']*self.parameters[STAT]['R_total'] + self.parameters[STAT]['Delta']**2)/\
+                                                self.parameters[STAT]['K_R1R2']**2))))
+            ec50_dict[STAT] = ec50/(NA*volEC) # (M)
+        return ec50_dict
+
+    def equilibrium_model_pSTATmax(self, SOCS_name):
+        pSTAT_max_dict = {}
+        for STAT in self.STAT_names:
+            heaviside_term = (1/self.parameters[STAT]['K_S']-self.parameters[STAT][SOCS_name] > 0)
+            sqrt_term = np.sqrt(1 + (2*self.parameters[STAT]['K_R1R2']*self.parameters[STAT]['R_total'] + self.parameters[STAT]['Delta']**2)/self.parameters[STAT]['K_R1R2']**2)
+            term1 = 1 + self.parameters[STAT]['R_total']/self.parameters[STAT]['K_R1R2'] + sqrt_term
+            term2 = self.parameters[STAT]['Jak1']*self.parameters[STAT]['Jak2']*self.parameters[STAT]['K_Jak1']*self.parameters[STAT]['K_Jak2']
+            Rt = 2*volPM*self.parameters[STAT]['K_M']*self.parameters[STAT]['K_um']/(term2*self.parameters[STAT]['K_R1R2']*(1-self.parameters[STAT]['K_S']*self.parameters[STAT][SOCS_name])*term1*heaviside_term)
+            maxpSTAT = self.parameters[STAT]['STAT_total']/(1+Rt)
+            pSTAT_max_dict[STAT] = maxpSTAT
+        return pSTAT_max_dict
+
+default_SOCS_name = 'SOCS2'
 IFNg_parameters = {'pSTAT1': {'R_total': 2000, # infer from Immgen
                               'Delta': 0,                           # infer from Immgen
                               'Jak1': 1000,                         # infer from Immgen
                               'Jak2': 1000,                         # infer from Immgen
                               'STAT_total': 2000,                   # infer from Immgen
-                              default_SOCS_name: 200,                         # infer from Immgen
+                              default_SOCS_name: 200,               # infer from Immgen
                               'K_ligand': NA*volEC/(4*pi*0.5E10),   # from literature
                               'K_Jak1': 1E6/(NA*volCP),             # fit for each receptor
                               'K_Jak2': 1E6/(NA*volCP),             # fit for each receptor
@@ -158,10 +183,18 @@ def infer_protein(dataset, cell_type, protein_names):
     :return: proteins (dict): keys are protein_names and values are the numbers of the proteins to use in
             Cytokine_Receptor.parameters
     """
-    transcripts = dataset.loc[dataset['Cell_type'] == cell_type][protein_names].values.flatten()
-    #mean_transcripts = dataset.mean()[protein_names].values
-    #proteins = [mean_transcripts[i] * 2**(np.log10(transcripts[i]/mean_transcripts[i])) for i in range(len(protein_names))]
-    return dict(zip(protein_names, transcripts))
+    if 'allSOCS' in protein_names:
+        all_SOCS_names = ['SHP1', 'SHP2', 'PIAS1', 'PIAS2', 'PIAS3', 'PIAS4']
+        SOCS_transcripts = np.sum(dataset.loc[dataset['Cell_type'] == cell_type][all_SOCS_names].values.flatten())
+        transcripts = dataset.loc[dataset['Cell_type'] == cell_type][[p for p in protein_names if p!='allSOCS']].values.flatten()
+        d = dict(zip([p for p in protein_names if p!='allSOCS'], transcripts))
+        d['allSOCS'] = SOCS_transcripts
+        return d
+    else:
+        transcripts = dataset.loc[dataset['Cell_type'] == cell_type][protein_names].values.flatten()
+        #mean_transcripts = dataset.mean()[protein_names].values
+        #proteins = [mean_transcripts[i] * 2**(np.log10(transcripts[i]/mean_transcripts[i])) for i in range(len(protein_names))]
+        return dict(zip(protein_names, transcripts))
 
 
 def equilibrium_pSTAT1_and_pSTAT3(dose, K_Jak1=1E6 / (NA * volCP), K_Jak2=1E6 / (NA * volCP),
@@ -289,7 +322,6 @@ def k_fold_cross_validate_SOCS_model(k=10, df=ImmGen_df, neg_feedback_name='SOCS
         # Predict
         SOCS_model = make_SOCS_model(neg_feedback_name, df=test)
         fit_pred = np.reshape(SOCS_model(IFNg_dose, *pfit), (test.shape[0], len(response_variable_names)))
-        fit_pred_labelled = [[test['Cell_type'].values[j], fit_pred[j][0], fit_pred[j][1]] for j in range(test.shape[0])]
 
         # Compute R**2 value
         residuals = np.subtract(fit_pred, test[['pSTAT1', 'pSTAT3']].values)
@@ -337,8 +369,7 @@ def fit_without_SOCS(df=ImmGen_df):
     plt.show()
 
 
-def fit_with_SOCS(df=ImmGen_df, k_fold=1):
-    neg_feedback_name = 'SOCS2'
+def fit_with_SOCS(df=ImmGen_df, k_fold=1, neg_feedback_name='SOCS2'):
     pfit, pcov = fit_IFNg_with_SOCS(neg_feedback_name, df)
     print(pfit)
 
@@ -426,6 +457,107 @@ def compare_model_errors(df=ImmGen_df):
     plt.show()
 
 
+def ec50_for_all_cell_types(SOCS_name, df=ImmGen_df):
+    # Get parameter fits for K_Jak1, K_Jak2, K_M_STAT1, K_M_STAT3, K_um_STAT1, K_um_STAT3, K_S, scale_factor
+    pfit, pcov = fit_IFNg_with_SOCS(SOCS_name, df)
+
+    cell_types = df['Cell_type'].values
+
+    # Set input parameters for model
+    default_parameters = IFNg_parameters.copy()
+    # receptor parameters
+    default_parameters['pSTAT1']['K_Jak1'] = pfit[0]
+    default_parameters['pSTAT3']['K_Jak1'] = pfit[0]
+    default_parameters['pSTAT1']['K_Jak2'] = pfit[1]
+    default_parameters['pSTAT3']['K_Jak2'] = pfit[1]
+    default_parameters['pSTAT1']['K_S'] = pfit[6]
+    default_parameters['pSTAT3']['K_S'] = pfit[6]
+    # receptor:STAT parameters
+    default_parameters['pSTAT1']['K_M'] = pfit[2]
+    default_parameters['pSTAT3']['K_M'] = pfit[3]
+    default_parameters['pSTAT1']['K_um'] = pfit[4]
+    default_parameters['pSTAT3']['K_um'] = pfit[5]
+
+    record = {}
+    for c in cell_types:
+        IFNg_ImmGen_parameters = infer_protein(df, c, ['IFNGR1', 'IFNGR2', 'JAK1', 'JAK2', 'STAT1', 'STAT3', SOCS_name])
+        for S in ['pSTAT1', 'pSTAT3']:
+            default_parameters[S]['R_total'] = IFNg_ImmGen_parameters['IFNGR1'] + IFNg_ImmGen_parameters['IFNGR2']
+            default_parameters[S]['Delta'] = IFNg_ImmGen_parameters['IFNGR1'] - IFNg_ImmGen_parameters['IFNGR2']
+            default_parameters[S]['Jak1'] = IFNg_ImmGen_parameters['JAK1']
+            default_parameters[S]['Jak2'] = IFNg_ImmGen_parameters['JAK2']
+            default_parameters[S]['STAT_total'] = IFNg_ImmGen_parameters[S[1:]]
+            default_parameters[S][SOCS_name] = IFNg_ImmGen_parameters[SOCS_name]
+        # Make predictions
+        IFNg_receptor = Cytokine_Receptor(['pSTAT1', 'pSTAT3'], IFNg_parameters, 'IFNgamma')
+        ec50 = IFNg_receptor.equilibrium_model_ec50(SOCS_name)
+        record[c] = {'pSTAT1': ec50['pSTAT1']/1E-12, 'pSTAT3': ec50['pSTAT3']/1E-12} # in pM
+    return record
+
+
+def max_pSTAT_for_all_cell_types(SOCS_name, df=ImmGen_df):
+    # Get parameter fits for K_Jak1, K_Jak2, K_M_STAT1, K_M_STAT3, K_um_STAT1, K_um_STAT3, K_S, scale_factor
+    pfit, pcov = fit_IFNg_with_SOCS(SOCS_name, df)
+
+    cell_types = df['Cell_type'].values
+
+    # Set input parameters for model
+    default_parameters = IFNg_parameters.copy()
+    # receptor parameters
+    default_parameters['pSTAT1']['K_Jak1'] = pfit[0]
+    default_parameters['pSTAT3']['K_Jak1'] = pfit[0]
+    default_parameters['pSTAT1']['K_Jak2'] = pfit[1]
+    default_parameters['pSTAT3']['K_Jak2'] = pfit[1]
+    default_parameters['pSTAT1']['K_S'] = pfit[6]
+    default_parameters['pSTAT3']['K_S'] = pfit[6]
+    # receptor:STAT parameters
+    default_parameters['pSTAT1']['K_M'] = pfit[2]
+    default_parameters['pSTAT3']['K_M'] = pfit[3]
+    default_parameters['pSTAT1']['K_um'] = pfit[4]
+    default_parameters['pSTAT3']['K_um'] = pfit[5]
+
+    record = {}
+    for c in cell_types:
+        IFNg_ImmGen_parameters = infer_protein(df, c, ['IFNGR1', 'IFNGR2', 'JAK1', 'JAK2', 'STAT1', 'STAT3', SOCS_name])
+        for S in ['pSTAT1', 'pSTAT3']:
+            default_parameters[S]['R_total'] = IFNg_ImmGen_parameters['IFNGR1'] + IFNg_ImmGen_parameters['IFNGR2']
+            default_parameters[S]['Delta'] = IFNg_ImmGen_parameters['IFNGR1'] - IFNg_ImmGen_parameters['IFNGR2']
+            default_parameters[S]['Jak1'] = IFNg_ImmGen_parameters['JAK1']
+            default_parameters[S]['Jak2'] = IFNg_ImmGen_parameters['JAK2']
+            default_parameters[S]['STAT_total'] = IFNg_ImmGen_parameters[S[1:]]
+            default_parameters[S][SOCS_name] = IFNg_ImmGen_parameters[SOCS_name]
+        # Make predictions
+        IFNg_receptor = Cytokine_Receptor(['pSTAT1', 'pSTAT3'], IFNg_parameters, 'IFNgamma')
+        maxpSTAT = IFNg_receptor.equilibrium_model_pSTATmax(SOCS_name)
+        record[c] = {'pSTAT1': maxpSTAT['pSTAT1']/pfit[7], 'pSTAT3': maxpSTAT['pSTAT3']/pfit[7]} # in number of molecules, scaled to match CyTOF
+    return record
+
+def make_ec50_predictions_plot():
+    ec50_predictions = ec50_for_all_cell_types('SOCS2')
+    maxpSTAT_predictions = max_pSTAT_for_all_cell_types('SOCS2')
+    SOCS_CyTOF = {c: infer_protein(ImmGen_df, c, ['SOCS2'])['SOCS2'] for c in ImmGen_df['Cell_type'].values}
+    pSTAT1_CyTOF = {c: infer_protein(ImmGen_df, c, ['pSTAT1'])['pSTAT1'] for c in ImmGen_df['Cell_type'].values}
+    pSTAT3_CyTOF = {c: infer_protein(ImmGen_df, c, ['pSTAT3'])['pSTAT3'] for c in ImmGen_df['Cell_type'].values}
+
+    fig, ax = plt.subplots(nrows=2, ncols=2)
+    ax[0][0].set_ylabel('EC50 (pM)')
+    ax[1][0].set_ylabel('Max pSTAT (# molecules)')
+    ax[1][1].set_xlabel('SOCS expression (# transcripts)')
+    ax[1][0].set_xlabel('SOCS expression (# transcripts)')
+    ax[0][0].title.set_text('pSTAT1')
+    ax[0][1].title.set_text('pSTAT3')
+
+    ax[0][0].scatter([SOCS_CyTOF[c] for c in SOCS_CyTOF.keys()], [ec50_predictions[c]['pSTAT1'] for c in SOCS_CyTOF.keys()], label='prediction')
+    ax[0][1].scatter([SOCS_CyTOF[c] for c in SOCS_CyTOF.keys()], [ec50_predictions[c]['pSTAT3'] for c in SOCS_CyTOF.keys()], label='prediction')
+
+    ax[1][0].scatter([SOCS_CyTOF[c] for c in SOCS_CyTOF.keys()], [maxpSTAT_predictions[c]['pSTAT1'] for c in SOCS_CyTOF.keys()], label='prediction')
+    ax[1][1].scatter([SOCS_CyTOF[c] for c in SOCS_CyTOF.keys()], [maxpSTAT_predictions[c]['pSTAT3'] for c in SOCS_CyTOF.keys()], label='prediction')
+    ax[1][0].scatter([SOCS_CyTOF[c] for c in SOCS_CyTOF.keys()], [pSTAT1_CyTOF[c] for c in SOCS_CyTOF.keys()], label='CyTOF')
+    ax[1][1].scatter([SOCS_CyTOF[c] for c in SOCS_CyTOF.keys()], [pSTAT3_CyTOF[c] for c in SOCS_CyTOF.keys()], label='CyTOF')
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+
 if __name__ == "__main__":
     # Check variance in predictors
     #df = ImmGen_df[response_variable_names + predictor_variable_names]
@@ -435,4 +567,8 @@ if __name__ == "__main__":
 
     fit_with_SOCS()
 
-    compare_model_errors()
+    #compare_model_errors()
+
+    #print(ec50_for_all_cell_types('SOCS2'))
+    #make_ec50_predictions_plot()
+
