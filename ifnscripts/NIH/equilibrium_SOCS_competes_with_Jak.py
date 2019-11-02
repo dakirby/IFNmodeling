@@ -52,14 +52,14 @@ Attributes:
                         for keys the names (str) and values (float or int) for the equilibrium model of that
                         corresponding STAT response; parameters should be given in units of molecules where 
                         possible, not molarity.
-        keys: R_total, Delta, Jak1, Jak2, STAT_total, K_ligand, K_Jak1, K_Jak2, K_R1R2, K_M, K_um
+        keys: R_total, Delta, Jak1, Jak2, STAT_total, K_ligand, K_Jak1, K_Jak2, K_R1R2, K_M, K_rc
     cytokine_name (str): the name of the cytokine which binds specifically to this receptor 
 
 Methods: 
     def equilibrium_model_output():
         :param cytokine_dose: (float) the stimulation of cytokine in pM
         :return STAT_response: (dict) the predicted pSTAT response for each key, STAT, in self.STAT_names
-    def equilibrium_model_with_SOCS_output():
+    def equilibrium_model_for_SOCS_competing_with_Jak():
         :param cytokine_dose: (float) the stimulation of cytokine in pM
         :return STAT_response: (dict) the predicted pSTAT response for each key, STAT, in self.STAT_names
 
@@ -77,36 +77,36 @@ Methods:
         STAT_response = {}
         for STAT in self.STAT_names:
             cytokine_R = self.parameters[STAT]['K_R1R2']/2 * \
-                         (1 + self.parameters[STAT]['R_total']/self.parameters[STAT]['K_R1R2'] +\
+                         (1 + self.parameters[STAT]['R_total']/self.parameters[STAT]['K_R1R2'] -\
                             np.sqrt(1 + (2*self.parameters[STAT]['R_total']*self.parameters[STAT]['K_R1R2']\
                                          + self.parameters[STAT]['Delta']**2)/self.parameters[STAT]['K_R1R2']**2))
             Rstar = cytokine_R*self.parameters[STAT]['Jak1']*self.parameters[STAT]['K_Jak1']*self.parameters[STAT]['Jak2']*\
                     self.parameters[STAT]['K_Jak2']/(1+self.parameters[STAT]['K_ligand']/dose)
-            response = self.parameters[STAT]['STAT_total']/(1+self.parameters[STAT]['K_um']*self.parameters[STAT]['K_M']*volPM/Rstar)
+            response = self.parameters[STAT]['STAT_total']/(1+self.parameters[STAT]['K_rc']*self.parameters[STAT]['K_M']*volPM/Rstar)
             STAT_response[STAT] = response
         return STAT_response
 
-    def equilibrium_model_with_SOCS_output(self, cytokine_dose, SOCS_name):
+    def equilibrium_model_for_SOCS_competing_with_Jak(self, cytokine_dose, SOCS_name):
         dose = cytokine_dose*1E-12*NA*volEC
         STAT_response = {}
         for STAT in self.STAT_names:
             cytokine_R = self.parameters[STAT]['K_R1R2']/2 * \
-                         (1 + self.parameters[STAT]['R_total']/self.parameters[STAT]['K_R1R2'] +\
+                         (1 + self.parameters[STAT]['R_total']/self.parameters[STAT]['K_R1R2'] -\
                             np.sqrt(1 + (2*self.parameters[STAT]['R_total']*self.parameters[STAT]['K_R1R2']\
                                          + self.parameters[STAT]['Delta']**2)/self.parameters[STAT]['K_R1R2']**2))
-            PR1active = self.parameters[STAT]['Jak1']*self.parameters[STAT]['K_Jak1']*\
-                    (1-self.parameters[STAT][SOCS_name]*self.parameters[STAT]['K_S'])*\
-                        np.heaviside(1/self.parameters[STAT]['K_S']-self.parameters[STAT][SOCS_name], 1)
+            PR1active = self.parameters[STAT]['Jak1']*self.parameters[STAT]['K_Jak1']/\
+                    (1+self.parameters[STAT][SOCS_name]*self.parameters[STAT]['K_S']+self.parameters[STAT]['Jak1']*self.parameters[STAT]['K_Jak1'])
             PR2active = self.parameters[STAT]['Jak2']*self.parameters[STAT]['K_Jak2']
             Rstar = cytokine_R*PR1active*PR2active/(1+self.parameters[STAT]['K_ligand']/dose)
-            response = self.parameters[STAT]['STAT_total']/(1+self.parameters[STAT]['K_um']*self.parameters[STAT]['K_M']*volPM/Rstar)
+            response = self.parameters[STAT]['STAT_total']/(1+self.parameters[STAT]['K_rc']*self.parameters[STAT]['K_M']*volPM/Rstar)
             STAT_response[STAT] = response
         return STAT_response
 
     def equilibrium_model_ec50(self, SOCS_name):
+        print("equilibrium_model_ec50() has not been updated for new SOCS models")
         ec50_dict = {}
         for STAT in self.STAT_names:
-            term1 = volPM * self.parameters[STAT]['K_M'] * self.parameters[STAT]['K_um']
+            term1 = volPM * self.parameters[STAT]['K_M'] * self.parameters[STAT]['K_rc']
             num = 2 * term1 * self.parameters[STAT]['K_ligand'] * (1/self.parameters[STAT]['K_S']-self.parameters[STAT][SOCS_name] > 0)
             ec50 = num / (4 * term1 - (2 * term1 + self.parameters[STAT]['Jak1'] * self.parameters[STAT]['K_Jak1'] * self.parameters[STAT]['K_Jak2'] * self.parameters[STAT]['Jak2'] * \
                                        (-1 + self.parameters[STAT]['K_S'] * self.parameters[STAT][SOCS_name]) *\
@@ -117,13 +117,14 @@ Methods:
         return ec50_dict
 
     def equilibrium_model_pSTATmax(self, SOCS_name):
+        print("equilibrium_model_pSTATmax() has not been updated for new SOCS models")
         pSTAT_max_dict = {}
         for STAT in self.STAT_names:
             heaviside_term = (1/self.parameters[STAT]['K_S']-self.parameters[STAT][SOCS_name] > 0)
             sqrt_term = np.sqrt(1 + (2*self.parameters[STAT]['K_R1R2']*self.parameters[STAT]['R_total'] + self.parameters[STAT]['Delta']**2)/self.parameters[STAT]['K_R1R2']**2)
             term1 = 1 + self.parameters[STAT]['R_total']/self.parameters[STAT]['K_R1R2'] + sqrt_term
             term2 = self.parameters[STAT]['Jak1']*self.parameters[STAT]['Jak2']*self.parameters[STAT]['K_Jak1']*self.parameters[STAT]['K_Jak2']
-            Rt = 2*volPM*self.parameters[STAT]['K_M']*self.parameters[STAT]['K_um']/(term2*self.parameters[STAT]['K_R1R2']*(1-self.parameters[STAT]['K_S']*self.parameters[STAT][SOCS_name])*term1*heaviside_term)
+            Rt = 2*volPM*self.parameters[STAT]['K_M']*self.parameters[STAT]['K_rc']/(term2*self.parameters[STAT]['K_R1R2']*(1-self.parameters[STAT]['K_S']*self.parameters[STAT][SOCS_name])*term1*heaviside_term)
             maxpSTAT = self.parameters[STAT]['STAT_total']/(1+Rt)
             pSTAT_max_dict[STAT] = maxpSTAT
         return pSTAT_max_dict
@@ -140,7 +141,7 @@ IFNg_parameters = {'pSTAT1': {'R_total': 2000, # infer from Immgen
                               'K_Jak2': 1E6/(NA*volCP),             # fit for each receptor
                               'K_R1R2': 4*pi*0.5E-12/volPM,         # from literature
                               'K_M': 1000/volPM,                    # fit for each receptor/STAT pair
-                              'K_um': 1,                            # fit for each receptor/STAT pair
+                              'K_rc': 1,                            # fit for each receptor/STAT pair
                               'K_S': 1/430.},                       # fit for each receptor
 
                    'pSTAT3': {'R_total': 2000,
@@ -154,7 +155,7 @@ IFNg_parameters = {'pSTAT1': {'R_total': 2000, # infer from Immgen
                               'K_Jak2': 1E6/(NA*volCP),
                               'K_R1R2': 4*pi*0.5E-12/volPM,
                               'K_M': 1000/volPM,
-                              'K_um': 1,
+                              'K_rc': 1,
                               'K_S': 1/430.}
                     }
 
@@ -164,7 +165,7 @@ def plot_dose_response(IFNg_parameters, SOCS_name, model=1):
     if model==1:
         pSTAT1_dose_response = [IFNg_receptor.equilibrium_model_output(d, SOCS_name)['pSTAT1'] for d in np.logspace(-2, 3)]
     elif model==2:
-        pSTAT1_dose_response = [IFNg_receptor.equilibrium_model_with_SOCS_output(d, SOCS_name)['pSTAT1'] for d in np.logspace(-2, 3)]
+        pSTAT1_dose_response = [IFNg_receptor.equilibrium_model_for_SOCS_competing_with_Jak(d, SOCS_name)['pSTAT1'] for d in np.logspace(-2, 3)]
     plt.figure()
     ax = plt.gca()
     ax.set_xscale('log')
@@ -198,7 +199,7 @@ def infer_protein(dataset, cell_type, protein_names):
 
 
 def equilibrium_pSTAT1_and_pSTAT3(dose, K_Jak1=1E6 / (NA * volCP), K_Jak2=1E6 / (NA * volCP),
-                                  K_M_STAT1=1000/volPM, K_M_STAT3=1000/volPM, K_um_STAT1=1, K_um_STAT3=1):
+                                  K_M_STAT1=1000/volPM, K_M_STAT3=1000/volPM, K_rc_STAT1=1, K_rc_STAT3=1):
     cell_types = ImmGen_df['Cell_type'].values
 
     # Set input parameters for model
@@ -211,8 +212,8 @@ def equilibrium_pSTAT1_and_pSTAT3(dose, K_Jak1=1E6 / (NA * volCP), K_Jak2=1E6 / 
     # receptor:STAT parameters
     default_parameters['pSTAT1']['K_M'] = K_M_STAT1
     default_parameters['pSTAT3']['K_M'] = K_M_STAT3
-    default_parameters['pSTAT1']['K_um'] = K_um_STAT1
-    default_parameters['pSTAT3']['K_um'] = K_um_STAT3
+    default_parameters['pSTAT1']['K_rc'] = K_rc_STAT1
+    default_parameters['pSTAT3']['K_rc'] = K_rc_STAT3
 
     response = {'Cell_type': [], 'pSTAT1': [], 'pSTAT3': []}
     for c in cell_types:
@@ -232,8 +233,8 @@ def equilibrium_pSTAT1_and_pSTAT3(dose, K_Jak1=1E6 / (NA * volCP), K_Jak2=1E6 / 
     return pd.DataFrame.from_dict(response)
 
 
-def SOCS_pSTAT1_and_pSTAT3(dose, SOCS_name, K_Jak1=1E6/(NA*volCP), K_Jak2=1E6/(NA*volCP),
-                              K_M_STAT1=1000/volPM, K_M_STAT3=1000/volPM, K_um_STAT1=1, K_um_STAT3=1, K_S=1/300,
+def SOCS_competes_Jak_pSTAT1_and_pSTAT3(dose, SOCS_name, K_Jak1=1E6/(NA*volCP), K_Jak2=1E6/(NA*volCP),
+                              K_M_STAT1=1000/volPM, K_M_STAT3=1000/volPM, K_rc_STAT1=1, K_rc_STAT3=1, K_S=1/300,
                            df=ImmGen_df):
     cell_types = df['Cell_type'].values
 
@@ -249,8 +250,8 @@ def SOCS_pSTAT1_and_pSTAT3(dose, SOCS_name, K_Jak1=1E6/(NA*volCP), K_Jak2=1E6/(N
     # receptor:STAT parameters
     default_parameters['pSTAT1']['K_M'] = K_M_STAT1
     default_parameters['pSTAT3']['K_M'] = K_M_STAT3
-    default_parameters['pSTAT1']['K_um'] = K_um_STAT1
-    default_parameters['pSTAT3']['K_um'] = K_um_STAT3
+    default_parameters['pSTAT1']['K_rc'] = K_rc_STAT1
+    default_parameters['pSTAT3']['K_rc'] = K_rc_STAT3
 
     response = {'Cell_type': [], 'pSTAT1': [], 'pSTAT3': []}
     for c in cell_types:
@@ -264,7 +265,7 @@ def SOCS_pSTAT1_and_pSTAT3(dose, SOCS_name, K_Jak1=1E6/(NA*volCP), K_Jak2=1E6/(N
             default_parameters[S][SOCS_name] = IFNg_ImmGen_parameters[SOCS_name]
         # Make predictions
         IFNg_receptor = Cytokine_Receptor(['pSTAT1', 'pSTAT3'], IFNg_parameters, 'IFNgamma')
-        q = IFNg_receptor.equilibrium_model_with_SOCS_output(dose, SOCS_name)
+        q = IFNg_receptor.equilibrium_model_for_SOCS_competing_with_Jak(dose, SOCS_name)
         response['Cell_type'].append(c)
         response['pSTAT1'].append(q['pSTAT1'])
         response['pSTAT3'].append(q['pSTAT3'])
@@ -273,7 +274,7 @@ def SOCS_pSTAT1_and_pSTAT3(dose, SOCS_name, K_Jak1=1E6/(NA*volCP), K_Jak2=1E6/(N
 
 def equilibrium_model(dose, p1, p2, p3, p4, p5, p6, scale_factor):
     y_pred = equilibrium_pSTAT1_and_pSTAT3(dose, K_Jak1=p1, K_Jak2=p2, K_M_STAT1=p3, K_M_STAT3=p4,
-                                           K_um_STAT1=p5, K_um_STAT3=p6)[['pSTAT1', 'pSTAT3']]
+                                           K_rc_STAT1=p5, K_rc_STAT3=p6)[['pSTAT1', 'pSTAT3']]
     return np.divide(y_pred.values.flatten(), scale_factor)
 
 
@@ -285,24 +286,24 @@ def fit_IFNg_equilibrium():
     return pfit, pcov
 
 
-def make_SOCS_model(SOCS_name, df=ImmGen_df):
+def make_SOCS_competes_Jak_model(SOCS_name, df=ImmGen_df):
     def SOCS_model(dose, p1, p2, p3, p4, p5, p6, p7, scale_factor):
-        y_pred = SOCS_pSTAT1_and_pSTAT3(dose, SOCS_name, K_Jak1=p1, K_Jak2=p2, K_M_STAT1=p3, K_M_STAT3=p4,
-                                               K_um_STAT1=p5, K_um_STAT3=p6, K_S=p7, df=df)[['pSTAT1', 'pSTAT3']]
+        y_pred = SOCS_competes_Jak_pSTAT1_and_pSTAT3(dose, SOCS_name, K_Jak1=p1, K_Jak2=p2, K_M_STAT1=p3, K_M_STAT3=p4,
+                                               K_rc_STAT1=p5, K_rc_STAT3=p6, K_S=p7, df=df)[['pSTAT1', 'pSTAT3']]
         return np.divide(y_pred.values.flatten(), scale_factor)
     return SOCS_model
 
-def fit_IFNg_with_SOCS(SOCS_name, df=ImmGen_df):
+def fit_IFNg_with_SOCS_competes_Jak(SOCS_name, df=ImmGen_df):
     min_response_row = df.loc[df[response_variable_names[0]].idxmin()]
     min_response_SOCS_expression = infer_protein(df, min_response_row.loc['Cell_type'], [SOCS_name])[SOCS_name]
     default_parameters = [1E6 / (NA * volCP), 1E6 / (NA * volCP), 1000 / volPM, 1000 / volPM, 1, 1, 1/min_response_SOCS_expression, 15]
     y_true = df[['pSTAT1', 'pSTAT3']].values.flatten()
-    pfit, pcov = curve_fit(make_SOCS_model(SOCS_name, df), IFNg_dose, y_true, p0=default_parameters,
+    pfit, pcov = curve_fit(make_SOCS_competes_Jak_model(SOCS_name, df), IFNg_dose, y_true, p0=default_parameters,
                            bounds=(np.multiply(default_parameters, 0.1), np.multiply(default_parameters, 10)))
     return pfit, pcov
 
 
-def k_fold_cross_validate_SOCS_model(k=10, df=ImmGen_df, neg_feedback_name='SOCS2'):
+def k_fold_cross_validate_SOCS_competes_Jak(k=10, df=ImmGen_df, neg_feedback_name='SOCS2'):
     """
     Validate the estimated R^2 value for the SOCS model fit using k-fold cross validation
     :param k: (int) number of folds to split data into
@@ -317,10 +318,10 @@ def k_fold_cross_validate_SOCS_model(k=10, df=ImmGen_df, neg_feedback_name='SOCS
         test = df.iloc[result[1]]
 
         # Fit
-        pfit, pcov = fit_IFNg_with_SOCS(neg_feedback_name, df=train)
+        pfit, pcov = fit_IFNg_with_SOCS_competes_Jak(neg_feedback_name, df=train)
 
         # Predict
-        SOCS_model = make_SOCS_model(neg_feedback_name, df=test)
+        SOCS_model = make_SOCS_competes_Jak_model(neg_feedback_name, df=test)
         fit_pred = np.reshape(SOCS_model(IFNg_dose, *pfit), (test.shape[0], len(response_variable_names)))
 
         # Compute R**2 value
@@ -369,12 +370,12 @@ def fit_without_SOCS(df=ImmGen_df):
     plt.show()
 
 
-def fit_with_SOCS(df=ImmGen_df, k_fold=1, neg_feedback_name='SOCS2'):
-    pfit, pcov = fit_IFNg_with_SOCS(neg_feedback_name, df)
+def fit_with_SOCS_competes_Jak(df=ImmGen_df, k_fold=1, neg_feedback_name='SOCS2'):
+    pfit, pcov = fit_IFNg_with_SOCS_competes_Jak(neg_feedback_name, df)
     print(pfit)
 
     # Predict
-    SOCS_model = make_SOCS_model(neg_feedback_name)
+    SOCS_model = make_SOCS_competes_Jak_model(neg_feedback_name)
     fit_pred = np.reshape(SOCS_model(IFNg_dose, *pfit), (df.shape[0], len(response_variable_names)))
     fit_pred_labelled = [[df['Cell_type'].values[i], fit_pred[i][0], fit_pred[i][1]] for i in range(df.shape[0])]
 
@@ -386,7 +387,7 @@ def fit_with_SOCS(df=ImmGen_df, k_fold=1, neg_feedback_name='SOCS2'):
         r_squared = 1 - (ss_res / ss_tot)
         print("r-squared value: ", r_squared)
     else:
-        r_squared, r2_var = k_fold_cross_validate_SOCS_model(k=k_fold)
+        r_squared, r2_var = k_fold_cross_validate_SOCS_competes_Jak(k=k_fold)
         print("k-fold cross validation of R2 value is estimated to be {:.2f} +/- {:.2f}".format(r_squared, np.sqrt(r2_var)))
 
     # Plot
@@ -418,10 +419,10 @@ def compare_model_errors(df=ImmGen_df):
     # With SOCS
     # ------------
     neg_feedback_name = 'SOCS2'
-    pfit, pcov = fit_IFNg_with_SOCS(neg_feedback_name, df)
+    pfit, pcov = fit_IFNg_with_SOCS_competes_Jak(neg_feedback_name, df)
 
     # Predict
-    SOCS_model = make_SOCS_model(neg_feedback_name)
+    SOCS_model = make_SOCS_competes_Jak_model(neg_feedback_name)
     SOCS_fit_pred = np.reshape(SOCS_model(IFNg_dose, *pfit), (df.shape[0], len(response_variable_names)))
 
     # Residual
@@ -458,8 +459,8 @@ def compare_model_errors(df=ImmGen_df):
 
 
 def ec50_for_all_cell_types(SOCS_name, df=ImmGen_df):
-    # Get parameter fits for K_Jak1, K_Jak2, K_M_STAT1, K_M_STAT3, K_um_STAT1, K_um_STAT3, K_S, scale_factor
-    pfit, pcov = fit_IFNg_with_SOCS(SOCS_name, df)
+    # Get parameter fits for K_Jak1, K_Jak2, K_M_STAT1, K_M_STAT3, K_rc_STAT1, K_rc_STAT3, K_S, scale_factor
+    pfit, pcov = fit_IFNg_with_SOCS_competes_Jak(SOCS_name, df)
 
     cell_types = df['Cell_type'].values
 
@@ -475,8 +476,8 @@ def ec50_for_all_cell_types(SOCS_name, df=ImmGen_df):
     # receptor:STAT parameters
     default_parameters['pSTAT1']['K_M'] = pfit[2]
     default_parameters['pSTAT3']['K_M'] = pfit[3]
-    default_parameters['pSTAT1']['K_um'] = pfit[4]
-    default_parameters['pSTAT3']['K_um'] = pfit[5]
+    default_parameters['pSTAT1']['K_rc'] = pfit[4]
+    default_parameters['pSTAT3']['K_rc'] = pfit[5]
 
     record = {}
     for c in cell_types:
@@ -496,8 +497,8 @@ def ec50_for_all_cell_types(SOCS_name, df=ImmGen_df):
 
 
 def max_pSTAT_for_all_cell_types(SOCS_name, df=ImmGen_df):
-    # Get parameter fits for K_Jak1, K_Jak2, K_M_STAT1, K_M_STAT3, K_um_STAT1, K_um_STAT3, K_S, scale_factor
-    pfit, pcov = fit_IFNg_with_SOCS(SOCS_name, df)
+    # Get parameter fits for K_Jak1, K_Jak2, K_M_STAT1, K_M_STAT3, K_rc_STAT1, K_rc_STAT3, K_S, scale_factor
+    pfit, pcov = fit_IFNg_with_SOCS_competes_Jak(SOCS_name, df)
 
     cell_types = df['Cell_type'].values
 
@@ -513,8 +514,8 @@ def max_pSTAT_for_all_cell_types(SOCS_name, df=ImmGen_df):
     # receptor:STAT parameters
     default_parameters['pSTAT1']['K_M'] = pfit[2]
     default_parameters['pSTAT3']['K_M'] = pfit[3]
-    default_parameters['pSTAT1']['K_um'] = pfit[4]
-    default_parameters['pSTAT3']['K_um'] = pfit[5]
+    default_parameters['pSTAT1']['K_rc'] = pfit[4]
+    default_parameters['pSTAT3']['K_rc'] = pfit[5]
 
     record = {}
     for c in cell_types:
@@ -565,10 +566,10 @@ if __name__ == "__main__":
 
     #pairwise_correlation()
 
-    fit_with_SOCS()
+    fit_with_SOCS_competes_Jak()
 
-    #compare_model_errors()
+    compare_model_errors()
 
     #print(ec50_for_all_cell_types('SOCS2'))
-    #make_ec50_predictions_plot()
+    make_ec50_predictions_plot()
 
