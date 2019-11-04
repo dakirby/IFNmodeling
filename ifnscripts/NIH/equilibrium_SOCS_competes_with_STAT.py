@@ -442,6 +442,7 @@ def fit_with_SOCS_competes_STAT(df=ImmGen_df, k_fold=1, neg_feedback_name='SOCS2
     plt.tight_layout()
     plt.show()
 
+
 def compare_model_errors(df=ImmGen_df):
     # ------------
     # With SOCS
@@ -561,6 +562,7 @@ def max_pSTAT_for_all_cell_types(SOCS_name, df=ImmGen_df):
         record[c] = {'pSTAT1': maxpSTAT['pSTAT1']/pfit[7], 'pSTAT3': maxpSTAT['pSTAT3']/pfit[7]} # in number of molecules, scaled to match CyTOF
     return record
 
+
 def make_ec50_predictions_plot():
     ec50_predictions = ec50_for_all_cell_types('SOCS2')
     maxpSTAT_predictions = max_pSTAT_for_all_cell_types('SOCS2')
@@ -587,12 +589,13 @@ def make_ec50_predictions_plot():
     plt.tight_layout()
     plt.show()
 
+
 def fit_with_DREAM(sim_name, parameter_dict, likelihood):
-    original_params = np.log10([parameter_dict[k] for k in parameter_dict.keys()])
+    original_params = [parameter_dict[k] for k in parameter_dict.keys()]
 
     priors_list = []
-    for key in parameter_dict:
-        priors_list.append(SampledParam(norm, loc=np.log10(parameter_dict[key]), scale=1.5))
+    for p in original_params:
+        priors_list.append(SampledParam(norm, loc=np.log(p), scale=1.0))
     # Set simulation parameters
     niterations = 10000
     converged = False
@@ -605,7 +608,7 @@ def fit_with_DREAM(sim_name, parameter_dict, likelihood):
     os.makedirs(os.path.join(os.getcwd(), save_dir), exist_ok=True)
 
     # Run DREAM sampling.  Documentation of DREAM options is in Dream.py.
-    sampled_params, log_ps = run_dream(priors_list, likelihood, start=original_params,
+    sampled_params, log_ps = run_dream(priors_list, likelihood, start=np.log(original_params),
                                        niterations=niterations, nchains=nchains, multitry=False,
                                        gamma_levels=4, adapt_gamma=True, history_thin=1, model_name=sim_name,
                                        verbose=True)
@@ -657,9 +660,6 @@ def fit_with_DREAM(sim_name, parameter_dict, likelihood):
             sns.distplot(samples[:, dim], color=colors[dim])
             fig.savefig(os.path.join(save_dir, sim_name + '_dimension_' + str(dim) + '_' + list(parameter_dict.keys())[dim]+ '.pdf'))
 
-        # Convert back to true value rather than log value
-        # converted_samples = np.power(np.multiply(np.ones(np.shape(samples)), 10), samples)
-
         # Convert to dataframe
         df = pd.DataFrame(samples, columns=parameter_dict.keys())
         g = sns.pairplot(df)
@@ -677,9 +677,11 @@ def fit_with_DREAM(sim_name, parameter_dict, likelihood):
     except ImportError:
         pass
 
+
 def fit_IFNg_SOCS_competes_STAT_with_DREAM(SOCS_name, df=ImmGen_df):
     def __likelihood__(parameters, df=ImmGen_df):
         import numpy as np
+        parameters = np.exp(parameters) # parameters are passed in log form
         default_SOCS_name = 'SOCS2'
         # Create the receptor models
         # global variables applicable to all receptors
@@ -783,10 +785,76 @@ def fit_IFNg_SOCS_competes_STAT_with_DREAM(SOCS_name, df=ImmGen_df):
     min_response_SOCS_expression = infer_protein(df, min_response_row.loc['Cell_type'], [SOCS_name])[SOCS_name]
 
     #                       K_Jak1, K_Jak2, K_STAT_STAT1, K_STAT_STAT3, K_SOCS, scale_factor
-    prior = [1E7 / (NA * volCP), 1E6 / (NA * volCP), 900 / volPM, 1000 / volPM, 0.0006*min_response_SOCS_expression, 15]
+    prior = [1E7 / (NA * volCP), 1E6 / (NA * volCP), 900 / volPM, 1000 / volPM, 0.006*min_response_SOCS_expression, 15]
     prior = dict(zip(['K_Jak1', 'K_Jak2', 'K_STAT_STAT1', 'K_STAT_STAT3', 'K_SOCS', 'scale_factor'], prior))
 
     fit_with_DREAM(SOCS_name, prior, __likelihood__)
+
+
+def sample_DREAM_IFNg_SOCS_competes_STAT(samples_filename, neg_feedback_name, df=ImmGen_df, step_size=500):
+    samples = np.load(samples_filename)
+    # Convert back to true value rather than log value
+    converted_samples = np.power(np.multiply(np.ones(np.shape(samples)), 10), samples)
+
+    # Predict
+    SOCS_model = make_SOCS_competes_STAT_model(neg_feedback_name)
+    fit_pred = []
+    sample_count = 0
+    for p in range(0, len(converted_samples), step_size):
+        sample_count += 1
+        pred = np.reshape(SOCS_model(IFNg_dose, *converted_samples[p]), (19, len(response_variable_names)))
+        pred_labelled = [['Model', df['Cell_type'].values[i], pred[i][0], pred[i][1]] for i in range(df.shape[0])]
+        fit_pred += pred_labelled
+    print("{} samples used".format(sample_count))
+
+    fit_prediction = pd.DataFrame.from_records(fit_pred, columns=['Class', 'Cell_type', 'pSTAT1', 'pSTAT3'])
+
+    cell_type_pred = fit_prediction.drop('Class', axis=1).groupby('Cell_type')
+
+    # Compute posterior predictive p-value
+    # First compute the posterior of the test statistic. Use the residual from the log[median prediction].
+    # The motivation for this is that for log-normal distributed predictions, the median is the point
+    # for which there is a 50 % chance of a given posterior prediction being greater.
+    # i.e. E[log[median prediction] - log[data]] = 0 when median prediction = data
+    log_median_pred = np.log(cell_type_pred.median().values)
+    test_statistic_distribution = []
+    total_res_samples = 0
+    for p in range(0, len(converted_samples), step_size):
+        total_res_samples += 1
+        log_pred = np.log(np.reshape(SOCS_model(IFNg_dose, *converted_samples[p]), (19, len(response_variable_names))))
+        residual = np.sum(np.subtract(log_median_pred, log_pred))
+        test_statistic_distribution.append(residual)
+    # Compute what fraction of predictions have a residual greater than the median with the observed data
+    data_residual = np.sum(np.subtract(log_median_pred, np.log(df[['pSTAT1', 'pSTAT3']].values)))
+    r_count = 0
+    for r in test_statistic_distribution:
+        if r > data_residual:
+            r_count += 1
+    ppp_value = r_count/total_res_samples
+
+    # Plot
+    fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(12.8, 5))
+    ax[0].set_yscale('log')
+    ax[1].set_yscale('log')
+    subplot_titles = ['pSTAT1', 'pSTAT3']
+    measured_response = df[['Cell_type', 'pSTAT1', 'pSTAT3']]
+    measured_response.insert(0, 'Class', ['CyTOF' for _ in range(df.shape[0])])
+
+    plot_df = pd.concat([fit_prediction, measured_response])
+
+    sns.catplot(x="Cell_type", y="pSTAT1", data=plot_df[plot_df['Class']=='Model'], hue='Class', ax=ax[0], kind="box")
+    sns.catplot(x="Cell_type", y="pSTAT3", data=plot_df[plot_df['Class']=='Model'], hue='Class', ax=ax[1], kind="box")
+
+    sns.catplot(x="Cell_type", y="pSTAT1", data=plot_df[plot_df['Class'] == 'CyTOF'], hue='Class', ax=ax[0],
+                kind="strip", size=8, palette=sns.color_palette("hls", 16))
+    sns.catplot(x="Cell_type", y="pSTAT3", data=plot_df[plot_df['Class']=='CyTOF'], hue='Class', ax=ax[1],
+                kind="strip", size=8, palette=sns.color_palette("hls", 16))
+    for i in [0, 1]:
+        ax[i].set_xticklabels(ax[i].get_xticklabels(), rotation=90)
+        ax[i].set_title(subplot_titles[i])
+    fig.suptitle("Posterior p-value = {:.2f}\n (p close to 0.5 is good)".format(ppp_value), fontsize=12)
+    #plt.tight_layout()
+    plt.show()
 
 
 if __name__ == "__main__":
@@ -805,4 +873,8 @@ if __name__ == "__main__":
     #print(ec50_for_all_cell_types('SOCS2'))
     #make_ec50_predictions_plot()
 
-    fit_IFNg_SOCS_competes_STAT_with_DREAM('SOCS2')
+    #fit_IFNg_SOCS_competes_STAT_with_DREAM('SOCS2')
+
+    save_dir = "PyDREAM_04-11-2019_10000"
+    sim_name = "SOCS2"
+    sample_DREAM_IFNg_SOCS_competes_STAT(os.path.join(save_dir, sim_name+'_samples' + '.npy'), sim_name, step_size=250)
