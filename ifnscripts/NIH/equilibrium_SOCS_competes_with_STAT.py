@@ -322,10 +322,12 @@ def make_SOCS_competes_STAT_model(SOCS_name, df=ImmGen_df):
     return SOCS_model
 
 def fit_IFNg_with_SOCS_competes_STAT(SOCS_name, df=ImmGen_df):
-    min_response_row = df.loc[df[response_variable_names[0]].idxmin()]
-    min_response_SOCS_expression = infer_protein(df, min_response_row.loc['Cell_type'], [SOCS_name])[SOCS_name]
+    #min_response_row = df.loc[df[response_variable_names[0]].idxmin()]
+    #min_response_SOCS_expression = infer_protein(df, min_response_row.loc['Cell_type'], [SOCS_name])[SOCS_name]
+    # [1E7 / (NA * volCP), 1E6 / (NA * volCP), 900 / volPM, 1000 / volPM, 0.0006*min_response_SOCS_expression, 15]
+
     #                       K_Jak1, K_Jak2, K_STAT_STAT1, K_STAT_STAT3, K_SOCS, scale_factor
-    default_parameters = [1E7 / (NA * volCP), 1E6 / (NA * volCP), 900 / volPM, 1000 / volPM, 0.0006*min_response_SOCS_expression, 15]
+    default_parameters = [4.64594123e-02,   6.72673774e+00,   9.50605181e+00,   2.92182513e+00,   2.08449593e-01,   1.63205262e+02]
     y_true = df[['pSTAT1', 'pSTAT3']].values.flatten()
     pfit, pcov = curve_fit(make_SOCS_competes_STAT_model(SOCS_name, df), IFNg_dose, y_true, p0=default_parameters,
                            bounds=(np.multiply(default_parameters, 0.1), np.multiply(default_parameters, 10)))
@@ -500,10 +502,8 @@ def ec50_for_all_cell_types(SOCS_name, df=ImmGen_df):
     default_parameters['pSTAT3']['K_Jak1'] = pfit[0]
     default_parameters['pSTAT1']['K_Jak2'] = pfit[1]
     default_parameters['pSTAT3']['K_Jak2'] = pfit[1]
-    default_parameters['pSTAT1']['K_STAT'] = pfit[4]
-    default_parameters['pSTAT3']['K_STAT'] = pfit[4]
-    default_parameters['pSTAT1']['K_SOCS'] = pfit[5]
-    default_parameters['pSTAT3']['K_SOCS'] = pfit[5]
+    default_parameters['pSTAT1']['K_SOCS'] = pfit[4]
+    default_parameters['pSTAT3']['K_SOCS'] = pfit[4]
     # receptor:STAT parameters
     default_parameters['pSTAT1']['K_STAT'] = pfit[2]
     default_parameters['pSTAT3']['K_STAT'] = pfit[3]
@@ -519,8 +519,8 @@ def ec50_for_all_cell_types(SOCS_name, df=ImmGen_df):
             default_parameters[S]['STAT_total'] = IFNg_ImmGen_parameters[S[1:]]
             default_parameters[S][SOCS_name] = IFNg_ImmGen_parameters[SOCS_name]
         # Make predictions
-        IFNg_receptor = Cytokine_Receptor(['pSTAT1', 'pSTAT3'], IFNg_parameters, 'IFNgamma')
-        ec50 = IFNg_receptor.equilibrium_model_ec50(SOCS_name)
+        IFNg_receptor = Cytokine_Receptor(['pSTAT1', 'pSTAT3'], default_parameters, 'IFNgamma')
+        ec50 = IFNg_receptor.equilibrium_model_ec50()
         record[c] = {'pSTAT1': ec50['pSTAT1']/1E-12, 'pSTAT3': ec50['pSTAT3']/1E-12} # in pM
     return record
 
@@ -538,10 +538,8 @@ def max_pSTAT_for_all_cell_types(SOCS_name, df=ImmGen_df):
     default_parameters['pSTAT3']['K_Jak1'] = pfit[0]
     default_parameters['pSTAT1']['K_Jak2'] = pfit[1]
     default_parameters['pSTAT3']['K_Jak2'] = pfit[1]
-    default_parameters['pSTAT1']['K_STAT'] = pfit[4]
-    default_parameters['pSTAT3']['K_STAT'] = pfit[4]
-    default_parameters['pSTAT1']['K_SOCS'] = pfit[5]
-    default_parameters['pSTAT3']['K_SOCS'] = pfit[5]
+    default_parameters['pSTAT1']['K_SOCS'] = pfit[4]
+    default_parameters['pSTAT3']['K_SOCS'] = pfit[4]
     # receptor:STAT parameters
     default_parameters['pSTAT1']['K_STAT'] = pfit[2]
     default_parameters['pSTAT3']['K_STAT'] = pfit[3]
@@ -558,8 +556,8 @@ def max_pSTAT_for_all_cell_types(SOCS_name, df=ImmGen_df):
             default_parameters[S][SOCS_name] = IFNg_ImmGen_parameters[SOCS_name]
         # Make predictions
         IFNg_receptor = Cytokine_Receptor(['pSTAT1', 'pSTAT3'], IFNg_parameters, 'IFNgamma')
-        maxpSTAT = IFNg_receptor.equilibrium_model_pSTATmax(SOCS_name)
-        record[c] = {'pSTAT1': maxpSTAT['pSTAT1']/pfit[7], 'pSTAT3': maxpSTAT['pSTAT3']/pfit[7]} # in number of molecules, scaled to match CyTOF
+        maxpSTAT = IFNg_receptor.equilibrium_model_pSTATmax()
+        record[c] = {'pSTAT1': maxpSTAT['pSTAT1']/pfit[5], 'pSTAT3': maxpSTAT['pSTAT3']/pfit[5]} # in number of molecules, scaled to match CyTOF
     return record
 
 
@@ -775,6 +773,7 @@ def fit_IFNg_SOCS_competes_STAT_with_DREAM(SOCS_name, df=ImmGen_df):
                 Rstar = cytokine_R * PR1active * PR2active / (1 + base_parameters[S]['K_ligand'] / dose)
                 response = base_parameters[S]['STAT_total'] / (1 + base_parameters[S]['K_STAT'] * (
                             1 + base_parameters[S][SOCS_name] / base_parameters[S]['K_SOCS']) * volPM / Rstar)
+                response = response / parameters[5]
                 STAT_response.append(response)
             fit_pred.append(STAT_response)
 
@@ -936,22 +935,22 @@ if __name__ == "__main__":
     #fit_without_SOCS()
     #fit_with_SOCS_competes_STAT()
 
-    #compar#e_model_errors()
+    #compare_model_errors()
 
     #print(ec50_for_all_cell_types('SOCS2'))
-    #make_ec50_predictions_plot()
+    make_ec50_predictions_plot()
 
-    fit_IFNg_SOCS_competes_STAT_with_DREAM('SOCS2')
+    #fit_IFNg_SOCS_competes_STAT_with_DREAM('SOCS2')
 
     save_dir = "PyDREAM_05-11-2019_10000"
     sim_name = "SOCS2"
-    sample_DREAM_IFNg_SOCS_competes_STAT(os.path.join(save_dir, sim_name+'_samples' + '.npy'), sim_name, step_size=250, find_map=True)
+    #sample_DREAM_IFNg_SOCS_competes_STAT(os.path.join(save_dir, sim_name+'_samples' + '.npy'), sim_name, step_size=250, find_map=True)
 
     ## ['K_Jak1', 'K_Jak2', 'K_STAT_STAT1', 'K_STAT_STAT3', 'K_SOCS', 'scale_factor']
     #min_response_row = ImmGen_df.loc[ImmGen_df[response_variable_names[0]].idxmin()]
     #min_response_SOCS_expression = infer_protein(ImmGen_df, min_response_row.loc['Cell_type'], [sim_name])[sim_name]
     #p_prior = [1E7 / (NA * volCP), 1E6 / (NA * volCP), 900 / volPM, 1000 / volPM, 0.006*min_response_SOCS_expression, 0.5]
-    #p_best = [  16.30102589,  130.16168376,  108.21601978,  772.41212686, 62.66635235, 163.91352704]
-    #compare_model_to_ImmGen(p_prior)
+    #p_best = [4.64594123e-02,   6.72673774e+00,   9.50605181e+00,   2.92182513e+00,   2.08449593e-01,   1.63205262e+02]
+    #compare_model_to_ImmGen(p_best)
 
 
