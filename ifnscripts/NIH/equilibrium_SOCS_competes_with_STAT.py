@@ -20,6 +20,8 @@ from pydream.convergence import Gelman_Rubin
 # Import data set and split into predictor variables (receptors, JAKs, SOCS, etc.) and response variables (STATs)
 IFNg_dose = 100 # pM
 ImmGen_df = pd.read_excel('ImmGen_signaling_with_protein_response.xlsx', sheet_name='Sheet1', axis=1)
+ImmGen_df['pSTAT1norm'] = ImmGen_df['pSTAT1']/ImmGen_df['STAT1']
+ImmGen_df['pSTAT3norm'] = ImmGen_df['pSTAT3']/ImmGen_df['STAT3']
 
 #create df of results and features from full dataframe
 response_variable_names = ['pSTAT1', 'pSTAT3']
@@ -321,12 +323,15 @@ def make_SOCS_competes_STAT_model(SOCS_name, df=ImmGen_df):
     return SOCS_model
 
 def fit_IFNg_with_SOCS_competes_STAT(SOCS_name, df=ImmGen_df):
-    min_response_row = df.loc[df[response_variable_names[0]].idxmin()]
-    min_response_SOCS_expression = infer_protein(df, min_response_row.loc['Cell_type'], [SOCS_name])[SOCS_name]
-    #
-    # [4.64594123e-02,   6.72673774e+00,   9.50605181e+00,   2.92182513e+00,   2.08449593e-01,   1.63205262e+02]
-    #                       K_Jak1, K_Jak2, K_STAT_STAT1, K_STAT_STAT3, K_SOCS, scale_factor
-    default_parameters = [1E7 / (NA * volCP), 1E8 / (NA * volCP), 1000 / volPM, 1000 / volPM, 0.0006*min_response_SOCS_expression, 1]
+    if SOCS_name=='allSOCS':
+        default_parameters = [1E7 / (NA * volCP), 1E8 / (NA * volCP), 1000 / volPM, 1000 / volPM, 1.6e-02, 1]
+    else:
+        min_response_row = df.loc[df[response_variable_names[0]].idxmin()]
+        min_response_SOCS_expression = infer_protein(df, min_response_row.loc['Cell_type'], [SOCS_name])[SOCS_name]
+        #
+        # [4.64594123e-02,   6.72673774e+00,   9.50605181e+00,   2.92182513e+00,   2.08449593e-01,   1.63205262e+02]
+        #                       K_Jak1, K_Jak2, K_STAT_STAT1, K_STAT_STAT3, K_SOCS, scale_factor
+        default_parameters = [1E7 / (NA * volCP), 1E8 / (NA * volCP), 1000 / volPM, 1000 / volPM, 0.0006*min_response_SOCS_expression, 1]
     y_true = df[['pSTAT1', 'pSTAT3']].values.flatten()
     pfit, pcov = curve_fit(make_SOCS_competes_STAT_model(SOCS_name, df), IFNg_dose, y_true, p0=default_parameters,
                            bounds=(np.multiply(default_parameters, 0.1), np.multiply(default_parameters, 10)))
@@ -355,9 +360,9 @@ def k_fold_cross_validate_SOCS_competes_STAT(k=10, df=ImmGen_df, neg_feedback_na
         fit_pred = np.reshape(SOCS_model(IFNg_dose, *pfit), (test.shape[0], len(response_variable_names)))
 
         # Compute R**2 value
-        residuals = np.subtract(fit_pred, test[['pSTAT1', 'pSTAT3']].values)
+        residuals = np.subtract(np.log(fit_pred), np.log(test[['pSTAT1', 'pSTAT3']].values))
         ss_res = np.sum(residuals**2)
-        ss_tot = np.sum((test[['pSTAT1', 'pSTAT3']].values-np.mean(test[['pSTAT1', 'pSTAT3']].values))**2)
+        ss_tot = np.sum((np.log(test[['pSTAT1', 'pSTAT3']].values)-np.log(np.mean(test[['pSTAT1', 'pSTAT3']].values)))**2)
         r_squared = 1 - (ss_res / ss_tot)
         r2_samples.append(r_squared)
 
@@ -373,11 +378,11 @@ def fit_without_SOCS(df=ImmGen_df):
     fit_pred_labelled = [[df['Cell_type'].values[i], fit_pred[i][0], fit_pred[i][1]] for i in range(df.shape[0])]
 
     # Compute R**2 value
-    residuals = np.subtract(fit_pred, df[['pSTAT1', 'pSTAT3']].values)
+    residuals = np.subtract(np.log(fit_pred), np.log(df[['pSTAT1', 'pSTAT3']].values))
     ss_res = np.sum(residuals ** 2)
-    ss_tot = np.sum((df[['pSTAT1', 'pSTAT3']].values - np.mean(df[['pSTAT1', 'pSTAT3']].values)) ** 2)
+    ss_tot = np.sum((np.log(df[['pSTAT1', 'pSTAT3']].values) - np.log(np.mean(df[['pSTAT1', 'pSTAT3']].values))) ** 2)
     r_squared = 1 - (ss_res / ss_tot)
-    print("r-squared value: ", r_squared)
+    print("r-squared value (log scale): ", r_squared)
 
     # Plot
     fit_prediction = pd.DataFrame.from_records(fit_pred_labelled, columns=['Cell_type', 'pSTAT1', 'pSTAT3'])
@@ -395,7 +400,7 @@ def fit_without_SOCS(df=ImmGen_df):
         ax[i].set_xticklabels(ax[i].get_xticklabels(), rotation=90)
         ax[i].set_title(subplot_titles[i])
 
-    plt.suptitle(r"$R^{2}$ = " + "{:.2f}".format(r_squared))
+    plt.suptitle(r"$R^{2}$ (log scale) = " + "{:.2f}".format(r_squared))
     plt.tight_layout()
     plt.show()
 
@@ -411,14 +416,14 @@ def fit_with_SOCS_competes_STAT(df=ImmGen_df, k_fold=1, neg_feedback_name='SOCS2
 
     # Compute R**2 value
     if k_fold==1:
-        residuals = np.subtract(fit_pred, df[['pSTAT1', 'pSTAT3']].values)
-        ss_res = np.sum(residuals**2)
-        ss_tot = np.sum((df[['pSTAT1', 'pSTAT3']].values-np.mean(df[['pSTAT1', 'pSTAT3']].values))**2)
+        residuals = np.subtract(np.log(fit_pred), np.log(df[['pSTAT1', 'pSTAT3']].values))
+        ss_res = np.sum(residuals ** 2)
+        ss_tot = np.sum((np.log(df[['pSTAT1', 'pSTAT3']].values) - np.log(np.mean(df[['pSTAT1', 'pSTAT3']].values))) ** 2)
         r_squared = 1 - (ss_res / ss_tot)
-        print("r-squared value: ", r_squared)
+        print("r-squared value (log scale): ", r_squared)
     else:
         r_squared, r2_var = k_fold_cross_validate_SOCS_competes_STAT(k=k_fold)
-        print("k-fold cross validation of R2 value is estimated to be {:.2f} +/- {:.2f}".format(r_squared, np.sqrt(r2_var)))
+        print("k-fold cross validation of R2 value (in log scale) is estimated to be {:.2f} +/- {:.2f}".format(r_squared, np.sqrt(r2_var)))
 
     # Plot
     fit_prediction = pd.DataFrame.from_records(fit_pred_labelled, columns=['Cell_type', 'pSTAT1', 'pSTAT3'])
@@ -437,18 +442,17 @@ def fit_with_SOCS_competes_STAT(df=ImmGen_df, k_fold=1, neg_feedback_name='SOCS2
         ax[i].set_title(subplot_titles[i])
 
     if k_fold==1:
-        plt.suptitle(r"$R^{2}$ = "+ "{:.2f}".format(r_squared))
+        plt.suptitle(r"$R^{2}$ (log scale) = "+ "{:.2f}".format(r_squared))
     else:
-        plt.suptitle(r"$R^{2}$ = " + "{:.2f}".format(r_squared) + " ({}-fold cross-validation)".format(k_fold))
+        plt.suptitle(r"$R^{2}$ (log scale) = " + "{:.2f}".format(r_squared) + " ({}-fold cross-validation)".format(k_fold))
     plt.tight_layout()
     plt.show()
 
 
-def compare_model_errors(df=ImmGen_df):
+def compare_model_errors(df=ImmGen_df, neg_feedback_name='SOCS2'):
     # ------------
     # With SOCS
     # ------------
-    neg_feedback_name = 'SOCS2'
     pfit, pcov = fit_IFNg_with_SOCS_competes_STAT(neg_feedback_name, df)
 
     # Predict
@@ -456,7 +460,7 @@ def compare_model_errors(df=ImmGen_df):
     SOCS_fit_pred = np.reshape(SOCS_model(IFNg_dose, *pfit), (df.shape[0], len(response_variable_names)))
 
     # Residual
-    SOCS_residuals = np.subtract(SOCS_fit_pred, df[['pSTAT1', 'pSTAT3']].values)
+    SOCS_residuals = np.divide(np.subtract(SOCS_fit_pred, df[['pSTAT1', 'pSTAT3']].values), df[['pSTAT1', 'pSTAT3']].values)
     #SOCS_res_pred_labelled = [[df['Cell_type'].values[i], SOCS_residuals[i][0], SOCS_residuals[i][1]] for i in range(df.shape[0])]
 
     # ------------
@@ -468,7 +472,7 @@ def compare_model_errors(df=ImmGen_df):
     fit_pred = np.reshape(equilibrium_model(IFNg_dose, *pfit), (df.shape[0], len(response_variable_names)))
 
     # Residual
-    residuals = np.subtract(fit_pred, df[['pSTAT1', 'pSTAT3']].values)
+    residuals = np.divide(np.subtract(fit_pred, df[['pSTAT1', 'pSTAT3']].values), df[['pSTAT1', 'pSTAT3']].values)
     #res_pred_labelled = [[df['Cell_type'].values[i], residuals[i][0], residuals[i][1]] for i in range(df.shape[0])]
 
     # ------------
@@ -479,8 +483,8 @@ def compare_model_errors(df=ImmGen_df):
         ax[i].set_title('pSTAT{}'.format(i*2 + 1))
         ax[i].set_xscale('log')
         ax[i].set_yscale('log')
-        ax[i].set_xlabel(r'abs($\delta$) in no-SOCS model')
-        ax[i].set_ylabel(r'abs($\delta$) in SOCS model')
+        ax[i].set_xlabel('% error in no-SOCS model')
+        ax[i].set_ylabel('% error in SOCS model')
         ax[i].scatter(np.abs(residuals[:, i]), np.abs(SOCS_residuals[:, i]))
         ax[i].plot(np.logspace(np.log10(min(np.abs(residuals[:, i]))), np.log10(max(np.abs(residuals[:, i])))),
                    np.logspace(np.log10(min(np.abs(residuals[:, i]))), np.log10(max(np.abs(residuals[:, i])))), 'k--')
@@ -488,9 +492,10 @@ def compare_model_errors(df=ImmGen_df):
     plt.show()
 
 
-def ec50_for_all_cell_types(SOCS_name, df=ImmGen_df):
+def ec50_for_all_cell_types(SOCS_name, df=ImmGen_df, pfit=[]):
     # Get parameter fits for K_Jak1, K_Jak2, K_STAT_STAT1, K_STAT_STAT3, K_SOCS,' scale_factor
-    pfit, pcov = fit_IFNg_with_SOCS_competes_STAT(SOCS_name, df)
+    if pfit == []:
+        pfit, pcov = fit_IFNg_with_SOCS_competes_STAT(SOCS_name, df)
 
     cell_types = df['Cell_type'].values
 
@@ -524,9 +529,10 @@ def ec50_for_all_cell_types(SOCS_name, df=ImmGen_df):
     return record
 
 
-def max_pSTAT_for_all_cell_types(SOCS_name, df=ImmGen_df):
+def max_pSTAT_for_all_cell_types(SOCS_name, df=ImmGen_df, pfit=[]):
     # Get parameter fits for K_Jak1, K_Jak2, K_STAT_STAT1, K_STAT_STAT3, K_SOCS, scale_factor
-    pfit, pcov = fit_IFNg_with_SOCS_competes_STAT(SOCS_name, df)
+    if pfit == []:
+        pfit, pcov = fit_IFNg_with_SOCS_competes_STAT(SOCS_name, df)
 
     cell_types = df['Cell_type'].values
 
@@ -560,9 +566,14 @@ def max_pSTAT_for_all_cell_types(SOCS_name, df=ImmGen_df):
     return record
 
 
-def make_ec50_predictions_plot():
-    ec50_predictions = ec50_for_all_cell_types('SOCS2')
-    maxpSTAT_predictions = max_pSTAT_for_all_cell_types('SOCS2')
+def make_ec50_predictions_plot(parameters=[]):
+    if parameters == []:
+        ec50_predictions = ec50_for_all_cell_types('SOCS2')
+        maxpSTAT_predictions = max_pSTAT_for_all_cell_types('SOCS2')
+    else:
+        ec50_predictions = ec50_for_all_cell_types('SOCS2', pfit=parameters)
+        maxpSTAT_predictions = max_pSTAT_for_all_cell_types('SOCS2', pfit=parameters)
+
     SOCS_CyTOF = {c: infer_protein(ImmGen_df, c, ['SOCS2'])['SOCS2'] for c in ImmGen_df['Cell_type'].values}
     pSTAT1_CyTOF = {c: infer_protein(ImmGen_df, c, ['pSTAT1'])['pSTAT1'] for c in ImmGen_df['Cell_type'].values}
     pSTAT3_CyTOF = {c: infer_protein(ImmGen_df, c, ['pSTAT3'])['pSTAT3'] for c in ImmGen_df['Cell_type'].values}
@@ -679,6 +690,8 @@ def fit_with_DREAM(sim_name, parameter_dict, likelihood):
 def fit_IFNg_SOCS_competes_STAT_with_DREAM(SOCS_name, df=ImmGen_df):
     def __likelihood__(parameters, df=ImmGen_df):
         import numpy as np
+        from scipy.stats import norm
+
         def __infer_protein__(dataset, cell_type, protein_names):
             if 'allSOCS' in protein_names:
                 all_SOCS_names = ['SOCS1', 'SOCS2', 'SOCS3', 'SOCS4', 'SOCS5', 'SOCS6', 'SOCS7', 'CIS', 'SHP1', 'SHP2',
@@ -695,9 +708,9 @@ def fit_IFNg_SOCS_competes_STAT_with_DREAM(SOCS_name, df=ImmGen_df):
                 # mean_transcripts = dataset.mean()[protein_names].values
                 # proteins = [mean_transcripts[i] * 2**(np.log10(transcripts[i]/mean_transcripts[i])) for i in range(len(protein_names))]
                 return dict(zip(protein_names, transcripts))
+
         parameters = np.exp(parameters) # parameters are passed in log form
 
-        default_SOCS_name = 'SOCS2'
         # Create the receptor models
         # global variables applicable to all receptors
         NA = 6.022E23
@@ -714,7 +727,7 @@ def fit_IFNg_SOCS_competes_STAT_with_DREAM(SOCS_name, df=ImmGen_df):
                               'Jak1': 1000,                         # infer from Immgen
                               'Jak2': 1000,                         # infer from Immgen
                               'STAT_total': 2000,                   # infer from Immgen
-                              default_SOCS_name: 200,               # infer from Immgen
+                              SOCS_name: 200,                       # infer from Immgen
                               'K_ligand': NA*volEC/(4*pi*0.5E10),   # from literature
                               'K_Jak1': 1E6/(NA*volCP),             # fit for each receptor
                               'K_Jak2': 1E6/(NA*volCP),             # fit for each receptor
@@ -727,7 +740,7 @@ def fit_IFNg_SOCS_competes_STAT_with_DREAM(SOCS_name, df=ImmGen_df):
                               'Jak1': 1000,
                               'Jak2': 1000,
                               'STAT_total': 2000,
-                              default_SOCS_name: 200,
+                               SOCS_name: 200,
                               'K_ligand': NA*volEC/(4*pi*0.5E10),
                               'K_Jak1': 1E6/(NA*volCP),
                               'K_Jak2': 1E6/(NA*volCP),
@@ -797,16 +810,20 @@ def fit_IFNg_SOCS_competes_STAT_with_DREAM(SOCS_name, df=ImmGen_df):
                 [1.49,	0.52],
                 [0.24,	0.46],
                 [22.4,	7.54]]
+        like_ctot = norm(loc=data, scale=np.ones(np.shape(data)))
+        logp_ctotal = np.sum(like_ctot.logpdf(fit_pred))
 
-        residuals = np.subtract(fit_pred, data)
-        ss_res = np.sum(residuals ** 2)
-        return ss_res
+        # If model simulation failed due to integrator errors, return a log probability of -inf.
+        if np.isnan(logp_ctotal):
+            logp_ctotal = -np.inf
+        return logp_ctotal
 
-    min_response_row = df.loc[df[response_variable_names[0]].idxmin()]
-    min_response_SOCS_expression = infer_protein(df, min_response_row.loc['Cell_type'], [SOCS_name])[SOCS_name]
 
+    #min_response_row = df.loc[df[response_variable_names[0]].idxmin()]
+    #min_response_SOCS_expression = infer_protein(df, min_response_row.loc['Cell_type'], [SOCS_name])[SOCS_name]
+    # old: [1E7 / (NA * volCP), 1E6 / (NA * volCP), 900 / volPM, 1000 / volPM, min_response_SOCS_expression, 1]
     #       K_Jak1, K_Jak2, K_STAT_STAT1, K_STAT_STAT3, K_SOCS, scale_factor
-    prior = [1E7 / (NA * volCP), 1E6 / (NA * volCP), 900 / volPM, 1000 / volPM, min_response_SOCS_expression, 1]
+    prior = [3.17147014e-03,   3.17147014e+00,   3.18309889e+11,   1.00760330e+12,   1.67829414e-02, 1e-01]
     prior = dict(zip(['K_Jak1', 'K_Jak2', 'K_STAT_STAT1', 'K_STAT_STAT3', 'K_SOCS', 'scale_factor'], prior))
 
     fit_with_DREAM(SOCS_name, prior, __likelihood__)
@@ -815,7 +832,7 @@ def fit_IFNg_SOCS_competes_STAT_with_DREAM(SOCS_name, df=ImmGen_df):
 def sample_DREAM_IFNg_SOCS_competes_STAT(samples_filename, neg_feedback_name, df=ImmGen_df, step_size=500, find_map=True):
     samples = np.load(samples_filename)
     # Convert back to true value rather than log value
-    converted_samples = np.power(np.multiply(np.ones(np.shape(samples)), 10), samples)
+    converted_samples = np.exp(samples)
 
     # Predict
     SOCS_model = make_SOCS_competes_STAT_model(neg_feedback_name)
@@ -855,16 +872,16 @@ def sample_DREAM_IFNg_SOCS_competes_STAT(samples_filename, neg_feedback_name, df
 
     # Plot
     fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(12.8, 5))
-    ax[0].set_yscale('log')
-    ax[1].set_yscale('log')
+    #ax[0].set_yscale('log')
+    #ax[1].set_yscale('log')
     subplot_titles = ['pSTAT1', 'pSTAT3']
     measured_response = df[['Cell_type', 'pSTAT1', 'pSTAT3']]
     measured_response.insert(0, 'Class', ['CyTOF' for _ in range(df.shape[0])])
 
     plot_df = pd.concat([fit_prediction, measured_response])
 
-    sns.catplot(x="Cell_type", y="pSTAT1", data=plot_df[plot_df['Class']=='Model'], hue='Class', ax=ax[0], kind="box")
-    sns.catplot(x="Cell_type", y="pSTAT3", data=plot_df[plot_df['Class']=='Model'], hue='Class', ax=ax[1], kind="box")
+    sns.catplot(x="Cell_type", y="pSTAT1", data=plot_df[plot_df['Class']=='Model'], hue='Class', ax=ax[0], kind="bar")
+    sns.catplot(x="Cell_type", y="pSTAT3", data=plot_df[plot_df['Class']=='Model'], hue='Class', ax=ax[1], kind="bar")
 
     sns.catplot(x="Cell_type", y="pSTAT1", data=plot_df[plot_df['Class'] == 'CyTOF'], hue='Class', ax=ax[0],
                 kind="strip", size=8, palette=sns.color_palette("hls", 16))
@@ -899,9 +916,9 @@ def compare_model_to_ImmGen(pset, SOCS_name='SOCS2'):
                          range(ImmGen_df.shape[0])]
 
     # R-squared
-    residuals = np.subtract(fit_pred, ImmGen_df[['pSTAT1', 'pSTAT3']].values)
+    residuals = np.subtract(np.log(fit_pred), np.log(ImmGen_df[['pSTAT1', 'pSTAT3']].values))
     ss_res = np.sum(np.square(residuals))
-    ss_tot = np.sum(np.square((ImmGen_df[['pSTAT1', 'pSTAT3']].values - np.mean(ImmGen_df[['pSTAT1', 'pSTAT3']].values))))
+    ss_tot = np.sum(np.square((np.log(ImmGen_df[['pSTAT1', 'pSTAT3']].values) - np.log(np.mean(ImmGen_df[['pSTAT1', 'pSTAT3']].values)))))
     r_squared = 1 - (ss_res / ss_tot)
 
     # Plot
@@ -913,7 +930,7 @@ def compare_model_to_ImmGen(pset, SOCS_name='SOCS2'):
     df = pd.concat([fit_prediction, measured_response])
 
     fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(12.8, 5))
-    fig.suptitle('R-squared = {:.2f}'.format(r_squared))
+    fig.suptitle('R-squared (log scale) = {:.2f}'.format(r_squared))
     subplot_titles = ['pSTAT1', 'pSTAT3']
     sns.barplot(x="Cell_type", y="pSTAT1", data=df, hue='Class', ax=ax[0])
     sns.barplot(x="Cell_type", y="pSTAT3", data=df, hue='Class', ax=ax[1])
@@ -923,6 +940,42 @@ def compare_model_to_ImmGen(pset, SOCS_name='SOCS2'):
     plt.tight_layout()
     plt.show()
 
+def compare_model_to_ImmGen_normalized(pset, SOCS_name='SOCS2'):
+    # Predict
+    SOCS_model = make_SOCS_competes_STAT_model(SOCS_name)
+    fit_pred = np.reshape(SOCS_model(IFNg_dose, *pset), (ImmGen_df.shape[0], len(response_variable_names)))
+    fit_pred_labelled = [[ImmGen_df['Cell_type'].values[i], fit_pred[i][0], fit_pred[i][1]] for i in
+                         range(ImmGen_df.shape[0])]
+
+    # R-squared
+    residuals = np.subtract(np.log(fit_pred), np.log(ImmGen_df[['pSTAT1', 'pSTAT3']].values))
+    ss_res = np.sum(np.square(residuals))
+    ss_tot = np.sum(np.square((np.log(ImmGen_df[['pSTAT1', 'pSTAT3']].values) - np.log(np.mean(ImmGen_df[['pSTAT1', 'pSTAT3']].values)))))
+    r_squared = 1 - (ss_res / ss_tot)
+
+    # Plot
+    fit_prediction = pd.DataFrame.from_records(fit_pred_labelled, columns=['Cell_type', 'pSTAT1', 'pSTAT3'])
+    fit_prediction.insert(0, 'Class', ['Model' for _ in range(ImmGen_df.shape[0])])
+    measured_response = ImmGen_df[['Cell_type', 'pSTAT1', 'pSTAT3']]
+    measured_response.insert(0, 'Class', ['CyTOF' for _ in range(ImmGen_df.shape[0])])
+
+    measured_response['pSTAT1norm'] = measured_response['pSTAT1']/ImmGen_df['STAT1']
+    measured_response['pSTAT3norm'] = measured_response['pSTAT3'] / ImmGen_df['STAT3']
+    fit_prediction['pSTAT1norm'] = fit_prediction['pSTAT1']/ImmGen_df['STAT1']
+    fit_prediction['pSTAT3norm'] = fit_prediction['pSTAT3'] / ImmGen_df['STAT3']
+    df = pd.concat([fit_prediction, measured_response])
+
+    fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(12.8, 5))
+    fig.suptitle('R-squared (log scale) = {:.2f}'.format(r_squared))
+    subplot_titles = ['pSTAT1', 'pSTAT3']
+
+    sns.barplot(x="Cell_type", y="pSTAT1norm", data=df, hue='Class', ax=ax[0])
+    sns.barplot(x="Cell_type", y="pSTAT3norm", data=df, hue='Class', ax=ax[1])
+    for i in [0, 1]:
+        ax[i].set_xticklabels(ax[i].get_xticklabels(), rotation=90)
+        ax[i].set_title(subplot_titles[i])
+    plt.tight_layout()
+    plt.show()
 
 if __name__ == "__main__":
     # Check variance in predictors
@@ -933,24 +986,26 @@ if __name__ == "__main__":
     #SOCS_histograms()
 
     #fit_without_SOCS()
-    #fit_with_SOCS_competes_STAT()
+    #fit_with_SOCS_competes_STAT(neg_feedback_name='allSOCS')
 
     #compare_model_errors()
 
     #print(ec50_for_all_cell_types('SOCS2'))
     #make_ec50_predictions_plot()
 
-    fit_IFNg_SOCS_competes_STAT_with_DREAM('SOCS2')
+    #fit_IFNg_SOCS_competes_STAT_with_DREAM('SOCS2')
 
-    save_dir = "PyDREAM_06-11-2019_10000"
+    save_dir = "PyDREAM_08-11-2019_10000"
     sim_name = "SOCS2"
-    #sample_DREAM_IFNg_SOCS_competes_STAT(os.path.join(save_dir, sim_name+'_samples' + '.npy'), sim_name, step_size=250, find_map=True)
+    #sample_DREAM_IFNg_SOCS_competes_STAT(os.path.join(save_dir, sim_name+'_samples' + '.npy'), sim_name, step_size=250, find_map=False)
 
     ## ['K_Jak1', 'K_Jak2', 'K_STAT_STAT1', 'K_STAT_STAT3', 'K_SOCS', 'scale_factor']
     #min_response_row = ImmGen_df.loc[ImmGen_df[response_variable_names[0]].idxmin()]
     #min_response_SOCS_expression = infer_protein(ImmGen_df, min_response_row.loc['Cell_type'], [sim_name])[sim_name]
-    #p_prior = [1E7 / (NA * volCP), 1E6 / (NA * volCP), 900 / volPM, 1000 / volPM, 0.006*min_response_SOCS_expression, 0.5]
-    #p_best = [  3.17147014e-03,   3.17147014e+00,   3.18309889e+11,   1.00760330e+12,   1.67829414e-02,   1.00000000e-01]
-    #compare_model_to_ImmGen(p_best)
-
+    # [1E7 / (NA * volCP), 1E6 / (NA * volCP), 900 / volPM, 1000 / volPM, 0.006*min_response_SOCS_expression, 0.5]
+    #p_prior = [3.171470138e-02, 3.17147013799e-03, 2.864788975654e+12, 3.183098861837e+12, 5.77815e-01, 5e-01]
+    p_best = [3.17147014e-03,   3.17147014e+00,   3.18309889e+11,   1.00760330e+12,   1.67829414e-02, 1e-01]
+    p_best_by_MCMC = [2.38069129e-03, 6.28888514e-01, 3.93783943e+02, 1.27796666e+03, 1.43456465e-09, 5.76281582e+00]
+    #compare_model_to_ImmGen(p_best_by_MCMC)
+    compare_model_to_ImmGen_normalized(p_best)
 
