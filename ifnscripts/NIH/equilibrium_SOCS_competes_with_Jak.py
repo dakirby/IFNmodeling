@@ -47,7 +47,7 @@ class Cytokine_Receptor:
 
 
 Attributes:
-    STAT_names (list): each element is a string identifying the name of an equilibrium_model_output from activating this receptor
+    STAT_names (list): each element is a string identifying the name of an drop_SOCS from activating this receptor
     parameters (dict): each entry is a dict with key from self.STAT_names, and entry is another dict which has 
                         for keys the names (str) and values (float or int) for the equilibrium model of that
                         corresponding STAT response; parameters should be given in units of molecules where 
@@ -56,7 +56,7 @@ Attributes:
     cytokine_name (str): the name of the cytokine which binds specifically to this receptor 
 
 Methods: 
-    def equilibrium_model_output():
+    def drop_SOCS():
         :param cytokine_dose: (float) the stimulation of cytokine in pM
         :return STAT_response: (dict) the predicted pSTAT response for each key, STAT, in self.STAT_names
     def equilibrium_model_for_SOCS_competing_with_Jak():

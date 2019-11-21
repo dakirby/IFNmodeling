@@ -2,7 +2,13 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+<<<<<<< HEAD
+from functools import reduce
 from scipy.optimize import curve_fit
+from sklearn.cluster import KMeans
+=======
+from scipy.optimize import curve_fit
+>>>>>>> 079c0630f326ba4879966fa18364d9eb994ffee5
 
 ImmGen_df = pd.read_excel('ImmGen_signaling_with_protein_response.xlsx', sheet_name='Sheet1', axis=1)
 #create df of results and features from full dataframe
@@ -166,9 +172,53 @@ def fit_normalized_pSTAT():
     for i in [0, 1]:
         ax[i].set_xticklabels(ax[i].get_xticklabels(), rotation=90)
         ax[i].set_title(subplot_titles[i])
+<<<<<<< HEAD
+    plt.suptitle('R squared = {:.2f}'.format(r_squared))
+    plt.tight_layout()
+    plt.show()
+
+def plot_pSTAT_space():
+    X = ImmGen_df[['pSTAT1','pSTAT3']].values
+    #y_pred = KMeans(n_clusters=3, random_state=4).fit_predict(X)
+    stem_palette = sns.color_palette("Greys", 5)[::-1]
+    myeloid_palette = sns.color_palette("Greens", 5)
+    lymphoid_palette = sns.color_palette("cubehelix", 8)
+    hematopoetic_colormap = {"MPP34F": stem_palette[2], "ST34F": stem_palette[2], "CMP": stem_palette[3], "GMP": stem_palette[3], "MEP": stem_palette[3],
+                             "CDP": stem_palette[3], "MDP": stem_palette[3], "LT-HSC": stem_palette[1], "ST-HSC": stem_palette[1],
+                             "Ly6Chi_Mo": myeloid_palette[2], "Ly6Clo_Mo": myeloid_palette[2],
+                             "Granulocytes": myeloid_palette[3], "Mac_BM": myeloid_palette[3], "Mac_Sp": myeloid_palette[3],
+                             "CD11b+DC": myeloid_palette[3], "CD11b-DC": myeloid_palette[3],
+                             "preB_FrC": lymphoid_palette[1], "preB_FrD": lymphoid_palette[1],
+                             "NK": lymphoid_palette[4]}
+    y_pred = [hematopoetic_colormap[x] for x in ImmGen_df.Cell_type.values]
+    plt.scatter(X[:,0], X[:,1], c=y_pred)
+    plt.xlabel('pSTAT1')
+    plt.ylabel('pSTAT3')
+    p1=plt.gca()
+    for line in range(0, X.shape[0]):
+        p1.text(X[line,0] + 0.2, X[line,1], ImmGen_df.Cell_type.values[line],
+                horizontalalignment='left', size='medium', color='black', weight='semibold')
+    plt.show()
+
+def plot_expression_space(gene_list=[]):
+    df = ImmGen_df.apply(lambda x: np.log10(x) if np.issubdtype(x.dtype, np.number) else x)
+    if gene_list==[]:
+        hist = df.hist(column=[i for i in ImmGen_df.columns.values if i not in ['pSTAT1', 'pSTAT3']])
+    else:
+        hist = df.hist(column=gene_list)
+    for ax in hist.flatten():
+        ax.set_xlabel("log expression")
+        ax.set_ylabel("frequency")
+=======
     plt.suptitle('R squard = {:.2f}'.format(r_squared))
+>>>>>>> 079c0630f326ba4879966fa18364d9eb994ffee5
     plt.tight_layout()
     plt.show()
 
 if __name__ == "__main__":
+<<<<<<< HEAD
+    #plot_expression_space(['STAT3', 'STAT1', 'JAK1', 'JAK2', 'SOCS2', 'Usp18', 'PIAS2', 'SOCS6'])
+    plot_pSTAT_space()
+=======
     fit_normalized_pSTAT()
+>>>>>>> 079c0630f326ba4879966fa18364d9eb994ffee5
