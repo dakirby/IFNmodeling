@@ -179,6 +179,7 @@ Methods:
             STAT_response[STAT] = response
         return STAT_response
 
+<<<<<<< HEAD
     def receptor_only(self, cytokine_dose):
         dose = cytokine_dose*1E-12*NA*volEC
         STAT_response = {}
@@ -192,6 +193,8 @@ Methods:
             STAT_response[STAT] = response
         return STAT_response
 
+=======
+>>>>>>> 079c0630f326ba4879966fa18364d9eb994ffee5
     def equilibrium_model_with_SOCS_ec50(self, SOCS_name):
         ec50_dict = {}
         for STAT in self.STAT_names:
@@ -501,6 +504,7 @@ def fit_with_SOCS_competes_STAT(df=ImmGen_df, k_fold=1, neg_feedback_name='SOCS2
     plt.show()
 
 
+<<<<<<< HEAD
 def compare_model_errors(df=ImmGen_df, neg_feedback_name='SOCS2', add_factor='full'):
     # --------------
     # Receptor only
@@ -510,6 +514,13 @@ def compare_model_errors(df=ImmGen_df, neg_feedback_name='SOCS2', add_factor='fu
                                             K_STAT_STAT1=1000 / volPM, K_STAT_STAT3=1000 / volPM,
                                             df=ImmGen_df):
         cell_types = df['Cell_type'].values
+=======
+def compare_model_errors(df=ImmGen_df, neg_feedback_name='SOCS2'):
+    # ------------
+    # With SOCS
+    # ------------
+    pfit, pcov = fit_IFNg_with_SOCS_competes_STAT(neg_feedback_name, df)
+>>>>>>> 079c0630f326ba4879966fa18364d9eb994ffee5
 
         # Set input parameters for model
         default_parameters = copy.deepcopy(IFNg_parameters)
@@ -545,8 +556,13 @@ def compare_model_errors(df=ImmGen_df, neg_feedback_name='SOCS2', add_factor='fu
     # Predict
     baseline_fit_pred = np.reshape(model(IFNg_dose, *pfit), (df.shape[0], len(response_variable_names)))
     # Residual
+<<<<<<< HEAD
     baseline_residuals = np.divide(np.subtract(baseline_fit_pred, df[['pSTAT1', 'pSTAT3']].values),
                           df[['pSTAT1', 'pSTAT3']].values)
+=======
+    SOCS_residuals = np.divide(np.subtract(SOCS_fit_pred, df[['pSTAT1', 'pSTAT3']].values), df[['pSTAT1', 'pSTAT3']].values)
+    #SOCS_res_pred_labelled = [[df['Cell_type'].values[i], SOCS_residuals[i][0], SOCS_residuals[i][1]] for i in range(df.shape[0])]
+>>>>>>> 079c0630f326ba4879966fa18364d9eb994ffee5
 
     # ------------
     # Add SOCS
@@ -602,6 +618,7 @@ def compare_model_errors(df=ImmGen_df, neg_feedback_name='SOCS2', add_factor='fu
         residuals = np.divide(np.subtract(feature_fit_pred, df[['pSTAT1', 'pSTAT3']].values),
                               df[['pSTAT1', 'pSTAT3']].values)
 
+<<<<<<< HEAD
     # ------------
     # Add Jak1
     # ------------
@@ -793,6 +810,11 @@ def compare_model_errors(df=ImmGen_df, neg_feedback_name='SOCS2', add_factor='fu
         # Residual
         residuals = np.divide(np.subtract(feature_fit_pred, df[['pSTAT1', 'pSTAT3']].values),
                               df[['pSTAT1', 'pSTAT3']].values)
+=======
+    # Residual
+    residuals = np.divide(np.subtract(fit_pred, df[['pSTAT1', 'pSTAT3']].values), df[['pSTAT1', 'pSTAT3']].values)
+    #res_pred_labelled = [[df['Cell_type'].values[i], residuals[i][0], residuals[i][1]] for i in range(df.shape[0])]
+>>>>>>> 079c0630f326ba4879966fa18364d9eb994ffee5
 
     # ------------
     # Plot
@@ -804,7 +826,11 @@ def compare_model_errors(df=ImmGen_df, neg_feedback_name='SOCS2', add_factor='fu
         ax[i].set_yscale('log')
         ax[i].set_xlabel('% error in no-SOCS model')
         ax[i].set_ylabel('% error in SOCS model')
+<<<<<<< HEAD
         ax[i].scatter(np.abs(residuals[:, i]), np.abs(baseline_residuals[:, i]))
+=======
+        ax[i].scatter(np.abs(residuals[:, i]), np.abs(SOCS_residuals[:, i]))
+>>>>>>> 079c0630f326ba4879966fa18364d9eb994ffee5
         ax[i].plot(np.logspace(np.log10(min(np.abs(residuals[:, i]))), np.log10(max(np.abs(residuals[:, i])))),
                    np.logspace(np.log10(min(np.abs(residuals[:, i]))), np.log10(max(np.abs(residuals[:, i])))), 'k--')
         ax[i].set_xlim((10**-3, 2*10**2))
@@ -1298,7 +1324,10 @@ def compare_model_to_ImmGen_normalized(pset, SOCS_name='SOCS2'):
         ax[i].set_title(subplot_titles[i])
     plt.tight_layout()
     plt.show()
+<<<<<<< HEAD
 
+=======
+>>>>>>> 079c0630f326ba4879966fa18364d9eb994ffee5
 
 if __name__ == "__main__":
     # Check variance in predictors
@@ -1311,7 +1340,11 @@ if __name__ == "__main__":
     #fit_without_SOCS()
     #fit_with_SOCS_competes_STAT(neg_feedback_name='allSOCS')
 
+<<<<<<< HEAD
     #compare_model_errors(add_factor='both_Jaks')
+=======
+    #compare_model_errors()
+>>>>>>> 079c0630f326ba4879966fa18364d9eb994ffee5
 
     #print(ec50_for_all_cell_types('SOCS2'))
     #make_ec50_predictions_plot()
@@ -1328,9 +1361,15 @@ if __name__ == "__main__":
     # [1E7 / (NA * volCP), 1E6 / (NA * volCP), 900 / volPM, 1000 / volPM, 0.006*min_response_SOCS_expression, 0.5]
     #p_prior = [3.171470138e-02, 3.17147013799e-03, 2.864788975654e+12, 3.183098861837e+12, 5.77815e-01, 5e-01]
     p_best = [3.17147014e-03,   3.17147014e+00,   3.18309889e+11,   1.00760330e+12,   1.67829414e-02, 1e-01]
+<<<<<<< HEAD
     p_log_fit = [3.17147014e-01,   3.17147014e+00,   3.18309886e+11,   3.18309886e+11, 1.60000000e-01, 2.00000000e0] # does pretty poorly
     p_best_by_MCMC = [2.38069129e-03, 6.28888514e-01, 3.93783943e+02, 1.27796666e+03, 1.43456465e-09, 5.76281582e+00]
     compare_model_to_ImmGen(p_best)
     #compare_model_to_ImmGen_normalized(p_best)
 
+=======
+    p_best_by_MCMC = [2.38069129e-03, 6.28888514e-01, 3.93783943e+02, 1.27796666e+03, 1.43456465e-09, 5.76281582e+00]
+    #compare_model_to_ImmGen(p_best_by_MCMC)
+    compare_model_to_ImmGen_normalized(p_best)
+>>>>>>> 079c0630f326ba4879966fa18364d9eb994ffee5
 

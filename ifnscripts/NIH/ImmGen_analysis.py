@@ -2,9 +2,13 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+<<<<<<< HEAD
 from functools import reduce
 from scipy.optimize import curve_fit
 from sklearn.cluster import KMeans
+=======
+from scipy.optimize import curve_fit
+>>>>>>> 079c0630f326ba4879966fa18364d9eb994ffee5
 
 ImmGen_df = pd.read_excel('ImmGen_signaling_with_protein_response.xlsx', sheet_name='Sheet1', axis=1)
 #create df of results and features from full dataframe
@@ -168,6 +172,7 @@ def fit_normalized_pSTAT():
     for i in [0, 1]:
         ax[i].set_xticklabels(ax[i].get_xticklabels(), rotation=90)
         ax[i].set_title(subplot_titles[i])
+<<<<<<< HEAD
     plt.suptitle('R squared = {:.2f}'.format(r_squared))
     plt.tight_layout()
     plt.show()
@@ -204,9 +209,16 @@ def plot_expression_space(gene_list=[]):
     for ax in hist.flatten():
         ax.set_xlabel("log expression")
         ax.set_ylabel("frequency")
+=======
+    plt.suptitle('R squard = {:.2f}'.format(r_squared))
+>>>>>>> 079c0630f326ba4879966fa18364d9eb994ffee5
     plt.tight_layout()
     plt.show()
 
 if __name__ == "__main__":
+<<<<<<< HEAD
     #plot_expression_space(['STAT3', 'STAT1', 'JAK1', 'JAK2', 'SOCS2', 'Usp18', 'PIAS2', 'SOCS6'])
     plot_pSTAT_space()
+=======
+    fit_normalized_pSTAT()
+>>>>>>> 079c0630f326ba4879966fa18364d9eb994ffee5
