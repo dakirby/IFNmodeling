@@ -19,6 +19,8 @@ scratch.py
 /ifndatabase/20190121_raw_data/*
 /ifndatabase/20190214_raw_data/*
 
+/ifnscripts/NIH/*.csv
+
 # Compiled source 
 #
 ###################

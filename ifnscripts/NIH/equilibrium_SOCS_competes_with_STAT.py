@@ -20,6 +20,8 @@ from pydream.convergence import Gelman_Rubin
 # Import data set and split into predictor variables (receptors, JAKs, SOCS, etc.) and response variables (STATs)
 IFNg_dose = 100 # pM
 ImmGen_df = pd.read_excel('ImmGen_signaling_with_protein_response.xlsx', sheet_name='Sheet1', axis=1)
+ImmGen_df['pSTAT1norm'] = ImmGen_df['pSTAT1']/ImmGen_df['STAT1']
+ImmGen_df['pSTAT3norm'] = ImmGen_df['pSTAT3']/ImmGen_df['STAT3']
 
 #create df of results and features from full dataframe
 response_variable_names = ['pSTAT1', 'pSTAT3']
@@ -84,7 +86,7 @@ class Cytokine_Receptor:
 
 
 Attributes:
-    STAT_names (list): each element is a string identifying the name of an equilibrium_model_output from activating this receptor
+    STAT_names (list): each element is a string identifying the name of a STAT activated by this receptor
     parameters (dict): each entry is a dict with key from self.STAT_names, and entry is another dict which has
                         for keys the names (str) and values (float or int) for the equilibrium model of that
                         corresponding STAT response; parameters should be given in units of molecules where
@@ -93,9 +95,6 @@ Attributes:
     cytokine_name (str): the name of the cytokine which binds specifically to this receptor
 
 Methods:
-    def equilibrium_model_output():
-        :param cytokine_dose: (float) the stimulation of cytokine in pM
-        :return STAT_response: (dict) the predicted pSTAT response for each key, STAT, in self.STAT_names
     def equilibrium_model_for_SOCS_competing_with_STAT():
         :param cytokine_dose: (float) the stimulation of cytokine in pM
         :return STAT_response: (dict) the predicted pSTAT response for each key, STAT, in self.STAT_names
@@ -108,20 +107,6 @@ Methods:
         if not all(elem in self.STAT_names for elem in self.parameters.keys()):
             print("Not all parameters were defined for all STAT outputs")
             raise KeyError
-
-    def equilibrium_model_output(self, cytokine_dose):
-        dose = cytokine_dose*1E-12*NA*volEC
-        STAT_response = {}
-        for STAT in self.STAT_names:
-            cytokine_R = self.parameters[STAT]['K_R1R2']/2 * \
-                         (1 + self.parameters[STAT]['R_total']/self.parameters[STAT]['K_R1R2'] -\
-                            np.sqrt(1 + (2*self.parameters[STAT]['R_total']*self.parameters[STAT]['K_R1R2']\
-                                         + self.parameters[STAT]['Delta']**2)/self.parameters[STAT]['K_R1R2']**2))
-            Rstar = cytokine_R*self.parameters[STAT]['Jak1']*self.parameters[STAT]['K_Jak1']*self.parameters[STAT]['Jak2']*\
-                    self.parameters[STAT]['K_Jak2']/(1+self.parameters[STAT]['K_ligand']/dose)
-            response = self.parameters[STAT]['STAT_total']/(1+self.parameters[STAT]['K_STAT']*volPM/Rstar)
-            STAT_response[STAT] = response
-        return STAT_response
 
     def equilibrium_model_for_SOCS_competing_with_STAT(self, cytokine_dose, SOCS_name):
         dose = cytokine_dose*1E-12*NA*volEC
@@ -138,29 +123,97 @@ Methods:
             STAT_response[STAT] = response
         return STAT_response
 
-    def equilibrium_model_ec50(self):
+    def add_Jak1(self, cytokine_dose, SOCS_name):
+        dose = cytokine_dose*1E-12*NA*volEC
+        STAT_response = {}
+        for STAT in self.STAT_names:
+            cytokine_R = self.parameters[STAT]['K_R1R2']/2 * \
+                         (1 + self.parameters[STAT]['R_total']/self.parameters[STAT]['K_R1R2'] -\
+                            np.sqrt(1 + (2*self.parameters[STAT]['R_total']*self.parameters[STAT]['K_R1R2']\
+                                         + self.parameters[STAT]['Delta']**2)/self.parameters[STAT]['K_R1R2']**2))
+            PR1active = self.parameters[STAT]['Jak1']*self.parameters[STAT]['K_Jak1'] / (1 + self.parameters[STAT]['Jak1']*self.parameters[STAT]['K_Jak1'])
+            Rstar = cytokine_R*PR1active/(1+self.parameters[STAT]['K_ligand']/dose)
+            response = self.parameters[STAT]['STAT_total']/(1+self.parameters[STAT]['K_STAT']*volPM/Rstar)
+            STAT_response[STAT] = response
+        return STAT_response
+
+    def add_Jak2(self, cytokine_dose):
+        dose = cytokine_dose*1E-12*NA*volEC
+        STAT_response = {}
+        for STAT in self.STAT_names:
+            cytokine_R = self.parameters[STAT]['K_R1R2']/2 * \
+                         (1 + self.parameters[STAT]['R_total']/self.parameters[STAT]['K_R1R2'] -\
+                            np.sqrt(1 + (2*self.parameters[STAT]['R_total']*self.parameters[STAT]['K_R1R2']\
+                                         + self.parameters[STAT]['Delta']**2)/self.parameters[STAT]['K_R1R2']**2))
+            PR2active = self.parameters[STAT]['Jak2']*self.parameters[STAT]['K_Jak2'] / (1 + self.parameters[STAT]['Jak2']*self.parameters[STAT]['K_Jak2'])
+            Rstar = cytokine_R*PR2active/(1+self.parameters[STAT]['K_ligand']/dose)
+            response = self.parameters[STAT]['STAT_total']/(1+self.parameters[STAT]['K_STAT']*volPM/Rstar)
+            STAT_response[STAT] = response
+        return STAT_response
+
+    def add_SOCS(self, cytokine_dose, SOCS_name):
+        dose = cytokine_dose*1E-12*NA*volEC
+        STAT_response = {}
+        for STAT in self.STAT_names:
+            cytokine_R = self.parameters[STAT]['K_R1R2']/2 * \
+                         (1 + self.parameters[STAT]['R_total']/self.parameters[STAT]['K_R1R2'] -\
+                            np.sqrt(1 + (2*self.parameters[STAT]['R_total']*self.parameters[STAT]['K_R1R2']\
+                                         + self.parameters[STAT]['Delta']**2)/self.parameters[STAT]['K_R1R2']**2))
+            Rstar = cytokine_R/(1+self.parameters[STAT]['K_ligand']/dose)
+            response = self.parameters[STAT]['STAT_total']/(1+self.parameters[STAT]['K_STAT']*(1+self.parameters[STAT][SOCS_name]/self.parameters[STAT]['K_SOCS'])*volPM/Rstar)
+            STAT_response[STAT] = response
+        return STAT_response
+
+    def add_both_Jaks(self, cytokine_dose):
+        dose = cytokine_dose*1E-12*NA*volEC
+        STAT_response = {}
+        for STAT in self.STAT_names:
+            cytokine_R = self.parameters[STAT]['K_R1R2']/2 * \
+                         (1 + self.parameters[STAT]['R_total']/self.parameters[STAT]['K_R1R2'] -\
+                            np.sqrt(1 + (2*self.parameters[STAT]['R_total']*self.parameters[STAT]['K_R1R2']\
+                                         + self.parameters[STAT]['Delta']**2)/self.parameters[STAT]['K_R1R2']**2))
+            PR1active = self.parameters[STAT]['Jak1']*self.parameters[STAT]['K_Jak1'] / (1 + self.parameters[STAT]['Jak1']*self.parameters[STAT]['K_Jak1'])
+            PR2active = self.parameters[STAT]['Jak2']*self.parameters[STAT]['K_Jak2'] / (1 + self.parameters[STAT]['Jak2']*self.parameters[STAT]['K_Jak2'])
+            Rstar = cytokine_R*PR1active*PR2active/(1+self.parameters[STAT]['K_ligand']/dose)
+            response = self.parameters[STAT]['STAT_total']/(1+self.parameters[STAT]['K_STAT']*volPM/Rstar)
+            STAT_response[STAT] = response
+        return STAT_response
+
+    def receptor_only(self, cytokine_dose):
+        dose = cytokine_dose*1E-12*NA*volEC
+        STAT_response = {}
+        for STAT in self.STAT_names:
+            cytokine_R = self.parameters[STAT]['K_R1R2']/2 * \
+                         (1 + self.parameters[STAT]['R_total']/self.parameters[STAT]['K_R1R2'] -\
+                            np.sqrt(1 + (2*self.parameters[STAT]['R_total']*self.parameters[STAT]['K_R1R2']\
+                                         + self.parameters[STAT]['Delta']**2)/self.parameters[STAT]['K_R1R2']**2))
+            Rstar = cytokine_R/(1+self.parameters[STAT]['K_ligand']/dose)
+            response = self.parameters[STAT]['STAT_total']/(1+self.parameters[STAT]['K_STAT']*volPM/Rstar)
+            STAT_response[STAT] = response
+        return STAT_response
+
+    def equilibrium_model_with_SOCS_ec50(self, SOCS_name):
         ec50_dict = {}
         for STAT in self.STAT_names:
-            term1 = self.parameters[STAT]['K_R1R2'] + self.parameters[STAT]['R_total'] - self.parameters[STAT]['K_R1R2']*np.sqrt((self.parameters[STAT]['K_R1R2']**2 + 2*self.parameters[STAT]['K_R1R2']*self.parameters[STAT]['R_total'] + self.parameters[STAT]['Delta']**2)/(self.parameters[STAT]['K_R1R2']**2))
-            term2 = self.parameters[STAT]['Jak1'] * self.parameters[STAT]['K_Jak1']*self.parameters[STAT]['Jak2'] * self.parameters[STAT]['K_Jak2']
-            numerator = 2 * volPM * self.parameters[STAT]['K_ligand'] * self.parameters[STAT]['K_STAT']
-            denominator = -numerator/self.parameters[STAT]['K_ligand'] + term2*term1
+            term1 = self.parameters[STAT]['Jak1'] * self.parameters[STAT]['K_Jak1'] * self.parameters[STAT]['Jak2'] * self.parameters[STAT]['K_Jak2']
+            term2 = self.parameters[STAT]['K_R1R2'] + self.parameters[STAT]['R_total'] - self.parameters[STAT]['K_R1R2'] * np.sqrt((self.parameters[STAT]['K_R1R2']**2 + 2*self.parameters[STAT]['K_R1R2']*self.parameters[STAT]['R_total']+self.parameters[STAT]['Delta']**2)/self.parameters[STAT]['K_R1R2']**2)
+            term3 = (1+self.parameters[STAT]['K_Jak1']*self.parameters[STAT]['Jak1']) * (1+self.parameters[STAT]['K_Jak2']*self.parameters[STAT]['Jak2'])
+            term4 = self.parameters[STAT]['K_STAT']*(self.parameters[STAT]['K_STAT'] + self.parameters[STAT][SOCS_name])
+            numerator = 2*volPM*self.parameters[STAT]['K_ligand']*term3*term4
+            denominator = 2*volPM*term3*term4 + self.parameters[STAT]['K_SOCS']*term1*term2
             ec50 = numerator/denominator
             ec50_dict[STAT] = ec50/(NA*volEC) # (M)
         return ec50_dict
 
-    def equilibrium_model_pSTATmax(self):
+    def equilibrium_model_with_SOCS_pSTATmax(self, SOCS_name):
         pSTAT_max_dict = {}
         for STAT in self.STAT_names:
-            cytokine_R = self.parameters[STAT]['K_R1R2'] / 2 * \
-                         (1 + self.parameters[STAT]['R_total'] / self.parameters[STAT]['K_R1R2'] - \
-                          np.sqrt(1 + (2 * self.parameters[STAT]['R_total'] * self.parameters[STAT]['K_R1R2'] \
-                                       + self.parameters[STAT]['Delta'] ** 2) / self.parameters[STAT]['K_R1R2'] ** 2))
-            Rstar = cytokine_R * self.parameters[STAT]['Jak1'] * self.parameters[STAT]['K_Jak1'] * \
-                    self.parameters[STAT]['Jak2'] * self.parameters[STAT]['K_Jak2']
-            response = self.parameters[STAT]['STAT_total'] / (
-                        1 + self.parameters[STAT]['K_STAT'] * volPM / Rstar)
-            pSTAT_max_dict[STAT] = response
+            term1 = self.parameters[STAT]['Jak1'] * self.parameters[STAT]['K_Jak1'] * self.parameters[STAT]['Jak2'] * self.parameters[STAT]['K_Jak2']
+            term2 = self.parameters[STAT]['K_R1R2'] + self.parameters[STAT]['R_total'] - self.parameters[STAT]['K_R1R2'] * np.sqrt((self.parameters[STAT]['K_R1R2']**2 + 2*self.parameters[STAT]['K_R1R2']*self.parameters[STAT]['R_total']+self.parameters[STAT]['Delta']**2)/self.parameters[STAT]['K_R1R2']**2)
+            numerator = self.parameters[STAT]['K_SOCS']*self.parameters[STAT]['STAT_total']*term1*term2
+            term3 = (1+self.parameters[STAT]['K_Jak1']*self.parameters[STAT]['Jak1']) * (1+self.parameters[STAT]['K_Jak2']*self.parameters[STAT]['Jak2'])
+            denominator = 2*volPM*term3*self.parameters[STAT]['K_STAT']*(self.parameters[STAT]['K_SOCS']+self.parameters[STAT][SOCS_name]) + self.parameters[STAT]['K_SOCS']*term1*term2
+            pSTAT_max_dict[STAT] = numerator/denominator
         return pSTAT_max_dict
 
 default_SOCS_name = 'SOCS2'
@@ -195,7 +248,7 @@ IFNg_parameters = {'pSTAT1': {'R_total': 2000, # infer from Immgen
 def plot_dose_response(IFNg_parameters, SOCS_name, model=1):
     IFNg_receptor = Cytokine_Receptor(['pSTAT1', 'pSTAT3'], IFNg_parameters, 'IFNgamma')
     if model==1:
-        pSTAT1_dose_response = [IFNg_receptor.equilibrium_model_output(d, SOCS_name)['pSTAT1'] for d in np.logspace(-2, 3)]
+        pSTAT1_dose_response = [IFNg_receptor.add_both_Jaks(d)['pSTAT1'] for d in np.logspace(-2, 3)]
     elif model==2:
         pSTAT1_dose_response = [IFNg_receptor.equilibrium_model_for_SOCS_competing_with_STAT(d, SOCS_name)['pSTAT1'] for d in np.logspace(-2, 3)]
     plt.figure()
@@ -256,7 +309,7 @@ def equilibrium_pSTAT1_and_pSTAT3(dose, K_Jak1=1E6 / (NA * volCP), K_Jak2=1E6 / 
             default_parameters[S]['STAT_total'] = IFNg_ImmGen_parameters[S[1:]]
         # Make predictions
         IFNg_receptor = Cytokine_Receptor(['pSTAT1', 'pSTAT3'], IFNg_parameters, 'IFNgamma')
-        q = IFNg_receptor.equilibrium_model_output(dose)
+        q = IFNg_receptor.add_both_Jaks(dose)
         response['Cell_type'].append(c)
         response['pSTAT1'].append(q['pSTAT1'])
         response['pSTAT3'].append(q['pSTAT3'])
@@ -306,7 +359,7 @@ def equilibrium_model(dose, p1, p2, p3, p4, scale_factor):
 
 
 def fit_IFNg_equilibrium():
-    default_parameters = [1E6 / (NA * volCP), 1E6 / (NA * volCP), 800 / volPM, 1500 / volPM, 50]
+    default_parameters = [1E7 / (NA * volCP), 1E7 / (NA * volCP), 10000 / volPM, 10000 / volPM, 70]
 
     y_true = ImmGen_df[['pSTAT1', 'pSTAT3']].values.flatten()
     pfit, pcov = curve_fit(equilibrium_model, IFNg_dose, y_true, p0=default_parameters,
@@ -322,10 +375,15 @@ def make_SOCS_competes_STAT_model(SOCS_name, df=ImmGen_df):
     return SOCS_model
 
 def fit_IFNg_with_SOCS_competes_STAT(SOCS_name, df=ImmGen_df):
-    min_response_row = df.loc[df[response_variable_names[0]].idxmin()]
-    min_response_SOCS_expression = infer_protein(df, min_response_row.loc['Cell_type'], [SOCS_name])[SOCS_name]
-    #                       K_Jak1, K_Jak2, K_STAT_STAT1, K_STAT_STAT3, K_SOCS, scale_factor
-    default_parameters = [1E7 / (NA * volCP), 1E6 / (NA * volCP), 900 / volPM, 1000 / volPM, 0.0006*min_response_SOCS_expression, 15]
+    if SOCS_name=='allSOCS':
+        default_parameters = [1E7 / (NA * volCP), 1E8 / (NA * volCP), 1000 / volPM, 1000 / volPM, 1.6e-02, 1]
+    else:
+        min_response_row = df.loc[df[response_variable_names[0]].idxmin()]
+        min_response_SOCS_expression = infer_protein(df, min_response_row.loc['Cell_type'], [SOCS_name])[SOCS_name]
+        #
+        # [4.64594123e-02,   6.72673774e+00,   9.50605181e+00,   2.92182513e+00,   2.08449593e-01,   1.63205262e+02]
+        #                       K_Jak1, K_Jak2, K_STAT_STAT1, K_STAT_STAT3, K_SOCS, scale_factor
+        default_parameters = [1E7 / (NA * volCP), 1E8 / (NA * volCP), 1000 / volPM, 1000 / volPM, 0.0006*min_response_SOCS_expression, 1]
     y_true = df[['pSTAT1', 'pSTAT3']].values.flatten()
     pfit, pcov = curve_fit(make_SOCS_competes_STAT_model(SOCS_name, df), IFNg_dose, y_true, p0=default_parameters,
                            bounds=(np.multiply(default_parameters, 0.1), np.multiply(default_parameters, 10)))
@@ -354,9 +412,9 @@ def k_fold_cross_validate_SOCS_competes_STAT(k=10, df=ImmGen_df, neg_feedback_na
         fit_pred = np.reshape(SOCS_model(IFNg_dose, *pfit), (test.shape[0], len(response_variable_names)))
 
         # Compute R**2 value
-        residuals = np.subtract(fit_pred, test[['pSTAT1', 'pSTAT3']].values)
+        residuals = np.subtract(np.log(fit_pred), np.log(test[['pSTAT1', 'pSTAT3']].values))
         ss_res = np.sum(residuals**2)
-        ss_tot = np.sum((test[['pSTAT1', 'pSTAT3']].values-np.mean(test[['pSTAT1', 'pSTAT3']].values))**2)
+        ss_tot = np.sum((np.log(test[['pSTAT1', 'pSTAT3']].values)-np.log(np.mean(test[['pSTAT1', 'pSTAT3']].values)))**2)
         r_squared = 1 - (ss_res / ss_tot)
         r2_samples.append(r_squared)
 
@@ -372,11 +430,11 @@ def fit_without_SOCS(df=ImmGen_df):
     fit_pred_labelled = [[df['Cell_type'].values[i], fit_pred[i][0], fit_pred[i][1]] for i in range(df.shape[0])]
 
     # Compute R**2 value
-    residuals = np.subtract(fit_pred, df[['pSTAT1', 'pSTAT3']].values)
+    residuals = np.subtract(np.log(fit_pred), np.log(df[['pSTAT1', 'pSTAT3']].values))
     ss_res = np.sum(residuals ** 2)
-    ss_tot = np.sum((df[['pSTAT1', 'pSTAT3']].values - np.mean(df[['pSTAT1', 'pSTAT3']].values)) ** 2)
+    ss_tot = np.sum((np.log(df[['pSTAT1', 'pSTAT3']].values) - np.log(np.mean(df[['pSTAT1', 'pSTAT3']].values))) ** 2)
     r_squared = 1 - (ss_res / ss_tot)
-    print("r-squared value: ", r_squared)
+    print("r-squared value (log scale): ", r_squared)
 
     # Plot
     fit_prediction = pd.DataFrame.from_records(fit_pred_labelled, columns=['Cell_type', 'pSTAT1', 'pSTAT3'])
@@ -394,7 +452,7 @@ def fit_without_SOCS(df=ImmGen_df):
         ax[i].set_xticklabels(ax[i].get_xticklabels(), rotation=90)
         ax[i].set_title(subplot_titles[i])
 
-    plt.suptitle(r"$R^{2}$ = " + "{:.2f}".format(r_squared))
+    plt.suptitle(r"$R^{2}$ (log scale) = " + "{:.2f}".format(r_squared))
     plt.tight_layout()
     plt.show()
 
@@ -410,14 +468,14 @@ def fit_with_SOCS_competes_STAT(df=ImmGen_df, k_fold=1, neg_feedback_name='SOCS2
 
     # Compute R**2 value
     if k_fold==1:
-        residuals = np.subtract(fit_pred, df[['pSTAT1', 'pSTAT3']].values)
-        ss_res = np.sum(residuals**2)
-        ss_tot = np.sum((df[['pSTAT1', 'pSTAT3']].values-np.mean(df[['pSTAT1', 'pSTAT3']].values))**2)
+        residuals = np.subtract(np.log(fit_pred), np.log(df[['pSTAT1', 'pSTAT3']].values))
+        ss_res = np.sum(residuals ** 2)
+        ss_tot = np.sum((np.log(df[['pSTAT1', 'pSTAT3']].values) - np.log(np.mean(df[['pSTAT1', 'pSTAT3']].values))) ** 2)
         r_squared = 1 - (ss_res / ss_tot)
-        print("r-squared value: ", r_squared)
+        print("r-squared value (log scale): ", r_squared)
     else:
         r_squared, r2_var = k_fold_cross_validate_SOCS_competes_STAT(k=k_fold)
-        print("k-fold cross validation of R2 value is estimated to be {:.2f} +/- {:.2f}".format(r_squared, np.sqrt(r2_var)))
+        print("k-fold cross validation of R2 value (in log scale) is estimated to be {:.2f} +/- {:.2f}".format(r_squared, np.sqrt(r2_var)))
 
     # Plot
     fit_prediction = pd.DataFrame.from_records(fit_pred_labelled, columns=['Cell_type', 'pSTAT1', 'pSTAT3'])
@@ -436,60 +494,329 @@ def fit_with_SOCS_competes_STAT(df=ImmGen_df, k_fold=1, neg_feedback_name='SOCS2
         ax[i].set_title(subplot_titles[i])
 
     if k_fold==1:
-        plt.suptitle(r"$R^{2}$ = "+ "{:.2f}".format(r_squared))
+        plt.suptitle(r"$R^{2}$ (log scale) = "+ "{:.2f}".format(r_squared))
     else:
-        plt.suptitle(r"$R^{2}$ = " + "{:.2f}".format(r_squared) + " ({}-fold cross-validation)".format(k_fold))
+        plt.suptitle(r"$R^{2}$ (log scale) = " + "{:.2f}".format(r_squared) + " ({}-fold cross-validation)".format(k_fold))
     plt.tight_layout()
     plt.show()
 
 
-def compare_model_errors(df=ImmGen_df):
-    # ------------
-    # With SOCS
-    # ------------
-    neg_feedback_name = 'SOCS2'
-    pfit, pcov = fit_IFNg_with_SOCS_competes_STAT(neg_feedback_name, df)
+def compare_model_errors(df=ImmGen_df, neg_feedback_name='SOCS2', add_factor='full'):
+    # --------------
+    # Receptor only
+    # --------------
+    # Fit
+    def receptor_model_pSTAT1_and_pSTAT3(dose,
+                                            K_STAT_STAT1=1000 / volPM, K_STAT_STAT3=1000 / volPM,
+                                            df=ImmGen_df):
+        cell_types = df['Cell_type'].values
 
+        # Set input parameters for model
+        default_parameters = copy.deepcopy(IFNg_parameters)
+        # receptor:STAT parameters
+        default_parameters['pSTAT1']['K_STAT'] = K_STAT_STAT1
+        default_parameters['pSTAT3']['K_STAT'] = K_STAT_STAT3
+
+        response = {'Cell_type': [], 'pSTAT1': [], 'pSTAT3': []}
+        for c in cell_types:
+            IFNg_ImmGen_parameters = infer_protein(df, c, ['IFNGR1', 'IFNGR2', 'STAT1', 'STAT3'])
+            for S in ['pSTAT1', 'pSTAT3']:
+                default_parameters[S]['R_total'] = IFNg_ImmGen_parameters['IFNGR1'] + IFNg_ImmGen_parameters[
+                    'IFNGR2']
+                default_parameters[S]['Delta'] = IFNg_ImmGen_parameters['IFNGR1'] - IFNg_ImmGen_parameters['IFNGR2']
+                default_parameters[S]['STAT_total'] = IFNg_ImmGen_parameters[S[1:]]
+            # Make predictions
+            IFNg_receptor = Cytokine_Receptor(['pSTAT1', 'pSTAT3'], default_parameters, 'IFNgamma')
+            q = IFNg_receptor.receptor_only(dose)
+            response['Cell_type'].append(c)
+            response['pSTAT1'].append(q['pSTAT1'])
+            response['pSTAT3'].append(q['pSTAT3'])
+        return pd.DataFrame.from_dict(response)
+
+    def model(dose, p3, p4, scale_factor):
+        y_pred = receptor_model_pSTAT1_and_pSTAT3(dose, K_STAT_STAT1=p3,
+                                                     K_STAT_STAT3=p4, df=df)[['pSTAT1', 'pSTAT3']]
+        return np.divide(y_pred.values.flatten(), scale_factor)
+
+    default_parameters = [10000 / volPM, 10000 / volPM, 1]
+    y_true = ImmGen_df[['pSTAT1', 'pSTAT3']].values.flatten()
+    pfit, pcov = curve_fit(model, IFNg_dose, y_true, p0=default_parameters,
+                           bounds=(np.multiply(default_parameters, 0.1), np.multiply(default_parameters, 10)))
     # Predict
-    SOCS_model = make_SOCS_competes_STAT_model(neg_feedback_name)
-    SOCS_fit_pred = np.reshape(SOCS_model(IFNg_dose, *pfit), (df.shape[0], len(response_variable_names)))
-
+    baseline_fit_pred = np.reshape(model(IFNg_dose, *pfit), (df.shape[0], len(response_variable_names)))
     # Residual
-    SOCS_residuals = np.subtract(SOCS_fit_pred, df[['pSTAT1', 'pSTAT3']].values)
-    #SOCS_res_pred_labelled = [[df['Cell_type'].values[i], SOCS_residuals[i][0], SOCS_residuals[i][1]] for i in range(df.shape[0])]
+    baseline_residuals = np.divide(np.subtract(baseline_fit_pred, df[['pSTAT1', 'pSTAT3']].values),
+                          df[['pSTAT1', 'pSTAT3']].values)
 
     # ------------
-    # Without SOCS
+    # Add SOCS
     # ------------
-    pfit, pcov = fit_IFNg_equilibrium()
+    if add_factor=='SOCS':
+        # Fit
+        def add_SOCS_pSTAT1_and_pSTAT3(dose, SOCS_name,
+                                        K_STAT_STAT1=1000 / volPM, K_STAT_STAT3=1000 / volPM, K_SOCS=1000,
+                                        df=ImmGen_df):
+            cell_types = df['Cell_type'].values
 
-    # Predict
-    fit_pred = np.reshape(equilibrium_model(IFNg_dose, *pfit), (df.shape[0], len(response_variable_names)))
+            # Set input parameters for model
+            default_parameters = copy.deepcopy(IFNg_parameters)
+            # receptor parameters
+            default_parameters['pSTAT1']['K_SOCS'] = K_SOCS
+            default_parameters['pSTAT3']['K_SOCS'] = K_SOCS
 
-    # Residual
-    residuals = np.subtract(fit_pred, df[['pSTAT1', 'pSTAT3']].values)
-    #res_pred_labelled = [[df['Cell_type'].values[i], residuals[i][0], residuals[i][1]] for i in range(df.shape[0])]
+            # receptor:STAT parameters
+            default_parameters['pSTAT1']['K_STAT'] = K_STAT_STAT1
+            default_parameters['pSTAT3']['K_STAT'] = K_STAT_STAT3
+
+            response = {'Cell_type': [], 'pSTAT1': [], 'pSTAT3': []}
+            for c in cell_types:
+                IFNg_ImmGen_parameters = infer_protein(df, c, ['IFNGR1', 'IFNGR2', 'STAT1', 'STAT3', SOCS_name])
+                for S in ['pSTAT1', 'pSTAT3']:
+                    default_parameters[S]['R_total'] = IFNg_ImmGen_parameters['IFNGR1'] + IFNg_ImmGen_parameters[
+                        'IFNGR2']
+                    default_parameters[S]['Delta'] = IFNg_ImmGen_parameters['IFNGR1'] - IFNg_ImmGen_parameters['IFNGR2']
+                    default_parameters[S]['STAT_total'] = IFNg_ImmGen_parameters[S[1:]]
+                    default_parameters[S][SOCS_name] = IFNg_ImmGen_parameters[SOCS_name]
+                # Make predictions
+                IFNg_receptor = Cytokine_Receptor(['pSTAT1', 'pSTAT3'], default_parameters, 'IFNgamma')
+                q = IFNg_receptor.add_SOCS(dose, SOCS_name)
+                response['Cell_type'].append(c)
+                response['pSTAT1'].append(q['pSTAT1'])
+                response['pSTAT3'].append(q['pSTAT3'])
+            return pd.DataFrame.from_dict(response)
+
+        def model(dose, p3, p4, p5, scale_factor):
+            y_pred = add_SOCS_pSTAT1_and_pSTAT3(dose, neg_feedback_name, K_STAT_STAT1=p3,
+                                                 K_STAT_STAT3=p4, K_SOCS=p5, df=df)[['pSTAT1', 'pSTAT3']]
+            return np.divide(y_pred.values.flatten(), scale_factor)
+
+        default_parameters = [10000 / volPM, 10000 / volPM, 70, 1]
+        y_true = ImmGen_df[['pSTAT1', 'pSTAT3']].values.flatten()
+        pfit, pcov = curve_fit(model, IFNg_dose, y_true, p0=default_parameters,
+                               bounds=(np.multiply(default_parameters, 0.1), np.multiply(default_parameters, 10)))
+        # Predict
+        print(pfit)
+        feature_fit_pred = np.reshape(model(IFNg_dose, *pfit),
+                                      (df.shape[0], len(response_variable_names)))
+        # Residual
+        residuals = np.divide(np.subtract(feature_fit_pred, df[['pSTAT1', 'pSTAT3']].values),
+                              df[['pSTAT1', 'pSTAT3']].values)
+
+    # ------------
+    # Add Jak1
+    # ------------
+    elif add_factor=='Jak1':
+        # Fit
+        def add_Jak1_pSTAT1_and_pSTAT3(dose, SOCS_name, K_Jak1=1E6 / (NA * volCP),
+                                                 K_STAT_STAT1=1000 / volPM, K_STAT_STAT3=1000 / volPM, K_SOCS=1000,
+                                                 df=ImmGen_df):
+            cell_types = df['Cell_type'].values
+
+            # Set input parameters for model
+            default_parameters = copy.deepcopy(IFNg_parameters)
+            # receptor parameters
+            default_parameters['pSTAT1']['K_Jak1'] = K_Jak1
+            default_parameters['pSTAT3']['K_Jak1'] = K_Jak1
+            default_parameters['pSTAT1']['K_SOCS'] = K_SOCS
+            default_parameters['pSTAT3']['K_SOCS'] = K_SOCS
+
+            # receptor:STAT parameters
+            default_parameters['pSTAT1']['K_STAT'] = K_STAT_STAT1
+            default_parameters['pSTAT3']['K_STAT'] = K_STAT_STAT3
+
+            response = {'Cell_type': [], 'pSTAT1': [], 'pSTAT3': []}
+            for c in cell_types:
+                IFNg_ImmGen_parameters = infer_protein(df, c, ['IFNGR1', 'IFNGR2', 'JAK1', 'JAK2', 'STAT1', 'STAT3',
+                                                               SOCS_name])
+                for S in ['pSTAT1', 'pSTAT3']:
+                    default_parameters[S]['R_total'] = IFNg_ImmGen_parameters['IFNGR1'] + IFNg_ImmGen_parameters[
+                        'IFNGR2']
+                    default_parameters[S]['Delta'] = IFNg_ImmGen_parameters['IFNGR1'] - IFNg_ImmGen_parameters['IFNGR2']
+                    default_parameters[S]['Jak1'] = IFNg_ImmGen_parameters['JAK1']
+                    default_parameters[S]['STAT_total'] = IFNg_ImmGen_parameters[S[1:]]
+                    default_parameters[S][SOCS_name] = IFNg_ImmGen_parameters[SOCS_name]
+                # Make predictions
+                IFNg_receptor = Cytokine_Receptor(['pSTAT1', 'pSTAT3'], default_parameters, 'IFNgamma')
+                q = IFNg_receptor.add_Jak1(dose, SOCS_name)
+                response['Cell_type'].append(c)
+                response['pSTAT1'].append(q['pSTAT1'])
+                response['pSTAT3'].append(q['pSTAT3'])
+            return pd.DataFrame.from_dict(response)
+
+        def model(dose, p2, p3, p4, p5, scale_factor):
+            y_pred = add_Jak1_pSTAT1_and_pSTAT3(dose, neg_feedback_name, K_Jak1=p2, K_STAT_STAT1=p3,
+                                                          K_STAT_STAT3=p4, K_SOCS=p5, df=df)[['pSTAT1', 'pSTAT3']]
+            return np.divide(y_pred.values.flatten(), scale_factor)
+
+        default_parameters = [1E7 / (NA * volCP), 10000 / volPM, 10000 / volPM, 70, 1]
+        y_true = ImmGen_df[['pSTAT1', 'pSTAT3']].values.flatten()
+        pfit, pcov = curve_fit(model, IFNg_dose, y_true, p0=default_parameters,
+                               bounds=(np.multiply(default_parameters, 0.1), np.multiply(default_parameters, 10)))
+        # Predict
+        print(pfit)
+        feature_fit_pred = np.reshape(model(IFNg_dose, *pfit),
+                                      (df.shape[0], len(response_variable_names)))
+        # Residual
+        residuals = np.divide(np.subtract(feature_fit_pred, df[['pSTAT1', 'pSTAT3']].values),
+                                          df[['pSTAT1', 'pSTAT3']].values)
+    # ------------
+    # Add Jak2
+    # ------------
+    elif add_factor == 'Jak2':
+        # Fit
+        def add_Jak2_pSTAT1_and_pSTAT3(dose, SOCS_name, K_Jak2=1E7 / (NA * volCP),
+                                        K_STAT_STAT1=1000 / volPM, K_STAT_STAT3=1000 / volPM, K_SOCS=1000,
+                                        df=ImmGen_df):
+            cell_types = df['Cell_type'].values
+
+            # Set input parameters for model
+            default_parameters = copy.deepcopy(IFNg_parameters)
+            # receptor parameters
+            default_parameters['pSTAT1']['K_Jak2'] = K_Jak2
+            default_parameters['pSTAT3']['K_Jak2'] = K_Jak2
+            default_parameters['pSTAT1']['K_SOCS'] = K_SOCS
+            default_parameters['pSTAT3']['K_SOCS'] = K_SOCS
+
+            # receptor:STAT parameters
+            default_parameters['pSTAT1']['K_STAT'] = K_STAT_STAT1
+            default_parameters['pSTAT3']['K_STAT'] = K_STAT_STAT3
+
+            response = {'Cell_type': [], 'pSTAT1': [], 'pSTAT3': []}
+            for c in cell_types:
+                IFNg_ImmGen_parameters = infer_protein(df, c, ['IFNGR1', 'IFNGR2', 'JAK1', 'JAK2', 'STAT1', 'STAT3',
+                                                               SOCS_name])
+                for S in ['pSTAT1', 'pSTAT3']:
+                    default_parameters[S]['R_total'] = IFNg_ImmGen_parameters['IFNGR1'] + IFNg_ImmGen_parameters[
+                        'IFNGR2']
+                    default_parameters[S]['Delta'] = IFNg_ImmGen_parameters['IFNGR1'] - IFNg_ImmGen_parameters['IFNGR2']
+                    default_parameters[S]['Jak1'] = IFNg_ImmGen_parameters['JAK1']
+                    default_parameters[S]['Jak2'] = IFNg_ImmGen_parameters['JAK2']
+                    default_parameters[S]['STAT_total'] = IFNg_ImmGen_parameters[S[1:]]
+                    default_parameters[S][SOCS_name] = IFNg_ImmGen_parameters[SOCS_name]
+                # Make predictions
+                IFNg_receptor = Cytokine_Receptor(['pSTAT1', 'pSTAT3'], default_parameters, 'IFNgamma')
+                q = IFNg_receptor.add_Jak2(dose)
+                response['Cell_type'].append(c)
+                response['pSTAT1'].append(q['pSTAT1'])
+                response['pSTAT3'].append(q['pSTAT3'])
+            return pd.DataFrame.from_dict(response)
+
+        def model(dose, p2, p3, p4, p5, scale_factor):
+            y_pred = add_Jak2_pSTAT1_and_pSTAT3(dose, neg_feedback_name, K_Jak2=p2, K_STAT_STAT1=p3,
+                                                 K_STAT_STAT3=p4, K_SOCS=p5, df=df)[['pSTAT1', 'pSTAT3']]
+            return np.divide(y_pred.values.flatten(), scale_factor)
+
+        default_parameters = [1E7 / (NA * volCP), 10000 / volPM, 10000 / volPM, 70, 1]
+        y_true = ImmGen_df[['pSTAT1', 'pSTAT3']].values.flatten()
+        pfit, pcov = curve_fit(model, IFNg_dose, y_true, p0=default_parameters,
+                               bounds=(np.multiply(default_parameters, 0.1), np.multiply(default_parameters, 10)))
+        # Predict
+        feature_fit_pred = np.reshape(model(IFNg_dose, *pfit), (df.shape[0], len(response_variable_names)))
+        # Residual
+        residuals = np.divide(np.subtract(feature_fit_pred, df[['pSTAT1', 'pSTAT3']].values),
+                              df[['pSTAT1', 'pSTAT3']].values)
+    # ---------------
+    # Add both Jaks
+    # ---------------
+    elif add_factor == 'both_Jaks':
+        # Fit
+        def both_Jaks_pSTAT1_and_pSTAT3(dose, K_Jak1=1E7 / (NA * volCP), K_Jak2=1E7 / (NA * volCP),
+                                        K_STAT_STAT1=1000 / volPM, K_STAT_STAT3=1000 / volPM,
+                                        df=ImmGen_df):
+            cell_types = df['Cell_type'].values
+
+            # Set input parameters for model
+            default_parameters = copy.deepcopy(IFNg_parameters)
+            # receptor parameters
+            default_parameters['pSTAT1']['K_Jak1'] = K_Jak1
+            default_parameters['pSTAT3']['K_Jak1'] = K_Jak1
+            default_parameters['pSTAT1']['K_Jak2'] = K_Jak2
+            default_parameters['pSTAT3']['K_Jak2'] = K_Jak2
+
+            # receptor:STAT parameters
+            default_parameters['pSTAT1']['K_STAT'] = K_STAT_STAT1
+            default_parameters['pSTAT3']['K_STAT'] = K_STAT_STAT3
+
+            response = {'Cell_type': [], 'pSTAT1': [], 'pSTAT3': []}
+            for c in cell_types:
+                IFNg_ImmGen_parameters = infer_protein(df, c, ['IFNGR1', 'IFNGR2', 'JAK1', 'JAK2', 'STAT1', 'STAT3'])
+                for S in ['pSTAT1', 'pSTAT3']:
+                    default_parameters[S]['R_total'] = IFNg_ImmGen_parameters['IFNGR1'] + IFNg_ImmGen_parameters[
+                        'IFNGR2']
+                    default_parameters[S]['Delta'] = IFNg_ImmGen_parameters['IFNGR1'] - IFNg_ImmGen_parameters['IFNGR2']
+                    default_parameters[S]['STAT_total'] = IFNg_ImmGen_parameters[S[1:]]
+                    default_parameters[S]['Jak1'] = IFNg_ImmGen_parameters['JAK1']
+                    default_parameters[S]['Jak2'] = IFNg_ImmGen_parameters['JAK2']
+                # Make predictions
+                IFNg_receptor = Cytokine_Receptor(['pSTAT1', 'pSTAT3'], default_parameters, 'IFNgamma')
+                q = IFNg_receptor.add_both_Jaks(dose)
+                response['Cell_type'].append(c)
+                response['pSTAT1'].append(q['pSTAT1'])
+                response['pSTAT3'].append(q['pSTAT3'])
+            return pd.DataFrame.from_dict(response)
+
+        def model(dose, p1, p2, p3, p4, scale_factor):
+            y_pred = both_Jaks_pSTAT1_and_pSTAT3(dose, K_Jak1=p1, K_Jak2=p2, K_STAT_STAT1=p3,
+                                                 K_STAT_STAT3=p4, df=df)[['pSTAT1', 'pSTAT3']]
+            return np.divide(y_pred.values.flatten(), scale_factor)
+
+        default_parameters = [1E7 / (NA * volCP), 1E7 / (NA * volCP), 10000 / volPM, 10000 / volPM, 1]
+        y_true = ImmGen_df[['pSTAT1', 'pSTAT3']].values.flatten()
+        pfit, pcov = curve_fit(model, IFNg_dose, y_true, p0=default_parameters,
+                               bounds=(np.multiply(default_parameters, 0.1), np.multiply(default_parameters, 10)))
+        # Predict
+        feature_fit_pred = np.reshape(model(IFNg_dose, *pfit), (df.shape[0], len(response_variable_names)))
+        # Residual
+        residuals = np.divide(np.subtract(feature_fit_pred, df[['pSTAT1', 'pSTAT3']].values),
+                              df[['pSTAT1', 'pSTAT3']].values)
+
+    # -----------------------
+    # Full model
+    # -----------------------
+    elif add_factor == 'full':
+        # Fit
+        def make_SOCS_model(SOCS_name, df):
+            def SOCS_model(dose, p1, p2, p3, p4, p5, scale_factor):
+                y_pred = SOCS_competes_STAT_pSTAT1_and_pSTAT3(dose, SOCS_name, K_Jak1=p1, K_Jak2=p2, K_STAT_STAT1=p3,
+                                                              K_STAT_STAT3=p4, K_SOCS=p5, df=df)[['pSTAT1', 'pSTAT3']]
+                return np.divide(y_pred.values.flatten(), scale_factor)
+            return SOCS_model
+
+        default_parameters = [1E7 / (NA * volCP), 1E8 / (NA * volCP), 1000 / volPM, 1000 / volPM, 70, 1]
+        y_true = df[['pSTAT1', 'pSTAT3']].values.flatten()
+        pfit, pcov = curve_fit(make_SOCS_model(neg_feedback_name, df), IFNg_dose, y_true, p0=default_parameters,
+                               bounds=(np.multiply(default_parameters, 0.1), np.multiply(default_parameters, 10)))
+        print(pfit)
+        # Predict
+        SOCS_model = make_SOCS_model(neg_feedback_name, df)
+        feature_fit_pred = np.reshape(SOCS_model(IFNg_dose, *pfit), (df.shape[0], len(response_variable_names)))
+        # Residual
+        residuals = np.divide(np.subtract(feature_fit_pred, df[['pSTAT1', 'pSTAT3']].values),
+                              df[['pSTAT1', 'pSTAT3']].values)
 
     # ------------
     # Plot
     # ------------
-    fig, ax = plt.subplots(nrows=1, ncols=2)
+    fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(9, 4.5))
     for i in [0, 1]:
         ax[i].set_title('pSTAT{}'.format(i*2 + 1))
         ax[i].set_xscale('log')
         ax[i].set_yscale('log')
-        ax[i].set_xlabel(r'abs($\delta$) in no-SOCS model')
-        ax[i].set_ylabel(r'abs($\delta$) in SOCS model')
-        ax[i].scatter(np.abs(residuals[:, i]), np.abs(SOCS_residuals[:, i]))
+        ax[i].set_xlabel('% error in no-SOCS model')
+        ax[i].set_ylabel('% error in SOCS model')
+        ax[i].scatter(np.abs(residuals[:, i]), np.abs(baseline_residuals[:, i]))
         ax[i].plot(np.logspace(np.log10(min(np.abs(residuals[:, i]))), np.log10(max(np.abs(residuals[:, i])))),
                    np.logspace(np.log10(min(np.abs(residuals[:, i]))), np.log10(max(np.abs(residuals[:, i])))), 'k--')
+        ax[i].set_xlim((10**-3, 2*10**2))
+        ax[i].set_ylim((10 ** -3, 2 * 10 ** 2))
     plt.tight_layout()
     plt.show()
 
 
-def ec50_for_all_cell_types(SOCS_name, df=ImmGen_df):
+def ec50_for_all_cell_types(SOCS_name, df=ImmGen_df, pfit=[]):
     # Get parameter fits for K_Jak1, K_Jak2, K_STAT_STAT1, K_STAT_STAT3, K_SOCS,' scale_factor
-    pfit, pcov = fit_IFNg_with_SOCS_competes_STAT(SOCS_name, df)
+    if pfit == []:
+        pfit, pcov = fit_IFNg_with_SOCS_competes_STAT(SOCS_name, df)
 
     cell_types = df['Cell_type'].values
 
@@ -500,10 +827,8 @@ def ec50_for_all_cell_types(SOCS_name, df=ImmGen_df):
     default_parameters['pSTAT3']['K_Jak1'] = pfit[0]
     default_parameters['pSTAT1']['K_Jak2'] = pfit[1]
     default_parameters['pSTAT3']['K_Jak2'] = pfit[1]
-    default_parameters['pSTAT1']['K_STAT'] = pfit[4]
-    default_parameters['pSTAT3']['K_STAT'] = pfit[4]
-    default_parameters['pSTAT1']['K_SOCS'] = pfit[5]
-    default_parameters['pSTAT3']['K_SOCS'] = pfit[5]
+    default_parameters['pSTAT1']['K_SOCS'] = pfit[4]
+    default_parameters['pSTAT3']['K_SOCS'] = pfit[4]
     # receptor:STAT parameters
     default_parameters['pSTAT1']['K_STAT'] = pfit[2]
     default_parameters['pSTAT3']['K_STAT'] = pfit[3]
@@ -519,15 +844,16 @@ def ec50_for_all_cell_types(SOCS_name, df=ImmGen_df):
             default_parameters[S]['STAT_total'] = IFNg_ImmGen_parameters[S[1:]]
             default_parameters[S][SOCS_name] = IFNg_ImmGen_parameters[SOCS_name]
         # Make predictions
-        IFNg_receptor = Cytokine_Receptor(['pSTAT1', 'pSTAT3'], IFNg_parameters, 'IFNgamma')
-        ec50 = IFNg_receptor.equilibrium_model_ec50(SOCS_name)
+        IFNg_receptor = Cytokine_Receptor(['pSTAT1', 'pSTAT3'], default_parameters, 'IFNgamma')
+        ec50 = IFNg_receptor.equilibrium_model_with_SOCS_ec50(SOCS_name)
         record[c] = {'pSTAT1': ec50['pSTAT1']/1E-12, 'pSTAT3': ec50['pSTAT3']/1E-12} # in pM
     return record
 
 
-def max_pSTAT_for_all_cell_types(SOCS_name, df=ImmGen_df):
+def max_pSTAT_for_all_cell_types(SOCS_name, df=ImmGen_df, pfit=[]):
     # Get parameter fits for K_Jak1, K_Jak2, K_STAT_STAT1, K_STAT_STAT3, K_SOCS, scale_factor
-    pfit, pcov = fit_IFNg_with_SOCS_competes_STAT(SOCS_name, df)
+    if pfit == []:
+        pfit, pcov = fit_IFNg_with_SOCS_competes_STAT(SOCS_name, df)
 
     cell_types = df['Cell_type'].values
 
@@ -538,10 +864,8 @@ def max_pSTAT_for_all_cell_types(SOCS_name, df=ImmGen_df):
     default_parameters['pSTAT3']['K_Jak1'] = pfit[0]
     default_parameters['pSTAT1']['K_Jak2'] = pfit[1]
     default_parameters['pSTAT3']['K_Jak2'] = pfit[1]
-    default_parameters['pSTAT1']['K_STAT'] = pfit[4]
-    default_parameters['pSTAT3']['K_STAT'] = pfit[4]
-    default_parameters['pSTAT1']['K_SOCS'] = pfit[5]
-    default_parameters['pSTAT3']['K_SOCS'] = pfit[5]
+    default_parameters['pSTAT1']['K_SOCS'] = pfit[4]
+    default_parameters['pSTAT3']['K_SOCS'] = pfit[4]
     # receptor:STAT parameters
     default_parameters['pSTAT1']['K_STAT'] = pfit[2]
     default_parameters['pSTAT3']['K_STAT'] = pfit[3]
@@ -557,15 +881,20 @@ def max_pSTAT_for_all_cell_types(SOCS_name, df=ImmGen_df):
             default_parameters[S]['STAT_total'] = IFNg_ImmGen_parameters[S[1:]]
             default_parameters[S][SOCS_name] = IFNg_ImmGen_parameters[SOCS_name]
         # Make predictions
-        IFNg_receptor = Cytokine_Receptor(['pSTAT1', 'pSTAT3'], IFNg_parameters, 'IFNgamma')
-        maxpSTAT = IFNg_receptor.equilibrium_model_pSTATmax(SOCS_name)
-        record[c] = {'pSTAT1': maxpSTAT['pSTAT1']/pfit[7], 'pSTAT3': maxpSTAT['pSTAT3']/pfit[7]} # in number of molecules, scaled to match CyTOF
+        IFNg_receptor = Cytokine_Receptor(['pSTAT1', 'pSTAT3'], default_parameters, 'IFNgamma')
+        maxpSTAT = IFNg_receptor.equilibrium_model_with_SOCS_pSTATmax(SOCS_name)
+        record[c] = {'pSTAT1': maxpSTAT['pSTAT1']/pfit[5], 'pSTAT3': maxpSTAT['pSTAT3']/pfit[5]} # in number of molecules, scaled to match CyTOF
     return record
 
 
-def make_ec50_predictions_plot():
-    ec50_predictions = ec50_for_all_cell_types('SOCS2')
-    maxpSTAT_predictions = max_pSTAT_for_all_cell_types('SOCS2')
+def make_ec50_predictions_plot(parameters=[]):
+    if parameters == []:
+        ec50_predictions = ec50_for_all_cell_types('SOCS2')
+        maxpSTAT_predictions = max_pSTAT_for_all_cell_types('SOCS2')
+    else:
+        ec50_predictions = ec50_for_all_cell_types('SOCS2', pfit=parameters)
+        maxpSTAT_predictions = max_pSTAT_for_all_cell_types('SOCS2', pfit=parameters)
+
     SOCS_CyTOF = {c: infer_protein(ImmGen_df, c, ['SOCS2'])['SOCS2'] for c in ImmGen_df['Cell_type'].values}
     pSTAT1_CyTOF = {c: infer_protein(ImmGen_df, c, ['pSTAT1'])['pSTAT1'] for c in ImmGen_df['Cell_type'].values}
     pSTAT3_CyTOF = {c: infer_protein(ImmGen_df, c, ['pSTAT3'])['pSTAT3'] for c in ImmGen_df['Cell_type'].values}
@@ -676,11 +1005,14 @@ def fit_with_DREAM(sim_name, parameter_dict, likelihood):
 
     except ImportError:
         pass
+    return 0
 
 
 def fit_IFNg_SOCS_competes_STAT_with_DREAM(SOCS_name, df=ImmGen_df):
     def __likelihood__(parameters, df=ImmGen_df):
         import numpy as np
+        from scipy.stats import norm
+
         def __infer_protein__(dataset, cell_type, protein_names):
             if 'allSOCS' in protein_names:
                 all_SOCS_names = ['SOCS1', 'SOCS2', 'SOCS3', 'SOCS4', 'SOCS5', 'SOCS6', 'SOCS7', 'CIS', 'SHP1', 'SHP2',
@@ -699,7 +1031,7 @@ def fit_IFNg_SOCS_competes_STAT_with_DREAM(SOCS_name, df=ImmGen_df):
                 return dict(zip(protein_names, transcripts))
 
         parameters = np.exp(parameters) # parameters are passed in log form
-        default_SOCS_name = 'SOCS2'
+
         # Create the receptor models
         # global variables applicable to all receptors
         NA = 6.022E23
@@ -716,7 +1048,7 @@ def fit_IFNg_SOCS_competes_STAT_with_DREAM(SOCS_name, df=ImmGen_df):
                               'Jak1': 1000,                         # infer from Immgen
                               'Jak2': 1000,                         # infer from Immgen
                               'STAT_total': 2000,                   # infer from Immgen
-                              default_SOCS_name: 200,               # infer from Immgen
+                              SOCS_name: 200,                       # infer from Immgen
                               'K_ligand': NA*volEC/(4*pi*0.5E10),   # from literature
                               'K_Jak1': 1E6/(NA*volCP),             # fit for each receptor
                               'K_Jak2': 1E6/(NA*volCP),             # fit for each receptor
@@ -729,7 +1061,7 @@ def fit_IFNg_SOCS_competes_STAT_with_DREAM(SOCS_name, df=ImmGen_df):
                               'Jak1': 1000,
                               'Jak2': 1000,
                               'STAT_total': 2000,
-                              default_SOCS_name: 200,
+                               SOCS_name: 200,
                               'K_ligand': NA*volEC/(4*pi*0.5E10),
                               'K_Jak1': 1E6/(NA*volCP),
                               'K_Jak2': 1E6/(NA*volCP),
@@ -775,6 +1107,7 @@ def fit_IFNg_SOCS_competes_STAT_with_DREAM(SOCS_name, df=ImmGen_df):
                 Rstar = cytokine_R * PR1active * PR2active / (1 + base_parameters[S]['K_ligand'] / dose)
                 response = base_parameters[S]['STAT_total'] / (1 + base_parameters[S]['K_STAT'] * (
                             1 + base_parameters[S][SOCS_name] / base_parameters[S]['K_SOCS']) * volPM / Rstar)
+                response = response / parameters[5]
                 STAT_response.append(response)
             fit_pred.append(STAT_response)
 
@@ -798,16 +1131,20 @@ def fit_IFNg_SOCS_competes_STAT_with_DREAM(SOCS_name, df=ImmGen_df):
                 [1.49,	0.52],
                 [0.24,	0.46],
                 [22.4,	7.54]]
+        like_ctot = norm(loc=data, scale=np.ones(np.shape(data)))
+        logp_ctotal = np.sum(like_ctot.logpdf(fit_pred))
 
-        residuals = np.subtract(fit_pred, data)
-        ss_res = np.sum(residuals ** 2)
-        return ss_res
+        # If model simulation failed due to integrator errors, return a log probability of -inf.
+        if np.isnan(logp_ctotal):
+            logp_ctotal = -np.inf
+        return logp_ctotal
 
-    min_response_row = df.loc[df[response_variable_names[0]].idxmin()]
-    min_response_SOCS_expression = infer_protein(df, min_response_row.loc['Cell_type'], [SOCS_name])[SOCS_name]
 
+    #min_response_row = df.loc[df[response_variable_names[0]].idxmin()]
+    #min_response_SOCS_expression = infer_protein(df, min_response_row.loc['Cell_type'], [SOCS_name])[SOCS_name]
+    # old: [1E7 / (NA * volCP), 1E6 / (NA * volCP), 900 / volPM, 1000 / volPM, min_response_SOCS_expression, 1]
     #       K_Jak1, K_Jak2, K_STAT_STAT1, K_STAT_STAT3, K_SOCS, scale_factor
-    prior = [1E7 / (NA * volCP), 1E6 / (NA * volCP), 900 / volPM, 1000 / volPM, min_response_SOCS_expression, 1]
+    prior = [3.17147014e-03,   3.17147014e+00,   3.18309889e+11,   1.00760330e+12,   1.67829414e-02, 1e-01]
     prior = dict(zip(['K_Jak1', 'K_Jak2', 'K_STAT_STAT1', 'K_STAT_STAT3', 'K_SOCS', 'scale_factor'], prior))
 
     fit_with_DREAM(SOCS_name, prior, __likelihood__)
@@ -816,7 +1153,7 @@ def fit_IFNg_SOCS_competes_STAT_with_DREAM(SOCS_name, df=ImmGen_df):
 def sample_DREAM_IFNg_SOCS_competes_STAT(samples_filename, neg_feedback_name, df=ImmGen_df, step_size=500, find_map=True):
     samples = np.load(samples_filename)
     # Convert back to true value rather than log value
-    converted_samples = np.power(np.multiply(np.ones(np.shape(samples)), 10), samples)
+    converted_samples = np.exp(samples)
 
     # Predict
     SOCS_model = make_SOCS_competes_STAT_model(neg_feedback_name)
@@ -856,16 +1193,16 @@ def sample_DREAM_IFNg_SOCS_competes_STAT(samples_filename, neg_feedback_name, df
 
     # Plot
     fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(12.8, 5))
-    ax[0].set_yscale('log')
-    ax[1].set_yscale('log')
+    #ax[0].set_yscale('log')
+    #ax[1].set_yscale('log')
     subplot_titles = ['pSTAT1', 'pSTAT3']
     measured_response = df[['Cell_type', 'pSTAT1', 'pSTAT3']]
     measured_response.insert(0, 'Class', ['CyTOF' for _ in range(df.shape[0])])
 
     plot_df = pd.concat([fit_prediction, measured_response])
 
-    sns.catplot(x="Cell_type", y="pSTAT1", data=plot_df[plot_df['Class']=='Model'], hue='Class', ax=ax[0], kind="box")
-    sns.catplot(x="Cell_type", y="pSTAT3", data=plot_df[plot_df['Class']=='Model'], hue='Class', ax=ax[1], kind="box")
+    sns.catplot(x="Cell_type", y="pSTAT1", data=plot_df[plot_df['Class']=='Model'], hue='Class', ax=ax[0], kind="bar")
+    sns.catplot(x="Cell_type", y="pSTAT3", data=plot_df[plot_df['Class']=='Model'], hue='Class', ax=ax[1], kind="bar")
 
     sns.catplot(x="Cell_type", y="pSTAT1", data=plot_df[plot_df['Class'] == 'CyTOF'], hue='Class', ax=ax[0],
                 kind="strip", size=8, palette=sns.color_palette("hls", 16))
@@ -900,10 +1237,11 @@ def compare_model_to_ImmGen(pset, SOCS_name='SOCS2'):
                          range(ImmGen_df.shape[0])]
 
     # R-squared
-    residuals = np.subtract(fit_pred, ImmGen_df[['pSTAT1', 'pSTAT3']].values)
+    residuals = np.subtract(np.log(fit_pred), np.log(ImmGen_df[['pSTAT1', 'pSTAT3']].values))
     ss_res = np.sum(np.square(residuals))
-    ss_tot = np.sum(np.square((ImmGen_df[['pSTAT1', 'pSTAT3']].values - np.mean(ImmGen_df[['pSTAT1', 'pSTAT3']].values))))
+    ss_tot = np.sum(np.square((np.log(ImmGen_df[['pSTAT1', 'pSTAT3']].values) - np.log(np.mean(ImmGen_df[['pSTAT1', 'pSTAT3']].values)))))
     r_squared = 1 - (ss_res / ss_tot)
+    print("r2 (linear):", 1 - ( np.sum(np.square(np.subtract(fit_pred, ImmGen_df[['pSTAT1', 'pSTAT3']].values))) / np.sum(np.square((ImmGen_df[['pSTAT1', 'pSTAT3']].values - np.mean(ImmGen_df[['pSTAT1', 'pSTAT3']].values))))))
 
     # Plot
     fit_prediction = pd.DataFrame.from_records(fit_pred_labelled, columns=['Cell_type', 'pSTAT1', 'pSTAT3'])
@@ -914,10 +1252,47 @@ def compare_model_to_ImmGen(pset, SOCS_name='SOCS2'):
     df = pd.concat([fit_prediction, measured_response])
 
     fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(12.8, 5))
-    fig.suptitle('R-squared = {:.2f}'.format(r_squared))
+    fig.suptitle('R-squared (log scale) = {:.2f}'.format(r_squared))
     subplot_titles = ['pSTAT1', 'pSTAT3']
     sns.barplot(x="Cell_type", y="pSTAT1", data=df, hue='Class', ax=ax[0])
     sns.barplot(x="Cell_type", y="pSTAT3", data=df, hue='Class', ax=ax[1])
+    for i in [0, 1]:
+        ax[i].set_xticklabels(ax[i].get_xticklabels(), rotation=90)
+        ax[i].set_title(subplot_titles[i])
+    plt.tight_layout()
+    plt.show()
+
+def compare_model_to_ImmGen_normalized(pset, SOCS_name='SOCS2'):
+    # Predict
+    SOCS_model = make_SOCS_competes_STAT_model(SOCS_name)
+    fit_pred = np.reshape(SOCS_model(IFNg_dose, *pset), (ImmGen_df.shape[0], len(response_variable_names)))
+    fit_pred_labelled = [[ImmGen_df['Cell_type'].values[i], fit_pred[i][0], fit_pred[i][1]] for i in
+                         range(ImmGen_df.shape[0])]
+
+    # R-squared
+    residuals = np.subtract(np.log(fit_pred), np.log(ImmGen_df[['pSTAT1', 'pSTAT3']].values))
+    ss_res = np.sum(np.square(residuals))
+    ss_tot = np.sum(np.square((np.log(ImmGen_df[['pSTAT1', 'pSTAT3']].values) - np.log(np.mean(ImmGen_df[['pSTAT1', 'pSTAT3']].values)))))
+    r_squared = 1 - (ss_res / ss_tot)
+
+    # Plot
+    fit_prediction = pd.DataFrame.from_records(fit_pred_labelled, columns=['Cell_type', 'pSTAT1', 'pSTAT3'])
+    fit_prediction.insert(0, 'Class', ['Model' for _ in range(ImmGen_df.shape[0])])
+    measured_response = ImmGen_df[['Cell_type', 'pSTAT1', 'pSTAT3']]
+    measured_response.insert(0, 'Class', ['CyTOF' for _ in range(ImmGen_df.shape[0])])
+
+    measured_response['pSTAT1norm'] = measured_response['pSTAT1']/ImmGen_df['STAT1']
+    measured_response['pSTAT3norm'] = measured_response['pSTAT3'] / ImmGen_df['STAT3']
+    fit_prediction['pSTAT1norm'] = fit_prediction['pSTAT1']/ImmGen_df['STAT1']
+    fit_prediction['pSTAT3norm'] = fit_prediction['pSTAT3'] / ImmGen_df['STAT3']
+    df = pd.concat([fit_prediction, measured_response])
+
+    fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(12.8, 5))
+    fig.suptitle('R-squared (log scale) = {:.2f}'.format(r_squared))
+    subplot_titles = ['pSTAT1', 'pSTAT3']
+
+    sns.barplot(x="Cell_type", y="pSTAT1norm", data=df, hue='Class', ax=ax[0])
+    sns.barplot(x="Cell_type", y="pSTAT3norm", data=df, hue='Class', ax=ax[1])
     for i in [0, 1]:
         ax[i].set_xticklabels(ax[i].get_xticklabels(), rotation=90)
         ax[i].set_title(subplot_titles[i])
@@ -934,24 +1309,28 @@ if __name__ == "__main__":
     #SOCS_histograms()
 
     #fit_without_SOCS()
-    #fit_with_SOCS_competes_STAT()
+    #fit_with_SOCS_competes_STAT(neg_feedback_name='allSOCS')
 
-    #compar#e_model_errors()
+    #compare_model_errors(add_factor='both_Jaks')
 
     #print(ec50_for_all_cell_types('SOCS2'))
     #make_ec50_predictions_plot()
 
-    fit_IFNg_SOCS_competes_STAT_with_DREAM('SOCS2')
+    #fit_IFNg_SOCS_competes_STAT_with_DREAM('SOCS2')
 
-    save_dir = "PyDREAM_05-11-2019_10000"
+    save_dir = "PyDREAM_08-11-2019_10000"
     sim_name = "SOCS2"
-    sample_DREAM_IFNg_SOCS_competes_STAT(os.path.join(save_dir, sim_name+'_samples' + '.npy'), sim_name, step_size=250, find_map=True)
+    #sample_DREAM_IFNg_SOCS_competes_STAT(os.path.join(save_dir, sim_name+'_samples' + '.npy'), sim_name, step_size=250, find_map=False)
 
     ## ['K_Jak1', 'K_Jak2', 'K_STAT_STAT1', 'K_STAT_STAT3', 'K_SOCS', 'scale_factor']
     #min_response_row = ImmGen_df.loc[ImmGen_df[response_variable_names[0]].idxmin()]
     #min_response_SOCS_expression = infer_protein(ImmGen_df, min_response_row.loc['Cell_type'], [sim_name])[sim_name]
-    #p_prior = [1E7 / (NA * volCP), 1E6 / (NA * volCP), 900 / volPM, 1000 / volPM, 0.006*min_response_SOCS_expression, 0.5]
-    #p_best = [  16.30102589,  130.16168376,  108.21601978,  772.41212686, 62.66635235, 163.91352704]
-    #compare_model_to_ImmGen(p_prior)
+    # [1E7 / (NA * volCP), 1E6 / (NA * volCP), 900 / volPM, 1000 / volPM, 0.006*min_response_SOCS_expression, 0.5]
+    #p_prior = [3.171470138e-02, 3.17147013799e-03, 2.864788975654e+12, 3.183098861837e+12, 5.77815e-01, 5e-01]
+    p_best = [3.17147014e-03,   3.17147014e+00,   3.18309889e+11,   1.00760330e+12,   1.67829414e-02, 1e-01]
+    p_log_fit = [3.17147014e-01,   3.17147014e+00,   3.18309886e+11,   3.18309886e+11, 1.60000000e-01, 2.00000000e0] # does pretty poorly
+    p_best_by_MCMC = [2.38069129e-03, 6.28888514e-01, 3.93783943e+02, 1.27796666e+03, 1.43456465e-09, 5.76281582e+00]
+    compare_model_to_ImmGen(p_best)
+    #compare_model_to_ImmGen_normalized(p_best)
 
 
