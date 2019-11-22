@@ -26,6 +26,34 @@ def read_ImmGen_csv(fname):
     return df
 
 
+def mean_by_index_group(df):
+    """
+    Takes groupby on index and then averages each column in group
+    :param df: index is cell type, each row is an entry, columns are genes
+    :return: pandas DataFrame with mean gene expression for each cell type
+    """
+    mean_gene_response = df.groupby(level=0)
+    mean_gene_response_df = {g[0]: g[1] for g in list(mean_gene_response)}
+    gene_labels = df.columns.values
+    cell_type_labels = list(mean_gene_response_df.keys())
+    mean_response_data = [np.mean(mean_gene_response_df[cell_type_labels[idx]].values.astype(float), axis=0) for idx in range(len(cell_type_labels))]
+    mean_response_df = pd.DataFrame(data=mean_response_data, index=cell_type_labels, columns=gene_labels)
+    return mean_response_df
+
+
+def custom_linear(feature_names, features, response_variables):
+    # Fit using best features specified by feature_names
+    model = LinearRegression()
+    if len(feature_names)==1:
+        predictor = features[feature_names].values.reshape((-1,1))
+    else:
+        predictor = features[feature_names].values
+    model.fit(predictor, response_variables.values)
+
+    r2 = model.score(predictor, response_variables.values)
+    r2_adj = 1 - (1 - r2) * (len(response_variables.values) - 1) / (len(response_variables.values) - np.shape(predictor)[1] - 1)
+    print(r2_adj)
+
 def multivariateGrid(col_x, col_y, col_k, df, k_is_color=False, scatter_alpha=.5):
     """
     Source: https://stackoverflow.com/questions/35920885/how-to-overlay-a-seaborn-jointplot-with-a-marginal-distribution-histogram-fr
@@ -195,7 +223,7 @@ def lasso_linear():
 # -----------------------
 # ImmGen genetic analysis
 # -----------------------
-def gene_response():
+def gene_response(plot_heatmap=False):
     gene_response_df = read_ImmGen_csv("ImmGen_IFNg_response_GSE112876_Normalized_Data.csv")
     gene_naive_df = read_ImmGen_csv('ImmGen_raw.csv')
     gene_response_df.index = [i.split(".")[0] for i in gene_response_df.index.values]
@@ -207,23 +235,31 @@ def gene_response():
     common_core_cell_types = [i for i in core_cell_types if i in gene_naive_df.index.values]
 
     # Taking the group mean is hard in pandas. This was the hacky solution I came up with:
-    mean_gene_response = gene_response_df.loc[common_core_cell_types].groupby(level=0)
-    mean_gene_response_df = {g[0]: g[1] for g in list(mean_gene_response)}
-    gene_labels = gene_response_df.columns.values
-    cell_type_labels = list(mean_gene_response_df.keys())
-    mean_response_data = [np.mean(mean_gene_response_df[cell_type_labels[idx]].values.astype(float), axis=0) for idx in range(len(cell_type_labels))]
-    mean_response_df = pd.DataFrame(data=mean_response_data, index=cell_type_labels, columns=gene_labels)
-    #print(gene_naive_df.loc[common_core_cell_types])
-    #print(mean_response_df)
+    mean_response_df = mean_by_index_group(gene_response_df.loc[common_core_cell_types])
 
     # Treat each cell type copy in gene_naive_df.loc[common_core_cell_types] as a data point to normalize with for
     # matching cell type in mean_response_df
     points = []
     for cell_type in common_core_cell_types:
         fold_change = np.array(mean_response_df.loc[cell_type].values).astype(float) / np.array(gene_naive_df.loc[cell_type].values).astype(float)
-        temp_df = pd.DataFrame(data=fold_change, index=[cell_type for _ in range(len(fold_change))], columns=gene_labels)
+        temp_df = pd.DataFrame(data=fold_change, index=[cell_type for _ in range(len(fold_change))], columns=mean_response_df.columns)
         points.append(temp_df)
     fold_change_df = pd.concat(points)
+
+    if plot_heatmap:
+        log2_fold_change = fold_change_df.apply(np.log2)
+        log2_fold_change = log2_fold_change.loc[:, ~log2_fold_change.columns.duplicated()]
+        keep_list = []
+        for c in range(len(log2_fold_change.columns.values)):
+            if abs(log2_fold_change.iloc[:, c].mean()) < np.log2(10):
+            #if log2_fold_change.columns.values[c] not in [s.title() for s in predictor_variable_names]:
+                keep_list.append(False)
+            else:
+                keep_list.append(True)
+        print(sum(keep_list))
+        downsampled_df = log2_fold_change[log2_fold_change.columns[keep_list]]
+        sns.clustermap(downsampled_df)
+        plt.show()
     return fold_change_df
 
 
@@ -382,12 +418,42 @@ def feature_selection(poly=False, best_n_features=1, visualize=False, plot_measu
         # Score all cells for their pSTAT1/3 IFNg response
         pSTAT_score_response = [pSTAT_score(STAT_extrapolate[i]) for i in range(len(STAT_extrapolate))]
         STAT_extrapolate_df.insert(0, 'pSTAT_score', pSTAT_score_response)
+        STAT_extrapolate_df = STAT_extrapolate_df.loc[~STAT_extrapolate_df.index.str.contains('Control|TEST', flags=re.IGNORECASE, regex=True)]
+        STAT_extrapolate_df.index = [i.split(".")[0] for i in STAT_extrapolate_df.index]
 
         # Get fold change in genes due to IFNg stimulation, according to ImmGen database
         fold_change_df = gene_response()
- 
+        log2_fold_change = fold_change_df.apply(np.log2)
+        common_cell_types = [i for i in log2_fold_change.index if i in STAT_extrapolate_df.index]
+
+        # Take group averages
+        temp1 = {}
+        temp2 = {}
+        for c in common_cell_types:
+            temp1[c] = np.mean(log2_fold_change.loc[c].values, axis=0)
+            temp2[c] = np.mean(STAT_extrapolate_df.loc[c].values, axis=0)
+        mean_log2_fold_change = pd.DataFrame.from_dict(temp1, orient='index', columns=log2_fold_change.columns)
+        mean_pSTAT = pd.DataFrame.from_dict(temp2, orient='index', columns=STAT_extrapolate_df.columns)
+
+        # Score the mean transcriptional response
+        mean_log2_fold_change.insert(0, 'transcript_score', mean_log2_fold_change.dot(mean_log2_fold_change.loc['B']))
+
+        plt.figure()
+        plt.scatter(mean_pSTAT.pSTAT_score.values, mean_log2_fold_change.transcript_score.values)
+        plt.xlabel('pSTAT score')
+        plt.ylabel('transcript score')
+        p1 = plt.gca()
+        for line in range(0, len(mean_pSTAT.pSTAT_score.values)):
+            p1.text(mean_pSTAT.pSTAT_score.values[line] + 0.2, mean_log2_fold_change.transcript_score.values[line],
+                    mean_pSTAT.index.values[line],
+                    horizontalalignment='left', size='medium', color='black', weight='semibold')
+        plt.show()
+
 
 if __name__ == "__main__":
+    # custom_linear(['STAT1'], centered_predictor_variables, response_variables)
+    gene_response(plot_heatmap=True)
+
     #feature_selection(best_n_features=4, visualize=False, plot_measured_vs_pred=False,
     #                  barplot=False, extrapolate=False, pSTAT_score=True)
-    gene_response()
+
