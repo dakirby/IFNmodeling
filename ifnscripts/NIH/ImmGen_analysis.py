@@ -175,8 +175,9 @@ def fit_normalized_pSTAT():
     plt.tight_layout()
     plt.show()
 
-def plot_pSTAT_space():
-    X = ImmGen_df[['pSTAT1','pSTAT3']].values
+def plot_pSTAT_space(cytokine_name):
+    df = pd.read_excel('MasterTable_ImmGen_pSTAT.xlsx', sheet_name=cytokine_name, axis=1)
+    X = df[['pSTAT1','pSTAT3']].values
     #y_pred = KMeans(n_clusters=3, random_state=4).fit_predict(X)
     stem_palette = sns.color_palette("Greys", 5)[::-1]
     myeloid_palette = sns.color_palette("Greens", 5)
@@ -188,7 +189,7 @@ def plot_pSTAT_space():
                              "CD11b+DC": myeloid_palette[3], "CD11b-DC": myeloid_palette[3],
                              "preB_FrC": lymphoid_palette[1], "preB_FrD": lymphoid_palette[1],
                              "NK": lymphoid_palette[4]}
-    y_pred = [hematopoetic_colormap[x] for x in ImmGen_df.Cell_type.values]
+    y_pred = [hematopoetic_colormap[x] for x in df.Cell_type.values]
     plt.scatter(X[:,0], X[:,1], c=y_pred)
     plt.xlabel('pSTAT1')
     plt.ylabel('pSTAT3')
@@ -208,13 +209,13 @@ def plot_expression_space(gene_list=[]):
         ax.set_xlabel("log expression")
         ax.set_ylabel("frequency")
 
-    plt.suptitle('R squard = {:.2f}'.format(r_squared))
+    #plt.suptitle('R squard = {:.2f}'.format(r_squared))
 
     plt.tight_layout()
     plt.show()
 
 if __name__ == "__main__":
     #plot_expression_space(['STAT3', 'STAT1', 'JAK1', 'JAK2', 'SOCS2', 'Usp18', 'PIAS2', 'SOCS6'])
-    plot_pSTAT_space()
+    plot_pSTAT_space('G-CSF')
 
-    fit_normalized_pSTAT()
+    #fit_normalized_pSTAT()

@@ -73,7 +73,7 @@ def multivariateGrid(col_x, col_y, col_k, df, k_is_color=False, scatter_alpha=.5
                              "Mo": sns.color_palette("husl", 8)[1], "GN": myeloid_palette[1], "MF": myeloid_palette[2], "DC": myeloid_palette[3],
                              "preB": lymphoid_palette[1], "preT": lymphoid_palette[2], "B": lymphoid_palette[6], "T": lymphoid_palette[3],
                              "NK": lymphoid_palette[4], "NKT": lymphoid_palette[5],
-                             "BEC": "tomato", "FRC": "crimson"}
+                             "BEC": "tomato", "FRC": "crimson", "Fi": "lightcoral"}
     def colored_scatter(x, y, c=None):
         def scatter(*args, **kwargs):
             args = (x, y)
@@ -497,13 +497,12 @@ def functional_group_regression(group_dict, fit_data, response_variable_names, v
         extrapolation_df.insert(0, 'Hematopoetic_class', hematopoetic_label)
     
         extrapolation_df = extrapolation_df[~extrapolation_df.Hematopoetic_class.str.contains('Control|TEST', flags=re.IGNORECASE, regex=True)]
-        print(extrapolation_df.Hematopoetic_class)
         # Visualize
         query_lymphoid_cell_types = ["NK", "preB", "preT", "T", "B"] # ["NK", "NKT", "SC", "preB", "preT", "T", "B"]
-        query_myeloid_cell_types = ["GN", "Mo", "DC", "MF"] # ["SC", "GN", "Mo", "DC", "MF", "FRC", "BEC"]
+        query_myeloid_cell_types = ["Fi", "FRC", "GN", "Mo", "DC", "MF"] # ["SC", "GN", "Mo", "DC", "MF", "FRC", "BEC"]
         print(extrapolation_df[extrapolation_df['Hematopoetic_class'].isin(query_lymphoid_cell_types + query_myeloid_cell_types)])
         extrapolation_df.to_csv("extrapolation_df.csv")
-        print(r2_adj)
+        print("r2_adj = ", r2_adj)
 
         fig, axes =plt.subplots(nrows=1, ncols=2)
         for idx, query_cell_types in enumerate([query_lymphoid_cell_types, query_myeloid_cell_types]):
@@ -565,6 +564,8 @@ if __name__ == "__main__":
 
     #cytokine_names = ['IFN-y', 'IL-7', 'G-CSF']
     #rfe(feature_dict_GCSF, 'G-CSF')
-    functional_group_regression(feature_dict_IL7,
-                                pd.read_excel('MasterTable_ImmGen_pSTAT.xlsx', sheet_name='IL-7', axis=1),
+    feature_dict_IFNg.pop('STAT')
+    feature_dict_IFNg.pop('receptor')
+    functional_group_regression(feature_dict_IFNg,
+                                pd.read_excel('MasterTable_ImmGen_pSTAT.xlsx', sheet_name='IFN-y', axis=1),
                                 ['pSTAT1', 'pSTAT3'], visualize=True)
