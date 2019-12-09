@@ -23,7 +23,8 @@ def read_ImmGen_csv(fname):
     df = df.T.drop([0, 1], axis=0)
     df.columns = df_feature_names
     df = df.set_index('Cell_type')
-    return df
+    df2 = pd.DataFrame(data=df.values.astype(float), index=df.index, columns=df.columns)
+    return df2
 
 
 def mean_by_index_group(df):
@@ -133,7 +134,7 @@ def quadratic():
     poly_var_train, poly_var_test, poly_res_train, poly_res_test = train_test_split(poly_variables, response_variables.values,
                                                                           test_size=0.25, random_state=4)
     # Create linear regression object
-    regr = LinearRegression()
+    regr= LinearRegression()
     # Train the model using the training sets
     regr.fit(poly_var_train, poly_res_train)
     score = regr.score(poly_var_test, poly_res_test)
@@ -269,7 +270,7 @@ def gene_response(plot_heatmap=False):
 def feature_selection(poly=False, best_n_features=1, visualize=False, plot_measured_vs_pred=True,
                       barplot=True, extrapolate=False, pSTAT_score=False):
     # Feature selection set up
-    model = LinearRegression()
+    model= LinearRegression()
     rfe = RFE(estimator=model, n_features_to_select=1, step=1)
     # Data set up
     if poly==True:
@@ -294,7 +295,7 @@ def feature_selection(poly=False, best_n_features=1, visualize=False, plot_measu
     if visualize == True:
         r2_record = []
         for i in range(1, len(combined_rank)):
-            model = LinearRegression()
+            model= LinearRegression()
             if i == 1:
                 predictor = features[combined_rank[0:i]].values.reshape((-1, 1))
             else:
@@ -310,7 +311,7 @@ def feature_selection(poly=False, best_n_features=1, visualize=False, plot_measu
         plt.show()
 
     # Fit using best predictive feature
-    model = LinearRegression()
+    model= LinearRegression()
     if best_n_features==1:
         predictor = features[combined_rank[0:best_n_features]].values.reshape((-1,1))
     else:
@@ -450,13 +451,18 @@ def feature_selection(poly=False, best_n_features=1, visualize=False, plot_measu
         plt.show()
 
 
-def functional_group_regression(group_dict, fit_data, response_variable_names, visualize=True):
+def functional_group_regression(group_dict, fit_data, response_variable_names,
+                                visualize=True, cutoff=None, tissue_key=''):
     feature_names = []
     for _, val in group_dict.items():
         feature_names += val
 
     # Set up data
     ImmGen_raw = read_ImmGen_csv('ImmGen_raw.csv')
+
+    # Perform regression in log space
+    ImmGen_raw = ImmGen_raw.apply(np.log10)
+
     # ImmGen has duplicate column names because different ProbeID's correspond to the same gene name.
     # I have no prior on which ProbeID to select, so here I simply use the first occurence in the DataFrame.
     ImmGen_raw = ImmGen_raw.loc[:, ~ImmGen_raw.columns.duplicated()]
@@ -472,6 +478,10 @@ def functional_group_regression(group_dict, fit_data, response_variable_names, v
     grouped_fold_change_raw_df.index = ImmGen_raw.index
 
     # Now the data from Ratnadeep
+    if type(cutoff) != type(None):
+        above_noise = fit_data[response_variable_names] > cutoff
+        fit_data = fit_data.loc[above_noise.all(axis=1)]
+
     response_data = fit_data[response_variable_names]
 
     predictor_variables = pd.DataFrame(data=np.divide(fit_data[feature_names].values,
@@ -483,7 +493,7 @@ def functional_group_regression(group_dict, fit_data, response_variable_names, v
     grouped_predictor_variables.index = fit_data.Cell_type
 
     # Perform regression
-    model = LinearRegression()
+    model= LinearRegression()
 
     model.fit(grouped_predictor_variables.values, response_data.values)
     r2 = model.score(grouped_predictor_variables.values, response_data.values)
@@ -493,23 +503,73 @@ def functional_group_regression(group_dict, fit_data, response_variable_names, v
         # Extrapolate to other cell types
         STAT_pred = model.predict(grouped_fold_change_raw_df.values)
         hematopoetic_label = [s.split(".")[0] for s in grouped_fold_change_raw_df.index.values]
-        extrapolation_df = pd.DataFrame(data=STAT_pred, columns=['pSTAT1', 'pSTAT3'])
+        extrapolation_df = pd.DataFrame(data=STAT_pred, columns=response_variable_names)
         extrapolation_df.insert(0, 'Hematopoetic_class', hematopoetic_label)
-    
+        extrapolation_df.insert(0, 'Cell_type', grouped_fold_change_raw_df.index.values)
         extrapolation_df = extrapolation_df[~extrapolation_df.Hematopoetic_class.str.contains('Control|TEST', flags=re.IGNORECASE, regex=True)]
+
+        if tissue_key != '':
+            tissue_label = [s.split(".")[-1] for s in extrapolation_df.Cell_type.values]
+            extrapolation_df.insert(1, 'Tissue_class', tissue_label)
+            extrapolation_df = extrapolation_df[
+                extrapolation_df.Tissue_class.str.contains(tissue_key, flags=re.IGNORECASE, regex=True)]
         # Visualize
         query_lymphoid_cell_types = ["NK", "preB", "preT", "T", "B"] # ["NK", "NKT", "SC", "preB", "preT", "T", "B"]
-        query_myeloid_cell_types = ["Fi", "FRC", "GN", "Mo", "DC", "MF"] # ["SC", "GN", "Mo", "DC", "MF", "FRC", "BEC"]
-        print(extrapolation_df[extrapolation_df['Hematopoetic_class'].isin(query_lymphoid_cell_types + query_myeloid_cell_types)])
+        query_myeloid_cell_types = ["Fi", "GN", "Mo", "DC", "MF"] # ["SC", "GN", "Mo", "DC", "MF", "FRC", "BEC"]
+        #print(extrapolation_df[extrapolation_df['Hematopoetic_class'].isin(query_lymphoid_cell_types + query_myeloid_cell_types)])
         extrapolation_df.to_csv("extrapolation_df.csv")
         print("r2_adj = ", r2_adj)
 
-        fig, axes =plt.subplots(nrows=1, ncols=2)
-        for idx, query_cell_types in enumerate([query_lymphoid_cell_types, query_myeloid_cell_types]):
-            axes[idx] = multivariateGrid("pSTAT1", "pSTAT3", "Hematopoetic_class",
-                                         extrapolation_df[extrapolation_df['Hematopoetic_class'].isin(query_cell_types)],
-                                         k_is_color=False, scatter_alpha=0.8)
+        #for idx, query_cell_types in enumerate([query_lymphoid_cell_types, query_myeloid_cell_types]):
+        #    multivariateGrid("pSTAT1", "pSTAT3", "Hematopoetic_class",
+        #                     extrapolation_df[extrapolation_df['Hematopoetic_class'].isin(query_cell_types)],
+        #                     k_is_color=False, scatter_alpha=0.8)
+
+        stem_palette = sns.color_palette("Greys", 5)
+        myeloid_palette = sns.color_palette("Greens", 5)
+        lymphoid_palette = sns.color_palette("cubehelix", 8)[::-1]
+
+        hematopoetic_colormap = {"SC": stem_palette[3],
+                                 "Mo": sns.color_palette("husl", 8)[1], "GN": myeloid_palette[1],
+                                 "MF": myeloid_palette[2], "DC": myeloid_palette[3],
+                                 "preB": lymphoid_palette[1], "preT": lymphoid_palette[2], "B": lymphoid_palette[6],
+                                 "T": lymphoid_palette[3],
+                                 "NK": lymphoid_palette[4], "NKT": lymphoid_palette[5],
+                                 "BEC": "tomato", "FRC": "crimson", "Fi": "lightcoral"}
+
+        query_cell_types = ["DC", "MF", "GN", "T", "B", "NK"]
+
+        df_plot = extrapolation_df.loc[extrapolation_df['Hematopoetic_class'].isin(query_cell_types)]
+        fig, axes = plt.subplots(ncols=len(response_variable_names))
+        for idx, pSTAT in enumerate(response_variable_names):
+            for qc in query_cell_types:
+                sns.distplot(df_plot.loc[df_plot.Hematopoetic_class == qc][pSTAT], ax=axes[idx], label=qc,
+                             color=hematopoetic_colormap[qc], hist_kws=dict(alpha=0.6))
+            axes[idx].set_xlabel('log10 ' + pSTAT)
+            axes[idx].set_xlim((0.5*df_plot[response_variable_names].min().min(), df_plot[response_variable_names].max().max()*1.3))
+            #axes[idx].set_xlim(-0.4, 3.65)
+        #axes[0].set_ylim(0.0, 2.2)
+        #axes[1].set_ylim(0.0, 3.6)
+        plt.legend()
         plt.show()
+
+        # Measured vs Predicted
+        fit = model.predict(grouped_predictor_variables.values)
+        fig, ax = plt.subplots(nrows=1, ncols=2)
+        for i in [0,1]:
+            ax[i].set_xlabel('Measured')
+            ax[i].set_ylabel('Predicted')
+            ax[i].set_title('log10 pSTAT{}'.format(1+i*2))
+            ax[i].scatter(response_data.values[:, i], fit[:, i])
+            ax[i].plot([min(response_data.values[:, i]), max(response_data.values[:, i])], [min(fit[:, i]), max(fit[:, i])], 'k--')
+        plt.suptitle(r"$R^{2}_{adj}$"+" = {:.2f}".format(r2_adj))
+        plt.show()
+
+    print("Model:")
+    print(grouped_predictor_variables.columns)
+    print(model.coef_)
+    print(model.intercept_)
+
     return r2_adj
 
 
@@ -517,8 +577,11 @@ def rfe(feature_dict, cytokine_name):
     # Recursive feature elimination
 
     # Choose data
-
     fit_data = pd.read_excel('MasterTable_ImmGen_pSTAT.xlsx', sheet_name=cytokine_name, axis=1)
+    fit_data.set_index('Cell_type', inplace=True)
+    fit_data = fit_data.apply(np.log10)
+    fit_data.reset_index(level=0, inplace=True)
+    fit_data = fit_data.fillna(fit_data.min())
 
     ranked_importance = []
     baseline = functional_group_regression(feature_dict, fit_data, ['pSTAT1', 'pSTAT3'], visualize=False)
@@ -544,7 +607,7 @@ if __name__ == "__main__":
 
     #feature_selection(best_n_features=4, visualize=False, plot_measured_vs_pred=False,
     #                  barplot=False, extrapolate=False, pSTAT_score=True)
-    feature_dict_IFNg = {'short_term_feedback': ['SOCS1', 'SOCS3'],
+    feature_dict_IFNg = {'short_term_feedback': ['SOCS2', 'PIAS2'],
                         'long_term_feedback': ['USP18'],
                         'kinase': ['JAK1', 'JAK2'],
                         'STAT': ['STAT1', 'STAT3'],
@@ -556,16 +619,42 @@ if __name__ == "__main__":
                         'STAT': ['STAT1', 'STAT3'],
                         'receptor': ['IL7r', 'IL2rg']}
 
-    feature_dict_GCSF = {'short_term_feedback': ['SOCS1', 'SOCS3'],
+    feature_dict_GCSF = {'short_term_feedback': ['SOCS7'],
                         'long_term_feedback': ['USP18'],
                         'kinase': ['JAK1', 'JAK2', 'TYK2'],
-                        'STAT': ['STAT1', 'STAT3'],
+                        'STAT': ['STAT1', 'STAT3', 'STAT4', 'STAT5a', 'STAT5b'],
                         'receptor': ['CSF3r']}
 
+    def scramble(df):
+        data = df.drop(['Cell_type', 'pSTAT1', 'pSTAT3', 'pSTAT4', 'pSTAT5'], axis=1).values
+        s = np.shape(data)
+        np.random.shuffle(data)
+        #for i in range(s[0]):
+        #   for j in range(s[1]):
+        #       data[i][j] = data[i][j]*2**(-2*np.random.randint(0, 2) + 1)
+        shuffled = data.reshape(s)
+        new_df = pd.DataFrame(data=shuffled, index=df.index, columns=df.drop(['Cell_type', 'pSTAT1', 'pSTAT3', 'pSTAT4',
+                                                                              'pSTAT5'], axis=1).columns)
+        new_df.insert(0, 'pSTAT5', df.pSTAT5.values)
+        new_df.insert(0, 'pSTAT4', df.pSTAT4.values)
+        new_df.insert(0, 'pSTAT3', df.pSTAT3.values)
+        new_df.insert(0, 'pSTAT1', df.pSTAT1.values)
+        new_df.insert(0, 'Cell_type', df.Cell_type.values)
+        return new_df
+
+    gene_data = pd.read_excel('MasterTable_ImmGen_pSTAT.xlsx', sheet_name='IFN-y', axis=1)
+    gene_data.set_index('Cell_type', inplace=True)
+    gene_data = gene_data.apply(np.log10)
+    gene_data.reset_index(level=0, inplace=True)
+    gene_data = gene_data.fillna(gene_data.min())
+
+    #feature_dict_GCSF.pop('short_term_feedback')
+    feature_dict_GCSF.pop('long_term_feedback')
+
+    r2=functional_group_regression(feature_dict_IFNg,
+                                   gene_data,
+                                   ['pSTAT1', 'pSTAT3'],
+                                   visualize=True, cutoff=0.1, tissue_key='BM')
+    print(r2)
     #cytokine_names = ['IFN-y', 'IL-7', 'G-CSF']
-    #rfe(feature_dict_GCSF, 'G-CSF')
-    feature_dict_IFNg.pop('STAT')
-    feature_dict_IFNg.pop('receptor')
-    functional_group_regression(feature_dict_IFNg,
-                                pd.read_excel('MasterTable_ImmGen_pSTAT.xlsx', sheet_name='IFN-y', axis=1),
-                                ['pSTAT1', 'pSTAT3'], visualize=True)
+    #rfe(feature_dict_IFNg, 'IFN-y')

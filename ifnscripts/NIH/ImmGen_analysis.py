@@ -177,7 +177,9 @@ def fit_normalized_pSTAT():
 
 def plot_pSTAT_space(cytokine_name):
     df = pd.read_excel('MasterTable_ImmGen_pSTAT.xlsx', sheet_name=cytokine_name, axis=1)
-    X = df[['pSTAT1','pSTAT3']].values
+    X = df[['pSTAT1','pSTAT3']].apply(np.log10)
+    X = X.fillna(X.min()).values
+
     #y_pred = KMeans(n_clusters=3, random_state=4).fit_predict(X)
     stem_palette = sns.color_palette("Greys", 5)[::-1]
     myeloid_palette = sns.color_palette("Greens", 5)
@@ -191,16 +193,16 @@ def plot_pSTAT_space(cytokine_name):
                              "NK": lymphoid_palette[4]}
     y_pred = [hematopoetic_colormap[x] for x in df.Cell_type.values]
     plt.scatter(X[:,0], X[:,1], c=y_pred)
-    plt.xlabel('pSTAT1')
-    plt.ylabel('pSTAT3')
+    plt.xlabel('log10 pSTAT1')
+    plt.ylabel('log10 pSTAT3')
     p1=plt.gca()
     for line in range(0, X.shape[0]):
-        p1.text(X[line,0] + 0.2, X[line,1], ImmGen_df.Cell_type.values[line],
+        p1.text(X[line,0] + 0.02, X[line,1], df.Cell_type.values[line],
                 horizontalalignment='left', size='medium', color='black', weight='semibold')
     plt.show()
 
-def plot_expression_space(gene_list=[]):
-    df = ImmGen_df.apply(lambda x: np.log10(x) if np.issubdtype(x.dtype, np.number) else x)
+def plot_expression_space(gene_list=[], cytokine_name='IFN-y'):
+    df = pd.read_excel('MasterTable_ImmGen_pSTAT.xlsx', sheet_name=cytokine_name, axis=1).apply(lambda x: np.log10(x) if np.issubdtype(x.dtype, np.number) else x)
     if gene_list==[]:
         hist = df.hist(column=[i for i in ImmGen_df.columns.values if i not in ['pSTAT1', 'pSTAT3']])
     else:
@@ -208,14 +210,60 @@ def plot_expression_space(gene_list=[]):
     for ax in hist.flatten():
         ax.set_xlabel("log expression")
         ax.set_ylabel("frequency")
+        ax.set_xlim(xmin=1.5, xmax=4.0)
 
     #plt.suptitle('R squard = {:.2f}'.format(r_squared))
-
+    plt.xlim(1.5, 4.0)
     plt.tight_layout()
     plt.show()
 
-if __name__ == "__main__":
-    #plot_expression_space(['STAT3', 'STAT1', 'JAK1', 'JAK2', 'SOCS2', 'Usp18', 'PIAS2', 'SOCS6'])
-    plot_pSTAT_space('G-CSF')
+def plot_gene_vs_pSTAT(gene_name, cytokine_name, axes=None):
+    df = pd.read_excel('MasterTable_ImmGen_pSTAT.xlsx', sheet_name=cytokine_name, axis=1).apply(lambda x: np.log10(x) if np.issubdtype(x.dtype, np.number) else x)
+    if type(axes)==type(None):
+        fig, axes = plt.subplots(ncols=2)
+    axes[0].scatter(df[gene_name].values, df['pSTAT1'].values)
+    axes[1].scatter(df[gene_name].values, df['pSTAT3'].values)
+    for i in range(2):
+        axes[i].set_ylabel('log10 pSTAT{}'.format(1+2*i))
+        axes[i].set_xlabel('log10 ' + gene_name)
 
-    #fit_normalized_pSTAT()
+    return axes
+
+
+def plot_pSTAT_histograms(cytokine_names, pSTAT_names):
+    cytokine_responses = {}
+    for idx, name in enumerate(cytokine_names):
+        df = pd.read_excel('MasterTable_ImmGen_pSTAT.xlsx', sheet_name=name, axis=1)
+        X = df[pSTAT_names].apply(np.log10)
+        X = X.fillna(X.min()).values
+        cytokine_responses.update({idx*len(X)+i: [name, *X[i]] for i in range(len(X))})
+
+    df = pd.DataFrame.from_dict(cytokine_responses, orient='index', columns=['cytokine', *pSTAT_names])
+    print(df)
+    # Method 1: on the same Axis
+    fig, axes = plt.subplots(nrows=1, ncols=len(pSTAT_names))
+    for idx, name in enumerate(pSTAT_names):
+        for cytokine in cytokine_names:
+            sns.distplot(df.loc[df['cytokine'] == cytokine][name], label=cytokine, ax=axes[idx], kde=False)#, color=sns.color_palette("tab10")[1])
+            plt.legend()
+    for i in range(len(pSTAT_names)):
+        axes[i].set_xlabel('log10 {}'.format(pSTAT_names[i]))
+        axes[i].set_ylabel('frequency')
+    plt.show()
+
+
+if __name__ == "__main__":
+    #plot_expression_space(['SOCS7'], cytokine_name='G-CSF')#, 'STAT1', 'STAT3', 'JAK1', 'JAK2', 'SOCS1', 'SOCS3', 'USP18'])
+    #plot_expression_space(['SOCS7', 'SHP1'])
+    #plot_pSTAT_space('G-CSF')
+    plot_gene_vs_pSTAT('SOCS7', 'G-CSF')
+    plt.show()
+
+    #f1, axes = plt.subplots(nrows=2, ncols=2)
+    #for idx, gene in enumerate(['STAT1', 'STAT3']):
+    #     plot_gene_vs_pSTAT(gene, 'IFN-y', axes=axes[idx])
+    #plt.figure(f1.number)
+    #plt.tight_layout()
+    #plt.show()
+
+    #plot_pSTAT_histograms(['IFN-y', 'G-CSF'], ['pSTAT1', 'pSTAT3'])

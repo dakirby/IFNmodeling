@@ -132,6 +132,8 @@ Methods:
             PR1active = self.parameters[STAT]['Jak1']*self.parameters[STAT]['K_Jak1'] / (1 + self.parameters[STAT]['Jak1']*self.parameters[STAT]['K_Jak1'])
             PR2active = self.parameters[STAT]['Jak2']*self.parameters[STAT]['K_Jak2'] / (1 + self.parameters[STAT]['Jak2']*self.parameters[STAT]['K_Jak2'])
             Rstar = cytokine_R*PR1active*PR2active/(1+self.parameters[STAT]['K_ligand']/dose)
+            print(Rstar)
+            exit()
             response = self.parameters[STAT]['STAT_total']/(1+self.parameters[STAT]['K_STAT']*(1+self.parameters[STAT][SOCS_name]/self.parameters[STAT]['K_SOCS'])*volPM/Rstar)
             STAT_response[STAT] = response
         return STAT_response
@@ -705,10 +707,10 @@ def fit_IFNg_SOCS_competes_STAT_with_DREAM(SOCS_name, df=ImmGen_df):
         data = [[14.6, 37.26],
                 [2.43, 16.9],
                 [1.42, 5.54],
-                [-0.18, 0.32],
+                [0.18, 0.32],
                 [0.64, 0.41],
                 [2.32, 51.8],
-                [-0.35, 34.2],
+                [0.18, 34.2],
                 [2.49, 18.53],
                 [1.74, 22.65],
                 [1.05, 10.8],
@@ -718,8 +720,8 @@ def fit_IFNg_SOCS_competes_STAT_with_DREAM(SOCS_name, df=ImmGen_df):
                 [1.09, 29.66],
                 [4.9, 7.4]]
 
-        like_ctot = norm(loc=data, scale=np.ones(np.shape(data)))
-        logp_ctotal = np.sum(like_ctot.logpdf(fit_pred))
+        like_ctot = norm(loc=np.log10(data), scale=np.ones(np.shape(data)))
+        logp_ctotal = np.sum(like_ctot.logpdf(np.log10(fit_pred)))
 
         # If model simulation failed due to integrator errors, return a log probability of -inf.
         if np.isnan(logp_ctotal):
@@ -855,6 +857,19 @@ def compare_model_to_ImmGen(pset, SOCS_name='SOCS2'):
     plt.tight_layout()
     plt.show()
 
+    # Measured vs Predicted
+    fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(12.8, 5))
+    fig.suptitle('R-squared (log scale) = {:.2f}'.format(r_squared))
+    subplot_titles = ['pSTAT1', 'pSTAT3']
+    ax[0].scatter(measured_response.pSTAT1.values, fit_prediction.pSTAT1.values)
+    ax[0].plot([0, 20], [0, 20], 'k--')
+    ax[1].scatter(measured_response.pSTAT3.values, fit_prediction.pSTAT3.values)
+    ax[1].plot([0, 40], [0, 40], 'k--')
+    for i in [0, 1]:
+        ax[i].set_title(subplot_titles[i])
+        ax[i].set_xlabel('Measured')
+        ax[i].set_ylabel('Predicted')
+    plt.show()
 
 if __name__ == "__main__":
     # Check variance in predictors
@@ -872,19 +887,23 @@ if __name__ == "__main__":
     #print(ec50_for_all_cell_types('SOCS2'))
     #make_ec50_predictions_plot()
 
-    #fit_IFNg_SOCS_competes_STAT_with_DREAM('SOCS3')
+    #fit_IFNg_SOCS_competes_STAT_with_DREAM('SOCS7')
 
-    save_dir = "PyDREAM_02-12-2019_10000_GCSF"
-    sim_name = "SOCS3"
-    #sample_DREAM_IFNg_SOCS_competes_STAT(os.path.join(save_dir, sim_name+'_samples' + '.npy'), sim_name, step_size=250, find_map=False)
+    save_dir = "PyDREAM_04-12-2019_10000_GCSF"
+    sim_name = "SOCS7"
+    #sample_DREAM_IFNg_SOCS_competes_STAT(os.path.join(save_dir, sim_name+'_samples' + '.npy'), sim_name, step_size=250, find_map=True)
 
-    ## ['K_Jak1', 'K_Jak2', 'K_STAT_STAT1', 'K_STAT_STAT3', 'K_SOCS', 'scale_factor']
+    ## ['K_Jak1', 'K_Jak2', 'K_STAT_STAT1', 'K_STAT_STAT3', 'K_SOCS', 'scale_factor', 'K_USP18']
     #min_response_row = ImmGen_df.loc[ImmGen_df[response_variable_names[0]].idxmin()]
     #min_response_SOCS_expression = infer_protein(ImmGen_df, min_response_row.loc['Cell_type'], [sim_name])[sim_name]
     # [1E7 / (NA * volCP), 1E6 / (NA * volCP), 900 / volPM, 1000 / volPM, 0.006*min_response_SOCS_expression, 0.5]
     #p_prior = [3.171470138e-02, 3.17147013799e-03, 2.864788975654e+12, 3.183098861837e+12, 5.77815e-01, 5e-01]
     p_best = [3.17147014e-03,   3.17147014e+00,   3.18309889e+11,   1.00760330e+12,   1.67829414e-02, 1e-01]
 
+    # SOCSS2
     p_best_by_MCMC = [9.19293300e+02, 3.33434463e+01, 2.20985969e+04, 2.71081941e+02, 4.54009422e-01, 4.88918115e+01, 1.49339725e-03]
-    compare_model_to_ImmGen(p_best_by_MCMC)
+
+    # SOCS7
+    #p_best_by_MCMC = [98.96069551, 850.44550422, 97.8516537, 448.41519007, 52.27743194, 437.50172928, 353.38670015]
+    compare_model_to_ImmGen(p_best_by_MCMC, SOCS_name='SOCS2')
 

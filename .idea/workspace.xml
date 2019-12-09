@@ -338,7 +338,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.equilibrium_GCSF">
+  <component name="RunManager" selected="Python.linear_STAT_models">
     <configuration name="ImmGen_analysis" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="IFNmodeling" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -475,9 +475,9 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.linear_STAT_models" />
         <item itemvalue="Python.equilibrium_GCSF" />
         <item itemvalue="Python.equilibrium_SOCS_competes_with_STAT" />
-        <item itemvalue="Python.linear_STAT_models" />
         <item itemvalue="Python.ImmGen_analysis" />
         <item itemvalue="Python.equilibrium_STAT_model" />
       </list>
