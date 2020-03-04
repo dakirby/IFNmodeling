@@ -381,6 +381,21 @@ def build_database(data_wd: str) -> None:
     # Save
     pickle.dump(CD4Tcell_df, open(os.path.join(data_wd, '20190214_pSTAT1_IFN_CD4Tcell.p'), 'wb'))
 
+
+    # -------------------
+    # 2015_pSTAT5_Epo
+    # -------------------
+    data_table_2015 = pd.read_csv('2015_pSTAT5_Epo.csv').values
+    data_table_2015_1 = []
+    for i in range(len(data_table_2015)):
+        data_table_2015_1.append([data_table_2015[i][0], data_table_2015[i][1], (data_table_2015[i][2], data_table_2015[i][3]), data_table_2015[i][4]])
+    df_2015 = pd.DataFrame(data=data_table_2015_1,columns=['Dose_Species', 'Dose (pM)', 'Response', 'Time (min)'])
+
+    df_2015_1 = pd.pivot_table(df_2015, values='Response', index=['Dose_Species', 'Dose (pM)'],
+                   columns=['Time (min)'], aggfunc=np.sum)
+    df_2015_1.columns.name = None
+    pickle.dump(df_2015_1, open(os.path.join(data_wd, '2015_pSTAT5_Epo.p'), 'wb'))
+
     print("Initialized DataFrame objects")
 
 if __name__ == '__main__':
