@@ -20,7 +20,7 @@ scratch.py
 /ifndatabase/20190214_raw_data/*
 
 /ifnscripts/NIH/*.csv
-
+/ifnscripts/IFNcelltypes/*.csv
 # Compiled source 
 #
 ###################

@@ -14,13 +14,17 @@ from ifnclass.ifnplot import Trajectory, DoseresponsePlot
 # ------------------
 # Import ImmGen
 # ------------------
-ImmGen_df = pd.read_excel('ImmGen_signaling_with_protein_response.xlsx', sheet_name='Sheet1', axis=1)
+#ImmGen_df = pd.read_excel('ImmGen_signaling_with_protein_response.xlsx', sheet_name='Sheet1', axis=1)
+ImmGen_raw_df = pd.read_csv('ImmGen_raw.csv')
+ImmGen_raw_df.set_index('GeneSymbol', inplace=True)
 
 def get_relative_parameters(cell_type, baseline_celltype, baseline_parameters, parameter_name_to_database_label_dict):
     new_parameters = {}
-    for key in parameter_name_to_database_label_dict.keys():
-        numerator = ImmGen_df.loc[ImmGen_df['Cell_type'] == cell_type][parameter_name_to_database_label_dict[key]].values[0]
-        denominator = ImmGen_df.loc[ImmGen_df['Cell_type'] == baseline_celltype][parameter_name_to_database_label_dict[key]].values[0]
+    baseline_filter_col = [col for col in ImmGen_raw_df if baseline_celltype in col]
+    new_celltype_filter_col = [col for col in ImmGen_raw_df if cell_type in col]
+    for key, item in parameter_name_to_database_label_dict.items():
+        numerator = np.mean(ImmGen_raw_df[new_celltype_filter_col].loc[item].values)
+        denominator = np.mean(ImmGen_raw_df[baseline_filter_col].loc[item].values)
         new_value = (numerator / denominator) * baseline_parameters[key]
         new_parameters[key] = new_value
     return new_parameters
@@ -84,62 +88,143 @@ drbdf = IFN_Model.doseresponse(times, 'TotalpSTAT', 'Ib', list(logspace(-1, 4)),
 dra60 = IfnData('custom', df=dradf, conditions={'Alpha': {'Ib': 0}})
 drb60 = IfnData('custom', df=drbdf, conditions={'Beta': {'Ia': 0}})
 
-# ---------------------------
+# ------------------------
 # Plot
 # ------------------------
 alpha_mask = [2.5, 5.0, 7.5, 10.0]
 beta_mask = [2.5, 5.0, 7.5, 10.0]
-
-DRplot = DoseresponsePlot((1,2))
-for idx, t in enumerate(times):
-    if t not in alpha_mask:
-        DRplot.add_trajectory(dra60, t, 'plot', alpha_palette[idx], (0, 0), 'Alpha', label=str(t) + ' min',
-                               linewidth=2)
-        DRplot.add_trajectory(mean_data, t, 'errorbar', 'o', (0, 0), 'Alpha', color=alpha_palette[idx])
-    if t not in beta_mask:
-        DRplot.add_trajectory(drb60, t, 'plot', beta_palette[idx], (0, 1), 'Beta', label=str(t) + ' min',
-                               linewidth=2)
-        DRplot.add_trajectory(mean_data, t, 'errorbar', 'o', (0, 1), 'Beta', color=beta_palette[idx])
-DRplot.show_figure()
+plot_original_fit = False
+if plot_original_fit == True:
+    DRplot = DoseresponsePlot((1,2))
+    for idx, t in enumerate(times):
+        if t not in alpha_mask:
+            DRplot.add_trajectory(dra60, t, 'plot', alpha_palette[idx], (0, 0), 'Alpha', label=str(t) + ' min',
+                                   linewidth=2)
+            DRplot.add_trajectory(mean_data, t, 'errorbar', 'o', (0, 0), 'Alpha', color=alpha_palette[idx])
+        if t not in beta_mask:
+            DRplot.add_trajectory(drb60, t, 'plot', beta_palette[idx], (0, 1), 'Beta', label=str(t) + ' min',
+                                   linewidth=2)
+            DRplot.add_trajectory(mean_data, t, 'errorbar', 'o', (0, 1), 'Beta', color=beta_palette[idx])
+    DRplot.show_figure()
 
 # -----------------------------
 # Now generate new predictions
 # -----------------------------
 original_parameters = IFN_Model.parameters
 
-ImmGen_label_maps = {'R1': 'IFNGR1',
-                     'R2': 'IFNGR2',
-                     'S': 'STAT1',
-                     'Initial_SOCS': 'SOCS1'}
+ImmGen_label_maps = {'R1': 'Ifngr1',
+                     'R2': 'Ifngr2',
+                     'S': 'Stat1',
+                     'Initial_SOCS': 'Socs1'}
 
-Macrophage_parameters = get_relative_parameters('Mac_Sp', 'preB_FrD', original_parameters, ImmGen_label_maps)
+# Macrophages
+Macrophage_parameters = get_relative_parameters('MF.RP.Sp', 'B.Fo.Sp', original_parameters, ImmGen_label_maps)
 
 Macrophage_model = IfnModel('Mixed_IFN_ppCompatible')
 Macrophage_model.set_parameters(initial_parameters)
 Macrophage_model.set_parameters(Macrophage_parameters)
 
-Macdfa = Macrophage_model.doseresponse(times, 'TotalpSTAT', 'Ia', list(logspace(1, 5.2)),
-                               parameters={'Ib': 0}, scale_factor=scale_factor,
-                               return_type='dataframe', dataframe_labels='Alpha')
-Macdfb = Macrophage_model.doseresponse(times, 'TotalpSTAT', 'Ib', list(logspace(-1, 4)),
-                               parameters={'Ia': 0}, scale_factor=scale_factor,
-                               return_type='dataframe', dataframe_labels='Beta')
+MacIfnDataA = IfnData('custom',
+                      df=Macrophage_model.doseresponse(times, 'TotalpSTAT', 'Ia', list(logspace(1, 5.2)),
+                                                       parameters={'Ib': 0}, scale_factor=scale_factor,
+                                                       return_type='dataframe', dataframe_labels='Alpha'),
+                      conditions={'Alpha': {'Ib': 0}})
+MacIfnDataB = IfnData('custom',
+                      df=Macrophage_model.doseresponse(times, 'TotalpSTAT', 'Ib', list(logspace(-1, 4)),
+                                                       parameters={'Ia': 0}, scale_factor=scale_factor,
+                                                       return_type='dataframe', dataframe_labels='Beta'),
+                      conditions={'Beta': {'Ia': 0}})
 
-MacIfnDataA = IfnData('custom', df=Macdfa, conditions={'Alpha': {'Ib': 0}})
-MacIfnDataB = IfnData('custom', df=Macdfb, conditions={'Beta': {'Ia': 0}})
+# T cells
+Tcell_parameters = get_relative_parameters('T.4Nve.Sp', 'B.Fo.Sp', original_parameters, ImmGen_label_maps)
 
-cellTypePlot = DoseresponsePlot((1,2))
-cell_type_coloring = {'original': 1, 'macrophage': 3}
-for idx, t in enumerate(times):
-    if t not in alpha_mask:
-        cellTypePlot.add_trajectory(dra60, t, 'plot', alpha_palette[cell_type_coloring['original']], (0, 0), 'Alpha',
-                                    label='original', linewidth=2)
-        cellTypePlot.add_trajectory(MacIfnDataA, t, 'plot', alpha_palette[cell_type_coloring['macrophage']], (0, 0),
-                                    'Alpha', label='Macrophage', linewidth=2)
+Tcell_model = IfnModel('Mixed_IFN_ppCompatible')
+Tcell_model.set_parameters(initial_parameters)
+Tcell_model.set_parameters(Tcell_parameters)
 
-    if t not in beta_mask:
-        cellTypePlot.add_trajectory(drb60, t, 'plot', beta_palette[cell_type_coloring['original']], (0, 1), 'Beta',
-                                    label='original', linewidth=2)
-        cellTypePlot.add_trajectory(MacIfnDataB, t, 'plot', beta_palette[cell_type_coloring['macrophage']], (0, 1),
-                                    'Beta', label='Macrophage', linewidth=2)
+TcellIfnDataA = IfnData('custom',
+                        df=Tcell_model.doseresponse(times, 'TotalpSTAT', 'Ia', list(logspace(1, 5.2)),
+                                                    parameters={'Ib': 0}, scale_factor=scale_factor,
+                                                    return_type='dataframe', dataframe_labels='Alpha'),
+                        conditions={'Alpha': {'Ib': 0}})
+TcellIfnDataB = IfnData('custom',
+                        df=Tcell_model.doseresponse(times, 'TotalpSTAT', 'Ib', list(logspace(-1, 4)),
+                                                    parameters={'Ia': 0}, scale_factor=scale_factor,
+                                                    return_type='dataframe', dataframe_labels='Beta'),
+                        conditions={'Beta': {'Ia': 0}})
+
+# DC cells
+DC_parameters = get_relative_parameters('DC.8-4-11b+.Sp', 'B.Fo.Sp', original_parameters, ImmGen_label_maps)
+
+DC_model = IfnModel('Mixed_IFN_ppCompatible')
+DC_model.set_parameters(initial_parameters)
+DC_model.set_parameters(DC_parameters)
+
+DCIfnDataA = IfnData('custom',
+                        df=DC_model.doseresponse(times, 'TotalpSTAT', 'Ia', list(logspace(1, 5.2)),
+                                                    parameters={'Ib': 0}, scale_factor=scale_factor,
+                                                    return_type='dataframe', dataframe_labels='Alpha'),
+                        conditions={'Alpha': {'Ib': 0}})
+DCIfnDataB = IfnData('custom',
+                        df=DC_model.doseresponse(times, 'TotalpSTAT', 'Ib', list(logspace(-1, 4)),
+                                                    parameters={'Ia': 0}, scale_factor=scale_factor,
+                                                    return_type='dataframe', dataframe_labels='Beta'),
+                        conditions={'Beta': {'Ia': 0}})
+
+# Tgd cells
+Tgd_parameters = get_relative_parameters('Tgd.Sp', 'B.Fo.Sp', original_parameters, ImmGen_label_maps)
+
+Tgd_model = IfnModel('Mixed_IFN_ppCompatible')
+Tgd_model.set_parameters(initial_parameters)
+Tgd_model.set_parameters(Tgd_parameters)
+
+TgdIfnDataA = IfnData('custom',
+                        df=Tgd_model.doseresponse(times, 'TotalpSTAT', 'Ia', list(logspace(1, 5.2)),
+                                                    parameters={'Ib': 0}, scale_factor=scale_factor,
+                                                    return_type='dataframe', dataframe_labels='Alpha'),
+                        conditions={'Alpha': {'Ib': 0}})
+TgdIfnDataB = IfnData('custom',
+                        df=Tgd_model.doseresponse(times, 'TotalpSTAT', 'Ib', list(logspace(-1, 4)),
+                                                    parameters={'Ia': 0}, scale_factor=scale_factor,
+                                                    return_type='dataframe', dataframe_labels='Beta'),
+                        conditions={'Beta': {'Ia': 0}})
+
+
+# --------------------
+# Plot
+# --------------------
+tmask = [2.5, 5.0, 7.5, 10.0]
+stem_palette = sns.color_palette("Greys", 5)
+myeloid_palette = sns.color_palette("Greens", 5)
+lymphoid_palette = sns.color_palette("cubehelix", 8)[::-1]
+
+hematopoetic_colormap = {"SC": stem_palette[2], "MLP": stem_palette[4],
+                         "Mo": sns.color_palette("husl", 8)[1], "GN": myeloid_palette[1],
+                         "MF": myeloid_palette[2], "DC": myeloid_palette[4], "pDC": 'g--',
+                         "proB": lymphoid_palette[0], "preB": lymphoid_palette[1], "preT": lymphoid_palette[2],
+                         "B": lymphoid_palette[6],
+                         "T": lymphoid_palette[3], "Tgd": "r--",
+                         "NK": lymphoid_palette[4], "NKT": lymphoid_palette[5],
+                         "BEC": "tomato", "FRC": "crimson", "Fi": "lightcoral"}
+
+cellTypePlot = DoseresponsePlot((2,2))
+
+for idx, t in enumerate([t for t in times if t not in tmask]):
+    cellTypePlot.axes[idx, 0].set_title(r'IFN$\alpha$ {} min'.format(t))
+    cellTypePlot.axes[idx, 1].set_title(r'IFN$\beta$ {} min'.format(t))
+
+    cellTypePlot.add_trajectory(mean_data, t, 'errorbar', 'o', (idx, 0), 'Alpha', color=hematopoetic_colormap['B'])
+    cellTypePlot.add_trajectory(dra60, t, 'plot', hematopoetic_colormap['B'], (idx, 0), 'Alpha', label='B', linewidth=2)
+    cellTypePlot.add_trajectory(MacIfnDataA, t, 'plot', hematopoetic_colormap['MF'], (idx, 0), 'Alpha', label='MF.RP.Sp', linewidth=2)
+    cellTypePlot.add_trajectory(TcellIfnDataA, t, 'plot', hematopoetic_colormap['T'], (idx, 0), 'Alpha', label='T.4Nve.Sp', linewidth=2)
+    cellTypePlot.add_trajectory(DCIfnDataA, t, 'plot', hematopoetic_colormap['DC'], (idx, 0), 'Alpha', label='DC.8-4-11b+.Sp', linewidth=2)
+    cellTypePlot.add_trajectory(TgdIfnDataA, t, 'plot', hematopoetic_colormap['Tgd'], (idx, 0), 'Alpha', label='Tgd.Sp', linewidth=2)
+
+    cellTypePlot.add_trajectory(mean_data, t, 'errorbar', 'o', (idx, 1), 'Beta', color=hematopoetic_colormap['B'])
+    cellTypePlot.add_trajectory(drb60, t, 'plot', hematopoetic_colormap['B'], (idx, 1), 'Beta', label='B', linewidth=2)
+    cellTypePlot.add_trajectory(MacIfnDataB, t, 'plot', hematopoetic_colormap['MF'], (idx, 1), 'Beta', label='MF.RP.Sp', linewidth=2)
+    cellTypePlot.add_trajectory(TcellIfnDataB, t, 'plot', hematopoetic_colormap['T'], (idx, 1), 'Beta', label='T.4Nve.Sp', linewidth=2)
+    cellTypePlot.add_trajectory(DCIfnDataB, t, 'plot', hematopoetic_colormap['DC'], (idx, 1), 'Beta', label='DC.8-4-11b+.Sp', linewidth=2)
+    cellTypePlot.add_trajectory(TgdIfnDataB, t, 'plot', hematopoetic_colormap['Tgd'], (idx, 1), 'Beta', label='Tgd.Sp', linewidth=2)
+
 cellTypePlot.show_figure()
