@@ -76,16 +76,17 @@ if __name__ == '__main__':
     # -------------------------------
     # Plot model dose response curves
     # -------------------------------
-    alpha_palette = sns.color_palette("deep", 6)
-    beta_palette = sns.color_palette("deep", 6)
+    palette = sns.color_palette("muted")
 
     Epo_plot = DoseresponsePlot((1, 1))
     # Add data
-    Epo_plot.add_trajectory(Moraga_data, 60, 'plot', beta_palette[3], (0, 0), 'T_Epo')
+    Epo_plot.add_trajectory(Moraga_data, 60, 'errorbar', 'o', (0, 0), 'T_Epo', label='EPO', color=palette[1])
+    Epo_plot.add_trajectory(Moraga_data, 60, 'errorbar', 'o', (0, 0), 'EMP_1', label='EMP-1', color=palette[2])
+    Epo_plot.add_trajectory(Moraga_data, 60, 'errorbar', 'o', (0, 0), 'EMP_33', label='EMP-33', color=palette[6])
     # Add fits
-    Epo_plot.add_trajectory(dr_Epo, 60.0, 'plot', alpha_palette[3], (0, 0), 'T_Epo', label='Model: 60 min',
-                           linewidth=2)
-    Epo_plot.axes.set_title('Initial model')
+    #Epo_plot.add_trajectory(dr_Epo, 60.0, 'plot', palette[3], (0, 0), 'T_Epo', label='Model: 60 min',
+    #                       linewidth=2)
+    #Epo_plot.axes.set_title('Initial model')
     Epo_plot.show_figure()
 
     # --------------------------------
@@ -96,7 +97,7 @@ if __name__ == '__main__':
     burn_factor = 0.5
     sim_name = 'Epo'
 
-    fit_flag = True
+    fit_flag = False
     if fit_flag == True:
         # Make save directory
         today = datetime.now()
