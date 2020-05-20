@@ -63,14 +63,17 @@ if __name__ == '__main__':
     # ---------------------------------
     # Make theory dose response curves
     # ---------------------------------
+    IC_names = ['Epo_IC', 'EMP1_IC', 'EMP33_IC']
     # Make predictions
+    response_species = 'T_Epo'
+    dose_species = 'Epo_IC'
     times = [60.0] # min
     Epo_doses = Moraga_data.get_doses()['T_Epo'] # pM
-
     dr_Epo = IfnData('custom',
-                     df=model.doseresponse(times, 'T_Epo', 'Epo_IC', Epo_doses,
-                                           parameters={'EMP1_IC': 0, 'EMP33_IC': 0}, return_type='dataframe',
-                                           dataframe_labels='T_Epo'),
+                     df=model.doseresponse(times, response_species, dose_species, Epo_doses,
+                                           parameters={n: 0 for n in IC_names if n != dose_species},
+                                           return_type='dataframe', dataframe_labels=dose_species,
+                                           scale_factor=100.0/model.parameters['EpoR_IC']),
                      conditions={})
 
     # -------------------------------
@@ -84,9 +87,9 @@ if __name__ == '__main__':
     Epo_plot.add_trajectory(Moraga_data, 60, 'errorbar', 'o', (0, 0), 'EMP_1', label='EMP-1', color=palette[2])
     Epo_plot.add_trajectory(Moraga_data, 60, 'errorbar', 'o', (0, 0), 'EMP_33', label='EMP-33', color=palette[6])
     # Add fits
-    #Epo_plot.add_trajectory(dr_Epo, 60.0, 'plot', palette[3], (0, 0), 'T_Epo', label='Model: 60 min',
-    #                       linewidth=2)
-    #Epo_plot.axes.set_title('Initial model')
+    Epo_plot.add_trajectory(dr_Epo, 60.0, 'plot', palette[1], (0, 0), 'Epo_IC', label='EPO Model',
+                           linewidth=2)
+    Epo_plot.axes.set_title('Response at 60 min')
     Epo_plot.show_figure()
 
     # --------------------------------
