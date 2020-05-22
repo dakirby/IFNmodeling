@@ -6,6 +6,7 @@ import seaborn as sns
 from ifnclass.ifnplot import Trajectory, DoseresponsePlot
 import matplotlib.pyplot as plt
 import pandas as pd
+import shutil
 # PyDREAM imports
 from pydream.core import run_dream
 from pysb.integrate import Solver
@@ -172,6 +173,11 @@ if __name__ == '__main__':
                     converged = True
 
         try:
+            # Clean up PYDREAM save file output
+            shutil.move(os.path.join(os.getcwd(), sim_name + '_DREAM_chain_adapted_crossoverprob.npy'), save_dir)
+            shutil.move(os.path.join(os.getcwd(), sim_name + '_DREAM_chain_adapted_gammalevelprob.npy'), save_dir)
+            shutil.move(os.path.join(os.getcwd(), sim_name + '_DREAM_chain_history.npy'), save_dir)
+
             # Plot output
             total_iterations = len(old_samples[0])
             burnin = int(total_iterations * burn_factor)
