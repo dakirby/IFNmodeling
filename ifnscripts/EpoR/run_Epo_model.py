@@ -20,7 +20,8 @@ from pydream.convergence import Gelman_Rubin
 # This function should take as input a parameter vector (parameter values are in the same order as
 # pysb_sampled_parameter_names).
 # The likelihood function returns a log probability value for the parameter vector given the experimental data.
-def make_likelihood(times, doses, like_ctot, model_name, param_names):
+def make_likelihood(times, doses, like_ctot, model_name, param_names, response_species, dose_species):
+    IC_names = ['Epo_IC', 'EMP1_IC', 'EMP33_IC']
     def likelihood(parameter_vector, sampled_parameter_names=param_names):
         # Make model
         from ifnclass.ifnmodel import IfnModel
@@ -32,9 +33,12 @@ def make_likelihood(times, doses, like_ctot, model_name, param_names):
         model.set_parameters(param_dict)
 
         # Simulate experimentally measured values.
-        total_simulation_data = model.doseresponse(times, 'T_Epo', 'Epo_IC', doses,
-                                               parameters={'EMP1_IC': 0, 'EMP33_IC': 0}, return_type='dataframe',
-                                               dataframe_labels='T_Epo')
+
+        total_simulation_data = model.doseresponse(times, response_species, dose_species, doses,
+                                                  parameters={n: 0 for n in IC_names if n != dose_species},
+                                                  return_type='dataframe', dataframe_labels=dose_species,
+                                                  scale_factor=100.0 / model.parameters['EpoR_IC'])
+
         sim_data = np.array([[el[0] for el in dose] for dose in total_simulation_data.values]).flatten()
 
         # Calculate log probability contribution from simulated experimental values.
@@ -112,15 +116,16 @@ if __name__ == '__main__':
                          scale=[el[0][1] for el in Moraga_data.get_responses()['T_Epo']])
 
         # Create lists of sampled pysb parameter names to use for subbing in parameter values in likelihood function.
-        pysb_sampled_parameter_names = ['kpa', 'kpu', 'k_1_epo', 'k_2_epo']
-        pysb_sampled_parameter_log10_values = np.log10(np.array([1E-6, 1E-3, 1., 1.]))
+        pysb_sampled_parameter_names = ['kpa', 'k_1_epo', 'k_2_epo']
+        pysb_sampled_parameter_log10_values = np.log10(np.array([model.parameters[key] for key in pysb_sampled_parameter_names]))
 
         priors_list = []
         for idx, key in enumerate(pysb_sampled_parameter_names):
             priors_list.append(SampledParam(norm, loc=pysb_sampled_parameter_log10_values[idx], scale=2.0))
 
         # Create likelihood function
-        likelihood = make_likelihood(times, Epo_doses, like_ctot, 'Epo_model', pysb_sampled_parameter_names)
+        likelihood = make_likelihood(times, Epo_doses, like_ctot, 'Epo_model', pysb_sampled_parameter_names,
+                                     response_species, dose_species)
 
         # Run DREAM sampling.  Documentation of DREAM options is in Dream.py.
         total_iterations = niterations
