@@ -136,7 +136,7 @@ class IfnData:
         return datatable
 
     def copy(self):
-        new_object = IfnData('custom', df=self.data_set.copy(), conditions=deepcopy(self.conditions))
+        new_object = IfnData('custom', df=deepcopy(self.data_set), conditions=deepcopy(self.conditions))
         new_object.name = deepcopy(self.name)
         return new_object
 
@@ -239,16 +239,22 @@ class IfnData:
             Tmax_dict[key] = Tmax_array
         return Tmax_dict
 
-    def drop_sigmas(self):
+    def drop_sigmas(self, in_place=True):
         """
         Remove measurement errors from data entries, convert tuples to floats. Conversion is done in-place.
         :return: None
         """
+        if not in_place:
+            new = self.copy()
+        else:
+            new = self
         for s in self.get_dose_species():
             for d in self.get_doses()[s]:
                 for t in self.get_times()[s]:
-                    self.data_set.loc[s][str(t)].loc[d] = self.data_set.loc[s][str(t)].loc[d][0]
-
+                    if type(self.data_set.loc[s][str(t)].loc[d]) == tuple:
+                        new.data_set.loc[s][str(t)].loc[d] = self.data_set.loc[s][str(t)].loc[d][0]
+        if not in_place:
+            return new
 
 
 class DataAlignment:
