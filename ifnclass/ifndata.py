@@ -241,7 +241,7 @@ class IfnData:
 
     def drop_sigmas(self, in_place=True):
         """
-        Remove measurement errors from data entries, convert tuples to floats. Conversion is done in-place.
+        Remove measurement errors from data entries, convert tuples to floats. Default is to do conversion in-place.
         :return: None
         """
         if not in_place:
@@ -253,6 +253,23 @@ class IfnData:
                 for t in self.get_times()[s]:
                     if type(self.data_set.loc[s][str(t)].loc[d]) == tuple:
                         new.data_set.loc[s][str(t)].loc[d] = self.data_set.loc[s][str(t)].loc[d][0]
+        if not in_place:
+            return new
+
+    def add_sigmas(self, in_place=True):
+        """
+        Add measurement errors from data entries, convert floats to tuples. Default is to do conversion in-place.
+        :return: None
+        """
+        if not in_place:
+            new = self.copy()
+        else:
+            new = self
+        for s in self.get_dose_species():
+            for d in self.get_doses()[s]:
+                for t in self.get_times()[s]:
+                    if type(self.data_set.loc[s][str(t)].loc[d]) != tuple:
+                        new.data_set.loc[s][str(t)].loc[d] = (self.data_set.loc[s][str(t)].loc[d], np.NaN)
         if not in_place:
             return new
 
