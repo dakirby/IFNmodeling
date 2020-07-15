@@ -265,6 +265,7 @@ class IfnData:
             new = self.copy()
         else:
             new = self
+        new.data_set = new.data_set.astype(object)
         for s in self.get_dose_species():
             for d in self.get_doses()[s]:
                 for t in self.get_times()[s]:
