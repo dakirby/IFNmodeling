@@ -83,4 +83,8 @@ if __name__ == '__main__':
                                    label='Internalization only', linewidth=2.0)
             dr_plot.add_trajectory(drb60_rec, t, 'plot', ':', (0, 0), 'Beta', color=beta_palette[1], label='SOCS only', linewidth=2.0)
     dr_plot.fig.suptitle('Internalization vs SOCS')
-    dr_plot.save_figure(save_dir=os.path.join(os.getcwd(), 'results', 'Figures', 'Figure_5', 'Figure_5.pdf'))
+
+    dir = os.path.join(os.getcwd(), 'results', 'Figures', 'Figure_5')
+    if not os.path.exists(dir):
+        os.makedirs(dir)
+    dr_plot.save_figure(save_dir=os.path.join(dir, 'Figure_5.pdf'))

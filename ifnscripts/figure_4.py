@@ -60,8 +60,8 @@ if __name__ == '__main__':
         kd3_reference = Mixed_Model.model_1.parameters['kd3']
         k_d4_reference = Mixed_Model.model_1.parameters['k_d4']
         k_d3_reference = Mixed_Model.model_1.parameters['k_d3']
-        Mixed_Model.set_global_parameters({'kd4': kd4_reference*k4sf1, 'k_d4': k_d4_reference*k4sf1,
-                                           'kd3': kd3_reference * k4sf1, 'k_d3': k_d3_reference * k4sf1})
+        Mixed_Model.set_global_parameters({'kd4': kd4_reference*k4sf1, 'k_d4': k_d4_reference*k4sf1})#,
+                                           #'kd3': kd3_reference * k4sf1, 'k_d3': k_d3_reference * k4sf1})
 
         dr_curve_a20 = [el[0][0] for el in Mixed_Model.mixed_dose_response([60], 'TotalpSTAT', 'Ia', dose_list,
                                                                          parameters={'Ib': 0}, sf=scale_factor).values]
@@ -69,8 +69,8 @@ if __name__ == '__main__':
                                                                          parameters={'Ia': 0}, sf=scale_factor).values]
         # Now compute the 60* refractory response
         k4sf2 = 60
-        Mixed_Model.set_global_parameters({'kd4': kd4_reference*k4sf2, 'k_d4': k_d4_reference*k4sf2,
-                                           'kd3': kd3_reference * k4sf2, 'k_d3': k_d3_reference * k4sf2})
+        Mixed_Model.set_global_parameters({'kd4': kd4_reference*k4sf2, 'k_d4': k_d4_reference*k4sf2})#,
+                                           #'kd3': kd3_reference * k4sf2, 'k_d3': k_d3_reference * k4sf2})
 
         dr_curve_a60 = [el[0][0] for el in Mixed_Model.mixed_dose_response([60], 'TotalpSTAT', 'Ia', dose_list,
                                                                          parameters={'Ib': 0}, sf=scale_factor).values]
