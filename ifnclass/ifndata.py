@@ -104,10 +104,10 @@ class IfnData:
 
     def get_times(self, species='') -> dict:
         keys = self.get_dose_species()
-        if type(self.data_set.loc[keys[0]].columns.get_values().tolist()) == str:
-            t = dict(zip(keys, [[int(el) for el in self.data_set.loc[key].columns.get_values().tolist()] for key in keys]))
+        if type(self.data_set.loc[keys[0]].columns.to_numpy().tolist()) == str:
+            t = dict(zip(keys, [[int(el) for el in self.data_set.loc[key].columns.to_numpy().tolist()] for key in keys]))
         else:
-            t = dict(zip(keys, [[el for el in self.data_set.loc[key].columns.get_values().tolist()] for key in keys]))
+            t = dict(zip(keys, [[el for el in self.data_set.loc[key].columns.to_numpy().tolist()] for key in keys]))
         if species=='':
             return t
         else:
@@ -265,6 +265,7 @@ class IfnData:
             new = self.copy()
         else:
             new = self
+        new.data_set = new.data_set.astype(object)
         for s in self.get_dose_species():
             for d in self.get_doses()[s]:
                 for t in self.get_times()[s]:
