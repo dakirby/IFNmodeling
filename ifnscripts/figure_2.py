@@ -1,14 +1,37 @@
 from ifnclass.ifndata import IfnData, DataAlignment
-from ifnclass.ifnmodel import IfnModel
 from ifnclass.ifnfit import DualMixedPopulation
-from numpy import linspace, logspace, transpose
+from numpy import linspace, logspace
 import numpy as np
 import seaborn as sns
-from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
 import os
-from ifnclass.ifnplot import Trajectory, DoseresponsePlot
+from ifnclass.ifnplot import DoseresponsePlot
 import matplotlib.gridspec as gridspec
+
+
+def equilibrium_T_EC50(Rt, Delta, K1, K2, K4):
+    X = K2 / K1
+    B = 1 + (K4 / Rt) * (1 + np.sqrt(X))**2
+    D = Rt / K4 + 1 + 10 * np.sqrt(X) + X + 3 * (Rt / K4) * \
+        np.sqrt(B**2 - 1 + (Delta / Rt)**2)
+    Keff = (K1 / 8) * (D - np.sqrt(D**2 - 64 * X))
+    return Keff
+
+
+def equilibrium_TMax(Rt, Delta, K1, K2, K4):
+    B = 1 + (K4 / Rt) * (1 + np.sqrt(K2 / K1))**2
+    return (Rt / 2) * (B - np.sqrt(B**2 - 1 + (Delta / Rt)**2))
+
+
+def pSTAT_EC50(Rt, Delta, K1, K2, K4, A, KP):
+    Keff = equilibrium_T_EC50(Rt, Delta, K1, K2, K4)
+    Tmax = equilibrium_TMax(Rt, Delta, K1, K2, K4)
+    return Keff / (-1 + Tmax * A / KP)
+
+
+def pSTAT_Max(Rt, Delta, K1, K2, K4, A, KP, STAT):
+    Tmax = equilibrium_TMax(Rt, Delta, K1, K2, K4)
+    return STAT * (Tmax / (Tmax + KP / A))
 
 
 if __name__ == '__main__':
@@ -33,13 +56,17 @@ if __name__ == '__main__':
     # Set up Model
     # --------------------
     # Parameters found by stepwise fitting GAB mean data
-    # Note: can remove multiplicative factors on all K1, K2, K4 and still get very good fit to data (worst is 5 min beta)
-    initial_parameters = {'k_a1': 4.98E-14 * 2, 'k_a2': 8.30e-13 * 2, 'k_d4': 0.006 * 3.8,
-                       'kpu': 0.00095,
-                       'ka2': 4.98e-13 * 2.45, 'kd4': 0.3 * 2.867,
-                       'kint_a': 0.000124, 'kint_b': 0.00086,
-                       'krec_a1': 0.0028, 'krec_a2': 0.01, 'krec_b1': 0.005, 'krec_b2': 0.05}
-    dual_parameters = {'kint_a': 0.00052, 'kSOCSon': 6e-07, 'kint_b': 0.00052, 'krec_a1': 0.001, 'krec_a2': 0.1,
+    # Note: can remove multiplicative factors on all K1, K2, K4 and still get
+    # very good fit to data (worst is 5 min beta)
+    initial_parameters = {'k_a1': 4.98E-14 * 2, 'k_a2': 8.30e-13 * 2,
+                          'k_d4': 0.006 * 3.8,
+                          'kpu': 0.00095,
+                          'ka2': 4.98e-13 * 2.45, 'kd4': 0.3 * 2.867,
+                          'kint_a': 0.000124, 'kint_b': 0.00086,
+                          'krec_a1': 0.0028, 'krec_a2': 0.01, 'krec_b1': 0.005,
+                          'krec_b2': 0.05}
+    dual_parameters = {'kint_a': 0.00052, 'kSOCSon': 6e-07, 'kint_b': 0.00052,
+                       'krec_a1': 0.001, 'krec_a2': 0.1,
                        'krec_b1': 0.005, 'krec_b2': 0.05}
     scale_factor = 1.227
 
@@ -54,15 +81,74 @@ if __name__ == '__main__':
     # ---------------------------------
     # Make theory dose response curves
     # ---------------------------------
+    # Equilibrium predictions
+    avg_pSTAT_Max_Alpha = 0
+    avg_pSTAT_EC50_Alpha = 0
+    avg_pSTAT_Max_Beta = 0
+    avg_pSTAT_EC50_Beta = 0
+    for idx, m in enumerate([Mixed_Model.model_1, Mixed_Model.model_2]):
+        volPM = m.parameters['volPM']  # [m**2]
+        NA = m.parameters['NA']
+        volEC = m.parameters['volEC']  # [m**3]
+        volCP = m.parameters['volCP']  # [m**2]
+        # [Rt] = [Delta] = molec./ m**2
+        Rt = (m.parameters['R1'] + m.parameters['R2']) / volPM
+        Delta = (m.parameters['R1'] - m.parameters['R2']) / volPM
+        # [K1] = [K2] = Molar, at least below since I divide by NA*volEC
+        K1 = m.parameters['kd1'] / m.parameters['ka1'] / NA / volEC
+        K2 = m.parameters['kd2'] / m.parameters['ka2'] / NA / volEC
+        # [K4] = molec./ m**2, since I divide by volPM
+        K4 = m.parameters['kd4'] / m.parameters['ka4'] / volPM
+        A = m.parameters['volPM']  # [m**2]
+        # [KP] = [], i.e. dimensionless
+        KP = m.parameters['kpu'] / m.parameters['kpa']
+        STAT = m.parameters['S']
+        pSTAT_Max_Alpha = pSTAT_Max(Rt, Delta, K1, K2, K4, A, KP, STAT)
+        EC50_Alpha = pSTAT_EC50(Rt, Delta, K1, K2, K4, A, KP)
+        weight = [Mixed_Model.w1, Mixed_Model.w2][idx]
+        avg_pSTAT_Max_Alpha += weight * pSTAT_Max_Alpha
+        avg_pSTAT_EC50_Alpha += weight * EC50_Alpha
+    for idx, m in enumerate([Mixed_Model.model_1, Mixed_Model.model_2]):
+        volPM = m.parameters['volPM']  # [m**2]
+        NA = m.parameters['NA']
+        volEC = m.parameters['volEC']  # [m**3]
+        volCP = m.parameters['volCP']  # [m**2]
+        # [Rt] = [Delta] = molec./ m**2
+        Rt = (m.parameters['R1'] + m.parameters['R2']) / volPM
+        Delta = (m.parameters['R1'] - m.parameters['R2']) / volPM
+        # [K1] = [K2] = Molar, at least below since I divide by NA*volEC
+        K1 = m.parameters['k_d1'] / m.parameters['k_a1'] / NA / volEC
+        K2 = m.parameters['k_d2'] / m.parameters['k_a2'] / NA / volEC
+        # [K4] = molec./ m**2, since I divide by volPM
+        K4 = m.parameters['k_d4'] / m.parameters['k_a4'] / volPM
+        A = m.parameters['volPM']  # [m**2]
+        # [KP] = [], i.e. dimensionless
+        KP = m.parameters['kpu'] / m.parameters['kpa']
+        STAT = m.parameters['S']
+        pSTAT_Max_Beta = pSTAT_Max(Rt, Delta, K1, K2, K4, A, KP, STAT)
+        EC50_Beta = pSTAT_EC50(Rt, Delta, K1, K2, K4, A, KP)
+        weight = [Mixed_Model.w1, Mixed_Model.w2][idx]
+        avg_pSTAT_Max_Beta += weight * pSTAT_Max_Beta
+        avg_pSTAT_EC50_Beta += weight * EC50_Beta
+
+    #
+    # The outputs avg_pSTAT_Max_Beta & avg_pSTAT_Max_Alpha will be in [molec.]
+    # The outputs avg_pSTAT_EC50_Beta & avg_pSTAT_EC50_Alpha will be in [M]
+    #
+
     # Make predictions
     times = [2.5, 5.0, 7.5, 10.0, 20.0, 60.0]
     alpha_doses_20190108 = [0, 10, 100, 300, 1000, 3000, 10000, 100000]
     beta_doses_20190108 = [0, 0.2, 6, 20, 60, 200, 600, 2000]
 
-    dradf = Mixed_Model.mixed_dose_response(times, 'TotalpSTAT', 'Ia', list(logspace(1, 5.2)),
-                                            parameters={'Ib': 0}, sf=scale_factor)
-    drbdf = Mixed_Model.mixed_dose_response(times, 'TotalpSTAT', 'Ib', list(logspace(-1, 4)),
-                                            parameters={'Ia': 0}, sf=scale_factor)
+    dradf = Mixed_Model.mixed_dose_response(times, 'TotalpSTAT', 'Ia',
+                                            list(logspace(1, 5.2)),
+                                            parameters={'Ib': 0},
+                                            sf=scale_factor)
+    drbdf = Mixed_Model.mixed_dose_response(times, 'TotalpSTAT', 'Ib',
+                                            list(logspace(-1, 4)),
+                                            parameters={'Ia': 0},
+                                            sf=scale_factor)
 
     dra60 = IfnData('custom', df=dradf, conditions={'Alpha': {'Ib': 0}})
     drb60 = IfnData('custom', df=drbdf, conditions={'Beta': {'Ia': 0}})
@@ -99,14 +185,18 @@ if __name__ == '__main__':
     # ----------------------------------
     time_list = list(linspace(2.5, 60, num=15))
 
-    dfa = Mixed_Model.mixed_dose_response(time_list, 'TotalpSTAT', 'Ia', list(logspace(-3, 5)),
-                                          parameters={'Ib': 0}, sf=scale_factor)
+    dfa = Mixed_Model.mixed_dose_response(time_list, 'TotalpSTAT', 'Ia',
+                                          list(logspace(-3, 5)),
+                                          parameters={'Ib': 0},
+                                          sf=scale_factor)
     dfa = IfnData(name='custom', df=dfa, conditions={'Ib': 0})
     alpha_ec_aggregate = [el[1] for el in dfa.get_ec50s()['Alpha']]
     alpha_peak_aggregate = [el[1] for el in dfa.get_max_responses()['Alpha']]
 
-    dfb = Mixed_Model.mixed_dose_response(time_list, 'TotalpSTAT', 'Ib', list(logspace(-3, 5)),
-                                          parameters={'Ia': 0}, sf=scale_factor)
+    dfb = Mixed_Model.mixed_dose_response(time_list, 'TotalpSTAT', 'Ib',
+                                          list(logspace(-3, 5)),
+                                          parameters={'Ia': 0},
+                                          sf=scale_factor)
     dfb = IfnData(name='custom', df=dfb, conditions={'Ia': 0})
     beta_ec_aggregate = [el[1] for el in dfb.get_ec50s()['Beta']]
     beta_peak_aggregate = [el[1] for el in dfb.get_max_responses()['Beta']]
@@ -114,8 +204,10 @@ if __name__ == '__main__':
     # -----------------------
     # Plot EC50 vs time
     # -----------------------
-    ec50_axes_list = [Figure_2.add_subplot(gs[1, 0]), Figure_2.add_subplot(gs[1, 1]),
-                      Figure_2.add_subplot(gs[1, 2]), Figure_2.add_subplot(gs[1, 3])]
+    ec50_axes_list = [Figure_2.add_subplot(gs[1, 0]),
+                      Figure_2.add_subplot(gs[1, 1]),
+                      Figure_2.add_subplot(gs[1, 2]),
+                      Figure_2.add_subplot(gs[1, 3])]
 
     ec50_axes = ec50_axes_list[0:2]
     ec50_axes[0].set_xlabel("Time (min)")
@@ -126,16 +218,30 @@ if __name__ == '__main__':
     ec50_axes[0].set_yscale('log')
     ec50_axes[1].set_yscale('log')
     # Add models
-    ec50_axes[0].plot(time_list, alpha_ec_aggregate, label=r'IFN$\alpha$', color=alpha_palette[5], linewidth=2)
-    ec50_axes[1].plot(time_list, beta_ec_aggregate, label=r'IFN$\beta$', color=beta_palette[5], linewidth=2)
+    ec50_axes[0].plot(time_list, alpha_ec_aggregate, label=r'IFN$\alpha$',
+                      color=alpha_palette[5], linewidth=2)
+    ec50_axes[1].plot(time_list, beta_ec_aggregate, label=r'IFN$\beta$',
+                      color=beta_palette[5], linewidth=2)
     # Add data
-    for colour_idx, ec50 in enumerate([ec50_20190108, ec50_20190119, ec50_20190121, ec50_20190214]):
-        ec50_axes[0].scatter([el[0] for el in ec50['Alpha']], [el[1] for el in ec50['Alpha']],
+    for colour_idx, ec50 in enumerate([ec50_20190108, ec50_20190119,
+                                       ec50_20190121, ec50_20190214]):
+        ec50_axes[0].scatter([el[0] for el in ec50['Alpha']],
+                             [el[1] for el in ec50['Alpha']],
                              label=dataset_names[colour_idx],
-                             color=data_palette[colour_idx], marker=marker_shape[colour_idx])
-        ec50_axes[1].scatter([el[0] for el in ec50['Beta']], [el[1] for el in ec50['Beta']],
-                             color=data_palette[colour_idx], marker=marker_shape[colour_idx])
+                             color=data_palette[colour_idx],
+                             marker=marker_shape[colour_idx])
+        ec50_axes[1].scatter([el[0] for el in ec50['Beta']],
+                             [el[1] for el in ec50['Beta']],
+                             color=data_palette[colour_idx],
+                             marker=marker_shape[colour_idx])
 
+    # Add equilibrium expressions
+    ec50_axes[0].plot(time_list, [avg_pSTAT_EC50_Alpha / 1E-12
+                                  for _ in time_list],
+                      '--', color=alpha_palette[5], linewidth=2)
+    ec50_axes[1].plot(time_list, [avg_pSTAT_EC50_Beta / 1E-12
+                                  for _ in time_list],
+                      '--', color=beta_palette[5], linewidth=2)
     # -----------------
     # Data max response
     # -----------------
@@ -155,25 +261,40 @@ if __name__ == '__main__':
     # Plot max response
     # -------------------
     # fig, axes = plt.subplots(nrows=1, ncols=2)
-    ec50_axes = ec50_axes_list[2:4]
-    ec50_axes[0].set_xlabel("Time (min)")
-    ec50_axes[1].set_xlabel("Time (min)")
-    ec50_axes[0].set_title(r"Max pSTAT vs Time for IFN$\alpha$")
-    ec50_axes[1].set_title(r"Max pSTAT vs Time for IFN$\beta$")
-    ec50_axes[0].set_ylabel("Max pSTAT (MFI)")
+    max_response_axes = ec50_axes_list[2:4]
+    max_response_axes[0].set_xlabel("Time (min)")
+    max_response_axes[1].set_xlabel("Time (min)")
+    max_response_axes[0].set_title(r"Max pSTAT vs Time for IFN$\alpha$")
+    max_response_axes[1].set_title(r"Max pSTAT vs Time for IFN$\beta$")
+    max_response_axes[0].set_ylabel("Max pSTAT (MFI)")
 
     # Add models
-    ec50_axes[0].plot(time_list, alpha_peak_aggregate, color=alpha_palette[5], linewidth=2)
-    ec50_axes[1].plot(time_list, beta_peak_aggregate, color=beta_palette[5], linewidth=2)
+    max_response_axes[0].plot(time_list, alpha_peak_aggregate,
+                              color=alpha_palette[5], linewidth=2)
+    max_response_axes[1].plot(time_list, beta_peak_aggregate,
+                              color=beta_palette[5], linewidth=2)
     # Add data
-    for colour_idx, maxpSTAT in enumerate([max_20190108, max_20190119, max_20190121, max_20190214]):
+    for colour_idx, maxpSTAT in enumerate([max_20190108, max_20190119,
+                                           max_20190121, max_20190214]):
         scale_factor = alignment.scale_factors[3 - colour_idx]
         scaled_response = [el[1] * scale_factor for el in maxpSTAT['Alpha']]
-        ec50_axes[0].scatter([el[0] for el in maxpSTAT['Alpha']], scaled_response,
-                             color=data_palette[colour_idx], marker=marker_shape[colour_idx])
+        max_response_axes[0].scatter([el[0] for el in maxpSTAT['Alpha']],
+                                     scaled_response,
+                                     color=data_palette[colour_idx],
+                                     marker=marker_shape[colour_idx])
         scaled_response = [el[1] * scale_factor for el in maxpSTAT['Beta']]
-        ec50_axes[1].scatter([el[0] for el in maxpSTAT['Beta']], scaled_response,
-                             color=data_palette[colour_idx], marker=marker_shape[colour_idx])
+        max_response_axes[1].scatter([el[0] for el in maxpSTAT['Beta']],
+                                     scaled_response,
+                                     color=data_palette[colour_idx],
+                                     marker=marker_shape[colour_idx])
+
+    # Add equilibrium expressions
+    # max_response_axes[0].plot(time_list,
+    #                          [avg_pSTAT_Max_Alpha for _ in time_list],
+    #                          '--', color=alpha_palette[5], linewidth=2)
+    # max_response_axes[1].plot(time_list,
+    #                          [avg_pSTAT_Max_Beta for _ in time_list],
+    #                          '--', color=alpha_palette[5], linewidth=2)
 
     # -------------------------------
     # Plot model dose response curves
@@ -182,7 +303,8 @@ if __name__ == '__main__':
     beta_palette = sns.color_palette("deep", 6)
 
     new_fit = DoseresponsePlot((1, 2))
-    new_fit.axes = [Figure_2.add_subplot(gs[0, 0:2]), Figure_2.add_subplot(gs[0, 2:4])]
+    new_fit.axes = [Figure_2.add_subplot(gs[0, 0:2]),
+                    Figure_2.add_subplot(gs[0, 2:4])]
     new_fit.axes[0].set_xscale('log')
     new_fit.axes[0].set_xlabel('Dose (pM)')
     new_fit.axes[0].set_ylabel('pSTAT (MFI)')
@@ -196,13 +318,17 @@ if __name__ == '__main__':
     # Add fits
     for idx, t in enumerate(times):
         if t not in alpha_mask:
-            new_fit.add_trajectory(dra60, t, 'plot', alpha_palette[idx], (0, 0), 'Alpha', label=str(t)+' min',
+            new_fit.add_trajectory(dra60, t, 'plot', alpha_palette[idx],
+                                   (0, 0), 'Alpha', label=str(t)+' min',
                                    linewidth=2)
-            new_fit.add_trajectory(mean_data, t, 'errorbar', 'o', (0, 0), 'Alpha', color=alpha_palette[idx])
+            new_fit.add_trajectory(mean_data, t, 'errorbar', 'o', (0, 0),
+                                   'Alpha', color=alpha_palette[idx])
         if t not in beta_mask:
-            new_fit.add_trajectory(drb60, t, 'plot', beta_palette[idx], (0, 1), 'Beta', label=str(t) +' min',
+            new_fit.add_trajectory(drb60, t, 'plot', beta_palette[idx], (0, 1),
+                                   'Beta', label=str(t) + ' min',
                                    linewidth=2)
-            new_fit.add_trajectory(mean_data, t, 'errorbar', 'o', (0, 1), 'Beta', color=beta_palette[idx])
+            new_fit.add_trajectory(mean_data, t, 'errorbar', 'o', (0, 1),
+                                   'Beta', color=beta_palette[idx])
 
     plt.figure(Figure_2.number)
     dr_fig, dr_axes = new_fit.show_figure()
@@ -224,4 +350,5 @@ if __name__ == '__main__':
 
     Figure_2.set_size_inches(14.75, 8)
     Figure_2.tight_layout()
-    Figure_2.savefig(os.path.join(os.getcwd(), 'results', 'Figures', 'Figure_2', 'Figure_2.pdf'))
+    Figure_2.savefig(os.path.join(os.getcwd(), 'results', 'Figures',
+                     'Figure_2', 'Figure_2.pdf'))

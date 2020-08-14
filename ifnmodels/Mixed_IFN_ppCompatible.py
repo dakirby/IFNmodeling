@@ -1,6 +1,6 @@
 from pysb import Model, Parameter, Expression, Initial, Monomer, Observable, Rule, WILD
 # Begin Model
-Model() 
+Model()
 # =============================================================================
 # # Parameters
 # =============================================================================
@@ -13,15 +13,15 @@ Parameter('cell_dens', 1E5) # density of cells , /L
 Parameter('width_PM', 1E-6) # effective width of membrane , m
 
 #vol. extracellular space , L
-Parameter('volEC', 1E-5) # = 1/cell_dens 
+Parameter('volEC', 1E-5) # = 1/cell_dens
 
 # virtual vol. of plasma membrane , m**2
 Parameter('volPM', 2.76e-09 ) # = 2*rad_cell**2 + rad_cell*cell_thickness*4
 
-# vol. of cytoplasm , L 
-Parameter('volCP', 7.2e-15) # = cell_thickness*rad_cell**2  
+# vol. of cytoplasm , L
+Parameter('volCP', 7.2e-15) # = cell_thickness*rad_cell**2
 
-#number of copies of IFN per cell 
+#number of copies of IFN per cell
 Parameter('Ia', 6.022E9) # = IFNalplha*volEC*NA
 Parameter('Ib', 6.022E9) # = IFNbeta*volEC*NA
 
@@ -37,13 +37,14 @@ Parameter('Initial_SOCS', 1)
 # from /M/sec to /(molecule/cell)/sec
 
 # Alpha block
-Parameter('ka1', 3.321155762205247e-14) # = (2E5)/(NA*volEC)
+Parameter('ka1', 3.321155762205247e-14) # = (2E5 M^-1 s^-1)/(NA*volEC)
 Parameter('kd1', 1)#*10
 
 # ligand-monomer binding  (scaled)
-Parameter('ka2', 4.98173364330787e-13) # = (3e6)/(NA*volEC)
+Parameter('ka2', 4.98173364330787e-13) # = (3e6 M^-1 s^-1)/(NA*volEC)
 Parameter('kd2', 0.015) #*10              # ligand-monomer dissociation
 
+# ka4 has units of molec.^-1 s^-1
 Parameter('ka4', 3.623188E-4) # = 4*pi*D = 4*pi*(0.049 um^2/(molecules*s))
 Parameter('kd4', 0.3) #*20
 
@@ -65,12 +66,10 @@ Parameter('k_d3', 2.4e-5) #(ka3)/(q3)
 Parameter('k_a4', 3.62e-4) #*20#e-12
 Parameter('k_d4', 0.006) #*20
 
+Parameter('kpa', 1E-6)  # s^-1
+Parameter('kpu', 1E-3)  # s^-1
 
-
-Parameter('kpa', 1E-6)#6e-5##OLD VALUE was (1e6)/(NA*volCP)=1e-6
-Parameter('kpu', 1E-3)#1e-3
-
-#Internalization: 
+#Internalization:
 # Basal:
 Parameter('kIntBasal_r1', 0.0001)#0.0002
 Parameter('kIntBasal_r2', 0.00002)#0.000012
@@ -92,21 +91,21 @@ Parameter('krec_b2', 0.001)
 Parameter('kSOCS', 4E-3) # 4e-3 was old value #Should sufficiently separate peak pSTAT from peak SOCS
 Parameter('SOCSdeg', (5e-4)*5)	#Maiwald*form factor
 Parameter('kSOCSon', 1E-6) # = kpa
-Parameter('kSOCSoff', 5.5E-4)#1.5e-3	#Rate of SOCS unbinding ternary complex. Very fudged. Was 1.5e-3 
+Parameter('kSOCSoff', 5.5E-4)#1.5e-3	#Rate of SOCS unbinding ternary complex. Very fudged. Was 1.5e-3
 
 
 # =============================================================================
 # # Molecules
 # =============================================================================
-Monomer('IFN_alpha2',['r1','r2']) 
-Monomer('IFN_beta',['r1','r2']) 
+Monomer('IFN_alpha2',['r1','r2'])
+Monomer('IFN_beta',['r1','r2'])
 
-Monomer('IFNAR1',['re','ri','loc'],{'loc':['in','out']}) 
-Monomer('IFNAR2',['re','ri','loc'],{'loc':['in','out']}) 
+Monomer('IFNAR1',['re','ri','loc'],{'loc':['in','out']})
+Monomer('IFNAR2',['re','ri','loc'],{'loc':['in','out']})
 
 Monomer('STAT',['j','loc','fdbk'],{'j':['U','P'],'loc':['Cyt','Nuc']})
 Monomer('SOCSmRNA',['loc','reg'],{'loc':['Nuc','Cyt']})
-Monomer('SOCS',['site'])			
+Monomer('SOCS',['site'])
 
 
 # =============================================================================
@@ -200,4 +199,3 @@ Rule('Rec_a2', IFNAR2(re=None, ri=None, loc='in')>>IFNAR2(re=None, ri=None, loc=
 Rule('IFNb_intT', IFNAR1(re=1, ri=None, loc='out')%IFN_beta(r1=1,r2=2)%IFNAR2(re=2, ri=None, loc='out') >> IFNAR1(re=1,ri=None,loc='in')%IFN_beta(r1=1,r2=2)%IFNAR2(re=2,ri=None,loc='in'), kint_b)
 Rule('Rec_b1', IFNAR1(re=None, ri=None, loc='in')>>IFNAR1(re=None, ri=None, loc='out'), krec_a1)
 Rule('Rec_b2', IFNAR2(re=None, ri=None, loc='in')>>IFNAR2(re=None, ri=None, loc='out'), krec_a2)
-
