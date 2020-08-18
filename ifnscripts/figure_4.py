@@ -63,9 +63,9 @@ if __name__ == '__main__':
         Mixed_Model.set_global_parameters({'kd4': kd4_reference*k4sf1, 'k_d4': k_d4_reference*k4sf1})#,
                                            #'kd3': kd3_reference * k4sf1, 'k_d3': k_d3_reference * k4sf1})
 
-        dr_curve_a20 = [el[0][0] for el in Mixed_Model.mixed_dose_response([60], 'TotalpSTAT', 'Ia', dose_list,
+        dr_curve_a15 = [el[0][0] for el in Mixed_Model.mixed_dose_response([60], 'TotalpSTAT', 'Ia', dose_list,
                                                                          parameters={'Ib': 0}, sf=scale_factor).values]
-        dr_curve_b20 = [el[0][0] for el in Mixed_Model.mixed_dose_response([60], 'TotalpSTAT', 'Ib', dose_list,
+        dr_curve_b15 = [el[0][0] for el in Mixed_Model.mixed_dose_response([60], 'TotalpSTAT', 'Ib', dose_list,
                                                                          parameters={'Ia': 0}, sf=scale_factor).values]
         # Now compute the 60* refractory response
         k4sf2 = 60
@@ -84,9 +84,9 @@ if __name__ == '__main__':
         axes.set_title("Relative Refractory Response", fontsize=16)
         axes.set_ylabel("pSTAT1 Relative to Primary Response", fontsize=14)
         axes.set(xscale='log', yscale='linear')
-        #axes.plot(dose_list, np.divide(dr_curve_a20, dr_curve_a), label=r'IFN$\alpha$ $K_{D4}\times$'+'{}'.format(k4sf1), color=alpha_palette[4], linestyle='-', linewidth=2)
+        axes.plot(dose_list, np.divide(dr_curve_a15, dr_curve_a), label=r'IFN$\alpha$ $K_{D4}\times$'+'{}'.format(k4sf1), color=alpha_palette[4], linestyle='-', linewidth=2)
         axes.plot(dose_list, np.divide(dr_curve_a60, dr_curve_a), label=r'IFN$\alpha$ $K_{D4}\times$'+'{}'.format(k4sf2), color=alpha_palette[4], linestyle='--', linewidth=2)
-        #axes.plot(dose_list, np.divide(dr_curve_b20, dr_curve_b), label=r'IFN$\beta$ $K_{D4}\times$'+'{}'.format(k4sf1), color=beta_palette[4], linestyle='-', linewidth=2)
+        axes.plot(dose_list, np.divide(dr_curve_b15, dr_curve_b), label=r'IFN$\beta$ $K_{D4}\times$'+'{}'.format(k4sf1), color=beta_palette[4], linestyle='-', linewidth=2)
         axes.plot(dose_list, np.divide(dr_curve_b60, dr_curve_b), label=r'IFN$\beta$ $K_{D4}\times$'+'{}'.format(k4sf2), color=beta_palette[4], linestyle='--', linewidth=2)
 
         axes.legend(loc=2, prop={'size': 8})
@@ -102,11 +102,11 @@ if __name__ == '__main__':
         axes.set(xscale='log', yscale='linear')
 
         axes.plot(dose_list, dr_curve_a, label=r'IFN$\alpha$', color=alpha_palette[2], linewidth=2)
-        #axes.plot(dose_list, dr_curve_a20, label=r'IFN$\alpha$ $K_{D4}\times$' + '{}'.format(k4sf1), color=alpha_palette[4], linewidth=2)
+        axes.plot(dose_list, dr_curve_a15, label=r'IFN$\alpha$ $K_{D4}\times$' + '{}'.format(k4sf1), color=alpha_palette[4], linewidth=2)
         axes.plot(dose_list, dr_curve_a60, label=r'IFN$\alpha$ $K_{D4}\times$' + '{}'.format(k4sf2), color=alpha_palette[5], linestyle='dashed', linewidth=2)
 
         axes.plot(dose_list, dr_curve_b, label=r'IFN$\beta$', color=beta_palette[2], linewidth=2)
-        #axes.plot(dose_list, dr_curve_b20, label=r'IFN$\beta$ $K_{D4}\times$' + '{}'.format(k4sf1), color=beta_palette[4], linewidth=2)
+        axes.plot(dose_list, dr_curve_b15, label=r'IFN$\beta$ $K_{D4}\times$' + '{}'.format(k4sf1), color=beta_palette[4], linewidth=2)
         axes.plot(dose_list, dr_curve_b60, label=r'IFN$\beta$ $K_{D4}\times$' + '{}'.format(k4sf2), color=beta_palette[5], linestyle='dashed', linewidth=2)
 
         axes.legend(loc=2, prop={'size': 8})

@@ -26,7 +26,7 @@ def equilibrium_TMax(Rt, Delta, K1, K2, K4):
 def pSTAT_EC50(Rt, Delta, K1, K2, K4, A, KP):
     Keff = equilibrium_T_EC50(Rt, Delta, K1, K2, K4)
     Tmax = equilibrium_TMax(Rt, Delta, K1, K2, K4)
-    return Keff / (-1 + Tmax * A / KP)
+    return Keff / (1 + Tmax * A / KP)
 
 
 def pSTAT_Max(Rt, Delta, K1, K2, K4, A, KP, STAT):
@@ -222,18 +222,29 @@ if __name__ == '__main__':
                       color=alpha_palette[5], linewidth=2)
     ec50_axes[1].plot(time_list, beta_ec_aggregate, label=r'IFN$\beta$',
                       color=beta_palette[5], linewidth=2)
-    # Add data
-    for colour_idx, ec50 in enumerate([ec50_20190108, ec50_20190119,
-                                       ec50_20190121, ec50_20190214]):
-        ec50_axes[0].scatter([el[0] for el in ec50['Alpha']],
-                             [el[1] for el in ec50['Alpha']],
-                             label=dataset_names[colour_idx],
-                             color=data_palette[colour_idx],
-                             marker=marker_shape[colour_idx])
-        ec50_axes[1].scatter([el[0] for el in ec50['Beta']],
-                             [el[1] for el in ec50['Beta']],
-                             color=data_palette[colour_idx],
-                             marker=marker_shape[colour_idx])
+
+    # Average the data
+    combined_a_ec50 = np.empty((4, len(ec50_20190108['Alpha'])))
+    combined_b_ec50 = np.empty((4, len(ec50_20190108['Beta'])))
+    for idx, ec50 in enumerate([ec50_20190108, ec50_20190119,
+                                ec50_20190121, ec50_20190214]):
+        combined_a_ec50[idx, :] = np.array([el[1] for el in ec50['Alpha']])
+        combined_b_ec50[idx, :] = np.array([el[1] for el in ec50['Beta']])
+
+    ec50_axes[0].errorbar([el[0] for el in ec50_20190108['Alpha']],
+                          np.mean(combined_a_ec50, axis=0),
+                          yerr=np.std(combined_a_ec50, axis=0),
+                          color='k', ls='none')
+    ec50_axes[1].errorbar([el[0] for el in ec50_20190108['Beta']],
+                          np.mean(combined_b_ec50, axis=0),
+                          yerr=np.std(combined_b_ec50, axis=0),
+                          color='k', ls='none')
+    ec50_axes[0].scatter([el[0] for el in ec50_20190108['Alpha']],
+                         np.mean(combined_a_ec50, axis=0),
+                         color='k')
+    ec50_axes[1].scatter([el[0] for el in ec50_20190108['Beta']],
+                         np.mean(combined_b_ec50, axis=0),
+                         color='k')
 
     # Add equilibrium expressions
     ec50_axes[0].plot(time_list, [avg_pSTAT_EC50_Alpha / 1E-12
@@ -273,20 +284,31 @@ if __name__ == '__main__':
                               color=alpha_palette[5], linewidth=2)
     max_response_axes[1].plot(time_list, beta_peak_aggregate,
                               color=beta_palette[5], linewidth=2)
-    # Add data
-    for colour_idx, maxpSTAT in enumerate([max_20190108, max_20190119,
-                                           max_20190121, max_20190214]):
-        scale_factor = alignment.scale_factors[3 - colour_idx]
-        scaled_response = [el[1] * scale_factor for el in maxpSTAT['Alpha']]
-        max_response_axes[0].scatter([el[0] for el in maxpSTAT['Alpha']],
-                                     scaled_response,
-                                     color=data_palette[colour_idx],
-                                     marker=marker_shape[colour_idx])
-        scaled_response = [el[1] * scale_factor for el in maxpSTAT['Beta']]
-        max_response_axes[1].scatter([el[0] for el in maxpSTAT['Beta']],
-                                     scaled_response,
-                                     color=data_palette[colour_idx],
-                                     marker=marker_shape[colour_idx])
+    # Average the data
+    combined_a_maxpSTAT = np.empty((4, len(max_20190108['Alpha'])))
+    combined_b_maxpSTAT = np.empty((4, len(max_20190108['Beta'])))
+    for idx, maxpSTAT in enumerate([max_20190108, max_20190119,
+                                    max_20190121, max_20190214]):
+        scale_factor = alignment.scale_factors[3 - idx]
+        combined_a_maxpSTAT[idx, :] = np.array([el[1] * scale_factor
+                                                for el in maxpSTAT['Alpha']])
+        combined_b_maxpSTAT[idx, :] = np.array([el[1] * scale_factor
+                                                for el in maxpSTAT['Beta']])
+
+    max_response_axes[0].errorbar([el[0] for el in max_20190108['Alpha']],
+                                  np.mean(combined_a_maxpSTAT, axis=0),
+                                  yerr=np.std(combined_a_maxpSTAT, axis=0),
+                                  color='k', ls='none')
+    max_response_axes[1].errorbar([el[0] for el in max_20190108['Beta']],
+                                  np.mean(combined_b_maxpSTAT, axis=0),
+                                  yerr=np.std(combined_b_maxpSTAT, axis=0),
+                                  color='k', ls='none')
+    max_response_axes[0].scatter([el[0] for el in max_20190108['Alpha']],
+                                 np.mean(combined_a_maxpSTAT, axis=0),
+                                 color='k')
+    max_response_axes[1].scatter([el[0] for el in max_20190108['Beta']],
+                                 np.mean(combined_b_maxpSTAT, axis=0),
+                                 color='k')
 
     # Add equilibrium expressions
     # max_response_axes[0].plot(time_list,
