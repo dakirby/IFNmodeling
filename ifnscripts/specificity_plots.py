@@ -106,20 +106,20 @@ if __name__ == '__main__':
     drbfine_noSigma = drbfine.drop_sigmas(in_place=False)
 
     t = str(integral_times[-1])
-    temp3 = pd.DataFrame(list(zip(['Alpha_Integral' for _ in range(len(test_doses))], 
+    temp3 = pd.DataFrame(list(zip(['Alpha_Integral' for _ in range(len(test_doses))],
                                   test_doses,
                                   np.trapz(drafine_noSigma.data_set.loc['Alpha'], axis=1))),
                          columns=['Dose_Species', 'Dose (pM)', t])
     temp3.set_index(['Dose_Species', 'Dose (pM)'], inplace=True)
 
-    temp4 = pd.DataFrame(list(zip(['Beta_Integral' for _ in range(len(test_doses))], 
+    temp4 = pd.DataFrame(list(zip(['Beta_Integral' for _ in range(len(test_doses))],
                                   test_doses,
                                   np.trapz(drbfine_noSigma.data_set.loc['Beta'], axis=1))),
                          columns=['Dose_Species', 'Dose (pM)', t])
     temp4.set_index(['Dose_Species', 'Dose (pM)'], inplace=True)
-    
+
     temp5 = pd.concat([temp3,temp4])
-    
+
     integral_response = IfnData('custom', df=temp5)
 
     temp6 = integral_response.data_set.loc['Beta_Integral'] - integral_response.data_set.loc['Alpha_Integral']
@@ -176,9 +176,9 @@ if __name__ == '__main__':
                                     label=r'$\mathrm{IFN}\alpha$ 60 min', linewidth=2)
     spec_fig.add_trajectory(integral_response, t, 'plot', beta_palette[2], (2, 0), 'Beta_Integral',
                                     label=r'$\mathrm{IFN}\beta$ 60 min', linewidth=2)
-    spec_fig.axes[2][0].set_title(r'$\int \mathrm{IFN}[t] dt$')
+    spec_fig.axes[2][0].set_title(r'$\int \mathrm{pSTAT}[t] dt$')
 
-    
+
     # save figure
     if platform == "linux" or platform == "linux2":
         spec_fig.show_figure(save_flag=True,

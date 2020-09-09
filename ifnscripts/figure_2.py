@@ -321,8 +321,8 @@ if __name__ == '__main__':
     # -------------------------------
     # Plot model dose response curves
     # -------------------------------
-    alpha_palette = sns.color_palette("deep", 6)
-    beta_palette = sns.color_palette("deep", 6)
+    alpha_palette = sns.color_palette("rocket_r", 6)
+    beta_palette = sns.color_palette("rocket_r", 6)
 
     new_fit = DoseresponsePlot((1, 2))
     new_fit.axes = [Figure_2.add_subplot(gs[0, 0:2]),
