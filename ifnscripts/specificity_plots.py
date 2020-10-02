@@ -176,7 +176,7 @@ if __name__ == '__main__':
                                     label=r'$\mathrm{IFN}\alpha$ 60 min', linewidth=2)
     spec_fig.add_trajectory(integral_response, t, 'plot', beta_palette[2], (2, 0), 'Beta_Integral',
                                     label=r'$\mathrm{IFN}\beta$ 60 min', linewidth=2)
-    spec_fig.axes[2][0].set_title(r'$\int \mathrm{pSTAT}[t] dt$')
+    spec_fig.axes[2][0].set_ylabel(r'$\int \mathrm{pSTAT}[t] dt$')
 
 
     # save figure
