@@ -192,7 +192,7 @@ if __name__ == '__main__':
 
         # Clean up stray files
         root = os.getcwd()
-        shutil.move(os.path.join(root, sim_name + '_DREAM_chain_*'), save_dir)
+        shutil.move(os.path.join(root, sim_name + '_DREAM_chain_*.*'), save_dir)
 
-    except ImportError:
+    except (ImportError, OSError):
         pass

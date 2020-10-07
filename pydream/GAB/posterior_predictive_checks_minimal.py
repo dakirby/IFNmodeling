@@ -10,7 +10,7 @@ from ifnclass.ifnplot import DoseresponsePlot
 
 # For use in directory /PyDREAM_07-07-2020_10000
 # User input
-output_dir = os.path.join(os.getcwd(),'PyDREAM_07-07-2020_10000')
+output_dir = os.path.join(os.getcwd(),'PyDREAM_06-10-2020_10000')
 sim_name = 'mixed_IFN'
 num_checks = 50
 
@@ -25,7 +25,7 @@ parameters_to_check = [parameters[i] for i in list(np.random.randint(0, high=len
 # Set up model
 Mixed_Model = IfnModel('Mixed_IFN_ppCompatible')
 #Mixed_Model.set_parameters({'k_a2': 0.5*Mixed_Model.parameters['k_a2'], 'ka2': 0.5*Mixed_Model.parameters['ka2']})
-sf = 2.0
+sf = 1.0
 
 times = [2.5, 5.0, 7.5, 10.0, 20.0, 60.0]
 dose_range = np.logspace(-1,5,15)
