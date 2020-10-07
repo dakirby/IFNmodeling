@@ -21,6 +21,9 @@ scratch.py
 
 /ifnscripts/NIH/*.csv
 /ifnscripts/IFNcelltypes/*.csv
+
+/pydream/GAB/*/*.npy
+
 # Compiled source 
 #
 ###################
