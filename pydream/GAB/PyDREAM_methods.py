@@ -46,13 +46,15 @@ class IFN_posterior_object():
         alignment.add_data([newdata_4, newdata_3, newdata_2, newdata_1])
         alignment.align()
         alignment.get_scaled_data()
+
+        self.aligned_data = alignment
+
+        # Create scipy normal probability distributions for data likelihoods
         mean_data = alignment.summarize_data()
         exp_data = np.array([[el[0] for el in dose] for dose in
                              mean_data.data_set.values]).flatten()
         exp_data_std = np.array([[el[1] for el in dose] for dose in
                                 mean_data.data_set.values]).flatten()
-
-        # Create scipy normal probability distributions for data likelihoods
         self.like_ctot = norm(loc=exp_data, scale=exp_data_std)
 
     # -------------------------------------------------------------------------
@@ -224,3 +226,57 @@ def DREAM_fit(model, priors_list, posterior, start_params,
     # Clean up stray files
     shutil.move(os.path.join(os.getcwd(), '*_DREAM_chain_*.*'),
                 save_dir)
+
+
+def posterior_prediction(model, parameter_vector, parameter_names, sf):
+    """
+    Produce predictions for IFNa and IFNb using model with parameters given
+    as input to the function.
+    """
+    test_times = [2.5, 5.0, 7.5, 10.0, 20.0, 60.0]
+    test_doses = np.logspace(-1, 5, 15)
+    # Make predictions
+    model.set_parameters(parameter_vector)
+    dradf = model.doseresponse(test_times, 'TotalpSTAT', 'Ia',
+                               test_doses, parameters={'Ib': 0},
+                               scale_factor=sf,
+                               return_type='dataframe',
+                               dataframe_labels='Alpha')
+    drbdf = model.doseresponse(test_times, 'TotalpSTAT', 'Ib',
+                               test_doses, parameters={'Ia': 0},
+                               scale_factor=sf,
+                               return_type='dataframe',
+                               dataframe_labels='Beta')
+
+    posterior = IfnData('custom', df=pd.concat((dradf, drbdf)),
+                        conditions={'Alpha': {'Ib': 0},
+                                    'Beta': {'Ia': 0}})
+    posterior.drop_sigmas()
+    return posterior
+
+
+def posterior_IFN_summary_statistics(posterior_predictions):
+    """
+    Encapsulates the code to compute summary statistics from a list of
+    posterior predictions. Used to increase readability in the main runfile.
+    """
+    mean_alpha_predictions = np.mean([posterior_predictions[i].data_set.
+                                     loc['Alpha'].values for i in
+                                     range(len(posterior_predictions))],
+                                     axis=0)
+    mean_beta_predictions = np.mean([posterior_predictions[i].data_set.
+                                    loc['Beta'].values for i in
+                                    range(len(posterior_predictions))],
+                                    axis=0)
+
+    std_alpha_predictions = np.std([posterior_predictions[i].data_set.
+                                   loc['Alpha'].values.astype(np.float64) for
+                                   i in range(len(posterior_predictions))],
+                                   axis=0)
+    std_beta_predictions = np.std([posterior_predictions[i].data_set.
+                                  loc['Beta'].values.astype(np.float64) for
+                                  i in range(len(posterior_predictions))],
+                                  axis=0)
+
+    return mean_alpha_predictions, std_alpha_predictions,\
+        mean_beta_predictions, std_beta_predictions
