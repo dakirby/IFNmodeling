@@ -1,4 +1,4 @@
 # Set simulation parameters
-niterations = 10000
-nchains = 6
-sim_name = 'mixed_IFN'
+NITERATIONS = 4
+NCHAINS = 3
+SIM_NAME = 'BOOTSTRAP_mixed_IFN'
