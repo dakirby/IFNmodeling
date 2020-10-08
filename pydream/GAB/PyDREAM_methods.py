@@ -25,28 +25,13 @@ class IFN_posterior_object():
     The function returns a log probability value for the parameter vector given
     the experimental data.
     """
-    def __init__(self, sampled_parameter_names, model):
+    def __init__(self, sampled_parameter_names, model, alignment):
         self.sampled_parameter_names = sampled_parameter_names
         self.model = model
         self.tspan = [2.5, 5.0, 7.5, 10.0, 20.0, 60.0]
         self.alpha_doses = [10, 100, 300, 1000, 3000, 10000, 100000]
         self.beta_doses = [0.2, 6, 20, 60, 200, 600, 2000]
         self.sf = 1.0
-
-        # Load experimental data to which model will be fit.
-        # The "experimental data" is the TotalpSTAT trajectory for Alpha, then
-        #  Beta, at each dose.
-        # Standard deviations are kept separate but match the same order.
-        newdata_1 = IfnData("20190108_pSTAT1_IFN_Bcell")
-        newdata_2 = IfnData("20190119_pSTAT1_IFN_Bcell")
-        newdata_3 = IfnData("20190121_pSTAT1_IFN_Bcell")
-        newdata_4 = IfnData("20190214_pSTAT1_IFN_Bcell")
-
-        alignment = DataAlignment()
-        alignment.add_data([newdata_4, newdata_3, newdata_2, newdata_1])
-        alignment.align()
-        alignment.get_scaled_data()
-
         self.aligned_data = alignment
 
         # Create scipy normal probability distributions for data likelihoods
@@ -182,9 +167,10 @@ def DREAM_fit(model, priors_list, posterior, start_params,
                                    max_in_each_chain[global_max_chain_idx]]
         ml_model = {pname: 10 ** pvalue for pname, pvalue in
                     zip(sampled_param_names, ml_params)}
-        print(ml_model)
         print(ml_model,
-              file=open(os.path.join(save_dir, sim_name+'_ML_params'), 'w'))
+              file=open(os.path.join(save_dir, sim_name +
+                                     '_ML_params.txt'), 'w'))
+
     except IndexError:
         print("IndexError finding maximum posterior parameters")
         pass
@@ -228,22 +214,23 @@ def DREAM_fit(model, priors_list, posterior, start_params,
                 save_dir)
 
 
-def posterior_prediction(model, parameter_vector, parameter_names, sf):
+def posterior_prediction(model, parameter_vector, parameter_names, sf,
+                         test_times=[2.5, 5.0, 7.5, 10.0, 20.0, 60.0],
+                         alpha_doses=np.logspace(-1, 5, 15),
+                         beta_doses=np.logspace(-1, 5, 15)):
     """
     Produce predictions for IFNa and IFNb using model with parameters given
     as input to the function.
     """
-    test_times = [2.5, 5.0, 7.5, 10.0, 20.0, 60.0]
-    test_doses = np.logspace(-1, 5, 15)
     # Make predictions
     model.set_parameters(parameter_vector)
     dradf = model.doseresponse(test_times, 'TotalpSTAT', 'Ia',
-                               test_doses, parameters={'Ib': 0},
+                               alpha_doses, parameters={'Ib': 0},
                                scale_factor=sf,
                                return_type='dataframe',
                                dataframe_labels='Alpha')
     drbdf = model.doseresponse(test_times, 'TotalpSTAT', 'Ib',
-                               test_doses, parameters={'Ia': 0},
+                               beta_doses, parameters={'Ia': 0},
                                scale_factor=sf,
                                return_type='dataframe',
                                dataframe_labels='Beta')
@@ -280,3 +267,123 @@ def posterior_IFN_summary_statistics(posterior_predictions):
 
     return mean_alpha_predictions, std_alpha_predictions,\
         mean_beta_predictions, std_beta_predictions
+
+
+def _split_data(datalist, withhold):
+    # Build mask which selects <withhold> points for test subset
+    species = datalist[0].get_dose_species()
+    num_times = len(datalist[0].get_times(species=species[0]))
+    num_doses = len(np.array(
+                    [datalist[0].get_doses(species=a)
+                     for a in species]).flatten())
+
+    height = num_doses
+    test_height = int(np.sqrt(height * withhold / 100))
+    test_width = int(np.sqrt(num_times * withhold / 100))
+    row_msk = []
+    for r in range(height):
+        if r in np.random.choice(list(range(height)), size=test_height,
+                                 replace=False):
+            row_msk.append(True)
+        else:
+            row_msk.append(False)
+    col_msk = []
+    for t in range(num_times):
+        if t in np.random.choice(list(range(num_times)), size=test_width,
+                                 replace=False):
+            col_msk.append(True)
+        else:
+            col_msk.append(False)
+
+    # Sepearte data into test and train subsets
+    test_datalist = [d.copy() for d in datalist]
+    train_datalist = [d.copy() for d in datalist]
+    for obj in test_datalist:
+        obj.data_set = obj.data_set.iloc[row_msk, col_msk]
+    for obj in train_datalist:
+        obj.data_set = obj.data_set.iloc[[not el for el in row_msk],
+                                         [not el for el in col_msk]]
+
+    train_alignment = DataAlignment()
+    train_alignment.add_data(train_datalist)
+    train_alignment.align()
+    train_alignment.get_scaled_data()
+    train = train_alignment.summarize_data()
+
+    if withhold == 0:
+        test = None
+    else:
+        test_alignment = DataAlignment()
+        test_alignment.add_data(test_datalist)
+        test_alignment.scale_factors = train_alignment.scale_factors
+        test_alignment.get_scaled_data()
+        test = test_alignment.summarize_data()
+
+    return train, test
+
+
+def bootstrap(model, datalist, priors_list, start_params,
+              sampled_param_names, niterations, nchains, sim_name,
+              save_dir, withhold: int, epochs: int):
+    """
+    Given a list of IfnData objects, splits the entire set of data into
+    train and test samples, aligns each subset, fits the train subset,
+    and checks the std. dev. adjusted mean square error on the test subset.
+
+    The percentage of data (as an int) in the test set is input as <whithhold>.
+    Repeats the process <epochs> number of times, splitting randomly each time.
+
+    Assumes that each IfnData object in datalist has the same dose species,
+    doses, and times.
+    """
+    dir_list = []
+    for epoch in range(epochs):
+        # split data
+        train, test = _split_data(datalist, withhold)
+
+        # build posterior
+        posterior_obj = IFN_posterior_object(sampled_param_names, model, train)
+
+        # fit training data
+        epoch_save_dir = os.makedirs(os.path.join(os.getcwd(), save_dir,
+                                                  'Batch_{}'.format(epoch)),
+                                     exist_ok=True)
+        dir_list.append(epoch_save_dir)
+
+        DREAM_fit(model=model, priors_list=priors_list,
+                  posterior=posterior_obj.IFN_posterior,
+                  start_params=start_params,
+                  sampled_param_names=sampled_param_names,
+                  niterations=niterations,
+                  nchains=nchains, sim_name=sim_name, save_dir=epoch_save_dir)
+
+    # analyse results
+    all_data, _ = _split_data(datalist, 0)
+    all_data.drop_sigmas()
+
+    mean_y = np.mean(all_data.data_set.values)
+    SStot = np.sum(
+                   np.square(
+                             np.subtract(all_data.data_set.values, mean_y)))
+
+    SSres_list = []
+    for dir in dir_list:
+        with open(os.path.join(dir, sim_name + '_ML_params.txt'), 'r') as f:
+            map = eval(f.read())
+        pred = posterior_prediction(model, map, sampled_param_names, 1.0,
+                                    test_times=[2.5, 5.0, 7.5, 10.0, 20., 60.],
+                                    alpha_doses=[10, 100, 300, 1000, 3000,
+                                                 10000, 100000],
+                                    beta_doses=[0.2, 6, 20, 60, 200, 600,
+                                                2000])
+        MSE = np.sum(
+                np.square(
+                    np.subtract(
+                        pred.data_set.values, all_data.data_set.values)))
+        SSres_list.append(MSE)
+
+    mean_R2 = np.mean([1 - SSres / SStot for SSres in SSres_list])
+
+    with open(os.path.join(save_dir, 'bootstrap_analysis.txt'), 'w') as f:
+        f.write("mean R2 = {}\nmean MSE = {}".format(mean_R2,
+                                                     np.mean(SSres_list)))
