@@ -370,7 +370,7 @@ if __name__ == '__main__':
     for ax in Figure_2.axes[0:2]:
         ax.set_ylim([1, 5000])
 
-    Figure_2.set_size_inches(14.75, 8)
+    Figure_2.set_size_inches(14.75 / 2., 8/2.)
     Figure_2.tight_layout()
     Figure_2.savefig(os.path.join(os.getcwd(), 'results', 'Figures',
                      'Figure_2', 'Figure_2.pdf'))

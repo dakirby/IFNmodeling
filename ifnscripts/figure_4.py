@@ -96,21 +96,25 @@ if __name__ == '__main__':
         # Also plot absolute curves
         fig, axes = plt.subplots(nrows=1, ncols=1)
         fig.set_size_inches(16, 8)
-        axes.set_xlabel("Dose (pM)", fontsize=14)
-        axes.set_title("Absolute Refractory Response", fontsize=16)
-        axes.set_ylabel("pSTAT1", fontsize=14)
+        axes.set_xlabel("Dose (pM)", fontsize=18)
+        axes.set_title("Absolute Refractory Response", fontsize=18)
+        axes.set_ylabel("pSTAT1", fontsize=18)
         axes.set(xscale='log', yscale='linear')
 
-        axes.plot(dose_list, dr_curve_a, label=r'IFN$\alpha$', color=alpha_palette[2], linewidth=2)
+        axes.plot(dose_list, dr_curve_a, label=r'IFN$\alpha$', color=alpha_palette[5], linewidth=4)
         # axes.plot(dose_list, dr_curve_a15, label=r'IFN$\alpha$ $K_{D4}\times$' + '{}'.format(k4sf1), color=alpha_palette[4], linewidth=2)
-        axes.plot(dose_list, dr_curve_a60, label=r'IFN$\alpha$ $K_{D4}\times$' + '{}'.format(k4sf2), color=alpha_palette[5], linestyle='dashed', linewidth=2)
+        axes.plot(dose_list, dr_curve_a60, label=r'IFN$\alpha$ $K_{D4}\times$' + '{}'.format(k4sf2), color=alpha_palette[5], linestyle='dashed', linewidth=4)
 
-        axes.plot(dose_list, dr_curve_b, label=r'IFN$\beta$', color=beta_palette[2], linewidth=2)
+        axes.plot(dose_list, dr_curve_b, label=r'IFN$\beta$', color=beta_palette[5], linewidth=4)
         # axes.plot(dose_list, dr_curve_b15, label=r'IFN$\beta$ $K_{D4}\times$' + '{}'.format(k4sf1), color=beta_palette[4], linewidth=2)
-        axes.plot(dose_list, dr_curve_b60, label=r'IFN$\beta$ $K_{D4}\times$' + '{}'.format(k4sf2), color=beta_palette[5], linestyle='dashed', linewidth=2)
+        axes.plot(dose_list, dr_curve_b60, label=r'IFN$\beta$ $K_{D4}\times$' + '{}'.format(k4sf2), color=beta_palette[5], linestyle='dashed', linewidth=4)
 
-        axes.legend(loc=2, prop={'size': 8})
+        axes.legend(loc=2, prop={'size': 12})
         fig.set_size_inches(8, 8)
+        for tick in axes.xaxis.get_major_ticks():
+            tick.label.set_fontsize(18)
+        for tick in axes.yaxis.get_major_ticks():
+            tick.label.set_fontsize(18)
         fig.savefig(os.path.join(os.getcwd(), 'results', 'Figures', 'Figure_4', 'Figure_4_Refractoriness_By_K4_Absolute.pdf'))
 
     # -----------------------------------------------------------------------
