@@ -51,11 +51,11 @@ class Trajectory:
         if self.timeslice is None:
             if type(self.data.data_set.columns[0]) == str:
                 try:
-                    return [int(el) for el in self.data.data_set.columns if el is not 'Dose_Species' and el is not 'Dose (pM)']
+                    return [int(el) for el in self.data.data_set.columns if el != 'Dose_Species' and el != 'Dose (pM)']
                 except ValueError:
-                    return [float(el) for el in self.data.data_set.columns if el is not 'Dose_Species' and el is not 'Dose (pM)']
+                    return [float(el) for el in self.data.data_set.columns if el != 'Dose_Species' and el != 'Dose (pM)']
             else:
-                return [el for el in self.data.data_set.columns if el is not 'Dose_Species' and el is not 'Dose (pM)']
+                return [el for el in self.data.data_set.columns if el != 'Dose_Species' and el != 'Dose (pM)']
         else:
             return [self.timeslice]
 
@@ -351,7 +351,10 @@ class DoseresponsePlot:
             ax = self.get_axis_object(plt_idx)
             if trajectory.plot_type == 'plot':
                 x = trajectory.d()
-                z = [el[0] for el in trajectory.z()]
+                if type(trajectory.z()[0]) == tuple:
+                    z = [el[0] for el in trajectory.z()]
+                else:
+                    z = trajectory.z()
                 if x[0] == 0:
                     x = x[1:]
                     z = z[1:]

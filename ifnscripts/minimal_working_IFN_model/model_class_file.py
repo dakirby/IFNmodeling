@@ -407,7 +407,13 @@ TotalpSTAT         Alpha        1          0.0  2524.623425  3775.389077  2713.8
                 if scale_factor == 1:
                     return dataframe
                 else:
-                    scale_data = lambda q: (scale_factor * q[0], scale_factor * q[1])
+                    stdDev_flag = False
+                    if type(dataframe.values[0][0]) == tuple:
+                        stdDev_flag = True
+                    if stdDev_flag:
+                        scale_data = lambda q: (scale_factor * q[0], scale_factor * q[1])
+                    else:
+                        scale_data = lambda q: scale_factor * q
                     dataframe.loc[dataframe_labels[0]].iloc[:, i] = dataframe.loc[dataframe_labels[0]].iloc[:, i].apply(scale_data)
                     return dataframe
 
@@ -481,7 +487,13 @@ TotalpSTAT         Alpha        1          0.0  2524.623425  3775.389077  2713.8
                 if scale_factor == 1:
                     return total_df
                 else:
-                    scale_data = lambda q: (scale_factor * q[0], scale_factor * q[1])
+                    stdDev_flag = False
+                    if type(total_df.values[0][0]) == tuple:
+                        stdDev_flag = True
+                    if stdDev_flag:
+                        scale_data = lambda q: (scale_factor * q[0], scale_factor * q[1])
+                    else:
+                        scale_data = lambda q: scale_factor * q
                     if dose_species == 'Ia':
                         dose_species = 'Alpha'
                     elif dose_species == 'Ib':
