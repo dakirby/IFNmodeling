@@ -269,40 +269,36 @@ def posterior_IFN_summary_statistics(posterior_predictions):
         mean_beta_predictions, std_beta_predictions
 
 
-def _split_data(datalist, withhold):
-    # Build mask which selects <withhold> points for test subset
-    species = datalist[0].get_dose_species()
-    num_times = len(datalist[0].get_times(species=species[0]))
-    num_doses = len(np.array(
-                    [datalist[0].get_doses(species=a)
-                     for a in species]).flatten())
+def _get_data_coordinates(data: IfnData):
+    coord = []
+    for s in data.get_dose_species():
+        for d in data.get_doses(species=s):
+            for t in data.get_times(species=s):
+                c = (s, d, t)
+                if not pd.isnull(data.data_set.loc[c[0:2]][c[2]]):
+                    coord.append(c)
+    return coord
 
-    height = num_doses
-    test_height = int(np.sqrt(height * withhold / 100))
-    test_width = int(np.sqrt(num_times * withhold / 100))
-    row_msk = []
-    for r in range(height):
-        if r in np.random.choice(list(range(height)), size=test_height,
-                                 replace=False):
-            row_msk.append(True)
-        else:
-            row_msk.append(False)
-    col_msk = []
-    for t in range(num_times):
-        if t in np.random.choice(list(range(num_times)), size=test_width,
-                                 replace=False):
-            col_msk.append(True)
-        else:
-            col_msk.append(False)
+
+def _split_data(datalist, withhold):
+    assert 0 <= withhold <= 100
+    # Build mask which selects <withhold> points for test subset
+    data_coord = _get_data_coordinates(datalist[0])
+    test_size = int(withhold * len(data_coord) / 100.0)
+    test_idcs = np.random.choice(len(data_coord), test_size, False)
+    test_coord = [data_coord[i] for i in test_idcs]
+    train_coord = [c for c in data_coord if c not in test_coord]
 
     # Sepearte data into test and train subsets
     test_datalist = [d.copy() for d in datalist]
     train_datalist = [d.copy() for d in datalist]
     for obj in test_datalist:
-        obj.data_set = obj.data_set.iloc[row_msk, col_msk]
+        for c in test_coord:
+            obj.data_set.loc[c[0:2]][c[2]] = np.NaN
+
     for obj in train_datalist:
-        obj.data_set = obj.data_set.iloc[[not el for el in row_msk],
-                                         [not el for el in col_msk]]
+        for c in train_coord:
+            obj.data_set.loc[c[0:2]][c[2]] = np.NaN
 
     train_alignment = DataAlignment()
     train_alignment.add_data(train_datalist)
@@ -341,6 +337,8 @@ def bootstrap(model, datalist, priors_list, start_params,
         # split data
         train, test = _split_data(datalist, withhold)
 
+        print(test.data_set)
+        exit()
         # build posterior
         posterior_obj = IFN_posterior_object(sampled_param_names, model, train)
 
