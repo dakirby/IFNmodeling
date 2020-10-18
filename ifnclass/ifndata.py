@@ -389,7 +389,12 @@ class DataAlignment:
         for d in range(1, len(self.scaled_data)):
             current_IfnData_object = self.scaled_data[d]
             scale_factor = self.scale_factors[d]
-            scale_data = lambda q: (scale_factor * q[0], scale_factor * q[1])
+
+            def scale_data(q):
+                if type(q) == tuple:
+                    return (scale_factor * q[0], scale_factor * q[1])
+                else:
+                    return scale_factor * q
 
             for spec in current_IfnData_object.get_dose_species():
                 num_times = len(current_IfnData_object.get_times()[spec])
@@ -399,12 +404,11 @@ class DataAlignment:
 
     def summarize_data(self):
         data_list = {}
-        for spec in self.scaled_data[0].get_dose_species():
-            data_list.update({spec: [[[el[0] for el in row] for row in self.scaled_data[i].data_set.loc[spec].values]
-                                     for i in range(len(self.scaled_data))]})
-        mean_data = {key: np.mean(data_list[key], axis=0) for key in self.scaled_data[0].get_dose_species()}
-        stddev = {key: np.std(data_list[key], axis=0) for key in self.scaled_data[0].get_dose_species()}
         dose_species_list = self.scaled_data[0].get_dose_species()
+        for spec in dose_species_list:
+            data_list.update({spec: np.array([i.drop_sigmas(in_place=False).data_set.loc[spec].values for i in self.scaled_data])})
+        mean_data = {key: np.mean(data_list[key], axis=0) for key in dose_species_list}
+        stddev = {key: np.std(data_list[key].astype(float), axis=0) for key in dose_species_list}
         row_length = len(mean_data[dose_species_list[0]][0])
         column_length = len(mean_data[dose_species_list[0]])
         zipped_data = []
