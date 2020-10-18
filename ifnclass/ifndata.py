@@ -15,15 +15,15 @@ Created on Sun Nov 25 10:05:14 2018
 
 @author: Duncan
 
-IfnData is the standardized python object for IFN data sets, used for fitting 
+IfnData is the standardized python object for IFN data sets, used for fitting
 and plotting data.
 """
 
 
 class IfnData:
     """
-    Documentation - An IfnData object is a standardized object for holding 
-    experimental IFN dose-response or timecourse data. This is the expected 
+    Documentation - An IfnData object is a standardized object for holding
+    experimental IFN dose-response or timecourse data. This is the expected
     data object used for plotting and fitting within the IFNmodeling module.
 
     The standard column labels are as follows:
@@ -42,14 +42,14 @@ class IfnData:
     data_set : DataFrame
         The experimental data
     conditions : dict
-        A dictionary with keys corresponding to controlled experimental 
+        A dictionary with keys corresponding to controlled experimental
         parameters and values at which the experiments were performed
     Methods
     -------
     get_dose_range -> tuple = (min_dose, max_dose)
         min_dose = the minimum dose used in the entire experiment
         max_dose = the maximum dose used in the entire experiment
-    
+
     """
 
     # Initializer / Instance Attributes
@@ -69,7 +69,7 @@ class IfnData:
         parent_wd = cwd.split("IFNmodeling")[0] + "IFNmodeling"
         # attempt loading DataFrame object
         try:
-            return pickle.load(open(os.path.join(parent_wd, "ifndatabase","{}.p".format(self.name)), 'rb'))
+            return pickle.load(open(os.path.join(parent_wd, "ifndatabase", "{}.p".format(self.name)), 'rb'))
         except FileNotFoundError:
             # Attempt initializing module and then importing DataFrame object
             try:
@@ -251,8 +251,12 @@ class IfnData:
         for s in self.get_dose_species():
             for d in self.get_doses()[s]:
                 for t in self.get_times()[s]:
-                    if type(self.data_set.loc[s][str(t)].loc[d]) == tuple:
-                        new.data_set.loc[s][str(t)].loc[d] = self.data_set.loc[s][str(t)].loc[d][0]
+                    try:
+                        if type(self.data_set.loc[s][str(t)].loc[d]) == tuple:
+                            new.data_set.loc[s][str(t)].loc[d] = self.data_set.loc[s][str(t)].loc[d][0]
+                    except KeyError:
+                        if type(self.data_set.loc[s][t].loc[d]) == tuple:
+                            new.data_set.loc[s][t].loc[d] = self.data_set.loc[s][t].loc[d][0]
         if not in_place:
             return new
 
@@ -269,8 +273,12 @@ class IfnData:
         for s in self.get_dose_species():
             for d in self.get_doses()[s]:
                 for t in self.get_times()[s]:
-                    if type(self.data_set.loc[s][str(t)].loc[d]) != tuple:
-                        new.data_set.loc[s][str(t)].loc[d] = (self.data_set.loc[s][str(t)].loc[d], np.NaN)
+                    try:
+                        if type(self.data_set.loc[s][str(t)].loc[d]) != tuple:
+                            new.data_set.loc[s][str(t)].loc[d] = (self.data_set.loc[s][str(t)].loc[d], np.NaN)
+                    except KeyError:
+                        if type(self.data_set.loc[s][t].loc[d]) != tuple:
+                            new.data_set.loc[s][t].loc[d] = (self.data_set.loc[s][t].loc[d], np.NaN)
         if not in_place:
             return new
 
@@ -368,8 +376,9 @@ class DataAlignment:
     def align(self):
         self.scale_factors = np.zeros(len(self.data))
         self.scale_factors[0] = 1
-        reference_table = [[el[0] for el in row] for row in self.data[0].data_set.values]
-        datatable = [[[el[0] for el in row] for row in d.data_set.values] for d in self.data[1:]]
+        data_non_tuple = [self.data[i].drop_sigmas(in_place=False) for i in range(len(self.data))]
+        reference_table = data_non_tuple[0].data_set.values
+        datatable = data_non_tuple[1:]
         for d in range(len(datatable)):
             opt = minimize(self.__score_sf__, [0.1], args=(datatable[d], reference_table))
             self.scale_factors[d+1] = opt['x']
