@@ -270,21 +270,36 @@ def posterior_IFN_summary_statistics(posterior_predictions):
 
 
 def _get_data_coordinates(data: IfnData):
+    """Generates a list of all (species, dose, time) triplets with non-NaN
+    values in the IfnData data_set attribute. Returns this list of 3-elemnt
+    tuples.
+    """
     coord = []
     for s in data.get_dose_species():
         for d in data.get_doses(species=s):
             for t in data.get_times(species=s):
                 c = (s, d, t)
                 if not pd.isnull(data.data_set.loc[c[0:2]][c[2]]):
-                    coord.append(c)
+                    if type(data.data_set.loc[c[0:2]][c[2]]) == tuple:
+                        if not pd.isnull(data.data_set.loc[c[0:2]][c[2]][0]):
+                            coord.append(c)
+                    else:
+                        coord.append(c)
     return coord
 
 
 def _split_data(datalist, withhold):
+    """Splits a list of IfnData instances into test and train subsets, placing
+    <withold> percentage of the data in the test subset. The testing subset is
+    then aligned using a DataAlignment instance, and the training subset is
+    scaled according to the *testing* subset scale factors. The test and train
+    aligned IfnData objects output by the DataAlignment.summarize_data() method
+    are returned.
+    """
     assert 0 <= withhold <= 100
     # Build mask which selects <withhold> points for test subset
     data_coord = _get_data_coordinates(datalist[0])
-    test_size = int(withhold * len(data_coord) / 100.0)
+    test_size = int((100-withhold) * len(data_coord) / 100.0)
     test_idcs = np.random.choice(len(data_coord), test_size, False)
     test_coord = [data_coord[i] for i in test_idcs]
     train_coord = [c for c in data_coord if c not in test_coord]
