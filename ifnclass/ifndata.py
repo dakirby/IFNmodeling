@@ -376,8 +376,8 @@ class DataAlignment:
     def align(self):
         self.scale_factors = np.zeros(len(self.data))
         self.scale_factors[0] = 1
-        data_non_tuple = [self.data[i].drop_sigmas(in_place=False) for i in range(len(self.data))]
-        reference_table = data_non_tuple[0].data_set.values
+        data_non_tuple = [self.data[i].drop_sigmas(in_place=False).data_set.values for i in range(len(self.data))]
+        reference_table = data_non_tuple[0]
         datatable = data_non_tuple[1:]
         for d in range(len(datatable)):
             opt = minimize(self.__score_sf__, [0.1], args=(datatable[d], reference_table))
