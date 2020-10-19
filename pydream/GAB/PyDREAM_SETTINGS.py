@@ -72,10 +72,11 @@ alignment = DataAlignment()
 alignment.add_data(datalist)
 alignment.align()
 alignment.get_scaled_data()
+mean_data = alignment.summarize_data()
 
 # Define posterior function
 posterior_obj = IFN_posterior_object(pysb_sampled_parameter_names,
-                                     Mixed_Model, alignment)
+                                     Mixed_Model, mean_data)
 # -----------------------------------------------------------------------------
 
 

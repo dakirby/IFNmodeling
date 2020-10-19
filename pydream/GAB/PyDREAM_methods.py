@@ -25,22 +25,48 @@ class IFN_posterior_object():
     The function returns a log probability value for the parameter vector given
     the experimental data.
     """
-    def __init__(self, sampled_parameter_names, model, alignment):
+    def __init__(self, sampled_parameter_names, model, experiment):
         self.sampled_parameter_names = sampled_parameter_names
         self.model = model
-        self.tspan = [2.5, 5.0, 7.5, 10.0, 20.0, 60.0]
-        self.alpha_doses = [10, 100, 300, 1000, 3000, 10000, 100000]
-        self.beta_doses = [0.2, 6, 20, 60, 200, 600, 2000]
         self.sf = 1.0
-        self.aligned_data = alignment
+        self.experiment = experiment
 
         # Create scipy normal probability distributions for data likelihoods
-        mean_data = alignment.summarize_data()
         exp_data = np.array([[el[0] for el in dose] for dose in
-                             mean_data.data_set.values]).flatten()
+                             self.experiment.data_set.values]).flatten()
+        exp_data = exp_data[~np.isnan(exp_data)]
         exp_data_std = np.array([[el[1] for el in dose] for dose in
-                                mean_data.data_set.values]).flatten()
+                                self.experiment.data_set.values]).flatten()
+        exp_data_std = exp_data_std[~np.isnan(exp_data_std)]
+
         self.like_ctot = norm(loc=exp_data, scale=exp_data_std)
+
+        # The each species and dose within a species may have a different set
+        # of times to simulate. Generate dictionaries to use in IFN_posterior()
+        coord = _get_data_coordinates(self.experiment)
+        self.species = []
+        self.doses = {}
+        self.tspan = {}
+        # First, get unique species
+        for c in coord:
+            if c[0] not in self.species:
+                self.species.append(c[0])
+        # Second, get doses with non-NaN values for each species
+        for s in self.species:
+            self.doses.update({s: []})
+            for c in coord:
+                if c[0] == s:
+                    if c[1] not in self.doses[s]:
+                        self.doses[s].append(c[1])
+        for s in self.species:  # quickly check that there's no empty entries
+            if self.doses[s] == []:
+                del self.doses[s]
+        # Finally, get times with non-NaN values for each species and dose
+        self.tspan.update({k: {q: [] for q in self.doses[k]}
+                           for k in self.doses.keys()})
+
+        for c in coord:
+            self.tspan[c[0]][c[1]].append(c[2])
 
     # -------------------------------------------------------------------------
     def IFN_posterior(self, parameter_vector):
@@ -53,28 +79,38 @@ class IFN_posterior_object():
         self.model.set_parameters(shared_param_dict)
 
         # Simulate experimentally measured TotalpSTAT values.
-        # Alpha
-        dradf = self.model.doseresponse(self.tspan, 'TotalpSTAT', 'Ia',
-                                        self.alpha_doses,
-                                        parameters={'Ib': 0},
-                                        scale_factor=self.sf,
-                                        return_type='dataframe',
-                                        dataframe_labels='Alpha')
-        drbdf = self.model.doseresponse(self.tspan, 'TotalpSTAT', 'Ib',
-                                        self.beta_doses,
-                                        parameters={'Ia': 0},
-                                        scale_factor=self.sf,
-                                        return_type='dataframe',
-                                        dataframe_labels='Beta')
+        data = []
+        for s in self.species:
+            custom_params = {'Ia': 0, 'Ib': 0}
 
-        # Concatenate and flatten
-        total_simulation_data = IfnData(name='custom',
-                                        df=pd.concat([dradf, drbdf]))
-        sim_data = np.array([[el[0] for el in dose] for dose in
-                            total_simulation_data.data_set.values]).flatten()
+            for d in self.doses[s]:
+                if s == 'Alpha':
+                    custom_params['Ia'] = d
+                elif s == 'Beta':
+                    custom_params['Ib'] = d
+
+                tc = self.model.timecourse(self.tspan[s][d],
+                                           'TotalpSTAT',
+                                           parameters=custom_params,
+                                           return_type='list',
+                                           scale_factor=self.sf)['TotalpSTAT']
+                for idx, r in enumerate(tc):
+                    data.append([s, d, r, self.tspan[s][d][idx]])
+
+        # It is convenient to use Pandas DataFrame to fill in NaNs where needed
+        # Also, this formatting is useful for debuggin since it's exactly the
+        # same format as IfnData dataframes
+        col_names = ['Dose_Species', 'Dose (pM)', 'Response', 'Time (min)']
+        df = pd.DataFrame(data, columns=col_names)
+        df = pd.pivot_table(df, values='Response',
+                            index=['Dose_Species', 'Dose (pM)'],
+                            columns=['Time (min)'], aggfunc=np.sum)
+        df.columns.name = None
+
+        sim_data = df.values.flatten()
+        sim_data = sim_data[~np.isnan(sim_data)]  # drop NaNs
 
         # Calculate log probability from simulated experimental values
-
         logp_ctotal = np.sum(self.like_ctot.logpdf(sim_data))
 
         # If model simulation failed due to integrator errors, return a log
@@ -304,7 +340,7 @@ def _split_data(datalist, withhold):
     test_coord = [data_coord[i] for i in test_idcs]
     train_coord = [c for c in data_coord if c not in test_coord]
 
-    # Sepearte data into test and train subsets
+    # Separate data into test and train subsets
     test_datalist = [d.copy() for d in datalist]
     train_datalist = [d.copy() for d in datalist]
     for obj in test_datalist:
@@ -322,7 +358,7 @@ def _split_data(datalist, withhold):
     train = train_alignment.summarize_data()
 
     if withhold == 0:
-        test = None
+        test_alignment = None
     else:
         test_alignment = DataAlignment()
         test_alignment.add_data(test_datalist)
@@ -352,8 +388,6 @@ def bootstrap(model, datalist, priors_list, start_params,
         # split data
         train, test = _split_data(datalist, withhold)
 
-        print(test.data_set)
-        exit()
         # build posterior
         posterior_obj = IFN_posterior_object(sampled_param_names, model, train)
 
