@@ -392,9 +392,9 @@ def bootstrap(model, datalist, priors_list, start_params,
         posterior_obj = IFN_posterior_object(sampled_param_names, model, train)
 
         # fit training data
-        epoch_save_dir = os.makedirs(os.path.join(os.getcwd(), save_dir,
-                                                  'Batch_{}'.format(epoch)),
-                                     exist_ok=True)
+        epoch_save_dir = os.path.join(os.getcwd(), save_dir,
+                                      'Batch_{}'.format(epoch))
+        os.makedirs(epoch_save_dir, exist_ok=True)
         dir_list.append(epoch_save_dir)
 
         DREAM_fit(model=model, priors_list=priors_list,
