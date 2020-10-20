@@ -246,8 +246,11 @@ def DREAM_fit(model, priors_list, posterior, start_params,
         pass
 
     # Clean up stray files
-    shutil.move(os.path.join(os.getcwd(), '*_DREAM_chain_*.*'),
-                save_dir)
+    try:
+        shutil.move(os.path.join(os.getcwd(), '*_DREAM_chain_*.*'),
+                    save_dir)
+    except FileNotFoundError:
+        pass
 
 
 def posterior_prediction(model, parameter_vector, parameter_names, sf,
