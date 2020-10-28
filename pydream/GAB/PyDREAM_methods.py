@@ -191,8 +191,7 @@ def DREAM_fit(model, priors_list, posterior, start_params,
 
     log_ps = np.array(log_ps)
     sampled_params = np.array(sampled_params)
-    print(log_ps.shape)
-    print(sampled_params.shape)
+
     try:
         # Maximum posterior model:
         max_in_each_chain = [np.argmax(chain) for chain in log_ps]
@@ -361,7 +360,7 @@ def _split_data(datalist, withhold):
     train = train_alignment.summarize_data()
 
     if withhold == 0:
-        test_alignment = None
+        test = None
     else:
         test_alignment = DataAlignment()
         test_alignment.add_data(test_datalist)
