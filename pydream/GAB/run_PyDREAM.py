@@ -22,7 +22,7 @@ if __name__ == '__main__':
     fit_flag = False
     post_analysis_flag = False
     bootstrap_flag = True
-    save_dir = dir_setup("PyDREAM_19-10-2020",
+    save_dir = dir_setup("PyDREAM_28-10-2020",
                          fit_flag, bootstrap_flag, post_analysis_flag)
 
     # Plotting parameters
