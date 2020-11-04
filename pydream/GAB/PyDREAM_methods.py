@@ -4,6 +4,7 @@ import numpy as np
 
 # PySB imports
 from ifnclass.ifndata import IfnData, DataAlignment
+from ifnclass.ifnplot import DoseresponsePlot
 
 from scipy.stats import norm
 import os
@@ -14,6 +15,7 @@ from pydream.convergence import Gelman_Rubin
 import pandas as pd
 import seaborn as sns
 from matplotlib import pyplot as plt
+import copy
 
 
 class IFN_posterior_object():
@@ -305,6 +307,99 @@ def posterior_IFN_summary_statistics(posterior_predictions):
 
     return mean_alpha_predictions, std_alpha_predictions,\
         mean_beta_predictions, std_beta_predictions
+
+
+def plot_posterior(param_file, parameter_names, num_checks, model, posterior,
+                   sf, time_mask, save_dir, plot_data=True):
+    """ Plot the predictions from ensemble sampling of model parameters.
+    Plots the dose-response as an envelope containing 1 sigma of predictions.
+    """
+    # Preparation of parameter ensemble
+    if type(param_file) == str:
+        log10_parameters = np.load(param_file)
+    elif type(param_file) == list:
+        log10_parameters = np.load(param_file[0])
+        for f in param_file[1:]:
+            batch_params = np.load(f)
+            log10_parameters = np.append(log10_parameters, batch_params,
+                                         axis=0)
+
+    parameters = np.power(10, log10_parameters)
+
+    parameters_to_check = [parameters[i] for i in
+                           list(np.random.randint(0, high=len(parameters),
+                                                  size=num_checks))]
+
+    # Compute posterior sample trajectories
+    posterior_trajectories = []
+    for p in parameters_to_check:
+        param_dict = {key: value for key, value in zip(parameter_names, p)}
+        pp = posterior_prediction(model, param_dict, parameter_names, sf)
+        posterior_trajectories.append(pp)
+
+    # Make aggregate predicitions
+    mean_alpha, std_alpha, mean_beta, std_beta = \
+        posterior_IFN_summary_statistics(posterior_trajectories)
+
+    std_predictions = {'Alpha': std_alpha,
+                       'Beta': std_beta}
+    mean_predictions = {'Alpha': mean_alpha,
+                        'Beta': mean_beta}
+
+    mean_model = copy.deepcopy(posterior_trajectories[0])
+    for s in ['Alpha', 'Beta']:
+        for didx, d in enumerate(mean_model.get_doses()[s]):
+            for tidx, t in enumerate(mean_model.get_times()[s]):
+                mean_model.data_set.loc[s][str(t)].loc[d] =\
+                    (mean_predictions[s][didx][tidx],
+                     std_predictions[s][didx][tidx])
+
+    # Get aligned data
+    mean_data = posterior.experiment
+
+    # Plot posterior samples
+    alpha_palette = sns.color_palette("rocket_r", 6)
+    beta_palette = sns.color_palette("rocket_r", 6)
+
+    new_fit = DoseresponsePlot((1, 2))
+
+    # Add fits
+    for idx, t in enumerate([2.5, 5.0, 7.5, 10.0, 20.0, 60.0]):
+        if t not in time_mask:
+            new_fit.add_trajectory(mean_model, t, 'envelope',
+                                   alpha_palette[idx], (0, 0), 'Alpha',
+                                   label='{} min'.format(t),
+                                   linewidth=2, alpha=0.2)
+            if plot_data:
+                new_fit.add_trajectory(mean_data, t, 'errorbar', 'o',
+                                       (0, 0), 'Alpha',
+                                       color=alpha_palette[idx])
+        if t not in time_mask:
+            new_fit.add_trajectory(mean_model, t, 'envelope',
+                                   beta_palette[idx], (0, 1), 'Beta',
+                                   label='{} min'.format(t),
+                                   linewidth=2, alpha=0.2)
+            if plot_data:
+                new_fit.add_trajectory(mean_data, t, 'errorbar', 'o',
+                                       (0, 1), 'Beta',
+                                       color=beta_palette[idx])
+
+    # Change legend transparency
+    leg = new_fit.fig.legend()
+    for lh in leg.legendHandles:
+        lh._legmarker.set_alpha(1)
+
+    dr_fig, dr_axes = new_fit.show_figure()
+    dr_fig.set_size_inches(14, 6)
+    dr_axes[0].set_title(r'IFN$\alpha$')
+    dr_axes[1].set_title(r'IFN$\beta$')
+
+    if plot_data:
+        dr_fig.savefig(os.path.join(save_dir,
+                       'posterior_predictions_with_data.pdf'))
+    else:
+        dr_fig.savefig(os.path.join(save_dir,
+                       'posterior_predictions.pdf'))
 
 
 def _get_data_coordinates(data: IfnData):
