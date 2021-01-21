@@ -163,7 +163,11 @@ class IfnData:
                 return new_xdata, new_ydata, new_errs
         ec50_dict = {}
         for key in self.get_dose_species():
-            response_array = np.transpose([[el[0] for el in row] for row in self.get_responses()[key]])
+            # get value, not error, if in tuple format
+            if type(self.get_responses()[key][0][0]) is tuple:
+                response_array = np.transpose([[el[0] for el in row] for row in self.get_responses()[key]])
+            else:
+                response_array = np.transpose([[el for el in row] for row in self.get_responses()[key]])
             ec50_array = []
             for t in enumerate(self.get_times()[key]):
                 # drop 0 pM dose since it can't be included on a log axis
