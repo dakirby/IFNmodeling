@@ -255,6 +255,7 @@ class TimecoursePlot:
         fig, axes =self.show_figure(show_flag=False, save_flag=True, save_dir=save_dir)
         return fig, axes
 
+
 class DoseresponsePlot:
     """
     Documentation - A DoseresponsePlot holds IfnModels and IfnData instances which are to be plotted in a
