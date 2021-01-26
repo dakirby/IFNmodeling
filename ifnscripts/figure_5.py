@@ -11,6 +11,15 @@ import matplotlib.pyplot as plt
 plt.rcParams.update({'font.size': 16})
 
 
+def find_nearest(array, value, idx_flag=False):
+    array = np.asarray(array)
+    idx = (np.abs(array - value)).argmin()
+    if idx_flag:
+        return idx
+    else:
+        return array[idx]
+
+
 def antiViralActivity(pSTAT, KM=4.39249):
     return 100 * pSTAT / (pSTAT + KM)
 
@@ -80,7 +89,7 @@ Schreiber2017AP = np.array(
 
 if __name__ == '__main__':
     AandB_flag = False
-    C_flag = False
+    CandD_flag = False
     USP18_sf = 15
     dir = os.path.join(os.getcwd(), 'results', 'Figures', 'Figure_5')
     if not os.path.exists(dir):
@@ -88,8 +97,11 @@ if __name__ == '__main__':
 
     times = [60]
     test_doses = list(logspace(-4, 6))
-    test_affinities = list(logspace(-2, 4, num=10)) # THIS CODE ASSUMES THAT THE 4TH ELEMENT IN IS 1.0
+    test_affinities = list(logspace(-2, 4, num=10))
+    reference_affinity_idx = find_nearest(test_affinities, 1.0, idx_flag=True)
+    assert(test_affinities[reference_affinity_idx] == 1.0)
     KMfit = 1E6  # used in AP phenomenogical function
+    typicalDose = 1  # (pM), to use for plotting how activity scales with K1
 
     # --------------------
     # Set up Model
@@ -229,13 +241,19 @@ if __name__ == '__main__':
         pSTAT_a7_refractory = np.load(dir + os.sep + 'pSTAT_a7_refractory.npy')
         pSTAT_w_refractory = np.load(dir + os.sep + 'pSTAT_w_refractory.npy')
 
-    if C_flag:
+    if CandD_flag:
+        typicalDose = find_nearest(test_doses, typicalDose)
+        print("Using typical dose of {} pM".format(typicalDose))
         AV_EC50_record = []
         AP_EC50_record = []
+        AV_typical_record = []
+        AP_typical_record = []
+        AV_typical_ref = 0
+        AP_typical_ref = 0
         # ----------------------------------------------------------------------
         # Get anti-viral and anti-proliferative EC50 for a variety of K1 and K4
         # ----------------------------------------------------------------------
-        for i in test_affinities:
+        for affinity_idx, i in enumerate(test_affinities):
             # Simulate dose-response curve
             test_params = {'Ib': 0, 'kd1': params['kd1'] / i, 'kd4': params['kd4'] / i}
             pSTAT_primary = Mixed_Model.mixed_dose_response(times, 'TotalpSTAT',
@@ -271,12 +289,29 @@ if __name__ == '__main__':
             AV_EC50_record.append([i, AV_EC50])
             AP_EC50_record.append([i, AP_EC50])
 
+            # Add response at typicalDose
+            AV_typical_record.append([i, AV_data.data_set.loc['Alpha', typicalDose][60]])
+            AP_typical_record.append([i, AP_data.data_set.loc['Alpha', typicalDose][60]])
+            if affinity_idx == reference_affinity_idx:
+                AV_typical_ref = AV_data.data_set.loc['Alpha', typicalDose][60]
+                AP_typical_ref = AP_data.data_set.loc['Alpha', typicalDose][60]
+
+        # Make typical response relative to reference response
+        for i in range(len(AV_typical_record)):
+            AV_typical_record[i][1] = AV_typical_record[i][1] / AV_typical_ref
+            AP_typical_record[i][1] = AP_typical_record[i][1] / AP_typical_ref
+
+        # Save to dir
         np.save(dir + os.sep + 'AV_EC50.npy', np.array(AV_EC50_record))
         np.save(dir + os.sep + 'AP_EC50.npy', np.array(AP_EC50_record))
+        np.save(dir + os.sep + 'AV_typical.npy', np.array(AV_typical_record))
+        np.save(dir + os.sep + 'AP_typcial.npy', np.array(AP_typical_record))
 
     else:
         AV_EC50_record = np.array(np.load(dir + os.sep + 'AV_EC50.npy'))
         AP_EC50_record = np.array(np.load(dir + os.sep + 'AP_EC50.npy'))
+        AV_typical_record = np.array(np.load(dir + os.sep + 'AV_typical.npy'))
+        AP_typical_record = np.array(np.load(dir + os.sep + 'AP_typcial.npy'))
 
     # ------------------------------------------------
     # Get anti-viral and anti-proliferative responses
@@ -298,7 +333,7 @@ if __name__ == '__main__':
     # ------------------------
     colour_palette = sns.color_palette("deep", 4)
     labels = [r"IFN$\alpha$2", r"IFN$\alpha$7", r"IFN$\omega$", r"IFN$\alpha$2-YNS"]
-    fig, all_axes = plt.subplots(nrows=2, ncols=2, figsize=(10., 10.))
+    fig, all_axes = plt.subplots(nrows=2, ncols=2, figsize=(12., 10.))
     axes = all_axes[0] # top row of plots
     axes[0].set_xscale('log')
     axes[1].set_xscale('log')
@@ -307,14 +342,14 @@ if __name__ == '__main__':
     sim_data = list(map(np.array, [IFNa2_AV, IFNa7_AV, IFNw_AV, IFNa2YNS_AV]))
     for idx in range(len(exp_data)):
         axes[0].scatter(exp_data[idx][:, 0], exp_data[idx][:, 1], color=colour_palette[idx], label=labels[idx])
-        axes[0].plot(test_doses, 100-sim_data[idx], color=colour_palette[idx], linewidth=2)
+        axes[0].plot(test_doses, 100-sim_data[idx], color=colour_palette[idx], linewidth=3)
     # Anti-proliferative activity
     exp_data = list(map(np.array, [Thomas2011IFNalpha2AP, Thomas2011IFNalpha7AP, Thomas2011IFNomegaAP, Thomas2011IFNalpha2YNSAP]))
     sim_data = list(map(np.array, [IFNa2_AP, IFNa7_AP, IFNw_AP, IFNa2YNS_AP]))
     for idx in range(len(exp_data)):
         # include factor of 1E3 because data is in nM but axis is in pM
         axes[1].scatter(1E3*exp_data[idx][:, 0], exp_data[idx][:, 1], color=colour_palette[idx], label=labels[idx])
-        axes[1].plot(test_doses, [max(0, el) for el in 100-sim_data[idx]], color=colour_palette[idx], linewidth=2)
+        axes[1].plot(test_doses, [max(0, el) for el in 100-sim_data[idx]], color=colour_palette[idx], linewidth=3)
 
     axes[0].set_title('Anti-viral activity assay')
     axes[0].set_ylabel('HCV Replication (%)')
@@ -332,17 +367,27 @@ if __name__ == '__main__':
     # -----------------------------------
     red = sns.color_palette("tab10")[3]
     blue = sns.color_palette("tab10")[0]
-    fig.delaxes(all_axes[1][1])
+
+    # EC50 scaling
     ax = all_axes[1][0]
     ax.set_xscale('log')
     ax.set_yscale('log')
     ax.set_xlabel('Binding Affinity\n' + r'(Relative to IFN$\alpha$2)')
-    ax.set_ylabel('Biological Activity\n' + r'(Relative to IFN$\alpha$2)')
-    ax.scatter(Schreiber2017AV[:,0], Schreiber2017AV[:,1], color=red, label='Anti-viral')
-    ax.scatter(Schreiber2017AP[:,0], Schreiber2017AP[:,1], color=blue, label='Anti-proliferative')
-    ax.plot(1/AV_EC50_record[:, 0], AV_EC50_record[:, 1]/AV_EC50_record[3, 1], color=red, linewidth=2)
-    ax.plot(1/AP_EC50_record[:, 0], AP_EC50_record[:, 1]/AP_EC50_record[3, 1], color=blue, linewidth=2)
+    ax.set_ylabel(r'$EC_{50}$ (Relative to IFN$\alpha$2)')
+    # ax.scatter(Schreiber2017AV[:,0], Schreiber2017AV[:,1], color=red, label='Anti-viral')
+    # ax.scatter(Schreiber2017AP[:,0], Schreiber2017AP[:,1], color=blue, label='Anti-proliferative')
+    ax.plot(AV_EC50_record[:, 0], AV_EC50_record[:, 1]/AV_EC50_record[reference_affinity_idx, 1], color=red, linewidth=3, label='Anti-viral')
+    ax.plot(AP_EC50_record[:, 0], AP_EC50_record[:, 1]/AP_EC50_record[reference_affinity_idx, 1], color=blue, linewidth=3, label='Anti-proliferative')
     ax.legend()
+
+    # Typical response scaling
+    ax = all_axes[1][1]
+    ax.set_xscale('log')
+    ax.set_yscale('log')
+    ax.set_xlabel('Binding Affinity\n' + r'(Relative to IFN$\alpha$2)')
+    ax.set_ylabel('Biological Activity\n' + r'(Relative to IFN$\alpha$2)')
+    ax.plot(AV_typical_record[:, 0], AV_typical_record[:, 1], color=red, linewidth=3)
+    ax.plot(AP_typical_record[:, 0], AP_typical_record[:, 1], color=blue, linewidth=3)
 
     # save figure
     plt.tight_layout()
