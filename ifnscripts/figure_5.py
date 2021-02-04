@@ -1,6 +1,7 @@
 from ifnclass.ifndata import IfnData
 from ifnclass.ifnfit import DualMixedPopulation
 from ifnclass.ifnplot import DoseresponsePlot
+from AP_AV_Bar_Chart import plot_barchart
 import os
 from numpy import logspace
 import copy
@@ -8,6 +9,13 @@ import numpy as np
 import seaborn as sns
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
+
+from AP_AV_DATA import Thomas2011IFNalpha2AV, Thomas2011IFNalpha2YNSAV,\
+ Thomas2011IFNalpha7AV, Thomas2011IFNomegaAV, Thomas2011IFNalpha2YNSAP,\
+ Thomas2011IFNalpha2AP, Thomas2011IFNalpha7AP, Thomas2011IFNomegaAP,\
+ Schreiber2017AV, Schreiber2017AP
+
 plt.rcParams.update({'font.size': 16})
 
 
@@ -28,84 +36,26 @@ def antiProliferativeActivity(pSTAT, H=0.75, KM=7000.):
     return 100 * pSTAT**H / (pSTAT**H + KM**H)
 
 
-Thomas2011IFNalpha2AP = [[0.00001, 100], [0.0000296, 100], [0.0000873, 100],
-                         [0.000258, 100], [0.000763, 100], [0.00225, 88],
-                         [0.00666, 95], [0.0197, 90], [0.0582, 87],
-                         [0.172, 84], [0.508, 74], [1.5, 38], [4.44, 29],
-                         [13.1, 20], [38.7, 16], [115., 13], [338., 13],
-                         [1000., 13]]
-
-Thomas2011IFNalpha2AV = [[0.0001, 100], [0.001, 98], [0.01, 88], [0.1, 55],
-                         [1., 5], [10., 0], [100., 0], [1000., 0]]
-
-Thomas2011IFNalpha7AP = [[0.00001, 100], [0.0000296, 100], [0.0000873, 100],
-                         [0.000258, 100], [0.000763, 100], [0.00225, 84],
-                         [0.00666, 92], [0.0197, 100], [0.0582, 105],
-                         [0.172, 88], [0.508, 77], [1.5, 57], [4.44, 40],
-                         [13.1, 26], [38.7, 22], [115., 18], [338., 10],
-                         [1000., 10]]
-
-Thomas2011IFNalpha7AV = [[0.0001, 100], [0.001, 98], [0.01, 98], [0.1, 13],
-                         [1., 2], [10., 0], [100., 0], [1000., 0]]
-
-Thomas2011IFNomegaAP = [[0.00001, 100], [0.0000296, 100], [0.0000873, 100],
-                        [0.000258, 100], [0.000763, 100], [0.00225, 90],
-                        [0.00666, 105], [0.0197, 98], [0.0582, 92],
-                        [0.172, 76], [0.508, 53], [1.5, 30], [4.44, 20],
-                        [13.1, 15], [38.7, 12], [115., 10], [338., 0],
-                        [1000., 0]]
-
-Thomas2011IFNomegaAV = [[0.0001, 100], [0.001, 92], [0.01, 82], [0.1, 23],
-                        [1., 2], [10., 0], [100., 0], [1000., 0]]
-
-Thomas2011IFNalpha2YNSAP = [[0.00001, 100], [0.0000296, 105], [0.0000873, 88],
-                            [0.000258, 82], [0.000763, 70], [0.00225, 38],
-                            [0.00666, 25], [0.0197, 14], [0.0582, 8],
-                            [0.172, 5], [0.508, 0], [1.5, 0], [4.44, 0],
-                            [13.1, 0], [38.7, 0], [115., 0], [338., 0],
-                            [1000., 0]]
-
-Thomas2011IFNalpha2YNSAV = [[0.0001, 100], [0.001, 95], [0.01, 75], [0.1, 4],
-                            [1., 0], [10., 0], [100., 0], [1000., 0]]
-
-Schreiber2017AV = np.array(
-                  [[0.0001, 0.0015], [0.00034, 0.0025], [0.0014, 0.01],
-                   [0.0051, 0.02], [0.01, 0.027], [0.019, 0.05],
-                   [0.024, 0.042], [0.028, 0.17], [0.073, 0.077],
-                   [0.078, 0.1], [0.104, 0.33], [0.12, 0.22], [0.18, 0.3],
-                   [0.2, 0.58], [0.34, 0.74], [0.32, 0.63], [0.58, 0.75],
-                   [1., 0.45], [1.33, 0.29], [2.98, 2.12], [7.5, 1.06],
-                   [14.8, 4], [25., 2.1], [39., 2.1], [74., 2.1]])
-
-Schreiber2017AP = np.array(
-                  [[0.0001, 0.00022], [0.00034, 0.00096], [0.0014, 0.0025],
-                   [0.0012, 0.0081], [0.0051, 0.015], [0.01, 0.045],
-                   [0.019, 0.05], [0.017, 0.13], [0.024, 0.016], [0.028, 0.13],
-                   [0.073, 0.277], [0.078, 0.3], [0.104, 0.24], [0.12, 0.22],
-                   [0.18, 0.44], [0.2, 0.36], [0.34, 0.39], [0.32, 0.58],
-                   [0.58, 0.3], [1., 0.9], [2.98, 3.24], [7.5, 2.38],
-                   [14.8, 9.3], [25., 25.8], [39., 41.], [74., 71.3]])
-
-
 if __name__ == '__main__':
-    AandB_flag = False
-    CandD_flag = False
+    simulate_DR = False
+    simulate_scaling = False
+
     USP18_sf = 15
-    dir = os.path.join(os.getcwd(), 'results', 'Figures', 'Figure_5')
-    if not os.path.exists(dir):
-        os.makedirs(dir)
 
     times = [60]
-    test_doses = list(logspace(-4, 6))
-    test_affinities = list(logspace(-2, 4, num=10))
+    test_doses = list(logspace(-4, 6))  # used if simulate_DR
+    test_affinities = list(logspace(-2, 4, num=10))  # used if simulate_scaling
     reference_affinity_idx = find_nearest(test_affinities, 1.0, idx_flag=True)
     assert(test_affinities[reference_affinity_idx] == 1.0)
-    KMfit = 1E6  # used in AP phenomenogical function
     typicalDose = 1  # (pM), to use for plotting how activity scales with K1
 
     # --------------------
     # Set up Model
     # --------------------
+    dir = os.path.join(os.getcwd(), 'results', 'Figures', 'Figure_5')
+    if not os.path.exists(dir):
+        os.makedirs(dir)
+
     # Parameters same as Figure 2
     initial_parameters = {'k_a1': 4.98E-14 * 2, 'k_a2': 8.30e-13 * 2,
                           'k_d4': 0.006 * 3.8,
@@ -129,7 +79,7 @@ if __name__ == '__main__':
 
     params = copy.deepcopy(Mixed_Model.get_parameters())
 
-    if AandB_flag:
+    if simulate_DR:
         # ----------------------------------
         # Get initial pSTAT1/2 responses
         # ----------------------------------
@@ -241,7 +191,7 @@ if __name__ == '__main__':
         pSTAT_a7_refractory = np.load(dir + os.sep + 'pSTAT_a7_refractory.npy')
         pSTAT_w_refractory = np.load(dir + os.sep + 'pSTAT_w_refractory.npy')
 
-    if CandD_flag:
+    if simulate_scaling:
         typicalDose = find_nearest(test_doses, typicalDose)
         print("Using typical dose of {} pM".format(typicalDose))
         AV_EC50_record = []
@@ -316,25 +266,51 @@ if __name__ == '__main__':
     # ------------------------------------------------
     # Get anti-viral and anti-proliferative responses
     # ------------------------------------------------
-    IFNa2_AV = antiViralActivity(pSTAT_a2)
-    IFNa2YNS_AV = antiViralActivity(pSTAT_a2YNS)
-    IFNa7_AV = antiViralActivity(pSTAT_a7)
-    IFNw_AV = antiViralActivity(pSTAT_w)
+    KM_AV_fit, KM_AP_fit, H_AP_fit = np.load(dir + os.sep + 'AV_AP_fit_KMAV_KMAP_HAP.npy')
 
-    IFNa2YNS_AP = antiProliferativeActivity(pSTAT_a2YNS_refractory, KM=KMfit)
-    AP_scale = 150. / max(IFNa2YNS_AP)
-    IFNa2YNS_AP = AP_scale * IFNa2YNS_AP
-    IFNa2_AP = AP_scale * antiProliferativeActivity(pSTAT_a2_refractory, KM=KMfit)
-    IFNa7_AP = AP_scale * antiProliferativeActivity(pSTAT_a7_refractory, KM=KMfit)
-    IFNw_AP = AP_scale * antiProliferativeActivity(pSTAT_w_refractory, KM=KMfit)
+    IFNa2_AV = antiViralActivity(pSTAT_a2, KM=KM_AV_fit)
+    IFNa2YNS_AV = antiViralActivity(pSTAT_a2YNS, KM=KM_AV_fit)
+    IFNa7_AV = antiViralActivity(pSTAT_a7, KM=KM_AV_fit)
+    IFNw_AV = antiViralActivity(pSTAT_w, KM=KM_AV_fit)
+
+    IFNa2YNS_AP = antiProliferativeActivity(pSTAT_a2YNS_refractory, H=H_AP_fit, KM=KM_AP_fit)
+    IFNa2_AP = antiProliferativeActivity(pSTAT_a2_refractory, H=H_AP_fit, KM=KM_AP_fit)
+    IFNa7_AP = antiProliferativeActivity(pSTAT_a7_refractory, H=H_AP_fit, KM=KM_AP_fit)
+    IFNw_AP = antiProliferativeActivity(pSTAT_w_refractory, H=H_AP_fit, KM=KM_AP_fit)
+
+    # ------------------------------------------------------------------------
+    # Set up plot
+    # ------------------------------------------------------------------------
+    layout_aspect = (8.5, 11.)
+    layout_scale = 1.25
+
+    dim = tuple((el * layout_scale for el in layout_aspect))
+    fig = plt.figure(figsize=dim)
+    gs = gridspec.GridSpec(nrows=3, ncols=4)
+    panelA = fig.add_subplot(gs[0, 0:3])
+    A_legend = fig.add_subplot(gs[0, 3])
+    panelB = fig.add_subplot(gs[1, 0:2])
+    panelC = fig.add_subplot(gs[1, 2:])
+    panelD = fig.add_subplot(gs[2, 0:2])
+    panelE = fig.add_subplot(gs[2, 2:])
+    # fig.delaxes(all_axes[1][2]) # odd number of panels
+
+    # --------------------------------------
+    # Plot bar chart of EC50 vs IFN mutants
+    # --------------------------------------
+    plot_barchart(panelA)
+    plt.setp(panelA.xaxis.get_majorticklabels(), rotation=45, ha="right", rotation_mode="anchor")
+    handles, labels = panelA.get_legend_handles_labels()  # get labels and handles
+    A_legend.legend(handles, labels)
+    A_legend.axis('off')
+    panelA.get_legend().remove()  # now turn legend off in Panel A
 
     # ------------------------
     # Plot fit to Thomas 2011
     # ------------------------
     colour_palette = sns.color_palette("deep", 4)
     labels = [r"IFN$\alpha$2", r"IFN$\alpha$7", r"IFN$\omega$", r"IFN$\alpha$2-YNS"]
-    fig, all_axes = plt.subplots(nrows=2, ncols=2, figsize=(12., 10.))
-    axes = all_axes[0] # top row of plots
+    axes = [panelB, panelC]  # all_axes[0][1:]  # top row of plot, second and third panels
     axes[0].set_xscale('log')
     axes[1].set_xscale('log')
     # Anti-viral activity
@@ -369,7 +345,7 @@ if __name__ == '__main__':
     blue = sns.color_palette("tab10")[0]
 
     # EC50 scaling
-    ax = all_axes[1][0]
+    ax = panelD  # all_axes[1][0]
     ax.set_xscale('log')
     ax.set_yscale('log')
     ax.set_xlabel('Binding Affinity\n' + r'(Relative to IFN$\alpha$2)')
@@ -381,7 +357,7 @@ if __name__ == '__main__':
     ax.legend()
 
     # Typical response scaling
-    ax = all_axes[1][1]
+    ax = panelE  # all_axes[1][1]
     ax.set_xscale('log')
     ax.set_yscale('log')
     ax.set_xlabel('Binding Affinity\n' + r'(Relative to IFN$\alpha$2)')
@@ -389,6 +365,8 @@ if __name__ == '__main__':
     ax.plot(AV_typical_record[:, 0], AV_typical_record[:, 1], color=red, linewidth=3)
     ax.plot(AP_typical_record[:, 0], AP_typical_record[:, 1], color=blue, linewidth=3)
 
+    # -----------------------------------
     # save figure
+    # -----------------------------------
     plt.tight_layout()
     fig.savefig(os.path.join(dir, 'Figure_5.pdf'))

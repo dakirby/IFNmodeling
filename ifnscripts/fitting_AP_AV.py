@@ -164,7 +164,7 @@ def pSTAT_response(test_doses, tag):
 
 if __name__ == '__main__':
     simulate_pSTAT = False
-    fit = False
+    fit = True
     plot = True
     KM_AV_guess, KM_AP_guess, H_AP_guess = 4.39249, 7000., 0.75
     # -------------------------------------------------------------------------
@@ -213,17 +213,16 @@ if __name__ == '__main__':
         return np.concatenate(record)
 
     if fit:
-        fit_params, _ = curve_fit(function, None, ydata, bounds=([0.1, 0.1, 0.1], [1.E6, 1.E6, 1.]))
+        fit_params, _ = curve_fit(function, None, ydata, bounds=([0.1, 0.1, 0.1], [1.E6, 1.E6, 1.5]))
         KM_AV_fit, KM_AP_fit, H_AP_fit = fit_params
         print(fit_params)
         np.save(dir + os.sep + 'AV_AP_fit_KMAV_KMAP_HAP.npy', fit_params)
-        # optimal parameters are: 3.62373009  3.1698321   0.66073875 96.57972662
+        # optimal parameters are: 3.62373009  3.1698321   0.66073875
 
     if plot:
         test_doses = list(logspace(-4, 6))
         colour_palette = sns.color_palette("deep", 4)
         KM_AV_fit, KM_AP_fit, H_AP_fit = np.load(dir + os.sep + 'AV_AP_fit_KMAV_KMAP_HAP.npy')
-        KM_AP_fit = 2*KM_AP_fit
 
         pSTAT_a2 = np.load(dir + os.sep + 'pSTAT_a2.npy')
         pSTAT_a2YNS = np.load(dir + os.sep + 'pSTAT_a2YNS.npy')
@@ -242,10 +241,10 @@ if __name__ == '__main__':
         IFNw_AV = antiViralActivity(pSTAT_w, KM=KM_AV_fit)
 
         fake = 1.08
-        IFNa2YNS_AP = antiProliferativeActivity(pSTAT_a2YNS_refractory, H=H_AP_fit, KM=KM_AP_fit)**fake
-        IFNa2_AP = antiProliferativeActivity(pSTAT_a2_refractory, H=H_AP_fit, KM=KM_AP_fit)**fake
-        IFNa7_AP = antiProliferativeActivity(pSTAT_a7_refractory, H=H_AP_fit, KM=KM_AP_fit)**fake
-        IFNw_AP = antiProliferativeActivity(pSTAT_w_refractory, H=H_AP_fit, KM=KM_AP_fit)**fake
+        IFNa2YNS_AP = antiProliferativeActivity(pSTAT_a2YNS_refractory, H=H_AP_fit, KM=KM_AP_fit)
+        IFNa2_AP = antiProliferativeActivity(pSTAT_a2_refractory, H=H_AP_fit, KM=KM_AP_fit)
+        IFNa7_AP = antiProliferativeActivity(pSTAT_a7_refractory, H=H_AP_fit, KM=KM_AP_fit)
+        IFNw_AP = antiProliferativeActivity(pSTAT_w_refractory, H=H_AP_fit, KM=KM_AP_fit)
 
         # ------------------------
         # Plot fit to Thomas 2011
