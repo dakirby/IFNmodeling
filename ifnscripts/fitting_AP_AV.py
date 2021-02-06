@@ -28,8 +28,8 @@ def antiViralActivity(pSTAT, KM):
     return np.nan_to_num(100 * pSTAT / (pSTAT + KM))
 
 
-def antiProliferativeActivity(pSTAT, H, KM):
-    return np.nan_to_num(100 * (pSTAT**H / (pSTAT**H + KM**H) + pSTAT**(2*H) / (pSTAT**(2*H) + (2*KM)**(2*H))) / 2)
+def antiProliferativeActivity(pSTAT, KM1, KM2):
+    return np.nan_to_num(100 * (pSTAT**1.5 / (pSTAT**1.5 + KM1**1.5) + pSTAT**3 / (pSTAT**3 + KM2**3)) / 2)
 
 
 def MSE(l1, l2):
@@ -201,28 +201,25 @@ if __name__ == '__main__':
         ydata.append(AP_data[i][:, 1])
     ydata = np.concatenate(ydata)
 
-    def function(placeholder, KM_AV, KM_AP, H_AP):
-        # cost = 0
+    def function(placeholder, KM_AV, KM1_AP, KM2_AP):
         record = []
         for i in range(4):
             AV_sim = 100 - antiViralActivity(pSTAT_AV_list[i], KM=KM_AV)
-            AP_sim = 100 - antiProliferativeActivity(pSTAT_AP_list[i], H=H_AP, KM=KM_AP)
+            AP_sim = 100 - antiProliferativeActivity(pSTAT_AP_list[i], KM1=KM1_AP, KM2=KM2_AP)
             record.append(AV_sim)
             record.append(AP_sim)
-            # cost += MSE(AV_sim, AV_data[i]) + MSE(AP_sim, AP_data[i])
         return np.concatenate(record)
 
     if fit:
-        fit_params, _ = curve_fit(function, None, ydata, bounds=([0.1, 0.1, 0.1], [1.E6, 1.E6, 1.5]))
-        KM_AV_fit, KM_AP_fit, H_AP_fit = fit_params
+        fit_params, _ = curve_fit(function, None, ydata, bounds=([0.1, 0.1, 0.1], [1.E6, 1.E6, 1.E6]))
+        KM_AV_fit, KM1_AP_fit, KM2_AP_fit = fit_params
         print(fit_params)
-        np.save(dir + os.sep + 'AV_AP_fit_KMAV_KMAP_HAP.npy', fit_params)
-        # optimal parameters are: 3.62373009  3.1698321   0.66073875
+        np.save(dir + os.sep + 'AV_AP_fit_params.npy', fit_params)
 
     if plot:
         test_doses = list(logspace(-4, 6))
         colour_palette = sns.color_palette("deep", 4)
-        KM_AV_fit, KM_AP_fit, H_AP_fit = np.load(dir + os.sep + 'AV_AP_fit_KMAV_KMAP_HAP.npy')
+        KM_AV_fit, KM1_AP_fit, KM2_AP_fit = np.load(dir + os.sep + 'AV_AP_fit_params.npy')
 
         pSTAT_a2 = np.load(dir + os.sep + 'pSTAT_a2.npy')
         pSTAT_a2YNS = np.load(dir + os.sep + 'pSTAT_a2YNS.npy')
@@ -240,11 +237,10 @@ if __name__ == '__main__':
         IFNa7_AV = antiViralActivity(pSTAT_a7, KM=KM_AV_fit)
         IFNw_AV = antiViralActivity(pSTAT_w, KM=KM_AV_fit)
 
-        fake = 1.08
-        IFNa2YNS_AP = antiProliferativeActivity(pSTAT_a2YNS_refractory, H=H_AP_fit, KM=KM_AP_fit)
-        IFNa2_AP = antiProliferativeActivity(pSTAT_a2_refractory, H=H_AP_fit, KM=KM_AP_fit)
-        IFNa7_AP = antiProliferativeActivity(pSTAT_a7_refractory, H=H_AP_fit, KM=KM_AP_fit)
-        IFNw_AP = antiProliferativeActivity(pSTAT_w_refractory, H=H_AP_fit, KM=KM_AP_fit)
+        IFNa2YNS_AP = antiProliferativeActivity(pSTAT_a2YNS_refractory, KM1=KM1_AP_fit, KM2=KM2_AP_fit)
+        IFNa2_AP = antiProliferativeActivity(pSTAT_a2_refractory, KM1=KM1_AP_fit, KM2=KM2_AP_fit)
+        IFNa7_AP = antiProliferativeActivity(pSTAT_a7_refractory, KM1=KM1_AP_fit, KM2=KM2_AP_fit)
+        IFNw_AP = antiProliferativeActivity(pSTAT_w_refractory, KM1=KM1_AP_fit, KM2=KM2_AP_fit)
 
         # ------------------------
         # Plot fit to Thomas 2011

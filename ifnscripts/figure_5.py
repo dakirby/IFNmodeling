@@ -32,8 +32,8 @@ def antiViralActivity(pSTAT, KM=4.39249):
     return 100 * pSTAT / (pSTAT + KM)
 
 
-def antiProliferativeActivity(pSTAT, H=0.75, KM=7000.):
-    return 100 * pSTAT**H / (pSTAT**H + KM**H)
+def antiProliferativeActivity(pSTAT, KM1, KM2):
+    return np.nan_to_num(100 * (pSTAT**1.5 / (pSTAT**1.5 + KM1**1.5) + pSTAT**3 / (pSTAT**3 + KM2**3)) / 2)
 
 
 if __name__ == '__main__':
@@ -266,17 +266,17 @@ if __name__ == '__main__':
     # ------------------------------------------------
     # Get anti-viral and anti-proliferative responses
     # ------------------------------------------------
-    KM_AV_fit, KM_AP_fit, H_AP_fit = np.load(dir + os.sep + 'AV_AP_fit_KMAV_KMAP_HAP.npy')
+    KM_AV_fit, KM1_AP_fit, KM2_AP_fit = np.load(dir + os.sep + 'AV_AP_fit_params.npy')
 
     IFNa2_AV = antiViralActivity(pSTAT_a2, KM=KM_AV_fit)
     IFNa2YNS_AV = antiViralActivity(pSTAT_a2YNS, KM=KM_AV_fit)
     IFNa7_AV = antiViralActivity(pSTAT_a7, KM=KM_AV_fit)
     IFNw_AV = antiViralActivity(pSTAT_w, KM=KM_AV_fit)
 
-    IFNa2YNS_AP = antiProliferativeActivity(pSTAT_a2YNS_refractory, H=H_AP_fit, KM=KM_AP_fit)
-    IFNa2_AP = antiProliferativeActivity(pSTAT_a2_refractory, H=H_AP_fit, KM=KM_AP_fit)
-    IFNa7_AP = antiProliferativeActivity(pSTAT_a7_refractory, H=H_AP_fit, KM=KM_AP_fit)
-    IFNw_AP = antiProliferativeActivity(pSTAT_w_refractory, H=H_AP_fit, KM=KM_AP_fit)
+    IFNa2YNS_AP = antiProliferativeActivity(pSTAT_a2YNS_refractory, KM1=KM1_AP_fit, KM2=KM2_AP_fit)
+    IFNa2_AP = antiProliferativeActivity(pSTAT_a2_refractory, KM1=KM1_AP_fit, KM2=KM2_AP_fit)
+    IFNa7_AP = antiProliferativeActivity(pSTAT_a7_refractory, KM1=KM1_AP_fit, KM2=KM2_AP_fit)
+    IFNw_AP = antiProliferativeActivity(pSTAT_w_refractory, KM1=KM1_AP_fit, KM2=KM2_AP_fit)
 
     # ------------------------------------------------------------------------
     # Set up plot
