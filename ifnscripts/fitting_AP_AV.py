@@ -29,7 +29,7 @@ def antiViralActivity(pSTAT, KM):
 
 
 def antiProliferativeActivity(pSTAT, H, KM):
-    return np.nan_to_num(100 * pSTAT**H / (pSTAT**H + KM**H))
+    return np.nan_to_num(100 * (pSTAT**H / (pSTAT**H + KM**H) + pSTAT**(2*H) / (pSTAT**(2*H) + (2*KM)**(2*H))) / 2)
 
 
 def MSE(l1, l2):
