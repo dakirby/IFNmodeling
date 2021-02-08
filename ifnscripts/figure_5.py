@@ -33,12 +33,15 @@ def antiViralActivity(pSTAT, KM=4.39249):
 
 
 def antiProliferativeActivity(pSTAT, KM1, KM2):
-    return np.nan_to_num(100 * (pSTAT**1.5 / (pSTAT**1.5 + KM1**1.5) + pSTAT**3 / (pSTAT**3 + KM2**3)) / 2)
+    H1 = 2
+    H2 = 4
+    return np.nan_to_num(100 * (pSTAT**H1 / (pSTAT**H1 + KM1**H1) + pSTAT**H2 / (pSTAT**H2 + KM2**H2)) / 2)
 
 
 if __name__ == '__main__':
     simulate_DR = False
     simulate_scaling = False
+    plot_scaling = False
 
     USP18_sf = 15
 
@@ -281,18 +284,25 @@ if __name__ == '__main__':
     # ------------------------------------------------------------------------
     # Set up plot
     # ------------------------------------------------------------------------
-    layout_aspect = (8.5, 11.)
-    layout_scale = 1.25
-
+    if plot_scaling:
+        layout_aspect = (8.5, 11.)
+        layout_scale = 1.25
+    else:
+        layout_aspect = (8.5, 2/3 * 11.)
+        layout_scale = 1.25
     dim = tuple((el * layout_scale for el in layout_aspect))
     fig = plt.figure(figsize=dim)
-    gs = gridspec.GridSpec(nrows=3, ncols=4)
+    if plot_scaling:
+        gs = gridspec.GridSpec(nrows=3, ncols=4)
+    else:
+        gs = gridspec.GridSpec(nrows=2, ncols=4)
     panelA = fig.add_subplot(gs[0, 0:3])
     A_legend = fig.add_subplot(gs[0, 3])
     panelB = fig.add_subplot(gs[1, 0:2])
     panelC = fig.add_subplot(gs[1, 2:])
-    panelD = fig.add_subplot(gs[2, 0:2])
-    panelE = fig.add_subplot(gs[2, 2:])
+    if plot_scaling:
+        panelD = fig.add_subplot(gs[2, 0:2])
+        panelE = fig.add_subplot(gs[2, 2:])
     # fig.delaxes(all_axes[1][2]) # odd number of panels
 
     # --------------------------------------
@@ -341,29 +351,30 @@ if __name__ == '__main__':
     # -----------------------------------
     # Plot scaling of AV and AP activity
     # -----------------------------------
-    red = sns.color_palette("tab10")[3]
-    blue = sns.color_palette("tab10")[0]
+    if plot_scaling:
+        red = sns.color_palette("tab10")[3]
+        blue = sns.color_palette("tab10")[0]
 
-    # EC50 scaling
-    ax = panelD  # all_axes[1][0]
-    ax.set_xscale('log')
-    ax.set_yscale('log')
-    ax.set_xlabel('Binding Affinity\n' + r'(Relative to IFN$\alpha$2)')
-    ax.set_ylabel(r'$EC_{50}$ (Relative to IFN$\alpha$2)')
-    # ax.scatter(Schreiber2017AV[:,0], Schreiber2017AV[:,1], color=red, label='Anti-viral')
-    # ax.scatter(Schreiber2017AP[:,0], Schreiber2017AP[:,1], color=blue, label='Anti-proliferative')
-    ax.plot(AV_EC50_record[:, 0], AV_EC50_record[:, 1]/AV_EC50_record[reference_affinity_idx, 1], color=red, linewidth=3, label='Anti-viral')
-    ax.plot(AP_EC50_record[:, 0], AP_EC50_record[:, 1]/AP_EC50_record[reference_affinity_idx, 1], color=blue, linewidth=3, label='Anti-proliferative')
-    ax.legend()
+        # EC50 scaling
+        ax = panelD  # all_axes[1][0]
+        ax.set_xscale('log')
+        ax.set_yscale('log')
+        ax.set_xlabel('Binding Affinity\n' + r'(Relative to IFN$\alpha$2)')
+        ax.set_ylabel(r'$EC_{50}$ (Relative to IFN$\alpha$2)')
+        # ax.scatter(Schreiber2017AV[:,0], Schreiber2017AV[:,1], color=red, label='Anti-viral')
+        # ax.scatter(Schreiber2017AP[:,0], Schreiber2017AP[:,1], color=blue, label='Anti-proliferative')
+        ax.plot(AV_EC50_record[:, 0], (AV_EC50_record[:, 1]/AV_EC50_record[reference_affinity_idx, 1]), color=red, linewidth=3, label='Anti-viral')
+        ax.plot(AP_EC50_record[:, 0], (AP_EC50_record[:, 1]/AP_EC50_record[reference_affinity_idx, 1]), color=blue, linewidth=3, label='Anti-proliferative')
+        ax.legend()
 
-    # Typical response scaling
-    ax = panelE  # all_axes[1][1]
-    ax.set_xscale('log')
-    ax.set_yscale('log')
-    ax.set_xlabel('Binding Affinity\n' + r'(Relative to IFN$\alpha$2)')
-    ax.set_ylabel('Biological Activity\n' + r'(Relative to IFN$\alpha$2)')
-    ax.plot(AV_typical_record[:, 0], AV_typical_record[:, 1], color=red, linewidth=3)
-    ax.plot(AP_typical_record[:, 0], AP_typical_record[:, 1], color=blue, linewidth=3)
+        # Typical response scaling
+        ax = panelE  # all_axes[1][1]
+        ax.set_xscale('log')
+        ax.set_yscale('log')
+        ax.set_xlabel('Binding Affinity\n' + r'(Relative to IFN$\alpha$2)')
+        ax.set_ylabel('Biological Activity\n' + r'(Relative to IFN$\alpha$2)')
+        ax.plot(AV_typical_record[:, 0], AV_typical_record[:, 1], color=red, linewidth=3)
+        ax.plot(AP_typical_record[:, 0], AP_typical_record[:, 1], color=blue, linewidth=3)
 
     # -----------------------------------
     # save figure
