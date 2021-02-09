@@ -24,12 +24,21 @@ def find_nearest(array, value, idx_flag=False):
         return array[idx]
 
 
+def R2(ydata, ymodel):
+    SStot = np.sum(np.square(ydata - np.mean(ydata)))
+    SSres = np.sum(np.square(ydata - ymodel))
+    r_squared = 1 - (SSres / SStot)
+    return r_squared
+
+
 def antiViralActivity(pSTAT, KM):
     return np.nan_to_num(100 * pSTAT / (pSTAT + KM))
 
 
 def antiProliferativeActivity(pSTAT, KM1, KM2):
-    return np.nan_to_num(100 * (pSTAT**1.5 / (pSTAT**1.5 + KM1**1.5) + pSTAT**3 / (pSTAT**3 + KM2**3)) / 2)
+    H1 = 2
+    H2 = 4
+    return np.nan_to_num(100 * (pSTAT**H1 / (pSTAT**H1 + KM1**H1) + pSTAT**H2 / (pSTAT**H2 + KM2**H2)) / 2)
 
 
 def MSE(l1, l2):
@@ -215,6 +224,9 @@ if __name__ == '__main__':
         KM_AV_fit, KM1_AP_fit, KM2_AP_fit = fit_params
         print(fit_params)
         np.save(dir + os.sep + 'AV_AP_fit_params.npy', fit_params)
+
+        # get R squared value for fit parameters
+        print("R squared value of fit is {:.2f}".format(R2(ydata, function(None, KM_AV_fit, KM1_AP_fit, KM2_AP_fit))))
 
     if plot:
         test_doses = list(logspace(-4, 6))
