@@ -4,6 +4,7 @@ from ifnclass.ifnplot import DoseresponsePlot
 from AP_AV_DATA import Thomas2011IFNalpha2AV, Thomas2011IFNalpha2YNSAV,\
  Thomas2011IFNalpha7AV, Thomas2011IFNomegaAV, Thomas2011IFNalpha2YNSAP,\
  Thomas2011IFNalpha2AP, Thomas2011IFNalpha7AP, Thomas2011IFNomegaAP
+from figure_5_simulations import figure_5_simulations
 import os
 from numpy import logspace
 import copy
@@ -24,9 +25,11 @@ def find_nearest(array, value, idx_flag=False):
         return array[idx]
 
 
-def R2(ydata, ymodel):
+def R2(ydata, ymodel, MSE=False):
     SStot = np.sum(np.square(ydata - np.mean(ydata)))
     SSres = np.sum(np.square(ydata - ymodel))
+    if MSE:
+        print("MSE is {}".format(SSres/len(ydata)))
     r_squared = 1 - (SSres / SStot)
     return r_squared
 
@@ -53,128 +56,10 @@ def pSTAT_response(test_doses, tag):
     dir = os.path.join(os.getcwd(), 'results', 'Figures', 'Figure_5')
     if not os.path.exists(dir):
         os.makedirs(dir)
-    # --------------------
-    # Set up Model
-    # --------------------
-    # Parameters same as Figure 2
-    initial_parameters = {'k_a1': 4.98E-14 * 2, 'k_a2': 8.30e-13 * 2,
-                          'k_d4': 0.006 * 3.8,
-                          'kpu': 0.00095,
-                          'ka2': 4.98e-13 * 2.45, 'kd4': 0.3 * 2.867,
-                          'kint_a': 0.000124, 'kint_b': 0.00086,
-                          'krec_a1': 0.0028, 'krec_a2': 0.01, 'krec_b1': 0.005,
-                          'krec_b2': 0.05}
-    dual_parameters = {'kint_a': 0.00052, 'kSOCSon': 6e-07, 'kint_b': 0.00052,
-                       'krec_a1': 0.001, 'krec_a2': 0.1,
-                       'krec_b1': 0.005, 'krec_b2': 0.05}
-    scale_factor = 1.227
-
-    Mixed_Model = DualMixedPopulation('Mixed_IFN_ppCompatible', 0.8, 0.2)
-    Mixed_Model.model_1.set_parameters(initial_parameters)
-    Mixed_Model.model_1.set_parameters(dual_parameters)
-    Mixed_Model.model_1.set_parameters({'R1': 12000.0, 'R2': 1511.1})
-    Mixed_Model.model_2.set_parameters(initial_parameters)
-    Mixed_Model.model_2.set_parameters(dual_parameters)
-    Mixed_Model.model_2.set_parameters({'R1': 6755.56, 'R2': 1511.1})
-
-    params = copy.deepcopy(Mixed_Model.get_parameters())
-    # ----------------------------------
-    # Get initial pSTAT1/2 responses
-    # ----------------------------------
-    # Use the fit IFNa2 parameters
-    pSTAT_a2 = Mixed_Model.mixed_dose_response(TIMES, 'TotalpSTAT', 'Ia',
-                                               test_doses,
-                                               parameters={'Ib': 0},
-                                               sf=scale_factor)
-    pSTAT_a2 = np.array([el[0][0] for el in pSTAT_a2.values])
-
-    pSTAT_a2YNS = Mixed_Model.mixed_dose_response(TIMES, 'TotalpSTAT', 'Ib',
-                                                  test_doses,
-                                                  parameters={'Ia': 0},
-                                                  sf=scale_factor)
-    pSTAT_a2YNS = np.array([el[0][0] for el in pSTAT_a2YNS.values])
-
-    # IFNa7 has K1 and K2 half that of IFNa2  (taken from Mathematica notebook)
-    kd1_a7 = params['kd1'] * 0.5
-    kd2_a7 = params['kd2'] * 0.5
-    IFNa7_params = {'Ib': 0, 'kd1': kd1_a7, 'kd2': kd2_a7}
-    pSTAT_a7 = Mixed_Model.mixed_dose_response(TIMES, 'TotalpSTAT', 'Ia',
-                                               test_doses,
-                                               parameters=IFNa7_params,
-                                               sf=scale_factor)
-    pSTAT_a7 = np.array([el[0][0] for el in pSTAT_a7.values])
-
-    # IFNw has K1 = 0.08 * K1 of IFNa2  and K2 = 0.4 * K2 of IFNa2
-    kd1_w = params['kd1'] * 0.08
-    kd2_w = params['kd2'] * 0.4
-    IFNw_params = {'Ib': 0, 'kd1': kd1_w, 'kd2': kd2_w}
-    pSTAT_w = Mixed_Model.mixed_dose_response(TIMES, 'TotalpSTAT', 'Ia',
-                                              test_doses,
-                                              parameters=IFNw_params,
-                                              sf=scale_factor)
-    pSTAT_w = np.array([el[0][0] for el in pSTAT_w.values])
-
-    print("Finished simulating primary pSTAT response")
-
-    # -----------------------------------
-    # Repeat for the refractory responses
-    # -----------------------------------
-    kd4_a2 = params['kd4'] * USP18_sf  # K3 handled automatically by detailed balance
-    IFNa2_params = {'Ib': 0, 'kd4': kd4_a2}
-    pSTAT_a2_refractory = Mixed_Model.mixed_dose_response(TIMES, 'TotalpSTAT', 'Ia',
-                                                          test_doses,
-                                                          parameters=IFNa2_params,
-                                                          sf=scale_factor)
-    pSTAT_a2_refractory = np.array([el[0][0] for el in pSTAT_a2_refractory.values])
-
-    # Use the IFNa2 kd3 parameter for IFNa2YNS
-    # kd4_a2YNS = kd4_a2YNS * USP18_sf
-    # IFNa2YNS_params = {'Ib': 0, 'kd4': kd4_a2YNS}
-    # pSTAT_a2YNS_refractory = Mixed_Model.mixed_dose_response(TIMES, 'TotalpSTAT',
-    #                                                          'Ia', test_doses,
-    #                                                          parameters=IFNa2YNS_params,
-    #                                                          sf=scale_factor)
-    pSTAT_a2YNS_refractory = Mixed_Model.mixed_dose_response(TIMES, 'TotalpSTAT',
-                                                             'Ib', test_doses,
-                                                             parameters={'Ia':0, 'k_d4': params['k_d4'] * USP18_sf},
-                                                             sf=scale_factor)
-    pSTAT_a2YNS_refractory = np.array([el[0][0] for el in pSTAT_a2YNS_refractory.values])
-
-    # scale kd1, kd2, and kd4 to get correct Kd for IFNa7
-    kd4_a7 = USP18_sf * params['kd4']
-    IFNa7_params.update({'kd4': kd4_a7})
-    pSTAT_a7_refractory = Mixed_Model.mixed_dose_response(TIMES, 'TotalpSTAT', 'Ia',
-                                                          test_doses,
-                                                          parameters=IFNa7_params,
-                                                          sf=scale_factor)
-    pSTAT_a7_refractory = np.array([el[0][0] for el in pSTAT_a7_refractory.values])
-
-    # scale kd1, kd2, and kd4 to get correct Kd for IFNw
-    kd4_w = USP18_sf * params['kd4']
-    IFNw_params.update({'kd4': kd4_w})
-    pSTAT_w_refractory = Mixed_Model.mixed_dose_response(TIMES, 'TotalpSTAT', 'Ia',
-                                                         test_doses,
-                                                         parameters=IFNw_params,
-                                                         sf=scale_factor)
-    pSTAT_w_refractory = np.array([el[0][0] for el in pSTAT_w_refractory.values])
-
-    print("Finished simulating refractory pSTAT response")
-
-    # store all results in save_dir to save on computation
-    np.save(dir + os.sep + 'pSTAT_a2_fitting{}.npy'.format(tag), pSTAT_a2)
-    np.save(dir + os.sep + 'pSTAT_a2YNS_fitting{}.npy'.format(tag), pSTAT_a2YNS)
-    np.save(dir + os.sep + 'pSTAT_a7_fitting{}.npy'.format(tag), pSTAT_a7)
-    np.save(dir + os.sep + 'pSTAT_w_fitting{}.npy'.format(tag), pSTAT_w)
-    np.save(dir + os.sep + 'pSTAT_a2_refractory_fitting{}.npy'.format(tag), pSTAT_a2_refractory)
-    np.save(dir + os.sep + 'pSTAT_a2YNS_refractory_fitting{}.npy'.format(tag), pSTAT_a2YNS_refractory)
-    np.save(dir + os.sep + 'pSTAT_a7_refractory_fitting{}.npy'.format(tag), pSTAT_a7_refractory)
-    np.save(dir + os.sep + 'pSTAT_w_refractory_fitting{}.npy'.format(tag), pSTAT_w_refractory)
+    figure_5_simulations(USP18_sf, TIMES, test_doses, dir, tag=tag)
 
 
-if __name__ == '__main__':
-    simulate_pSTAT = False
-    fit = True
-    plot = True
+def figure_5_fitting(simulate_pSTAT, fit, plot):
     KM_AV_guess, KM_AP_guess, H_AP_guess = 4.39249, 7000., 0.75
     # -------------------------------------------------------------------------
     # -------------------------------------------------------------------------
@@ -186,8 +71,8 @@ if __name__ == '__main__':
         os.makedirs(dir)
 
     if simulate_pSTAT:
-        pSTAT_response(AV_doses, '_AV')
-        pSTAT_response(AP_doses, '_AP')
+        pSTAT_response(AV_doses, '_fitting_AV')
+        pSTAT_response(AP_doses, '_fitting_AP')
 
     pSTAT_a2_AV = np.load(dir + os.sep + 'pSTAT_a2_fitting_AV.npy')
     pSTAT_a2YNS_AV = np.load(dir + os.sep + 'pSTAT_a2YNS_fitting_AV.npy')
@@ -226,12 +111,17 @@ if __name__ == '__main__':
         np.save(dir + os.sep + 'AV_AP_fit_params.npy', fit_params)
 
         # get R squared value for fit parameters
-        print("R squared value of fit is {:.2f}".format(R2(ydata, function(None, KM_AV_fit, KM1_AP_fit, KM2_AP_fit))))
+        r2 = R2(ydata, function(None, KM_AV_fit, KM1_AP_fit, KM2_AP_fit), MSE=True)
+        print("R squared value of fit is {:.2f}".format(r2))
 
     if plot:
-        test_doses = list(logspace(-4, 6))
         colour_palette = sns.color_palette("deep", 4)
         KM_AV_fit, KM1_AP_fit, KM2_AP_fit = np.load(dir + os.sep + 'AV_AP_fit_params.npy')
+
+        try:
+            sim_doses = np.load(dir + os.sep + 'doses.npy')
+        except FileNotFoundError:
+            sim_doses = list(logspace(-4, 6))
 
         pSTAT_a2 = np.load(dir + os.sep + 'pSTAT_a2.npy')
         pSTAT_a2YNS = np.load(dir + os.sep + 'pSTAT_a2YNS.npy')
@@ -267,14 +157,14 @@ if __name__ == '__main__':
         sim_data = list(map(np.array, [IFNa2_AV, IFNa7_AV, IFNw_AV, IFNa2YNS_AV]))
         for idx in range(len(exp_data)):
             axes[0].scatter(exp_data[idx][:, 0], exp_data[idx][:, 1], color=colour_palette[idx], label=labels[idx])
-            axes[0].plot(test_doses, 100-sim_data[idx], color=colour_palette[idx], linewidth=3)
+            axes[0].plot(sim_doses, 100-sim_data[idx], color=colour_palette[idx], linewidth=3)
         # Anti-proliferative activity
         exp_data = list(map(np.array, [Thomas2011IFNalpha2AP, Thomas2011IFNalpha7AP, Thomas2011IFNomegaAP, Thomas2011IFNalpha2YNSAP]))
         sim_data = list(map(np.array, [IFNa2_AP, IFNa7_AP, IFNw_AP, IFNa2YNS_AP]))
         for idx in range(len(exp_data)):
             # include factor of 1E3 because data is in nM but axis is in pM
             axes[1].scatter(1E3*exp_data[idx][:, 0], exp_data[idx][:, 1], color=colour_palette[idx], label=labels[idx])
-            axes[1].plot(np.array(test_doses), [max(0, el) for el in 100-sim_data[idx]], color=colour_palette[idx], linewidth=3)
+            axes[1].plot(sim_doses, [max(0, el) for el in 100-sim_data[idx]], color=colour_palette[idx], linewidth=3)
 
         axes[0].set_title('Anti-viral activity assay')
         axes[0].set_ylabel('HCV Replication (%)')
@@ -290,3 +180,10 @@ if __name__ == '__main__':
         # save figure
         plt.tight_layout()
         fig.savefig(os.path.join(dir, 'Figure_5_fit.pdf'))
+
+
+if __name__ == '__main__':
+    simulate_pSTAT = True
+    fit = True
+    plot = True
+    figure_5_fitting(simulate_pSTAT, fit, plot)

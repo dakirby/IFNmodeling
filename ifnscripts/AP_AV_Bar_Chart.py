@@ -5,9 +5,10 @@ import pandas as pd
 import os
 
 
-def plot_barchart(axis=None):
-    # Import data
-    df = pd.read_csv("AP_AV_Bar_Chart.csv")
+def plot_barchart(axis=None, df=None):
+    if df is None:
+        # Import data
+        df = pd.read_csv("AP_AV_Bar_Chart.csv")
     # Prepare data
     df = pd.melt(df, id_vars=['Name'])
     # Plot data
