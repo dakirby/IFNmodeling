@@ -113,7 +113,11 @@ def figure_5_simulations(USP18_sf, times, test_doses, dir, tag=''):
     response('pSTAT_L26A', 0.22*4.5, 1. / 0.22)
     response('pSTAT_L26A_refractory', 0.22*4.5, 1. / 0.22, refractory=True)  # repeat for refractory response
 
-    # IFNa2-YNS, M148A, scaling factors taken from Kalie 2008 JCB
+    # IFNa2-L30A
+    response('pSTAT_L30A', 0.0013*742., 1. / 0.0013)
+    response('pSTAT_L30A_refractory', 0.0013*742., 1. / 0.0013, refractory=True)  # repeat for refractory response
+
+    # IFNa2-YNS, M148A, scaling factors taken from Thomas 2011
     response('pSTAT_YNSM148A', 1 / 43., 1. / 0.023)
     response('pSTAT_YNSM148A_refractory', 1 / 43., 1. / 0.023, refractory=True)  # repeat for refractory response
 

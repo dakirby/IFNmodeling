@@ -162,7 +162,7 @@ if __name__ == '__main__':
     # --------------------------------------
     setup_barchart()
     baseline_df = pd.read_csv("AP_AV_Bar_Chart.csv")  # this csv has the relative binding affinities
-    barchart_variants = ['R149A', 'A145G', 'L26A', 'YNSL153A', 'YNSM148A', 'a2YNS']
+    barchart_variants = ['L30A', 'R149A', 'A145G', 'L26A', 'YNSL153A', 'YNSM148A', 'a2YNS']
     av_update, ap_update = [], []
     for key in barchart_variants:
         av_update.append(DATA['pSTAT_' + key + '_AV_IC50'] / DATA['pSTAT_a2_AV_IC50'])
@@ -174,12 +174,16 @@ if __name__ == '__main__':
     for idx, n in enumerate(names_update):  # make the plot label nicer to read
         if n in ['YNSM148A', 'YNSL153A']:
             names_update[idx] = n[:3] + ', ' + n[3:]
+            barchart_variants[idx] = barchart_variants[idx][:3] + ', ' + barchart_variants[idx][3:]
+        if n == 'a2YNS':
+            names_update[idx] = 'YNS'
+            barchart_variants[idx] = 'YNS'
 
     baseline_df.update(av_update)
     baseline_df.update(ap_update)
     baseline_df.update(names_update)
 
-    plot_barchart(panelA, df=baseline_df, custom_order=['R149A', 'A145G', 'L26A', 'YNS, M148A', 'YNS, L153A', 'YNS'])
+    plot_barchart(panelA, df=baseline_df, custom_order=['L30A', 'R149A', 'A145G', 'L26A', 'YNS, M148A', 'YNS, L153A', 'YNS'])
     plt.setp(panelA.xaxis.get_majorticklabels(), rotation=45, ha="right", rotation_mode="anchor")
     handles, labels = panelA.get_legend_handles_labels()  # get labels and handles
     A_legend.legend(handles, labels)
