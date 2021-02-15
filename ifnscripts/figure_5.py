@@ -17,6 +17,7 @@ from AP_AV_DATA import Thomas2011IFNalpha2AV, Thomas2011IFNalpha2YNSAV,\
 
 from figure_5_simulations import figure_5_simulations
 from figure_5_fitting import figure_5_fitting
+from figure_5_setup_barchart import figure_5_setup_barchart as setup_barchart
 
 plt.rcParams.update({'font.size': 16})
 
@@ -64,7 +65,8 @@ def IC50(dose, response, target=50):
         y2 = response[np.where(dose == x2)]
         m = (y2 - y1) / (np.log10(x2) - np.log10(x1))
         b = y1 - np.log10(x1) * m
-        return 10 ** ((target - b) / m)
+        ic50 = 10 ** ((target - b) / m)
+        return ic50[0]  # ic50 is a one-element ndarray
 
 
 def antiViralActivity(pSTAT, KM=4.39249):
@@ -77,7 +79,7 @@ def antiProliferativeActivity(pSTAT, KM1, KM2):
     return np.nan_to_num(100 * (pSTAT**H1 / (pSTAT**H1 + KM1**H1) + pSTAT**H2 / (pSTAT**H2 + KM2**H2)) / 2)
 
 
-def plot_barchart(axis=None, df=None):
+def plot_barchart(axis=None, df=None, custom_order=None):
     if df is None:
         # Import data
         df = pd.read_csv("AP_AV_Bar_Chart.csv")
@@ -85,7 +87,8 @@ def plot_barchart(axis=None, df=None):
     df = pd.melt(df, id_vars=['Name'])
     # Plot data
     custom_palette = sns.color_palette("Paired")[1:6]
-    ax = sns.barplot(x="Name", y='value', hue='variable', data=df, palette=custom_palette, ax=axis)
+    ax = sns.barplot(x="Name", y='value', hue='variable', data=df,
+                     palette=custom_palette, ax=axis, order=custom_order)
     ax.set_yscale('log')
     ax.set_xlabel(None)
     ax.set_ylabel("Value relative to WT")
@@ -157,14 +160,26 @@ if __name__ == '__main__':
     # --------------------------------------
     # Plot bar chart of EC50 vs IFN mutants
     # --------------------------------------
-    # baseline_df = pd.read_csv("AP_AV_Bar_Chart.csv")  # this csv has the relative binding affinities
-    # print(baseline_df)
-    # update_df = pd.DataFrame({'AV Model': [IFNa2_AV_IC50, IFNa2YNS_AV_IC50]})
-    # baseline_df.update(update_df)
-    # print(baseline_df)
-    # exit()
+    setup_barchart()
+    baseline_df = pd.read_csv("AP_AV_Bar_Chart.csv")  # this csv has the relative binding affinities
+    barchart_variants = ['R149A', 'A145G', 'L26A', 'YNSL153A', 'YNSM148A', 'a2YNS']
+    av_update, ap_update = [], []
+    for key in barchart_variants:
+        av_update.append(DATA['pSTAT_' + key + '_AV_IC50'] / DATA['pSTAT_a2_AV_IC50'])
+        ap_update.append(DATA['pSTAT_' + key + '_AP_IC50'] / DATA['pSTAT_a2_AP_IC50'])
+    av_update = pd.DataFrame({'AV Model': av_update})
+    ap_update = pd.DataFrame({'AP Model': ap_update})
 
-    plot_barchart(panelA)
+    names_update = baseline_df['Name'].values
+    for idx, n in enumerate(names_update):  # make the plot label nicer to read
+        if n in ['YNSM148A', 'YNSL153A']:
+            names_update[idx] = n[:3] + ', ' + n[3:]
+
+    baseline_df.update(av_update)
+    baseline_df.update(ap_update)
+    baseline_df.update(names_update)
+
+    plot_barchart(panelA, df=baseline_df, custom_order=['R149A', 'A145G', 'L26A', 'YNS, M148A', 'YNS, L153A', 'YNS'])
     plt.setp(panelA.xaxis.get_majorticklabels(), rotation=45, ha="right", rotation_mode="anchor")
     handles, labels = panelA.get_legend_handles_labels()  # get labels and handles
     A_legend.legend(handles, labels)
