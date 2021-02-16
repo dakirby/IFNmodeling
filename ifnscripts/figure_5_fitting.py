@@ -87,11 +87,12 @@ def figure_5_fitting(simulate_pSTAT, fit, plot):
         ydata.append(AP_data[i][:, 1])
     ydata = np.concatenate(ydata)
 
-    def function(placeholder, KM_AV, KM1_AP, KM2_AP, H1_AP, H2_AP):
+    def function(placeholder, KM_AV, KM, L, c, n):
+        params = [KM_AV, KM, L, c, n]
         record = []
         for i in range(4):
-            AV_sim = 100 - antiViralActivity(pSTAT_AV_list[i], KM=KM_AV)
-            AP_sim = 100 - antiProliferativeActivity(pSTAT_AP_list[i], KM1=KM1_AP, KM2=KM2_AP, H1=H1_AP, H2=H2_AP)
+            AV_sim = 100 - antiViralActivity(pSTAT_AV_list[i], KM=params[0])
+            AP_sim = 100 - antiProliferativeActivity(pSTAT_AP_list[i], *params[1:])
             record.append(AV_sim)
             record.append(AP_sim)
         return np.concatenate(record)

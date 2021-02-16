@@ -144,10 +144,10 @@ if __name__ == '__main__':
     dim = tuple((el * layout_scale for el in layout_aspect))
     fig = plt.figure(figsize=dim)
     gs = gridspec.GridSpec(nrows=2, ncols=4)
-    panelA = fig.add_subplot(gs[0, 0:3])
-    A_legend = fig.add_subplot(gs[0, 3])
-    panelB = fig.add_subplot(gs[1, 0:2])
-    panelC = fig.add_subplot(gs[1, 2:])
+    panelA = fig.add_subplot(gs[1, 0:3])
+    A_legend = fig.add_subplot(gs[1, 3])
+    panelB = fig.add_subplot(gs[0, 0:2])
+    panelC = fig.add_subplot(gs[0, 2:])
     # fig.delaxes(all_axes[1][2]) # odd number of panels
 
     # --------------------------------------
