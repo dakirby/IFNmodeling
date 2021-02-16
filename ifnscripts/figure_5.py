@@ -98,7 +98,7 @@ def load_data(dir):
 
 
 if __name__ == '__main__':
-    simulate_DR = True
+    simulate_DR = False
     fitting = True
 
     USP18_sf = 15
@@ -124,14 +124,16 @@ if __name__ == '__main__':
     # ------------------------------------------------------------
     # Get anti-viral and anti-proliferative responses, plus IC50s
     # ------------------------------------------------------------
-    KM_AV_fit, KM1_AP_fit, KM2_AP_fit = np.load(dir + os.sep + 'AV_AP_fit_params.npy')
+    fit_params = np.load(dir + os.sep + 'AV_AP_fit_params.npy')
+    KM_AV_fit = fit_params[0]
+    AP_params = fit_params[1:]
 
     for key in copy.deepcopy(list(DATA.keys())):
         if key.startswith('pSTAT') and not (key.endswith('_refractory') or key[:-3].endswith('_fitting')):
             DATA[key + '_AV'] = antiViralActivity(DATA[key], KM=KM_AV_fit)
             DATA[key + '_AV_IC50'] = IC50(DATA['doses'], 100-DATA[key + '_AV'])
         if key.startswith('pSTAT') and key.endswith('_refractory'):
-            DATA[key[:-11] + '_AP'] = antiProliferativeActivity(DATA[key], KM1=KM1_AP_fit, KM2=KM2_AP_fit)
+            DATA[key[:-11] + '_AP'] = antiProliferativeActivity(DATA[key], *AP_params)
             DATA[key[:-11] + '_AP_IC50'] = IC50(DATA['doses'], 100-DATA[key[:-11] + '_AP'])
 
     # ------------------------------------------------------------------------

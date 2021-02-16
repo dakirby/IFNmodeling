@@ -87,28 +87,31 @@ def figure_5_fitting(simulate_pSTAT, fit, plot):
         ydata.append(AP_data[i][:, 1])
     ydata = np.concatenate(ydata)
 
-    def function(placeholder, KM_AV, KM1_AP, KM2_AP):
+    def function(placeholder, KM_AV, KM1_AP, KM2_AP, H1_AP, H2_AP):
         record = []
         for i in range(4):
             AV_sim = 100 - antiViralActivity(pSTAT_AV_list[i], KM=KM_AV)
-            AP_sim = 100 - antiProliferativeActivity(pSTAT_AP_list[i], KM1=KM1_AP, KM2=KM2_AP)
+            AP_sim = 100 - antiProliferativeActivity(pSTAT_AP_list[i], KM1=KM1_AP, KM2=KM2_AP, H1=H1_AP, H2=H2_AP)
             record.append(AV_sim)
             record.append(AP_sim)
         return np.concatenate(record)
 
     if fit:
         fit_params, _ = curve_fit(function, None, ydata, bounds=(PARAM_LOWER_BOUNDS, PARAM_UPPER_BOUNDS))
-        KM_AV_fit, KM1_AP_fit, KM2_AP_fit = fit_params
         print(fit_params)
+        KM_AV_fit = fit_params[0]
+        AP_fit = fit_params[1:]
         np.save(dir + os.sep + 'AV_AP_fit_params.npy', fit_params)
 
         # get R squared value for fit parameters
-        r2 = R2(ydata, function(None, KM_AV_fit, KM1_AP_fit, KM2_AP_fit), MSE=True)
+        r2 = R2(ydata, function(None, *fit_params), MSE=True)
         print("R squared value of fit is {:.2f}".format(r2))
 
     if plot:
         colour_palette = sns.color_palette("deep", 4)
-        KM_AV_fit, KM1_AP_fit, KM2_AP_fit = np.load(dir + os.sep + 'AV_AP_fit_params.npy')
+        fit_params = np.load(dir + os.sep + 'AV_AP_fit_params.npy')
+        KM_AV_fit = fit_params[0]
+        AP_fit = fit_params[1:]
 
         try:
             sim_doses = np.load(dir + os.sep + 'doses.npy')
@@ -131,10 +134,10 @@ def figure_5_fitting(simulate_pSTAT, fit, plot):
         IFNa7_AV = antiViralActivity(pSTAT_a7, KM=KM_AV_fit)
         IFNw_AV = antiViralActivity(pSTAT_w, KM=KM_AV_fit)
 
-        IFNa2YNS_AP = antiProliferativeActivity(pSTAT_a2YNS_refractory, KM1=KM1_AP_fit, KM2=KM2_AP_fit)
-        IFNa2_AP = antiProliferativeActivity(pSTAT_a2_refractory, KM1=KM1_AP_fit, KM2=KM2_AP_fit)
-        IFNa7_AP = antiProliferativeActivity(pSTAT_a7_refractory, KM1=KM1_AP_fit, KM2=KM2_AP_fit)
-        IFNw_AP = antiProliferativeActivity(pSTAT_w_refractory, KM1=KM1_AP_fit, KM2=KM2_AP_fit)
+        IFNa2YNS_AP = antiProliferativeActivity(pSTAT_a2YNS_refractory, *AP_fit)
+        IFNa2_AP = antiProliferativeActivity(pSTAT_a2_refractory, *AP_fit)
+        IFNa7_AP = antiProliferativeActivity(pSTAT_a7_refractory, *AP_fit)
+        IFNw_AP = antiProliferativeActivity(pSTAT_w_refractory, *AP_fit)
 
         # ------------------------
         # Plot fit to Thomas 2011
