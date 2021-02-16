@@ -4,6 +4,9 @@ from ifnclass.ifnplot import DoseresponsePlot
 from AP_AV_DATA import Thomas2011IFNalpha2AV, Thomas2011IFNalpha2YNSAV,\
  Thomas2011IFNalpha7AV, Thomas2011IFNomegaAV, Thomas2011IFNalpha2YNSAP,\
  Thomas2011IFNalpha2AP, Thomas2011IFNalpha7AP, Thomas2011IFNomegaAP
+
+from figure_5_theory import antiViralActivity, antiProliferativeActivity,\
+ PARAM_LOWER_BOUNDS, PARAM_UPPER_BOUNDS
 from figure_5_simulations import figure_5_simulations
 import os
 from numpy import logspace
@@ -34,16 +37,6 @@ def R2(ydata, ymodel, MSE=False):
     return r_squared
 
 
-def antiViralActivity(pSTAT, KM):
-    return np.nan_to_num(100 * pSTAT / (pSTAT + KM))
-
-
-def antiProliferativeActivity(pSTAT, KM1, KM2):
-    H1 = 2
-    H2 = 4
-    return np.nan_to_num(100 * (pSTAT**H1 / (pSTAT**H1 + KM1**H1) + pSTAT**H2 / (pSTAT**H2 + KM2**H2)) / 2)
-
-
 def MSE(l1, l2):
     return np.sum(np.square(np.subtract(l1, l2))) / len(l1)
 
@@ -60,7 +53,6 @@ def pSTAT_response(test_doses, tag):
 
 
 def figure_5_fitting(simulate_pSTAT, fit, plot):
-    KM_AV_guess, KM_AP_guess, H_AP_guess = 4.39249, 7000., 0.75
     # -------------------------------------------------------------------------
     # -------------------------------------------------------------------------
     AV_doses = [el[0] for el in Thomas2011IFNalpha2YNSAV]
@@ -105,7 +97,7 @@ def figure_5_fitting(simulate_pSTAT, fit, plot):
         return np.concatenate(record)
 
     if fit:
-        fit_params, _ = curve_fit(function, None, ydata, bounds=([0.1, 0.1, 0.1], [1.E6, 1.E6, 1.E6]))
+        fit_params, _ = curve_fit(function, None, ydata, bounds=(PARAM_LOWER_BOUNDS, PARAM_UPPER_BOUNDS))
         KM_AV_fit, KM1_AP_fit, KM2_AP_fit = fit_params
         print(fit_params)
         np.save(dir + os.sep + 'AV_AP_fit_params.npy', fit_params)

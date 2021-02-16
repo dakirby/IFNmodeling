@@ -15,6 +15,7 @@ from AP_AV_DATA import Thomas2011IFNalpha2AV, Thomas2011IFNalpha2YNSAV,\
  Thomas2011IFNalpha2AP, Thomas2011IFNalpha7AP, Thomas2011IFNomegaAP,\
  Schreiber2017AV, Schreiber2017AP
 
+from figure_5_theory import antiViralActivity, antiProliferativeActivity
 from figure_5_simulations import figure_5_simulations
 from figure_5_fitting import figure_5_fitting
 from figure_5_setup_barchart import figure_5_setup_barchart as setup_barchart
@@ -69,16 +70,6 @@ def IC50(dose, response, target=50):
         return ic50[0]  # ic50 is a one-element ndarray
 
 
-def antiViralActivity(pSTAT, KM=4.39249):
-    return np.array(100 * pSTAT / (pSTAT + KM))
-
-
-def antiProliferativeActivity(pSTAT, KM1, KM2):
-    H1 = 2
-    H2 = 4
-    return np.nan_to_num(100 * (pSTAT**H1 / (pSTAT**H1 + KM1**H1) + pSTAT**H2 / (pSTAT**H2 + KM2**H2)) / 2)
-
-
 def plot_barchart(axis=None, df=None, custom_order=None):
     if df is None:
         # Import data
@@ -107,8 +98,8 @@ def load_data(dir):
 
 
 if __name__ == '__main__':
-    simulate_DR = False
-    fitting = False
+    simulate_DR = True
+    fitting = True
 
     USP18_sf = 15
 
