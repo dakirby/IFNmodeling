@@ -1,9 +1,9 @@
 from ifnclass.ifnfit import DualMixedPopulation
 
-initial_parameters = {'k_a1': 4.98E-14 * 2, 'k_a2': 8.30e-13 * 2,
+initial_parameters = {'k_a1': 4.98E-14 * 1.33, 'k_a2': 8.30e-13 * 2,
                       'k_d4': 0.006 * 3.8,
                       'kpu': 0.00095,
-                      'ka2': 4.98e-13 * 2.45, 'kd4': 0.3 * 2.867,
+                      'ka2': 4.98e-13 * 1.33, 'kd4': 0.3 * 2.867,
                       'kint_a': 0.000124, 'kint_b': 0.00086,
                       'krec_a1': 0.0028, 'krec_a2': 0.01, 'krec_b1': 0.005,
                       'krec_b2': 0.05}

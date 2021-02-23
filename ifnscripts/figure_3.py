@@ -149,7 +149,7 @@ if __name__ == '__main__':
     # Initialize model
     # -------------------------------
     Mixed_Model = load_model.load_model()
-    scale_factor = load_model.scale_factor
+    scale_factor = 1.  # load_model.scale_factor
 
     times = [60.0]
     doses_alpha = np.divide([0, 1E-7, 1E-8, 3E-9, 1E-9, 3E-10, 1E-10, 1E-11], 1E-12)
@@ -345,7 +345,7 @@ if __name__ == '__main__':
     # Set up Figure layout
     # ----------------------
     # Set up dose response figures
-    new_fit = DoseresponsePlot((1, 2))
+    new_fit = DoseresponsePlot((1, 2), figsize=(12, 5))
     new_fit.axes[0].set_ylabel('pSTAT (MFI)')
     new_fit.axes[1].set_ylabel('pSTAT (MFI)')
 
@@ -355,7 +355,7 @@ if __name__ == '__main__':
     alpha_mask = [2.5, 5.0, 7.5, 20.0]
     beta_mask = [2.5, 5.0, 7.5, 20.0]
     for idx, t in enumerate([10.0, 60.0]):
-        if t is 10.0:
+        if t == 10.0:
             new_fit.add_trajectory(mean_large_data, t, 'errorbar', 'o', (0, 0), 'Alpha', color=color_palette[4],
                                    linewidth=2.0)
             new_fit.add_trajectory(mean_small_data, t, 'errorbar', 'o', (0, 0), 'Alpha', color=color_palette[5],
@@ -395,18 +395,14 @@ if __name__ == '__main__':
                                                                     'R1': R1,
                                                                     'R2': R2,
                                                                     'S': STAT},
-                                                        return_type='dataframe',
-                                                        dataframe_labels='Alpha',
-                                                        scale_factor=scale_factor)
+                                                        sf=scale_factor)
     small_cells_beta = Mixed_Model.mixed_dose_response(times, 'TotalpSTAT', 'Ib',
                                                        beta_doses,
                                                        parameters={'Ia': 0,
                                                                    'R1': R1,
                                                                    'R2': R2,
                                                                    'S': STAT},
-                                                       return_type='dataframe',
-                                                       dataframe_labels='Beta',
-                                                       scale_factor=scale_factor)
+                                                       sf=scale_factor)
     small_cells_alpha_IFNdata = IfnData('custom', df=small_cells_alpha, conditions={'Alpha': {'Ib': 0}})
     small_cells_beta_IFNdata = IfnData('custom', df=small_cells_beta, conditions={'Beta': {'Ia': 0}})
 
@@ -417,22 +413,20 @@ if __name__ == '__main__':
     R1 = R1 * volPM_large / volPM_small
     R2 = R2 * volPM_large / volPM_small
     STAT = STAT * volCP_large / volCP_small
-    large_cells_alpha = Mixed_Model.doseresponse(times, 'TotalpSTAT', 'Ia',
+    large_cells_alpha = Mixed_Model.mixed_dose_response(times, 'TotalpSTAT', 'Ia',
                                                  alpha_doses,
                                                  parameters={'Ib': 0,
                                                              'R1': R1,
                                                              'R2': R2,
                                                              'S': STAT},
-                                                 return_type='dataframe', dataframe_labels='Alpha',
-                                                 scale_factor=scale_factor)
-    large_cells_beta = Mixed_Model.doseresponse(times, 'TotalpSTAT', 'Ib',
+                                                 sf=scale_factor)
+    large_cells_beta = Mixed_Model.mixed_dose_response(times, 'TotalpSTAT', 'Ib',
                                                 beta_doses,
                                                 parameters={'Ia': 0,
                                                             'R1': R1,
                                                             'R2': R2,
                                                             'S': STAT},
-                                                return_type='dataframe', dataframe_labels='Beta',
-                                                scale_factor=scale_factor)
+                                                sf=scale_factor)
     large_cells_alpha_IFNdata = IfnData('custom', df=large_cells_alpha, conditions={'Alpha': {'Ib': 0}})
     large_cells_beta_IFNdata = IfnData('custom', df=large_cells_beta, conditions={'Beta': {'Ia': 0}})
 
@@ -463,6 +457,5 @@ if __name__ == '__main__':
     dr_axes[0].set_title(r'IFN$\alpha$')
     dr_axes[1].set_title(r'IFN$\beta$')
 
-    dr_fig, dr_axes = dr_plot.show_figure(save_flag=False)
-    dr_fig.set_size_inches(12, 5)
-    dr_fig.savefig(os.path.join(os.getcwd(), 'results', 'Figures', 'Figure_3', 'Figure_3.pdf'))
+    fname = os.path.join(os.getcwd(), 'results', 'Figures', 'Figure_3', 'Figure_3.pdf')
+    dr_fig, dr_axes = dr_plot.show_figure(show_flag=False, save_flag=True, save_dir=fname)

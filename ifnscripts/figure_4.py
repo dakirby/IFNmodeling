@@ -58,9 +58,9 @@ def increase_K4_figure():
     axes.set_ylabel("pSTAT1 Relative to Primary Response", fontsize=14)
     axes.set(xscale='log', yscale='linear')
 
-    axes.plot(dose_list, np.divide(dr_curve_a15, dr_curve_a), label=r'IFN$\alpha$ $K_{D4}\times$'+'{}'.format(k4sf2), color=alpha_palette[4], linestyle='--', linewidth=2)
+    axes.plot(dose_list, np.divide(dr_curve_a15, dr_curve_a), label=r'IFN$\alpha$ $K_{D4}\times$'+'{}'.format(k4sf1), color=alpha_palette[4], linestyle='--', linewidth=2)
 
-    axes.plot(dose_list, np.divide(dr_curve_b15, dr_curve_b), label=r'IFN$\beta$ $K_{D4}\times$'+'{}'.format(k4sf2), color=beta_palette[4], linestyle='--', linewidth=2)
+    axes.plot(dose_list, np.divide(dr_curve_b15, dr_curve_b), label=r'IFN$\beta$ $K_{D4}\times$'+'{}'.format(k4sf1), color=beta_palette[4], linestyle='--', linewidth=2)
 
     axes.legend(loc=2, prop={'size': 8})
     fig.set_size_inches(8, 8)
@@ -77,10 +77,8 @@ def increase_K4_figure():
     axes.plot(dose_list, dr_curve_a, label=r'IFN$\alpha$', color=alpha_palette[5], linewidth=4)
     axes.plot(dose_list, dr_curve_a15, label=r'IFN$\alpha$ $K_{D4}\times$' + '{}'.format(k4sf1), color=alpha_palette[5], linewidth=4, linestyle='dashed')
 
-
     axes.plot(dose_list, dr_curve_b, label=r'IFN$\beta$', color=beta_palette[5], linewidth=4)
     axes.plot(dose_list, dr_curve_b15, label=r'IFN$\beta$ $K_{D4}\times$' + '{}'.format(k4sf1), color=beta_palette[5], linewidth=4, linestyle='dashed')
-
 
     axes.legend(loc=2, prop={'size': 12})
 
@@ -121,7 +119,7 @@ def timecourse_figure():
 
 
 if __name__ == '__main__':
-    K4_flag = False
+    K4_flag = True
     TC_flag = True
     # ---------------------------------------------
     # ---------------------------------------------

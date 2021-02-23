@@ -127,10 +127,10 @@ class TimecoursePlot:
     """
 
     # Initializer / Instance Attributes
-    def __init__(self, shape):
+    def __init__(self, shape, figsize=[6.4, 4.8]):
         self.nrows = shape[0]
         self.ncols = shape[1]
-        self.fig, self.axes = plt.subplots(nrows=self.nrows, ncols=self.ncols)
+        self.fig, self.axes = plt.subplots(nrows=self.nrows, ncols=self.ncols, figsize=figsize)
         self.trajectories = []
         self.subplot_indices = []
         if self.nrows > 1 and self.ncols > 1:
@@ -285,10 +285,10 @@ class DoseresponsePlot:
     """
 
     # Initializer / Instance Attributes
-    def __init__(self, shape):
+    def __init__(self, shape, figsize=[6.4, 4.8]):
         self.nrows = shape[0]
         self.ncols = shape[1]
-        self.fig, self.axes = plt.subplots(nrows=self.nrows, ncols=self.ncols)
+        self.fig, self.axes = plt.subplots(nrows=self.nrows, ncols=self.ncols, figsize=figsize)
         if self.nrows > 1 and self.ncols > 1:
             for row in range(self.nrows):
                 for column in range(self.ncols):
