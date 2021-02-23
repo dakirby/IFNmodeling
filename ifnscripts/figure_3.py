@@ -1,5 +1,5 @@
 from ifnclass.ifndata import IfnData, DataAlignment
-from ifnclass.ifnmodel import IfnModel
+import load_model
 from ifnclass.ifnplot import DoseresponsePlot, TimecoursePlot
 import seaborn as sns
 import numpy as np
@@ -13,6 +13,7 @@ import fcsparser
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 warnings.filterwarnings("ignore", category=UserWarning)
+
 
 def grab_data(fname, well=None):
     path_RawFiles = os.path.join(os.path.abspath(os.path.join(os.getcwd(), os.pardir)),
@@ -147,19 +148,9 @@ if __name__ == '__main__':
     # -------------------------------
     # Initialize model
     # -------------------------------
-    Mixed_Model = IfnModel('Mixed_IFN_ppCompatible')
-    initial_parameters = {'k_a1': 4.98E-14 * 2, 'k_a2': 8.30e-13 * 2, 'k_d4': 0.0228,
-                          'kSOCSon': 8e-07, 'kpu': 0.0011,
-                          'ka1': 3.3e-15, 'ka2': 1.22e-12, 'kd4': 0.86,
-                          'kd3': 1.74e-05,
-                          'kint_a': 0.000124, 'kint_b': 0.00086,
-                          'krec_a1': 0.0028, 'krec_a2': 0.01, 'krec_b1': 0.005, 'krec_b2': 0.05}
-    dual_parameters = {'kint_a': 0.00052, 'kSOCSon': 6e-07, 'kint_b': 0.00052, 'krec_a1': 0.001, 'krec_a2': 0.1,
-                       'krec_b1': 0.005, 'krec_b2': 0.05}
-    Mixed_Model.set_parameters(initial_parameters)
-    Mixed_Model.set_parameters(dual_parameters)
+    Mixed_Model = load_model.load_model()
+    scale_factor = load_model.scale_factor
 
-    scale_factor = 0.613 #1.227
     times = [60.0]
     doses_alpha = np.divide([0, 1E-7, 1E-8, 3E-9, 1E-9, 3E-10, 1E-10, 1E-11], 1E-12)
     doses_beta = np.divide([0, 2E-9, 6E-10, 2E-10, 6E-11, 2E-11, 6E-12, 2E-13], 1E-12)
@@ -398,22 +389,24 @@ if __name__ == '__main__':
     R1 = 6755
     R2 = 1511
     STAT = 10000
-    small_cells_alpha = Mixed_Model.doseresponse(times, 'TotalpSTAT', 'Ia',
-                                                 alpha_doses,
-                                                 parameters={'Ib': 0,
-                                                             'R1': R1,
-                                                             'R2': R2,
-                                                             'S': STAT},
-                                                 return_type='dataframe', dataframe_labels='Alpha',
-                                                 scale_factor=scale_factor)
-    small_cells_beta = Mixed_Model.doseresponse(times, 'TotalpSTAT', 'Ib',
-                                                beta_doses,
-                                                parameters={'Ia': 0,
-                                                            'R1': R1,
-                                                            'R2': R2,
-                                                            'S': STAT},
-                                                return_type='dataframe', dataframe_labels='Beta',
-                                                scale_factor=scale_factor)
+    small_cells_alpha = Mixed_Model.mixed_dose_response(times, 'TotalpSTAT', 'Ia',
+                                                        alpha_doses,
+                                                        parameters={'Ib': 0,
+                                                                    'R1': R1,
+                                                                    'R2': R2,
+                                                                    'S': STAT},
+                                                        return_type='dataframe',
+                                                        dataframe_labels='Alpha',
+                                                        scale_factor=scale_factor)
+    small_cells_beta = Mixed_Model.mixed_dose_response(times, 'TotalpSTAT', 'Ib',
+                                                       beta_doses,
+                                                       parameters={'Ia': 0,
+                                                                   'R1': R1,
+                                                                   'R2': R2,
+                                                                   'S': STAT},
+                                                       return_type='dataframe',
+                                                       dataframe_labels='Beta',
+                                                       scale_factor=scale_factor)
     small_cells_alpha_IFNdata = IfnData('custom', df=small_cells_alpha, conditions={'Alpha': {'Ib': 0}})
     small_cells_beta_IFNdata = IfnData('custom', df=small_cells_beta, conditions={'Beta': {'Ia': 0}})
 
