@@ -1,0 +1,559 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <sbml xmlns="http://www.sbml.org/sbml/level2" level="2" version="1">
+        <model name="Mixed_IFN_ppCompatible">
+            <listOfCompartments>
+                <compartment id="default1" name="default1" spatialDimensions="3" size="1"/>
+            </listOfCompartments>
+            <listOfSpecies>
+            <species id="__s0" metaid="metaid_0" name="IFN_alpha2(r1=None, r2=None)" compartment="default1" initialAmount="6022000000">
+                <annotation>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Description rdf:about="#metaid_0">
+                        </rdf:Description>
+                    </rdf:RDF>
+                </annotation>
+            </species>
+            <species id="__s1" metaid="metaid_1" name="IFN_beta(r1=None, r2=None)" compartment="default1" initialAmount="6022000000">
+                <annotation>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Description rdf:about="#metaid_1">
+                        </rdf:Description>
+                    </rdf:RDF>
+                </annotation>
+            </species>
+            <species id="__s2" metaid="metaid_2" name="IFNAR1(re=None, ri=None, loc='out')" compartment="default1" initialAmount="2000">
+                <annotation>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Description rdf:about="#metaid_2">
+                        </rdf:Description>
+                    </rdf:RDF>
+                </annotation>
+            </species>
+            <species id="__s3" metaid="metaid_3" name="IFNAR2(re=None, ri=None, loc='out')" compartment="default1" initialAmount="2000">
+                <annotation>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Description rdf:about="#metaid_3">
+                        </rdf:Description>
+                    </rdf:RDF>
+                </annotation>
+            </species>
+            <species id="__s4" metaid="metaid_4" name="STAT(j='U', loc='Cyt', fdbk=None)" compartment="default1" initialAmount="10000">
+                <annotation>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Description rdf:about="#metaid_4">
+                        </rdf:Description>
+                    </rdf:RDF>
+                </annotation>
+            </species>
+            <species id="__s5" metaid="metaid_5" name="STAT(j='P', loc='Cyt', fdbk=None)" compartment="default1" initialAmount="0">
+                <annotation>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Description rdf:about="#metaid_5">
+                        </rdf:Description>
+                    </rdf:RDF>
+                </annotation>
+            </species>
+            <species id="__s6" metaid="metaid_6" name="SOCS(site=None)" compartment="default1" initialAmount="1">
+                <annotation>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Description rdf:about="#metaid_6">
+                        </rdf:Description>
+                    </rdf:RDF>
+                </annotation>
+            </species>
+            <species id="__s7" metaid="metaid_7" name="IFNAR1(re=1, ri=None, loc='out') ._br_IFN_alpha2(r1=1, r2=None)" compartment="default1" initialAmount="0">
+                <annotation>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Description rdf:about="#metaid_7">
+                            <bqbiol:hasPart>
+                                <rdf:Bag>
+                                </rdf:Bag>
+                            </bqbiol:hasPart>
+                        </rdf:Description>
+                    </rdf:RDF>
+                </annotation>
+            </species>
+            <species id="__s8" metaid="metaid_8" name="IFNAR2(re=1, ri=None, loc='out') ._br_IFN_alpha2(r1=1, r2=None)" compartment="default1" initialAmount="0">
+                <annotation>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Description rdf:about="#metaid_8">
+                            <bqbiol:hasPart>
+                                <rdf:Bag>
+                                </rdf:Bag>
+                            </bqbiol:hasPart>
+                        </rdf:Description>
+                    </rdf:RDF>
+                </annotation>
+            </species>
+            <species id="__s9" metaid="metaid_9" name="IFNAR1(re=1, ri=None, loc='out') ._br_IFN_beta(r1=1, r2=None)" compartment="default1" initialAmount="0">
+                <annotation>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Description rdf:about="#metaid_9">
+                            <bqbiol:hasPart>
+                                <rdf:Bag>
+                                </rdf:Bag>
+                            </bqbiol:hasPart>
+                        </rdf:Description>
+                    </rdf:RDF>
+                </annotation>
+            </species>
+            <species id="__s10" metaid="metaid_10" name="IFNAR2(re=1, ri=None, loc='out') ._br_IFN_beta(r1=1, r2=None)" compartment="default1" initialAmount="0">
+                <annotation>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Description rdf:about="#metaid_10">
+                            <bqbiol:hasPart>
+                                <rdf:Bag>
+                                </rdf:Bag>
+                            </bqbiol:hasPart>
+                        </rdf:Description>
+                    </rdf:RDF>
+                </annotation>
+            </species>
+            <species id="__s11" metaid="metaid_11" name="IFNAR2(re=None, ri=1, loc='out') ._br_SOCS(site=1)" compartment="default1" initialAmount="0">
+                <annotation>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Description rdf:about="#metaid_11">
+                            <bqbiol:hasPart>
+                                <rdf:Bag>
+                                </rdf:Bag>
+                            </bqbiol:hasPart>
+                        </rdf:Description>
+                    </rdf:RDF>
+                </annotation>
+            </species>
+            <species id="__s12" metaid="metaid_12" name="IFNAR1(re=None, ri=None, loc='in')" compartment="default1" initialAmount="0">
+                <annotation>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Description rdf:about="#metaid_12">
+                        </rdf:Description>
+                    </rdf:RDF>
+                </annotation>
+            </species>
+            <species id="__s13" metaid="metaid_13" name="IFNAR2(re=None, ri=None, loc='in')" compartment="default1" initialAmount="0">
+                <annotation>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Description rdf:about="#metaid_13">
+                        </rdf:Description>
+                    </rdf:RDF>
+                </annotation>
+            </species>
+            <species id="__s14" metaid="metaid_14" name="IFNAR2(re=1, ri=2, loc='out') ._br_IFN_alpha2(r1=1, r2=None) ._br_SOCS(site=2)" compartment="default1" initialAmount="0">
+                <annotation>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Description rdf:about="#metaid_14">
+                            <bqbiol:hasPart>
+                                <rdf:Bag>
+                                </rdf:Bag>
+                            </bqbiol:hasPart>
+                        </rdf:Description>
+                    </rdf:RDF>
+                </annotation>
+            </species>
+            <species id="__s15" metaid="metaid_15" name="IFNAR2(re=1, ri=2, loc='out') ._br_IFN_beta(r1=1, r2=None) ._br_SOCS(site=2)" compartment="default1" initialAmount="0">
+                <annotation>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Description rdf:about="#metaid_15">
+                            <bqbiol:hasPart>
+                                <rdf:Bag>
+                                </rdf:Bag>
+                            </bqbiol:hasPart>
+                        </rdf:Description>
+                    </rdf:RDF>
+                </annotation>
+            </species>
+            <species id="__s16" metaid="metaid_16" name="IFNAR1(re=1, ri=None, loc='out') ._br_IFNAR2(re=2, ri=None, loc='out') ._br_IFN_alpha2(r1=1, r2=2)" compartment="default1" initialAmount="0">
+                <annotation>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Description rdf:about="#metaid_16">
+                            <bqbiol:hasPart>
+                                <rdf:Bag>
+                                </rdf:Bag>
+                            </bqbiol:hasPart>
+                        </rdf:Description>
+                    </rdf:RDF>
+                </annotation>
+            </species>
+            <species id="__s17" metaid="metaid_17" name="IFNAR1(re=1, ri=None, loc='out') ._br_IFNAR2(re=2, ri=3, loc='out') ._br_IFN_alpha2(r1=1, r2=2) ._br_SOCS(site=3)" compartment="default1" initialAmount="0">
+                <annotation>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Description rdf:about="#metaid_17">
+                            <bqbiol:hasPart>
+                                <rdf:Bag>
+                                </rdf:Bag>
+                            </bqbiol:hasPart>
+                        </rdf:Description>
+                    </rdf:RDF>
+                </annotation>
+            </species>
+            <species id="__s18" metaid="metaid_18" name="IFNAR1(re=1, ri=None, loc='out') ._br_IFNAR2(re=2, ri=None, loc='out') ._br_IFN_beta(r1=1, r2=2)" compartment="default1" initialAmount="0">
+                <annotation>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Description rdf:about="#metaid_18">
+                            <bqbiol:hasPart>
+                                <rdf:Bag>
+                                </rdf:Bag>
+                            </bqbiol:hasPart>
+                        </rdf:Description>
+                    </rdf:RDF>
+                </annotation>
+            </species>
+            <species id="__s19" metaid="metaid_19" name="IFNAR1(re=1, ri=None, loc='out') ._br_IFNAR2(re=2, ri=3, loc='out') ._br_IFN_beta(r1=1, r2=2) ._br_SOCS(site=3)" compartment="default1" initialAmount="0">
+                <annotation>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Description rdf:about="#metaid_19">
+                            <bqbiol:hasPart>
+                                <rdf:Bag>
+                                </rdf:Bag>
+                            </bqbiol:hasPart>
+                        </rdf:Description>
+                    </rdf:RDF>
+                </annotation>
+            </species>
+            <species id="__s20" metaid="metaid_20" name="IFNAR1(re=1, ri=None, loc='in') ._br_IFNAR2(re=2, ri=None, loc='in') ._br_IFN_alpha2(r1=1, r2=2)" compartment="default1" initialAmount="0">
+                <annotation>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Description rdf:about="#metaid_20">
+                            <bqbiol:hasPart>
+                                <rdf:Bag>
+                                </rdf:Bag>
+                            </bqbiol:hasPart>
+                        </rdf:Description>
+                    </rdf:RDF>
+                </annotation>
+            </species>
+            <species id="__s21" metaid="metaid_21" name="IFNAR1(re=1, ri=None, loc='in') ._br_IFNAR2(re=2, ri=None, loc='in') ._br_IFN_beta(r1=1, r2=2)" compartment="default1" initialAmount="0">
+                <annotation>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Description rdf:about="#metaid_21">
+                            <bqbiol:hasPart>
+                                <rdf:Bag>
+                                </rdf:Bag>
+                            </bqbiol:hasPart>
+                        </rdf:Description>
+                    </rdf:RDF>
+                </annotation>
+            </species>
+        </listOfSpecies>
+        <listOfParameters>
+            <parameter id="ka1" metaid="metaid_ka1" name="ka1" value="3.3211557622052469e-14"/>
+            <parameter id="kd1" metaid="metaid_kd1" name="kd1" value="1"/>
+            <parameter id="ka2" metaid="metaid_ka2" name="ka2" value="4.9817336433078698e-13"/>
+            <parameter id="kd2" metaid="metaid_kd2" name="kd2" value="0.014999999999999999"/>
+            <parameter id="ka4" metaid="metaid_ka4" name="ka4" value="0.00036231879999999998"/>
+            <parameter id="kd4" metaid="metaid_kd4" name="kd4" value="0.29999999999999999"/>
+            <parameter id="ka3" metaid="metaid_ka3" name="ka3" value="0.00036231879999999998"/>
+            <parameter id="kd3" metaid="metaid_kd3" name="kd3" value="0.00029999999999999997"/>
+            <parameter id="k_a1" metaid="metaid_k_a1" name="k_a1" value="4.98e-14"/>
+            <parameter id="k_d1" metaid="metaid_k_d1" name="k_d1" value="0.029999999999999999"/>
+            <parameter id="k_a2" metaid="metaid_k_a2" name="k_a2" value="8.3e-13"/>
+            <parameter id="k_d2" metaid="metaid_k_d2" name="k_d2" value="0.002"/>
+            <parameter id="k_a3" metaid="metaid_k_a3" name="k_a3" value="0.00036200000000000002"/>
+            <parameter id="k_d3" metaid="metaid_k_d3" name="k_d3" value="2.4000000000000001e-05"/>
+            <parameter id="k_a4" metaid="metaid_k_a4" name="k_a4" value="0.00036200000000000002"/>
+            <parameter id="k_d4" metaid="metaid_k_d4" name="k_d4" value="0.0060000000000000001"/>
+            <parameter id="kpa" metaid="metaid_kpa" name="kpa" value="9.9999999999999995e-07"/>
+            <parameter id="kpu" metaid="metaid_kpu" name="kpu" value="0.001"/>
+            <parameter id="kIntBasal_r1" metaid="metaid_kIntBasal_r1" name="kIntBasal_r1" value="0.0001"/>
+            <parameter id="kIntBasal_r2" metaid="metaid_kIntBasal_r2" name="kIntBasal_r2" value="2.0000000000000002e-05"/>
+            <parameter id="krec_r1" metaid="metaid_krec_r1" name="krec_r1" value="0.0001"/>
+            <parameter id="krec_r2" metaid="metaid_krec_r2" name="krec_r2" value="0.0001"/>
+            <parameter id="kdeg_a" metaid="metaid_kdeg_a" name="kdeg_a" value="0.00080000000000000004"/>
+            <parameter id="kdeg_b" metaid="metaid_kdeg_b" name="kdeg_b" value="0.00080000000000000004"/>
+            <parameter id="kint_a" metaid="metaid_kint_a" name="kint_a" value="0.00050000000000000001"/>
+            <parameter id="kint_b" metaid="metaid_kint_b" name="kint_b" value="0.00020000000000000001"/>
+            <parameter id="krec_a1" metaid="metaid_krec_a1" name="krec_a1" value="0.00029999999999999997"/>
+            <parameter id="krec_a2" metaid="metaid_krec_a2" name="krec_a2" value="0.0050000000000000001"/>
+            <parameter id="kSOCS" metaid="metaid_kSOCS" name="kSOCS" value="0.0040000000000000001"/>
+            <parameter id="SOCSdeg" metaid="metaid_SOCSdeg" name="SOCSdeg" value="0.0025000000000000001"/>
+            <parameter id="kSOCSon" metaid="metaid_kSOCSon" name="kSOCSon" value="9.9999999999999995e-07"/>
+            <parameter id="kSOCSoff" metaid="metaid_kSOCSoff" name="kSOCSoff" value="0.00055000000000000003"/>
+        </listOfParameters>
+        <listOfReactions>
+            <reaction id="r0" metaid="metaid_r0" name="r0" reversible="true">
+                <listOfReactants>
+                    <speciesReference species="__s0"/>
+                    <speciesReference species="__s2"/>
+                </listOfReactants>
+                <listOfProducts>
+                    <speciesReference species="__s7"/>
+                </listOfProducts>
+                <kineticLaw><math xmlns="http://www.w3.org/1998/Math/MathML"><apply><minus/><apply><times/><ci>__s0</ci><ci>__s2</ci><ci>ka1</ci></apply><apply><times/><ci>__s7</ci><ci>kd1</ci></apply></apply></math></kineticLaw>
+            </reaction>
+            <reaction id="r1" metaid="metaid_r1" name="r1" reversible="true">
+                <listOfReactants>
+                    <speciesReference species="__s0"/>
+                    <speciesReference species="__s3"/>
+                </listOfReactants>
+                <listOfProducts>
+                    <speciesReference species="__s8"/>
+                </listOfProducts>
+                <kineticLaw><math xmlns="http://www.w3.org/1998/Math/MathML"><apply><minus/><apply><times/><ci>__s0</ci><ci>__s3</ci><ci>ka2</ci></apply><apply><times/><ci>__s8</ci><ci>kd2</ci></apply></apply></math></kineticLaw>
+            </reaction>
+            <reaction id="r2" metaid="metaid_r2" name="r2" reversible="true">
+                <listOfReactants>
+                    <speciesReference species="__s1"/>
+                    <speciesReference species="__s2"/>
+                </listOfReactants>
+                <listOfProducts>
+                    <speciesReference species="__s9"/>
+                </listOfProducts>
+                <kineticLaw><math xmlns="http://www.w3.org/1998/Math/MathML"><apply><minus/><apply><times/><ci>__s1</ci><ci>__s2</ci><ci>k_a1</ci></apply><apply><times/><ci>__s9</ci><ci>k_d1</ci></apply></apply></math></kineticLaw>
+            </reaction>
+            <reaction id="r3" metaid="metaid_r3" name="r3" reversible="true">
+                <listOfReactants>
+                    <speciesReference species="__s1"/>
+                    <speciesReference species="__s3"/>
+                </listOfReactants>
+                <listOfProducts>
+                    <speciesReference species="__s10"/>
+                </listOfProducts>
+                <kineticLaw><math xmlns="http://www.w3.org/1998/Math/MathML"><apply><minus/><apply><times/><ci>__s1</ci><ci>__s3</ci><ci>k_a2</ci></apply><apply><times/><ci>__s10</ci><ci>k_d2</ci></apply></apply></math></kineticLaw>
+            </reaction>
+            <reaction id="r4" metaid="metaid_r4" name="r4" reversible="false">
+                <listOfReactants>
+                    <speciesReference species="__s5"/>
+                </listOfReactants>
+                <listOfProducts>
+                    <speciesReference species="__s4"/>
+                </listOfProducts>
+                <kineticLaw><math xmlns="http://www.w3.org/1998/Math/MathML"><apply><times/><ci>__s5</ci><ci>kpu</ci></apply></math></kineticLaw>
+            </reaction>
+            <reaction id="r5" metaid="metaid_r5" name="r5" reversible="false">
+                <listOfReactants>
+                    <speciesReference species="__s5"/>
+                </listOfReactants>
+                <listOfProducts>
+                    <speciesReference species="__s5"/>
+                    <speciesReference species="__s6"/>
+                </listOfProducts>
+                <kineticLaw><math xmlns="http://www.w3.org/1998/Math/MathML"><apply><times/><ci>__s5</ci><ci>kSOCS</ci></apply></math></kineticLaw>
+            </reaction>
+            <reaction id="r6" metaid="metaid_r6" name="r6" reversible="false">
+                <listOfReactants>
+                    <speciesReference species="__s6"/>
+                </listOfReactants>
+                <listOfProducts>
+                </listOfProducts>
+                <kineticLaw><math xmlns="http://www.w3.org/1998/Math/MathML"><apply><times/><ci>__s6</ci><ci>SOCSdeg</ci></apply></math></kineticLaw>
+            </reaction>
+            <reaction id="r7" metaid="metaid_r7" name="r7" reversible="true">
+                <listOfReactants>
+                    <speciesReference species="__s3"/>
+                    <speciesReference species="__s6"/>
+                </listOfReactants>
+                <listOfProducts>
+                    <speciesReference species="__s11"/>
+                </listOfProducts>
+                <kineticLaw><math xmlns="http://www.w3.org/1998/Math/MathML"><apply><plus/><apply><minus/><apply><times/><ci>__s11</ci><ci>kSOCSoff</ci></apply></apply><apply><times/><ci>__s3</ci><ci>__s6</ci><ci>kSOCSon</ci></apply></apply></math></kineticLaw>
+            </reaction>
+            <reaction id="r8" metaid="metaid_r8" name="r8" reversible="true">
+                <listOfReactants>
+                    <speciesReference species="__s2"/>
+                </listOfReactants>
+                <listOfProducts>
+                    <speciesReference species="__s12"/>
+                </listOfProducts>
+                <kineticLaw><math xmlns="http://www.w3.org/1998/Math/MathML"><apply><plus/><apply><minus/><apply><minus/><apply><times/><cn>2.00000000000000</cn><ci>__s12</ci><ci>krec_a1</ci></apply></apply><apply><times/><ci>__s12</ci><ci>krec_r1</ci></apply></apply><apply><times/><ci>__s2</ci><ci>kIntBasal_r1</ci></apply></apply></math></kineticLaw>
+            </reaction>
+            <reaction id="r9" metaid="metaid_r9" name="r9" reversible="true">
+                <listOfReactants>
+                    <speciesReference species="__s3"/>
+                </listOfReactants>
+                <listOfProducts>
+                    <speciesReference species="__s13"/>
+                </listOfProducts>
+                <kineticLaw><math xmlns="http://www.w3.org/1998/Math/MathML"><apply><plus/><apply><minus/><apply><minus/><apply><times/><cn>2.00000000000000</cn><ci>__s13</ci><ci>krec_a2</ci></apply></apply><apply><times/><ci>__s13</ci><ci>krec_r2</ci></apply></apply><apply><times/><ci>__s3</ci><ci>kIntBasal_r2</ci></apply></apply></math></kineticLaw>
+            </reaction>
+            <reaction id="r10" metaid="metaid_r10" name="r10" reversible="true">
+                <listOfReactants>
+                    <speciesReference species="__s0"/>
+                    <speciesReference species="__s11"/>
+                </listOfReactants>
+                <listOfProducts>
+                    <speciesReference species="__s14"/>
+                </listOfProducts>
+                <kineticLaw><math xmlns="http://www.w3.org/1998/Math/MathML"><apply><minus/><apply><times/><ci>__s0</ci><ci>__s11</ci><ci>ka2</ci></apply><apply><times/><ci>__s14</ci><ci>kd2</ci></apply></apply></math></kineticLaw>
+            </reaction>
+            <reaction id="r11" metaid="metaid_r11" name="r11" reversible="true">
+                <listOfReactants>
+                    <speciesReference species="__s1"/>
+                    <speciesReference species="__s11"/>
+                </listOfReactants>
+                <listOfProducts>
+                    <speciesReference species="__s15"/>
+                </listOfProducts>
+                <kineticLaw><math xmlns="http://www.w3.org/1998/Math/MathML"><apply><minus/><apply><times/><ci>__s1</ci><ci>__s11</ci><ci>k_a2</ci></apply><apply><times/><ci>__s15</ci><ci>k_d2</ci></apply></apply></math></kineticLaw>
+            </reaction>
+            <reaction id="r12" metaid="metaid_r12" name="r12" reversible="true">
+                <listOfReactants>
+                    <speciesReference species="__s3"/>
+                    <speciesReference species="__s7"/>
+                </listOfReactants>
+                <listOfProducts>
+                    <speciesReference species="__s16"/>
+                </listOfProducts>
+                <kineticLaw><math xmlns="http://www.w3.org/1998/Math/MathML"><apply><plus/><apply><minus/><apply><times/><ci>__s16</ci><ci>kd3</ci></apply></apply><apply><times/><ci>__s3</ci><ci>__s7</ci><ci>ka3</ci></apply></apply></math></kineticLaw>
+            </reaction>
+            <reaction id="r13" metaid="metaid_r13" name="r13" reversible="true">
+                <listOfReactants>
+                    <speciesReference species="__s7"/>
+                    <speciesReference species="__s11"/>
+                </listOfReactants>
+                <listOfProducts>
+                    <speciesReference species="__s17"/>
+                </listOfProducts>
+                <kineticLaw><math xmlns="http://www.w3.org/1998/Math/MathML"><apply><minus/><apply><times/><ci>__s11</ci><ci>__s7</ci><ci>ka3</ci></apply><apply><times/><ci>__s17</ci><ci>kd3</ci></apply></apply></math></kineticLaw>
+            </reaction>
+            <reaction id="r14" metaid="metaid_r14" name="r14" reversible="true">
+                <listOfReactants>
+                    <speciesReference species="__s2"/>
+                    <speciesReference species="__s8"/>
+                </listOfReactants>
+                <listOfProducts>
+                    <speciesReference species="__s16"/>
+                </listOfProducts>
+                <kineticLaw><math xmlns="http://www.w3.org/1998/Math/MathML"><apply><plus/><apply><minus/><apply><times/><ci>__s16</ci><ci>kd4</ci></apply></apply><apply><times/><ci>__s2</ci><ci>__s8</ci><ci>ka4</ci></apply></apply></math></kineticLaw>
+            </reaction>
+            <reaction id="r15" metaid="metaid_r15" name="r15" reversible="true">
+                <listOfReactants>
+                    <speciesReference species="__s3"/>
+                    <speciesReference species="__s9"/>
+                </listOfReactants>
+                <listOfProducts>
+                    <speciesReference species="__s18"/>
+                </listOfProducts>
+                <kineticLaw><math xmlns="http://www.w3.org/1998/Math/MathML"><apply><plus/><apply><minus/><apply><times/><ci>__s18</ci><ci>k_d3</ci></apply></apply><apply><times/><ci>__s3</ci><ci>__s9</ci><ci>k_a3</ci></apply></apply></math></kineticLaw>
+            </reaction>
+            <reaction id="r16" metaid="metaid_r16" name="r16" reversible="true">
+                <listOfReactants>
+                    <speciesReference species="__s2"/>
+                    <speciesReference species="__s10"/>
+                </listOfReactants>
+                <listOfProducts>
+                    <speciesReference species="__s18"/>
+                </listOfProducts>
+                <kineticLaw><math xmlns="http://www.w3.org/1998/Math/MathML"><apply><minus/><apply><times/><ci>__s10</ci><ci>__s2</ci><ci>k_a4</ci></apply><apply><times/><ci>__s18</ci><ci>k_d4</ci></apply></apply></math></kineticLaw>
+            </reaction>
+            <reaction id="r17" metaid="metaid_r17" name="r17" reversible="true">
+                <listOfReactants>
+                    <speciesReference species="__s6"/>
+                    <speciesReference species="__s8"/>
+                </listOfReactants>
+                <listOfProducts>
+                    <speciesReference species="__s14"/>
+                </listOfProducts>
+                <kineticLaw><math xmlns="http://www.w3.org/1998/Math/MathML"><apply><plus/><apply><minus/><apply><times/><ci>__s14</ci><ci>kSOCSoff</ci></apply></apply><apply><times/><ci>__s6</ci><ci>__s8</ci><ci>kSOCSon</ci></apply></apply></math></kineticLaw>
+            </reaction>
+            <reaction id="r18" metaid="metaid_r18" name="r18" reversible="true">
+                <listOfReactants>
+                    <speciesReference species="__s6"/>
+                    <speciesReference species="__s10"/>
+                </listOfReactants>
+                <listOfProducts>
+                    <speciesReference species="__s15"/>
+                </listOfProducts>
+                <kineticLaw><math xmlns="http://www.w3.org/1998/Math/MathML"><apply><minus/><apply><times/><ci>__s10</ci><ci>__s6</ci><ci>kSOCSon</ci></apply><apply><times/><ci>__s15</ci><ci>kSOCSoff</ci></apply></apply></math></kineticLaw>
+            </reaction>
+            <reaction id="r19" metaid="metaid_r19" name="r19" reversible="true">
+                <listOfReactants>
+                    <speciesReference species="__s2"/>
+                    <speciesReference species="__s14"/>
+                </listOfReactants>
+                <listOfProducts>
+                    <speciesReference species="__s17"/>
+                </listOfProducts>
+                <kineticLaw><math xmlns="http://www.w3.org/1998/Math/MathML"><apply><minus/><apply><times/><ci>__s14</ci><ci>__s2</ci><ci>ka4</ci></apply><apply><times/><ci>__s17</ci><ci>kd4</ci></apply></apply></math></kineticLaw>
+            </reaction>
+            <reaction id="r20" metaid="metaid_r20" name="r20" reversible="true">
+                <listOfReactants>
+                    <speciesReference species="__s2"/>
+                    <speciesReference species="__s15"/>
+                </listOfReactants>
+                <listOfProducts>
+                    <speciesReference species="__s19"/>
+                </listOfProducts>
+                <kineticLaw><math xmlns="http://www.w3.org/1998/Math/MathML"><apply><minus/><apply><times/><ci>__s15</ci><ci>__s2</ci><ci>k_a4</ci></apply><apply><times/><ci>__s19</ci><ci>k_d4</ci></apply></apply></math></kineticLaw>
+            </reaction>
+            <reaction id="r21" metaid="metaid_r21" name="r21" reversible="false">
+                <listOfReactants>
+                    <speciesReference species="__s4"/>
+                    <speciesReference species="__s16"/>
+                </listOfReactants>
+                <listOfProducts>
+                    <speciesReference species="__s5"/>
+                    <speciesReference species="__s16"/>
+                </listOfProducts>
+                <kineticLaw><math xmlns="http://www.w3.org/1998/Math/MathML"><apply><times/><ci>__s16</ci><ci>__s4</ci><ci>kpa</ci></apply></math></kineticLaw>
+            </reaction>
+            <reaction id="r22" metaid="metaid_r22" name="r22" reversible="false">
+                <listOfReactants>
+                    <speciesReference species="__s4"/>
+                    <speciesReference species="__s18"/>
+                </listOfReactants>
+                <listOfProducts>
+                    <speciesReference species="__s5"/>
+                    <speciesReference species="__s18"/>
+                </listOfProducts>
+                <kineticLaw><math xmlns="http://www.w3.org/1998/Math/MathML"><apply><times/><ci>__s18</ci><ci>__s4</ci><ci>kpa</ci></apply></math></kineticLaw>
+            </reaction>
+            <reaction id="r23" metaid="metaid_r23" name="r23" reversible="true">
+                <listOfReactants>
+                    <speciesReference species="__s6"/>
+                    <speciesReference species="__s16"/>
+                </listOfReactants>
+                <listOfProducts>
+                    <speciesReference species="__s17"/>
+                </listOfProducts>
+                <kineticLaw><math xmlns="http://www.w3.org/1998/Math/MathML"><apply><minus/><apply><times/><ci>__s16</ci><ci>__s6</ci><ci>kSOCSon</ci></apply><apply><times/><ci>__s17</ci><ci>kSOCSoff</ci></apply></apply></math></kineticLaw>
+            </reaction>
+            <reaction id="r24" metaid="metaid_r24" name="r24" reversible="true">
+                <listOfReactants>
+                    <speciesReference species="__s6"/>
+                    <speciesReference species="__s18"/>
+                </listOfReactants>
+                <listOfProducts>
+                    <speciesReference species="__s19"/>
+                </listOfProducts>
+                <kineticLaw><math xmlns="http://www.w3.org/1998/Math/MathML"><apply><minus/><apply><times/><ci>__s18</ci><ci>__s6</ci><ci>kSOCSon</ci></apply><apply><times/><ci>__s19</ci><ci>kSOCSoff</ci></apply></apply></math></kineticLaw>
+            </reaction>
+            <reaction id="r25" metaid="metaid_r25" name="r25" reversible="false">
+                <listOfReactants>
+                    <speciesReference species="__s16"/>
+                </listOfReactants>
+                <listOfProducts>
+                    <speciesReference species="__s20"/>
+                </listOfProducts>
+                <kineticLaw><math xmlns="http://www.w3.org/1998/Math/MathML"><apply><times/><ci>__s16</ci><ci>kint_a</ci></apply></math></kineticLaw>
+            </reaction>
+            <reaction id="r26" metaid="metaid_r26" name="r26" reversible="false">
+                <listOfReactants>
+                    <speciesReference species="__s18"/>
+                </listOfReactants>
+                <listOfProducts>
+                    <speciesReference species="__s21"/>
+                </listOfProducts>
+                <kineticLaw><math xmlns="http://www.w3.org/1998/Math/MathML"><apply><times/><ci>__s18</ci><ci>kint_b</ci></apply></math></kineticLaw>
+            </reaction>
+            <reaction id="r27" metaid="metaid_r27" name="r27" reversible="false">
+                <listOfReactants>
+                    <speciesReference species="__s21"/>
+                </listOfReactants>
+                <listOfProducts>
+                    <speciesReference species="__s12"/>
+                    <speciesReference species="__s13"/>
+                </listOfProducts>
+                <kineticLaw><math xmlns="http://www.w3.org/1998/Math/MathML"><apply><times/><ci>__s21</ci><ci>kdeg_b</ci></apply></math></kineticLaw>
+            </reaction>
+            <reaction id="r28" metaid="metaid_r28" name="r28" reversible="false">
+                <listOfReactants>
+                    <speciesReference species="__s20"/>
+                </listOfReactants>
+                <listOfProducts>
+                    <speciesReference species="__s12"/>
+                    <speciesReference species="__s13"/>
+                </listOfProducts>
+                <kineticLaw><math xmlns="http://www.w3.org/1998/Math/MathML"><apply><times/><ci>__s20</ci><ci>kdeg_a</ci></apply></math></kineticLaw>
+            </reaction>
+        </listOfReactions>
+    </model>
+</sbml>

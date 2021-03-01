@@ -26,7 +26,7 @@ if __name__ == '__main__':
     # Plotting parameters
     plot_data = True
     time_mask = [2.5, 7.5, 10.0]
-    num_checks = 500  # The number of posterior samples to use in post-analysis
+    num_checks = 50  # The number of posterior samples to use in post-analysis
 
     # -------------------------------------------------
     # PyDREAM Fitting
