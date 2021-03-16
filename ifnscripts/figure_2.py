@@ -55,7 +55,7 @@ if __name__ == '__main__':
     # --------------------
     # Set up Model
     # --------------------
-    Mixed_Model = load_model.load_model()
+    Mixed_Model, DR_method = load_model.load_model()
     scale_factor = load_model.scale_factor
 
     # ---------------------------------
@@ -121,11 +121,11 @@ if __name__ == '__main__':
     alpha_doses_20190108 = [0, 10, 100, 300, 1000, 3000, 10000, 100000]
     beta_doses_20190108 = [0, 0.2, 6, 20, 60, 200, 600, 2000]
 
-    dradf = Mixed_Model.mixed_dose_response(times, 'TotalpSTAT', 'Ia',
+    dradf = DR_method(times, 'TotalpSTAT', 'Ia',
                                             list(logspace(1, 5.2)),
                                             parameters={'Ib': 0},
                                             sf=scale_factor)
-    drbdf = Mixed_Model.mixed_dose_response(times, 'TotalpSTAT', 'Ib',
+    drbdf = DR_method(times, 'TotalpSTAT', 'Ib',
                                             list(logspace(-1, 4)),
                                             parameters={'Ia': 0},
                                             sf=scale_factor)
@@ -165,7 +165,7 @@ if __name__ == '__main__':
     # ----------------------------------
     time_list = list(linspace(2.5, 60, num=15))
 
-    dfa = Mixed_Model.mixed_dose_response(time_list, 'TotalpSTAT', 'Ia',
+    dfa = DR_method(time_list, 'TotalpSTAT', 'Ia',
                                           list(logspace(-3, 5)),
                                           parameters={'Ib': 0},
                                           sf=scale_factor)
@@ -173,7 +173,7 @@ if __name__ == '__main__':
     alpha_ec_aggregate = [el[1] for el in dfa.get_ec50s()['Alpha']]
     alpha_peak_aggregate = [el[1] for el in dfa.get_max_responses()['Alpha']]
 
-    dfb = Mixed_Model.mixed_dose_response(time_list, 'TotalpSTAT', 'Ib',
+    dfb = DR_method(time_list, 'TotalpSTAT', 'Ib',
                                           list(logspace(-3, 5)),
                                           parameters={'Ia': 0},
                                           sf=scale_factor)

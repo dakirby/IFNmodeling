@@ -26,4 +26,4 @@ def load_model():
     Mixed_Model.model_2.set_parameters(dual_parameters)
     Mixed_Model.model_2.set_parameters({'R1': 6755.56, 'R2': 1511.1})
 
-    return Mixed_Model
+    return Mixed_Model, Mixed_Model.mixed_dose_response

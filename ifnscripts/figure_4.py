@@ -26,16 +26,14 @@ def increase_K4_figure():
     # --------------------
     # Set up Model
     # --------------------
-    Mixed_Model = load_model.load_model()
+    Mixed_Model, DR_method = load_model.load_model()
     scale_factor = load_model.scale_factor
 
     dose_list = list(logspace(-2, 8, num=35))
 
-    dr_curve_a = [el[0][0] for el in Mixed_Model.mixed_dose_response([60], 'TotalpSTAT', 'Ia', dose_list,
-                                                                     parameters={'Ib': 0}, sf=scale_factor).values]
+    dr_curve_a = [el[0][0] for el in DR_method([60], 'TotalpSTAT', 'Ia', dose_list, parameters={'Ib': 0}, sf=scale_factor).values]
 
-    dr_curve_b = [el[0][0] for el in Mixed_Model.mixed_dose_response([60], 'TotalpSTAT', 'Ib', dose_list,
-                                                                     parameters={'Ia': 0}, sf=scale_factor).values]
+    dr_curve_b = [el[0][0] for el in DR_method([60], 'TotalpSTAT', 'Ib', dose_list, parameters={'Ia': 0}, sf=scale_factor).values]
 
     # Now compute the 15* refractory response
     k4sf1 = 15
@@ -45,10 +43,8 @@ def increase_K4_figure():
     k_d3_reference = Mixed_Model.model_1.parameters['k_d3']
     Mixed_Model.set_global_parameters({'kd4': kd4_reference*k4sf1, 'k_d4': k_d4_reference*k4sf1})
 
-    dr_curve_a15 = [el[0][0] for el in Mixed_Model.mixed_dose_response([60], 'TotalpSTAT', 'Ia', dose_list,
-                                                                     parameters={'Ib': 0}, sf=scale_factor).values]
-    dr_curve_b15 = [el[0][0] for el in Mixed_Model.mixed_dose_response([60], 'TotalpSTAT', 'Ib', dose_list,
-                                                                     parameters={'Ia': 0}, sf=scale_factor).values]
+    dr_curve_a15 = [el[0][0] for el in DR_method([60], 'TotalpSTAT', 'Ia', dose_list, parameters={'Ib': 0}, sf=scale_factor).values]
+    dr_curve_b15 = [el[0][0] for el in DR_method([60], 'TotalpSTAT', 'Ib', dose_list, parameters={'Ia': 0}, sf=scale_factor).values]
 
     # Plot
     fig, axes = plt.subplots(nrows=1, ncols=1)
