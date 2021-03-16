@@ -2,12 +2,14 @@ from pysb.export import export
 from pysb import bng
 from collections import OrderedDict
 import copy
-from numpy import multiply, zeros, nan, asarray, logspace
+from numpy import multiply, zeros, nan, asarray, load, power, logspace
+import numpy as np
 import pandas as pd
 import pickle
 import time
 import os
 from random import randint
+from ifnclass.ifndata import IfnData, DataAlignment
 
 
 class IfnModel:
@@ -495,8 +497,103 @@ class EnsembleModel(IfnModel):
         Make predictions from the ensemble of models
 
     """
-    def posterior_prediction():
-        raise NotImplementedError
+    def __init__(self, name, param_file, parameter_names):
+        super().__init__(name)
+        log10_parameters = load(param_file)
+        self.parameters = power(10, log10_parameters)
+        self.parameter_names = parameter_names
+
+    def __posterior_prediction__(self, parameter_dict, scale_factor,
+                                 test_times=[2.5, 5.0, 7.5, 10.0, 20.0, 60.0],
+                                 alpha_doses=logspace(-1, 5, 15),
+                                 beta_doses=logspace(-1, 5, 15)):
+        """
+        Produce predictions for IFNa and IFNb using model with parameters given
+        as input to the function.
+        """
+        # Make predictions
+        self.model.set_parameters(parameter_dict)
+        dradf = self.model.doseresponse(test_times, 'TotalpSTAT', 'Ia',
+                                        alpha_doses, parameters={'Ib': 0},
+                                        scale_factor=scale_factor,
+                                        return_type='dataframe',
+                                        dataframe_labels='Alpha')
+        drbdf = self.model.doseresponse(test_times, 'TotalpSTAT', 'Ib',
+                                        beta_doses, parameters={'Ia': 0},
+                                        scale_factor=scale_factor,
+                                        return_type='dataframe',
+                                        dataframe_labels='Beta')
+
+        posterior = IfnData('custom', df=pd.concat((dradf, drbdf)), conditions={'Alpha': {'Ib': 0}, 'Beta': {'Ia': 0}})
+        posterior.drop_sigmas()
+        return posterior
+
+    def __posterior_IFN_summary_statistics__(self, posterior_predictions):
+        """
+        Encapsulates the code to compute summary statistics from a list of
+        posterior predictions. Used to increase readability in the main func.
+
+        Parameters
+        ----------
+        posterior_predictions : list
+            a list of IfnData objects representing ensemble of predictions
+
+        Return : float, float, float, float
+            The mean IFNa prediction, standard deviation of IFNa prediction,
+            mean IFNb prediction, and stanrdard deviation of IFNb prediction
+        """
+        mean_alpha_predictions = np.mean([posterior_predictions[i].data_set.
+                                         loc['Alpha'].values for i in
+                                         range(len(posterior_predictions))],
+                                         axis=0)
+        mean_beta_predictions = np.mean([posterior_predictions[i].data_set.
+                                        loc['Beta'].values for i in
+                                        range(len(posterior_predictions))],
+                                        axis=0)
+
+        std_alpha_predictions = np.std([posterior_predictions[i].data_set.
+                                       loc['Alpha'].values.astype(np.float64) for
+                                       i in range(len(posterior_predictions))],
+                                       axis=0)
+        std_beta_predictions = np.std([posterior_predictions[i].data_set.
+                                      loc['Beta'].values.astype(np.float64) for
+                                      i in range(len(posterior_predictions))],
+                                      axis=0)
+
+        return mean_alpha_predictions, std_alpha_predictions, mean_beta_predictions, std_beta_predictions
+
+    def posterior_prediction(self, num_checks, scale_factor,
+                             test_times=[2.5, 5.0, 7.5, 10.0, 20.0, 60.0],
+                             alpha_doses=logspace(-1, 5, 15),
+                             beta_doses=logspace(-1, 5, 15)):
+        """
+        Class method for producing ensemble model predictions
+        """
+        # Prepare parameter vectors
+        parameters_to_check = []
+        for i in list(np.random.randint(0, high=len(self.parameters), size=num_checks)):
+            parameters_to_check.append(self.parameters[i])
+
+        # Compute posterior sample trajectories
+        posterior_trajectories = []
+        for p in parameters_to_check:
+            param_dict = {key: value for key, value in zip(self.parameter_names, p)}
+            pp = self.__posterior_prediction__(self.model, param_dict, scale_factor, test_times, alpha_doses, beta_doses)
+            posterior_trajectories.append(pp)
+
+        # Make aggregate predicitions
+        mean_alpha, std_alpha, mean_beta, std_beta = self.__posterior_IFN_summary_statistics__(posterior_trajectories)
+
+        std_predictions = {'Alpha': std_alpha, 'Beta': std_beta}
+        mean_predictions = {'Alpha': mean_alpha, 'Beta': mean_beta}
+
+        mean_model = copy.deepcopy(posterior_trajectories[0])
+        for s in ['Alpha', 'Beta']:
+            for didx, d in enumerate(mean_model.get_doses()[s]):
+                for tidx, t in enumerate(mean_model.get_times()[s]):
+                    mean_model.data_set.loc[s][str(t)].loc[d] = (mean_predictions[s][didx][tidx], std_predictions[s][didx][tidx])
+
+        return mean_model
 
 
 if __name__ == '__main__':
