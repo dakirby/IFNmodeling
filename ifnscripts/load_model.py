@@ -1,7 +1,20 @@
 from ifnclass.ifnfit import DualMixedPopulation
+from ifnclass.ifnmodel import EnsembleModel
+import os
+import pandas as pd
+import numpy as np
+import pickle
 
-scale_factor = 1.227
-ENSEMBLE = False
+ENSEMBLE = True
+
+if ENSEMBLE:
+    SCALE_FACTOR = 1.5
+    DR_KWARGS = {'num_checks': 5}
+    PLOT_KWARGS = {'line_type': 'envelope', 'alpha': 0.2}
+else:
+    SCALE_FACTOR = 1.227
+    DR_KWARGS = {'return_type': 'IfnData'}
+    PLOT_KWARGS = {'line_type': 'plot', 'alpha': 1}
 
 
 def load_model():
@@ -9,7 +22,14 @@ def load_model():
     # with an IfnData object
 
     if ENSEMBLE:
-        raise NotImplementedError
+        param_file_dir = os.path.join(os.getcwd(), 'pydream', 'GAB', 'PYDREAM_07-07-2020_10000')
+        param_file_name = param_file_dir + os.sep + 'mixed_IFN_samples.npy'
+        param_names = np.load(param_file_dir + os.sep + 'param_names.npy')
+        prior_file_name = param_file_dir + os.sep + 'init_params.pkl'
+        model = EnsembleModel('Mixed_IFN_ppCompatible', param_file_name, param_names, prior_file_name)
+
+        DR_method = model.posterior_prediction
+
     else:
         initial_parameters = {'k_a1': 4.98E-14 * 1.33, 'k_a2': 8.30e-13 * 2,
                               'k_d4': 0.006 * 3.8,
@@ -30,6 +50,10 @@ def load_model():
         model.model_2.set_parameters(dual_parameters)
         model.model_2.set_parameters({'R1': 6755.56, 'R2': 1511.1})
 
-    DR_method = model.mixed_dose_response
+        # param_file_dir = os.path.join(os.getcwd(), 'pydream', 'GAB', 'PYDREAM_07-07-2020_10000')
+        # with open(param_file_dir + os.sep + 'init_params.pkl', 'wb') as f:
+        #     pickle.dump(dict(model.model_1.parameters), f)
+        # exit()
+        DR_method = model.mixed_dose_response
 
     return model, DR_method

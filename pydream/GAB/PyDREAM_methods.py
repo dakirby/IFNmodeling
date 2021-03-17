@@ -1,6 +1,7 @@
 # Pydream imports
 from pydream.core import run_dream
 import numpy as np
+improt pickle
 
 # PySB imports
 from ifnclass.ifndata import IfnData, DataAlignment
@@ -132,6 +133,9 @@ def DREAM_fit(model, priors_list, posterior, start_params,
     """
     converged = False
     total_iterations = niterations
+    np.save(save_dir + os.sep + 'param_names.npy', sampled_param_names)
+    with open(save_dir + os.sep + 'init_params.pkl', 'wb') as f:
+        pickle.dump(dict(model.parameters), f)
 
     # Run DREAM sampling.  Documentation of DREAM options is in Dream.py.
     sampled_params, log_ps = run_dream(priors_list, posterior,

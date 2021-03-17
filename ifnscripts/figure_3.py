@@ -1,5 +1,5 @@
 from ifnclass.ifndata import IfnData, DataAlignment
-import load_model
+import load_model as lm
 from ifnclass.ifnplot import DoseresponsePlot, TimecoursePlot
 import seaborn as sns
 import numpy as np
@@ -148,8 +148,9 @@ if __name__ == '__main__':
     # -------------------------------
     # Initialize model
     # -------------------------------
-    Mixed_Model, DR_method = load_model.load_model()
-    scale_factor = 1.  # load_model.scale_factor
+    Mixed_Model, DR_method = lm.load_model()
+    scale_factor = 1.  # lm.SCALE_FACTOR
+    DR_KWARGS, PLOT_KWARGS = lm.DR_KWARGS, lm.PLOT_KWARGS
 
     times = [60.0]
     doses_alpha = np.divide([0, 1E-7, 1E-8, 3E-9, 1E-9, 3E-10, 1E-10, 1E-11], 1E-12)
@@ -239,22 +240,22 @@ if __name__ == '__main__':
     R1 = 6755
     R2 = 1511
     STAT = 10000
-    small_cells_alpha = DR_method(times, 'TotalpSTAT', 'Ia',
+    small_cells_alpha_IFNdata = DR_method(times, 'TotalpSTAT', 'Ia',
                                                         alpha_doses,
                                                         parameters={'Ib': 0,
                                                                     'R1': R1,
                                                                     'R2': R2,
                                                                     'S': STAT},
-                                                        sf=scale_factor)
-    small_cells_beta = DR_method(times, 'TotalpSTAT', 'Ib',
+                                                        sf=scale_factor,
+                                                        **DR_KWARGS)
+    small_cells_beta_IFNdata = DR_method(times, 'TotalpSTAT', 'Ib',
                                                        beta_doses,
                                                        parameters={'Ia': 0,
                                                                    'R1': R1,
                                                                    'R2': R2,
                                                                    'S': STAT},
-                                                       sf=scale_factor)
-    small_cells_alpha_IFNdata = IfnData('custom', df=small_cells_alpha, conditions={'Alpha': {'Ib': 0}})
-    small_cells_beta_IFNdata = IfnData('custom', df=small_cells_beta, conditions={'Beta': {'Ia': 0}})
+                                                       sf=scale_factor,
+                                                       **DR_KWARGS)
 
     # Large (normal) cells
     radius = 1.6**0.5 * radius
@@ -263,25 +264,23 @@ if __name__ == '__main__':
     R1 = R1 * volPM_large / volPM_small
     R2 = R2 * volPM_large / volPM_small
     STAT = STAT * volCP_large / volCP_small
-    large_cells_alpha = DR_method(times, 'TotalpSTAT', 'Ia',
+    large_cells_alpha_IFNdata = DR_method(times, 'TotalpSTAT', 'Ia',
                                                  alpha_doses,
                                                  parameters={'Ib': 0,
                                                              'R1': R1,
                                                              'R2': R2,
                                                              'S': STAT},
-                                                 sf=scale_factor)
-    large_cells_beta = DR_method(times, 'TotalpSTAT', 'Ib',
+                                                 sf=scale_factor,
+                                                 **DR_KWARGS)
+    large_cells_beta_IFNdata = DR_method(times, 'TotalpSTAT', 'Ib',
                                                 beta_doses,
                                                 parameters={'Ia': 0,
                                                             'R1': R1,
                                                             'R2': R2,
                                                             'S': STAT},
-                                                sf=scale_factor)
-    large_cells_alpha_IFNdata = IfnData('custom', df=large_cells_alpha, conditions={'Alpha': {'Ib': 0}})
-    large_cells_beta_IFNdata = IfnData('custom', df=large_cells_beta, conditions={'Beta': {'Ia': 0}})
-
+                                                sf=scale_factor,
+                                                **DR_KWARGS)
     # Plot
-
     dr_plot = new_fit
     dr_axes = dr_plot.axes
     # Add model predictions fits

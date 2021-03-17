@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import os
 from ifnclass.ifnplot import DoseresponsePlot
 import matplotlib.gridspec as gridspec
-import load_model
+import load_model as lm
 
 
 def equilibrium_T_EC50(Rt, Delta, K1, K2, K4):
@@ -34,6 +34,87 @@ def pSTAT_Max(Rt, Delta, K1, K2, K4, A, KP, STAT):
     return STAT * (Tmax / (Tmax + KP / A))
 
 
+def avg_theory(model):
+    """
+    The outputs avg_pSTAT_Max_Beta & avg_pSTAT_Max_Alpha will be in [molec.]
+    The outputs avg_pSTAT_EC50_Beta & avg_pSTAT_EC50_Alpha will be in [M]
+    """
+    avg_pSTAT_Max_Alpha = 0
+    avg_pSTAT_EC50_Alpha = 0
+    avg_pSTAT_Max_Beta = 0
+    avg_pSTAT_EC50_Beta = 0
+
+    for idx, m in enumerate([model.model_1, model.model_2]):
+        volPM = m.parameters['volPM']  # [m**2]
+        NA = m.parameters['NA']
+        volEC = m.parameters['volEC']  # [m**3]
+        # [Rt] = [Delta] = molec./ m**2
+        Rt = (m.parameters['R1'] + m.parameters['R2']) / volPM
+        Delta = (m.parameters['R1'] - m.parameters['R2']) / volPM
+        # [K1] = [K2] = Molar, at least below since I divide by NA*volEC
+        K1 = m.parameters['kd1'] / m.parameters['ka1'] / NA / volEC
+        K2 = m.parameters['kd2'] / m.parameters['ka2'] / NA / volEC
+        # [K4] = molec./ m**2, since I divide by volPM
+        K4 = m.parameters['kd4'] / m.parameters['ka4'] / volPM
+        A = m.parameters['volPM']  # [m**2]
+        # [KP] = [], i.e. dimensionless
+        KP = m.parameters['kpu'] / m.parameters['kpa']
+        STAT = m.parameters['S']
+        pSTAT_Max_Alpha = pSTAT_Max(Rt, Delta, K1, K2, K4, A, KP, STAT)
+        EC50_Alpha = pSTAT_EC50(Rt, Delta, K1, K2, K4, A, KP)
+        weight = [model.w1, model.w2][idx]
+        avg_pSTAT_Max_Alpha += weight * pSTAT_Max_Alpha
+        avg_pSTAT_EC50_Alpha += weight * EC50_Alpha
+
+        K1 = m.parameters['k_d1'] / m.parameters['k_a1'] / NA / volEC
+        K2 = m.parameters['k_d2'] / m.parameters['k_a2'] / NA / volEC
+        # [K4] = molec./ m**2, since I divide by volPM
+        K4 = m.parameters['k_d4'] / m.parameters['k_a4'] / volPM
+        pSTAT_Max_Beta = pSTAT_Max(Rt, Delta, K1, K2, K4, A, KP, STAT)
+        EC50_Beta = pSTAT_EC50(Rt, Delta, K1, K2, K4, A, KP)
+        avg_pSTAT_Max_Beta += weight * pSTAT_Max_Beta
+        avg_pSTAT_EC50_Beta += weight * EC50_Beta
+
+    return avg_pSTAT_Max_Alpha, avg_pSTAT_EC50_Alpha, avg_pSTAT_Max_Beta, avg_pSTAT_EC50_Beta
+
+
+def prior_theory(m):
+    """
+    The outputs avg_pSTAT_Max_Beta & avg_pSTAT_Max_Alpha will be in [molec.]
+    The outputs avg_pSTAT_EC50_Beta & avg_pSTAT_EC50_Alpha will be in [M]
+    """
+    volPM = m.prior_parameters['volPM']  # [m**2]
+    NA = m.prior_parameters['NA']
+    volEC = m.prior_parameters['volEC']  # [m**3]
+    # [Rt] = [Delta] = molec./ m**2
+    Rt = (m.prior_parameters['R1'] + m.prior_parameters['R2']) / volPM
+    Delta = (m.prior_parameters['R1'] - m.prior_parameters['R2']) / volPM
+    # [K1] = [K2] = Molar, at least below since I divide by NA*volEC
+    K1 = m.prior_parameters['kd1'] / m.prior_parameters['ka1'] / NA / volEC
+    K2 = m.prior_parameters['kd2'] / m.prior_parameters['ka2'] / NA / volEC
+    # [K4] = molec./ m**2, since I divide by volPM
+    K4 = m.prior_parameters['kd4'] / m.prior_parameters['ka4'] / volPM
+    A = m.prior_parameters['volPM']  # [m**2]
+    # [KP] = [], i.e. dimensionless
+    KP = m.prior_parameters['kpu'] / m.prior_parameters['kpa']
+    STAT = m.prior_parameters['S']
+    pSTAT_Max_Alpha = pSTAT_Max(Rt, Delta, K1, K2, K4, A, KP, STAT)
+    EC50_Alpha = pSTAT_EC50(Rt, Delta, K1, K2, K4, A, KP)
+    avg_pSTAT_Max_Alpha = pSTAT_Max_Alpha
+    avg_pSTAT_EC50_Alpha = EC50_Alpha
+
+    K1 = m.prior_parameters['k_d1'] / m.prior_parameters['k_a1'] / NA / volEC
+    K2 = m.prior_parameters['k_d2'] / m.prior_parameters['k_a2'] / NA / volEC
+    # [K4] = molec./ m**2, since I divide by volPM
+    K4 = m.prior_parameters['k_d4'] / m.prior_parameters['k_a4'] / volPM
+    pSTAT_Max_Beta = pSTAT_Max(Rt, Delta, K1, K2, K4, A, KP, STAT)
+    EC50_Beta = pSTAT_EC50(Rt, Delta, K1, K2, K4, A, KP)
+    avg_pSTAT_Max_Beta = pSTAT_Max_Beta
+    avg_pSTAT_EC50_Beta = EC50_Beta
+
+    return avg_pSTAT_Max_Alpha, avg_pSTAT_EC50_Alpha, avg_pSTAT_Max_Beta, avg_pSTAT_EC50_Beta
+
+
 if __name__ == '__main__':
     # ----------------------
     # Set up Figure 2 layout
@@ -55,83 +136,33 @@ if __name__ == '__main__':
     # --------------------
     # Set up Model
     # --------------------
-    Mixed_Model, DR_method = load_model.load_model()
-    scale_factor = load_model.scale_factor
+    Mixed_Model, DR_method = lm.load_model()
+    scale_factor, DR_KWARGS, PLOT_KWARGS = lm.SCALE_FACTOR, lm.DR_KWARGS, lm.PLOT_KWARGS
 
     # ---------------------------------
     # Make theory dose response curves
     # ---------------------------------
     # Equilibrium predictions
-    avg_pSTAT_Max_Alpha = 0
-    avg_pSTAT_EC50_Alpha = 0
-    avg_pSTAT_Max_Beta = 0
-    avg_pSTAT_EC50_Beta = 0
-    for idx, m in enumerate([Mixed_Model.model_1, Mixed_Model.model_2]):
-        volPM = m.parameters['volPM']  # [m**2]
-        NA = m.parameters['NA']
-        volEC = m.parameters['volEC']  # [m**3]
-        volCP = m.parameters['volCP']  # [m**2]
-        # [Rt] = [Delta] = molec./ m**2
-        Rt = (m.parameters['R1'] + m.parameters['R2']) / volPM
-        Delta = (m.parameters['R1'] - m.parameters['R2']) / volPM
-        # [K1] = [K2] = Molar, at least below since I divide by NA*volEC
-        K1 = m.parameters['kd1'] / m.parameters['ka1'] / NA / volEC
-        K2 = m.parameters['kd2'] / m.parameters['ka2'] / NA / volEC
-        # [K4] = molec./ m**2, since I divide by volPM
-        K4 = m.parameters['kd4'] / m.parameters['ka4'] / volPM
-        A = m.parameters['volPM']  # [m**2]
-        # [KP] = [], i.e. dimensionless
-        KP = m.parameters['kpu'] / m.parameters['kpa']
-        STAT = m.parameters['S']
-        pSTAT_Max_Alpha = pSTAT_Max(Rt, Delta, K1, K2, K4, A, KP, STAT)
-        EC50_Alpha = pSTAT_EC50(Rt, Delta, K1, K2, K4, A, KP)
-        weight = [Mixed_Model.w1, Mixed_Model.w2][idx]
-        avg_pSTAT_Max_Alpha += weight * pSTAT_Max_Alpha
-        avg_pSTAT_EC50_Alpha += weight * EC50_Alpha
-    for idx, m in enumerate([Mixed_Model.model_1, Mixed_Model.model_2]):
-        volPM = m.parameters['volPM']  # [m**2]
-        NA = m.parameters['NA']
-        volEC = m.parameters['volEC']  # [m**3]
-        volCP = m.parameters['volCP']  # [m**2]
-        # [Rt] = [Delta] = molec./ m**2
-        Rt = (m.parameters['R1'] + m.parameters['R2']) / volPM
-        Delta = (m.parameters['R1'] - m.parameters['R2']) / volPM
-        # [K1] = [K2] = Molar, at least below since I divide by NA*volEC
-        K1 = m.parameters['k_d1'] / m.parameters['k_a1'] / NA / volEC
-        K2 = m.parameters['k_d2'] / m.parameters['k_a2'] / NA / volEC
-        # [K4] = molec./ m**2, since I divide by volPM
-        K4 = m.parameters['k_d4'] / m.parameters['k_a4'] / volPM
-        A = m.parameters['volPM']  # [m**2]
-        # [KP] = [], i.e. dimensionless
-        KP = m.parameters['kpu'] / m.parameters['kpa']
-        STAT = m.parameters['S']
-        pSTAT_Max_Beta = pSTAT_Max(Rt, Delta, K1, K2, K4, A, KP, STAT)
-        EC50_Beta = pSTAT_EC50(Rt, Delta, K1, K2, K4, A, KP)
-        weight = [Mixed_Model.w1, Mixed_Model.w2][idx]
-        avg_pSTAT_Max_Beta += weight * pSTAT_Max_Beta
-        avg_pSTAT_EC50_Beta += weight * EC50_Beta
-
-    #
-    # The outputs avg_pSTAT_Max_Beta & avg_pSTAT_Max_Alpha will be in [molec.]
-    # The outputs avg_pSTAT_EC50_Beta & avg_pSTAT_EC50_Alpha will be in [M]
-    #
+    if lm.ENSEMBLE:
+        avg_pSTAT_Max_Alpha, avg_pSTAT_EC50_Alpha, avg_pSTAT_Max_Beta, avg_pSTAT_EC50_Beta = prior_theory(Mixed_Model)
+    else:
+        avg_pSTAT_Max_Alpha, avg_pSTAT_EC50_Alpha, avg_pSTAT_Max_Beta, avg_pSTAT_EC50_Beta = avg_theory(Mixed_Model)
 
     # Make predictions
     times = [2.5, 5.0, 7.5, 10.0, 20.0, 60.0]
     alpha_doses_20190108 = [0, 10, 100, 300, 1000, 3000, 10000, 100000]
     beta_doses_20190108 = [0, 0.2, 6, 20, 60, 200, 600, 2000]
 
-    dradf = DR_method(times, 'TotalpSTAT', 'Ia',
+    dra60 = DR_method(times, 'TotalpSTAT', 'Ia',
                                             list(logspace(1, 5.2)),
                                             parameters={'Ib': 0},
-                                            sf=scale_factor)
-    drbdf = DR_method(times, 'TotalpSTAT', 'Ib',
+                                            sf=scale_factor,
+                                            **DR_KWARGS)
+    drb60 = DR_method(times, 'TotalpSTAT', 'Ib',
                                             list(logspace(-1, 4)),
                                             parameters={'Ia': 0},
-                                            sf=scale_factor)
-
-    dra60 = IfnData('custom', df=dradf, conditions={'Alpha': {'Ib': 0}})
-    drb60 = IfnData('custom', df=drbdf, conditions={'Beta': {'Ia': 0}})
+                                            sf=scale_factor,
+                                            **DR_KWARGS)
 
     # ----------------------------------
     # Get all data set EC50 time courses
@@ -168,16 +199,18 @@ if __name__ == '__main__':
     dfa = DR_method(time_list, 'TotalpSTAT', 'Ia',
                                           list(logspace(-3, 5)),
                                           parameters={'Ib': 0},
-                                          sf=scale_factor)
-    dfa = IfnData(name='custom', df=dfa, conditions={'Ib': 0})
+                                          sf=scale_factor,
+                                          **{'return_type': 'IfnData'})
+
     alpha_ec_aggregate = [el[1] for el in dfa.get_ec50s()['Alpha']]
     alpha_peak_aggregate = [el[1] for el in dfa.get_max_responses()['Alpha']]
 
     dfb = DR_method(time_list, 'TotalpSTAT', 'Ib',
                                           list(logspace(-3, 5)),
                                           parameters={'Ia': 0},
-                                          sf=scale_factor)
-    dfb = IfnData(name='custom', df=dfb, conditions={'Ia': 0})
+                                          sf=scale_factor,
+                                          **{'return_type': 'IfnData'})
+
     beta_ec_aggregate = [el[1] for el in dfb.get_ec50s()['Beta']]
     beta_peak_aggregate = [el[1] for el in dfb.get_max_responses()['Beta']]
 
@@ -320,15 +353,17 @@ if __name__ == '__main__':
     # Add fits
     for idx, t in enumerate(times):
         if t not in alpha_mask:
-            new_fit.add_trajectory(dra60, t, 'plot', alpha_palette[idx],
-                                   (0, 0), 'Alpha', label=str(t)+' min',
-                                   linewidth=2)
+            new_fit.add_trajectory(dra60, t, PLOT_KWARGS['line_type'],
+                                   alpha_palette[idx], (0, 0),
+                                   'Alpha', label=str(t)+' min',
+                                   linewidth=2, alpha=PLOT_KWARGS['alpha'])
             new_fit.add_trajectory(mean_data, t, 'errorbar', 'o', (0, 0),
                                    'Alpha', color=alpha_palette[idx])
         if t not in beta_mask:
-            new_fit.add_trajectory(drb60, t, 'plot', beta_palette[idx], (0, 1),
+            new_fit.add_trajectory(drb60, t, PLOT_KWARGS['line_type'],
+                                   beta_palette[idx], (0, 1),
                                    'Beta', label=str(t) + ' min',
-                                   linewidth=2)
+                                   linewidth=2, alpha=PLOT_KWARGS['alpha'])
             new_fit.add_trajectory(mean_data, t, 'errorbar', 'o', (0, 1),
                                    'Beta', color=beta_palette[idx])
 

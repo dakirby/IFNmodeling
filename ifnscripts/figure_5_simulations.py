@@ -1,12 +1,12 @@
-import load_model
+import load_model as lm
 import numpy as np
 import copy
 import os
 
 
 def figure_5_simulations(USP18_sf, times, test_doses, dir, tag=''):
-    Mixed_Model, DR_method = load_model.load_model()
-    scale_factor = load_model.scale_factor
+    Mixed_Model, DR_method = lm.load_model()
+    scale_factor, DR_KWARGS, PLOT_KWARGS = lm.SCALE_FACTOR, lm.DR_KWARGS, lm.PLOT_KWARGS
 
     params = copy.deepcopy(Mixed_Model.get_parameters())
 
@@ -18,16 +18,16 @@ def figure_5_simulations(USP18_sf, times, test_doses, dir, tag=''):
     pSTAT_a2YNS = DR_method(times, 'TotalpSTAT', 'Ib',
                                                   test_doses,
                                                   parameters={'Ia': 0},
-                                                  sf=scale_factor)
-    pSTAT_a2YNS = np.array([el[0][0] for el in pSTAT_a2YNS.values])
+                                                  sf=scale_factor, **DR_KWARGS)
+    pSTAT_a2YNS = np.array([el[0][0] for el in pSTAT_a2YNS.data_set.values])
 
     np.save(dir + os.sep + 'pSTAT_a2YNS' + tag + '.npy', pSTAT_a2YNS)
 
     pSTAT_a2YNS_refractory = DR_method(times, 'TotalpSTAT', 'Ib',
                                                              test_doses,
                                                              parameters={'Ia': 0, 'k_d4': params['k_d4'] * USP18_sf},
-                                                             sf=scale_factor)
-    pSTAT_a2YNS_refractory = np.array([el[0][0] for el in pSTAT_a2YNS_refractory.values])
+                                                             sf=scale_factor, **DR_KWARGS)
+    pSTAT_a2YNS_refractory = np.array([el[0][0] for el in pSTAT_a2YNS_refractory.data_set.values])
 
     np.save(dir + os.sep + 'pSTAT_a2YNS_refractory' + tag + '.npy', pSTAT_a2YNS_refractory)
 
@@ -42,8 +42,8 @@ def figure_5_simulations(USP18_sf, times, test_doses, dir, tag=''):
     pSTAT_w = DR_method(times, 'TotalpSTAT', 'Ia',
                                             test_doses,
                                             parameters=custom_params_w,
-                                            sf=scale_factor)
-    pSTAT_w = np.array([el[0][0] for el in pSTAT_w.values])
+                                            sf=scale_factor, **DR_KWARGS)
+    pSTAT_w = np.array([el[0][0] for el in pSTAT_w.data_set.values])
     np.save(dir + os.sep + 'pSTAT_w' + tag + '.npy', pSTAT_w)
 
     # now refractory
@@ -51,8 +51,8 @@ def figure_5_simulations(USP18_sf, times, test_doses, dir, tag=''):
     pSTAT_w_ref = DR_method(times, 'TotalpSTAT', 'Ia',
                                             test_doses,
                                             parameters=custom_params_w,
-                                            sf=scale_factor)
-    pSTAT_w_ref = np.array([el[0][0] for el in pSTAT_w_ref.values])
+                                            sf=scale_factor, **DR_KWARGS)
+    pSTAT_w_ref = np.array([el[0][0] for el in pSTAT_w_ref.data_set.values])
     np.save(dir + os.sep + 'pSTAT_w_refractory' + tag + '.npy', pSTAT_w_ref)
 
     # response('pSTAT_w', 0.4 / 5, 2. / 5.)
@@ -70,8 +70,8 @@ def figure_5_simulations(USP18_sf, times, test_doses, dir, tag=''):
         pSTAT = DR_method(times, 'TotalpSTAT', 'Ia',
                                                 test_doses,
                                                 parameters=custom_params,
-                                                sf=scale_factor)
-        pSTAT = np.array([el[0][0] for el in pSTAT.values])
+                                                sf=scale_factor, **DR_KWARGS)
+        pSTAT = np.array([el[0][0] for el in pSTAT.data_set.values])
         np.save(dir + os.sep + filename + tag + '.npy', pSTAT)
 
     # Use the fit IFNa2 parameters

@@ -157,7 +157,7 @@ class DualMixedPopulation:
         self.w1 = pop1_weight
         self.w2 = pop2_weight
 
-    def set_global_parameters(self, param_dict):
+    def set_parameters(self, param_dict):
         self.model_1.set_parameters(param_dict)
         self.model_2.set_parameters(param_dict)
 
@@ -171,7 +171,7 @@ class DualMixedPopulation:
 
     def update_parameters(self, param_dict):
         """
-        This method will act like set_global_parameters for any parameters that do not end in '_1' or '_2'.
+        This method will act like set_parameters for any parameters that do not end in '_1' or '_2'.
         Parameters with names ending in '_1' or '_2' will be updated only in Model 1 or Model 2 respectively.
         :param param_dict: dictionary of parameter names and the values to use
         :return: 0
@@ -200,7 +200,11 @@ class DualMixedPopulation:
                 all_parameters[key] = self.model_1.parameters[key]
         return all_parameters
 
-    def mixed_dose_response(self, times, observable, dose_species, doses, parameters={}, sf=1):
+    def mixed_dose_response(self, times, observable, dose_species, doses, parameters={}, sf=1, **kwargs):
+        return_type = kwargs.get('return_type', 'DataFrame')
+        if return_type not in ['DataFrame', 'IfnData']:
+            raise TypeError('Invalid return type requested')
+
         response_1 = self.model_1.doseresponse(times, observable, dose_species, doses, parameters=parameters)[observable]
         response_2 = self.model_2.doseresponse(times, observable, dose_species, doses, parameters=parameters)[observable]
 
@@ -218,7 +222,11 @@ class DualMixedPopulation:
 
         drdf = pd.DataFrame.from_records(labelled_data, columns=column_labels)
         drdf.set_index(['Dose_Species', 'Dose (pM)'], inplace=True)
-        return drdf
+
+        if return_type == 'DataFrame':
+            return drdf
+        if return_type == 'IfnData':
+            return IfnData(name='custom', df=drdf, conditions=parameters)
 
     def __score_mixed_models__(self, shared_parameters, mixed_parameters, data):
         # ------------------------------
@@ -376,7 +384,7 @@ class Prior:
 
 def __unpackMCMC__(ID, jobs, result, countQ, build_model, build_data, model_parameters, temperature):
     """
-    This function is used by the MCMC class but must be defined externally. 
+    This function is used by the MCMC class but must be defined externally.
     Should not be used by any other program.
     """
     model_name, fit_parameters, priors, jump_distributions = build_model
@@ -405,7 +413,7 @@ class MCMC:
      priors (dict): keys corresponding to parameters, values are Prior objects
      jump_distributions (dict): keys corresponding to parameters, values are the sigmas for jump distributions
      * Optional parameters *
-     beta (float or int): scales the mean square error component of the cost function (in the case that MSE 
+     beta (float or int): scales the mean square error component of the cost function (in the case that MSE
                           is not of the same order as prior cost) (default = 1)
      temperature (float or int): scales the acceptance rate, permitting worse fits (default = 1)
      burn_in (float): the fraction of the beginning of MCMC sampling to discard (default = 0.2)
@@ -414,7 +422,7 @@ class MCMC:
      num_samples (int): the number of samples to keep after burn in and down sampling (default = 100)
      num_chains (int): the number of MCMC chains to run. Must choose greater than 1 to use G.R. statistics
                        (default = 1)
-     filename (str): the path to the directory where results of the fit can be stored 
+     filename (str): the path to the directory where results of the fit can be stored
                      (default = './mcmc_results/initial_model.p')
 
      Attributes
@@ -517,7 +525,7 @@ class MCMC:
             return score
 
     def __prior_penalty__(self, parameter_dict={}):
-        if parameter_dict == {}: 
+        if parameter_dict == {}:
             parameter_dict = self.model.parameters
         penalty = 0
         for parameter, value in parameter_dict.items():
@@ -600,7 +608,7 @@ class MCMC:
                 new_score, new_scale_factor = self.__score_and_sf_for_current_model__()
 
                 """ Note:
-                Asymmetry factor for lognormal jumping distributions with x* proposed and x the current value: 
+                Asymmetry factor for lognormal jumping distributions with x* proposed and x the current value:
                     C = PDF(LogNormal(log(x*),sigma), x)/PDF(LogNormal(log(x),sigma), x*)
                     C = x*/x
                 """
