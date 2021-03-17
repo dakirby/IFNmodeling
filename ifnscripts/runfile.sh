@@ -12,7 +12,7 @@ while getopts ":a" opt; do
   esac
 done
 
-python $DIR/figure_2.py
-python $DIR/figure_3.py
-python $DIR/figure_4.py
-python $DIR/figure_5.py
+python3 $DIR/figure_2.py
+python3 $DIR/figure_3.py
+python3 $DIR/figure_4.py
+python3 $DIR/figure_5.py
