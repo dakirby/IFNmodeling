@@ -15,7 +15,7 @@ from datetime import datetime
 # -----------------------------------------------------------------------------
 NITERATIONS = 10000
 NCHAINS = 6
-SIM_NAME = 'BOOTSTRAP_mixed_IFN'
+SIM_NAME = 'mixed_IFN'
 # -----------------------------------------------------------------------------
 
 
@@ -31,9 +31,8 @@ custom_params = {}
 # -----------------------------------------------------------------------------
 # Parameters to fit:
 # -----------------------------------------------------------------------------
-pysb_sampled_parameter_names = ['kpa', 'kSOCSon', 'R1', 'R2', 'kd4',
-                                'k_d4', 'kint_a', 'kint_b', 'krec_a2',
-                                'krec_b2']
+pysb_sampled_parameter_names = ['kpa', 'kSOCSon', 'R1', 'R2',
+                                'kint_a', 'kint_b', 'krec_a2', 'krec_b2']
 
 # Parameters to be sampled as unobserved random variables in DREAM:
 original_params = np.log10([Mixed_Model.parameters[param] for

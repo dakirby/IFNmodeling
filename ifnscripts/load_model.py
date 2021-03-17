@@ -8,9 +8,10 @@ import pickle
 ENSEMBLE = True
 
 if ENSEMBLE:
-    SCALE_FACTOR = 1.5
+    SCALE_FACTOR = 1.
     DR_KWARGS = {'num_checks': 5}
     PLOT_KWARGS = {'line_type': 'envelope', 'alpha': 0.2}
+    PYDREAM_DIR = 'PyDREAM_17-03-2021'
 else:
     SCALE_FACTOR = 1.227
     DR_KWARGS = {'return_type': 'IfnData'}
@@ -22,7 +23,7 @@ def load_model():
     # with an IfnData object
 
     if ENSEMBLE:
-        param_file_dir = os.path.join(os.getcwd(), 'pydream', 'GAB', 'PYDREAM_07-07-2020_10000')
+        param_file_dir = os.path.join(os.getcwd(), 'pydream', 'GAB', PYDREAM_DIR)
         param_file_name = param_file_dir + os.sep + 'mixed_IFN_samples.npy'
         param_names = np.load(param_file_dir + os.sep + 'param_names.npy')
         prior_file_name = param_file_dir + os.sep + 'init_params.pkl'

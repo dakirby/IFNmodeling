@@ -17,10 +17,10 @@ if __name__ == '__main__':
     # -------------------------------------------------
     # Runtime control
     # -------------------------------------------------
-    fit_flag = False
-    post_analysis_flag = True
+    fit_flag = True
+    post_analysis_flag = False
     bootstrap_flag = False
-    save_dir = dir_setup("PyDREAM_28-10-2020_BOOTSTRAP",
+    save_dir = dir_setup("PyDREAM_17-03-2021",
                          fit_flag, bootstrap_flag, post_analysis_flag)
 
     # Plotting parameters
