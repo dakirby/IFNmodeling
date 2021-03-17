@@ -1,7 +1,7 @@
 # Pydream imports
 from pydream.core import run_dream
 import numpy as np
-improt pickle
+import pickle
 
 # PySB imports
 from ifnclass.ifndata import IfnData, DataAlignment

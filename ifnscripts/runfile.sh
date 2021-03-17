@@ -1,10 +1,13 @@
 #!/bin/bash
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-while getopts ":a" opt; do
+while getopts ":f" opt; do
   case $opt in
-  fit)
-      python3 $DIR/pydream/GAB/run_PyDREAM.py
+  f)
+      cd $DIR/..
+      cd pydream/GAB
+      python3 run_PyDREAM.py
+      cd $DIR
       ;;
     \?)
       echo "Invalid option: -$OPTARG" >&2
