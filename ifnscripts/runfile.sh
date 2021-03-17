@@ -4,7 +4,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 while getopts ":a" opt; do
   case $opt in
   fit)
-      python $DIR/pydream/GAB/run_PyDREAM.py
+      python3 $DIR/pydream/GAB/run_PyDREAM.py
       ;;
     \?)
       echo "Invalid option: -$OPTARG" >&2
