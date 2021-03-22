@@ -470,6 +470,23 @@ def _split_data(datalist, withhold):
     return train, test
 
 
+def _MSE(x, y):
+    """ Requires numpy arrays x, y to be same size"""
+    if type(x) == list:
+        x = np.array(x)
+    if type(y) == list:
+        y = np.array(y)
+    assert x.shape() == y.shape()
+    MSE, count, MPE = 0., 0., 0.
+    for row in x.shape()[0]:
+        for col in x.shape()[1]:
+            if not np.isnan(x[row, col]) and not np.isnan(y[row, col]):
+                MSE += (x[row, col] - y[row, col])**2
+                MPE += np.abs((x[row, col] - y[row, col]) / y[row, col])
+                count += 1.
+    return MSE / count, MPE / count
+
+
 def bootstrap(model, datalist, priors_list, start_params,
               sampled_param_names, niterations, nchains, sim_name,
               save_dir, withhold: int, epochs: int):
@@ -485,6 +502,7 @@ def bootstrap(model, datalist, priors_list, start_params,
     doses, and times.
     """
     dir_list = []
+    boot_MSE, boot_MPE, boot_R2 = 0., 0., 0.
     for epoch in range(epochs):
         # split data
         train, test = _split_data(datalist, withhold)
@@ -505,18 +523,13 @@ def bootstrap(model, datalist, priors_list, start_params,
                   niterations=niterations,
                   nchains=nchains, sim_name=sim_name, save_dir=epoch_save_dir)
 
-    # analyse results
-    all_data, _ = _split_data(datalist, 0)
-    all_data.drop_sigmas()
-
-    mean_y = np.mean(all_data.data_set.values)
-    SStot = np.sum(
-                   np.square(
-                             np.subtract(all_data.data_set.values, mean_y)))
-
-    SSres_list = []
-    for dir in dir_list:
-        with open(os.path.join(dir, sim_name + '_ML_params.txt'), 'r') as f:
+        # analyse results
+        test.drop_sigmas()
+        mean_y = np.mean(test.data_set.values)
+        SStot = np.sum(
+                       np.square(
+                                 np.subtract(test.data_set.values, mean_y)))
+        with open(os.path.join(epoch_save_dir, sim_name + '_ML_params.txt'), 'r') as f:
             map = eval(f.read())
         pred = posterior_prediction(model, map, sampled_param_names, 1.0,
                                     test_times=[2.5, 5.0, 7.5, 10.0, 20., 60.],
@@ -524,14 +537,14 @@ def bootstrap(model, datalist, priors_list, start_params,
                                                  10000, 100000],
                                     beta_doses=[0.2, 6, 20, 60, 200, 600,
                                                 2000])
-        MSE = np.sum(
-                np.square(
-                    np.subtract(
-                        pred.data_set.values, all_data.data_set.values)))
-        SSres_list.append(MSE)
+        MSE, MPE = _MSE(pred.data_set.values, test.data_set.values)
+        boot_MSE += MSE
+        boot_MPE += MPE
+        boot_R2 += 1 - MSE / SStot
 
-    mean_R2 = np.mean([1 - SSres / SStot for SSres in SSres_list])
+    boot_MSE = boot_MSE / range(epochs)
+    boot_MPE = boot_MPE / range(epochs)
+    boot_R2 = boot_R2 / range(epochs)
 
     with open(os.path.join(save_dir, 'bootstrap_analysis.txt'), 'w') as f:
-        f.write("mean R2 = {}\nmean MSE = {}".format(mean_R2,
-                                                     np.mean(SSres_list)))
+        f.write("mean R2 = {}\nmean MSE = {}\nmean MPE = {}".format(boot_R2, boot_MSE, boot_MPE))
