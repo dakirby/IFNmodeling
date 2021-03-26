@@ -11,7 +11,11 @@ if ENSEMBLE:
     SCALE_FACTOR = 1.
     DR_KWARGS = {'num_checks': 5}
     PLOT_KWARGS = {'line_type': 'envelope', 'alpha': 0.2}
-    PYDREAM_DIR = 'PyDREAM_17-03-2021'
+    with open(os.path.join(os.getcwd(), 'pydream', 'GAB','PyDREAM_SETTINGS.py'), 'r') as f:
+        s = f.read()
+        NCHAINS = s.split('NCHAINS =')[1].split()[0].strip()
+        PYDREAM_DIR = s.split('DIR_NAME =')[1].split()[0].strip(' "\'') + '_' + NCHAINS
+
 else:
     SCALE_FACTOR = 1.227
     DR_KWARGS = {'return_type': 'IfnData'}

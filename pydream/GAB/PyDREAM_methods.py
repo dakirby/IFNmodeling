@@ -126,7 +126,8 @@ class IFN_posterior_object():
 
 def DREAM_fit(model, priors_list, posterior, start_params,
               sampled_param_names, niterations, nchains, sim_name,
-              save_dir, custom_params={}, GR_cutoff=1.2):
+              save_dir, custom_params={}, GR_cutoff=1.2, iteration_cutoff=1E7,
+              verbose=True):
     """
     The DREAM fitting algorithm as implemented in run_dream(), plus decorations
     for saving run parameters, checking convergence, and post fitting analysis.
@@ -145,7 +146,7 @@ def DREAM_fit(model, priors_list, posterior, start_params,
                                        multitry=False,
                                        gamma_levels=4, adapt_gamma=True,
                                        history_thin=1, model_name=sim_name,
-                                       verbose=True)
+                                       verbose=verbose)
 
     # Save sampling output (sampled param values and their corresponding logps)
     for chain in range(len(sampled_params)):
@@ -175,7 +176,7 @@ def DREAM_fit(model, priors_list, posterior, start_params,
                                                adapt_gamma=True,
                                                history_thin=1,
                                                model_name=sim_name,
-                                               verbose=True, restart=True)
+                                               verbose=verbose, restart=True)
 
             for chain in range(len(sampled_params)):
                 np.save(os.path.join(save_dir, sim_name + '_' + str(chain) +
@@ -192,7 +193,7 @@ def DREAM_fit(model, priors_list, posterior, start_params,
             np.savetxt(os.path.join(save_dir, sim_name + '_' +
                                     str(total_iterations)+'.txt'), GR)
 
-            if np.all(GR < GR_cutoff):
+            if np.all(GR < GR_cutoff) or total_iterations >= iteration_cutoff:
                 converged = True
 
     log_ps = np.array(log_ps)

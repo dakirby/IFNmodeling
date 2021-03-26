@@ -145,6 +145,7 @@ def scatter_density_plot(x , y, ax=None, sort=True, bins=20, **kwargs ):
 
 
 if __name__ == '__main__':
+    print('Figure 3')
     # -------------------------------
     # Initialize model
     # -------------------------------
@@ -234,7 +235,7 @@ if __name__ == '__main__':
     alpha_doses = list(np.logspace(np.log10(doses_alpha[1]), np.log10(doses_alpha[-1])))
     beta_doses = list(np.logspace(np.log10(doses_beta[1]), np.log10(doses_beta[-1])))
     # Small cells
-    radius = 2E-6
+    radius = 6.5E-6 # 2E-6
     volPM_small = 2 * radius ** 2 + 4 * radius * 8E-6
     volCP_small = 8E-6 * radius ** 2
     R1 = 6755
@@ -258,7 +259,7 @@ if __name__ == '__main__':
                                                        **DR_KWARGS)
 
     # Large (normal) cells
-    radius = 1.6**0.5 * radius
+    radius = 8E-6 # 1.6**0.5 * radius
     volPM_large = 2 * radius ** 2 + 4 * radius * 8E-6
     volCP_large = 8E-6 * radius ** 2
     R1 = R1 * volPM_large / volPM_small

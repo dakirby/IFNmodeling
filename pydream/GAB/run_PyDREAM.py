@@ -1,5 +1,5 @@
-from PyDREAM_SETTINGS import NITERATIONS, NCHAINS, SIM_NAME, dir_setup,\
-    Mixed_Model, sf, custom_params, datalist,\
+from PyDREAM_SETTINGS import NITERATIONS, NCHAINS, SIM_NAME, DIR_NAME,\
+    ITERATION_CUTOFF, dir_setup, Mixed_Model, sf, custom_params, datalist,\
     posterior_obj, pysb_sampled_parameter_names, original_params,\
     priors_list, priors_dict
 
@@ -20,8 +20,7 @@ if __name__ == '__main__':
     fit_flag = True
     post_analysis_flag = False
     bootstrap_flag = False
-    save_dir = dir_setup("PyDREAM_17-03-2021",
-                         fit_flag, bootstrap_flag, post_analysis_flag)
+    save_dir = dir_setup(DIR_NAME, fit_flag, bootstrap_flag, post_analysis_flag)
 
     # Plotting parameters
     plot_data = True
@@ -45,7 +44,9 @@ if __name__ == '__main__':
                   start_params=original_params,
                   sampled_param_names=pysb_sampled_parameter_names,
                   niterations=NITERATIONS,
-                  nchains=NCHAINS, sim_name=SIM_NAME, save_dir=save_dir)
+                  nchains=NCHAINS, sim_name=SIM_NAME, save_dir=save_dir,
+                  iteration_cutoff=ITERATION_CUTOFF,
+                  verbose=False)
 
     # -------------------------------------------------
     # Post-fitting analysis

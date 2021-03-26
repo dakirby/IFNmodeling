@@ -116,6 +116,7 @@ def prior_theory(m):
 
 
 if __name__ == '__main__':
+    print('Figure 2')
     # ----------------------
     # Set up Figure 2 layout
     # ----------------------
@@ -368,7 +369,7 @@ if __name__ == '__main__':
                                    'Beta', color=beta_palette[idx])
 
     plt.figure(Figure_2.number)
-    dr_fig, dr_axes = new_fit.show_figure()
+    dr_fig, dr_axes = new_fit.show_figure(show_flag=False)
 
     # Format Figure_2
     # Dose response aesthetics

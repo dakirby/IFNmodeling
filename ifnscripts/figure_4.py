@@ -118,6 +118,7 @@ def timecourse_figure():
 
 
 if __name__ == '__main__':
+    print('Figure 4')
     K4_flag = True
     TC_flag = True
     # ---------------------------------------------

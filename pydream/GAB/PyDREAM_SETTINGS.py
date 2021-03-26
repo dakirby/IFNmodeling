@@ -13,9 +13,11 @@ from datetime import datetime
 # -----------------------------------------------------------------------------
 # Set simulation parameters
 # -----------------------------------------------------------------------------
-NITERATIONS = 10000
-NCHAINS = 6
+NITERATIONS = 5
+ITERATION_CUTOFF = 10
+NCHAINS = 5
 SIM_NAME = 'mixed_IFN'
+DIR_NAME = 'PyDREAM_26-03-2021'
 # -----------------------------------------------------------------------------
 
 

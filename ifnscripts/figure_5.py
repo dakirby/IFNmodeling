@@ -98,6 +98,7 @@ def load_data(dir):
 
 
 if __name__ == '__main__':
+    print("Figure 5")
     simulate_DR = True
     fitting = True
 

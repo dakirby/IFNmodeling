@@ -8,6 +8,7 @@ while getopts ":f" opt; do
       cd pydream/GAB
       python3 run_PyDREAM.py
       cd $DIR
+      echo "DONE FITTING"
       ;;
     \?)
       echo "Invalid option: -$OPTARG" >&2
