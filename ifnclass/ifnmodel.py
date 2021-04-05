@@ -566,7 +566,9 @@ class EnsembleModel():
 
         # Prepare parameter vectors
         parameters_to_check = []
-        for i in list(np.random.randint(0, high=len(self.parameters), size=num_checks)):
+        params_list_len = len(self.parameters)
+        burn_in_len = int(params_list_len / 2)
+        for i in list(np.random.randint(burn_in_len, high=params_list_len, size=num_checks)):
             parameters_to_check.append(self.parameters[i])
 
         # Compute posterior sample trajectories

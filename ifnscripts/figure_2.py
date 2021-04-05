@@ -159,6 +159,7 @@ if __name__ == '__main__':
                                             parameters={'Ib': 0},
                                             sf=scale_factor,
                                             **DR_KWARGS)
+
     drb60 = DR_method(times, 'TotalpSTAT', 'Ib',
                                             list(logspace(-1, 4)),
                                             parameters={'Ia': 0},

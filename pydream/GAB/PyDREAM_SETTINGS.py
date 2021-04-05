@@ -13,11 +13,11 @@ from datetime import datetime
 # -----------------------------------------------------------------------------
 # Set simulation parameters
 # -----------------------------------------------------------------------------
-NITERATIONS = 5
-ITERATION_CUTOFF = 10
+NITERATIONS = 500
+ITERATION_CUTOFF = 2000
 NCHAINS = 5
 SIM_NAME = 'mixed_IFN'
-DIR_NAME = 'PyDREAM_26-03-2021'
+DIR_NAME = 'PyDREAM_05-04-2021'
 # -----------------------------------------------------------------------------
 
 
@@ -33,27 +33,22 @@ custom_params = {}
 # -----------------------------------------------------------------------------
 # Parameters to fit:
 # -----------------------------------------------------------------------------
-pysb_sampled_parameter_names = ['kpa', 'kSOCSon', 'R1', 'R2',
-                                'kint_a', 'kint_b', 'krec_a2', 'krec_b2']
+pysb_sampled_parameter_names = ['kpa', 'kSOCSon', 'kd4', 'k_d4', 'R1', 'R2', 'kint_a', 'kint_b', 'krec_a2', 'krec_b2']
 
 # Parameters to be sampled as unobserved random variables in DREAM:
-original_params = np.log10([Mixed_Model.parameters[param] for
-                            param in pysb_sampled_parameter_names])
+original_params = np.log10([Mixed_Model.parameters[param] for param in pysb_sampled_parameter_names])
 
 priors_list = []
 priors_dict = {}
 for key in pysb_sampled_parameter_names:
-    if key in ['ka1', 'ka2', 'k_a1', 'k_a2', 'R1', 'R2']:
+    if key in ['kd4', 'k_d4', 'R1', 'R2']:
         priors_list.append(SampledParam(norm,
-                                        loc=np.log10(
-                                            Mixed_Model.parameters[key]),
-                                        scale=np.log10(2)))
-        priors_dict.update({key: (np.log10(Mixed_Model.parameters[key]),
-                                  np.log10(2))})
+                                        loc=np.log10(Mixed_Model.parameters[key]),
+                                        scale=0.3))
+        priors_dict.update({key: (np.log10(Mixed_Model.parameters[key]), np.log10(2))})
     else:
         priors_list.append(SampledParam(norm,
-                                        loc=np.log10(
-                                            Mixed_Model.parameters[key]),
+                                        loc=np.log10(Mixed_Model.parameters[key]),
                                         scale=1.0))
         priors_dict.update({key: (np.log10(
                                   Mixed_Model.parameters[key]), 1.0)})

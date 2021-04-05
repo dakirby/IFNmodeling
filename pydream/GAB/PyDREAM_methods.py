@@ -143,24 +143,21 @@ def DREAM_fit(model, priors_list, posterior, start_params,
                                        start=start_params,
                                        niterations=niterations,
                                        nchains=nchains,
-                                       multitry=False,
+                                       multitry=True, parallel=True,
                                        gamma_levels=4, adapt_gamma=True,
                                        history_thin=1, model_name=sim_name,
                                        verbose=verbose)
 
     # Save sampling output (sampled param values and their corresponding logps)
     for chain in range(len(sampled_params)):
-        np.save(os.path.join(save_dir, sim_name+str(chain) + '_' +
-                             str(total_iterations)), sampled_params[chain])
-        np.save(os.path.join(save_dir, sim_name+str(chain) + '_' +
-                             str(total_iterations)), log_ps[chain])
+        np.save(os.path.join(save_dir, sim_name+str(chain) + '_' + str(total_iterations)), sampled_params[chain])
+        np.save(os.path.join(save_dir, sim_name+str(chain) + '_logPs_' + str(total_iterations)), log_ps[chain])
 
     # Check convergence and continue sampling if not converged
 
     GR = Gelman_Rubin(sampled_params)
     print('At iteration: ', total_iterations, ' GR = ', GR)
-    np.savetxt(os.path.join(save_dir, sim_name + str(total_iterations) +
-                            '.txt'), GR)
+    np.savetxt(os.path.join(save_dir, sim_name + '_' + str(total_iterations) + '.txt'), GR)
 
     old_samples = sampled_params
     if np.any(GR > GR_cutoff):
@@ -171,7 +168,8 @@ def DREAM_fit(model, priors_list, posterior, start_params,
             sampled_params, log_ps = run_dream(priors_list, posterior,
                                                start=starts,
                                                niterations=niterations,
-                                               nchains=nchains, multitry=False,
+                                               nchains=nchains,
+                                               multitry=True, parallel=True,
                                                gamma_levels=4,
                                                adapt_gamma=True,
                                                history_thin=1,
@@ -179,19 +177,13 @@ def DREAM_fit(model, priors_list, posterior, start_params,
                                                verbose=verbose, restart=True)
 
             for chain in range(len(sampled_params)):
-                np.save(os.path.join(save_dir, sim_name + '_' + str(chain) +
-                                     '_' + str(total_iterations)),
-                        sampled_params[chain])
-                np.save(os.path.join(save_dir, sim_name + '_' + str(chain) +
-                                     '_' + str(total_iterations)),
-                        log_ps[chain])
+                np.save(os.path.join(save_dir, sim_name + '_' + str(chain) + '_' + str(total_iterations)), sampled_params[chain])
+                np.save(os.path.join(save_dir, sim_name + '_' + str(chain) + '_logPs_' + str(total_iterations)), log_ps[chain])
 
-            old_samples = [np.concatenate((old_samples[chain],
-                           sampled_params[chain])) for chain in range(nchains)]
+            old_samples = [np.concatenate((old_samples[chain], sampled_params[chain])) for chain in range(nchains)]
             GR = Gelman_Rubin(old_samples)
             print('At iteration: ', total_iterations, ' GR = ', GR)
-            np.savetxt(os.path.join(save_dir, sim_name + '_' +
-                                    str(total_iterations)+'.txt'), GR)
+            np.savetxt(os.path.join(save_dir, sim_name + '_' + str(total_iterations)+'.txt'), GR)
 
             if np.all(GR < GR_cutoff) or total_iterations >= iteration_cutoff:
                 converged = True
@@ -202,16 +194,11 @@ def DREAM_fit(model, priors_list, posterior, start_params,
     try:
         # Maximum posterior model:
         max_in_each_chain = [np.argmax(chain) for chain in log_ps]
-        global_max_chain_idx = np.argmax([log_ps[chain][max_idx] for
-                                          chain, max_idx in
-                                          enumerate(max_in_each_chain)])
-        ml_params = sampled_params[global_max_chain_idx,
-                                   max_in_each_chain[global_max_chain_idx]]
-        ml_model = {pname: 10 ** pvalue for pname, pvalue in
-                    zip(sampled_param_names, ml_params)}
+        global_max_chain_idx = np.argmax([log_ps[chain][max_idx] for chain, max_idx in enumerate(max_in_each_chain)])
+        ml_params = sampled_params[global_max_chain_idx, max_in_each_chain[global_max_chain_idx]]
+        ml_model = {pname: 10 ** pvalue for pname, pvalue in zip(sampled_param_names, ml_params)}
         print(ml_model,
-              file=open(os.path.join(save_dir, sim_name +
-                                     '_ML_params.txt'), 'w'))
+              file=open(os.path.join(save_dir, sim_name + '_ML_params.txt'), 'w'))
 
     except IndexError:
         print("IndexError finding maximum posterior parameters")
@@ -221,8 +208,7 @@ def DREAM_fit(model, priors_list, posterior, start_params,
         # Plot output
         total_iterations = len(old_samples[0])
         burnin = int(total_iterations / 2)
-        samples = np.concatenate(list((old_samples[i][burnin:, :] for
-                                       i in range(len(old_samples)))))
+        samples = np.concatenate(list((old_samples[i][burnin:, :] for i in range(len(old_samples)))))
         np.save(os.path.join(save_dir, sim_name+'_samples'), samples)
         ndims = len(old_samples[0][0])
         colors = sns.color_palette(n_colors=ndims)

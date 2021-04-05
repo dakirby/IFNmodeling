@@ -14,7 +14,8 @@ if ENSEMBLE:
     with open(os.path.join(os.getcwd(), 'pydream', 'GAB','PyDREAM_SETTINGS.py'), 'r') as f:
         s = f.read()
         NCHAINS = s.split('NCHAINS =')[1].split()[0].strip()
-        PYDREAM_DIR = s.split('DIR_NAME =')[1].split()[0].strip(' "\'') + '_' + NCHAINS
+        NITERATIONS = s.split('NITERATIONS =')[1].split()[0].strip()
+        PYDREAM_DIR = s.split('DIR_NAME =')[1].split()[0].strip(' "\'') + '_' + NITERATIONS
 
 else:
     SCALE_FACTOR = 1.227
