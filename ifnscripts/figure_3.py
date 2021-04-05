@@ -1,5 +1,5 @@
 from ifnclass.ifndata import IfnData, DataAlignment
-import load_model
+import load_model as lm
 from ifnclass.ifnplot import DoseresponsePlot, TimecoursePlot
 import seaborn as sns
 import numpy as np
@@ -145,65 +145,18 @@ def scatter_density_plot(x , y, ax=None, sort=True, bins=20, **kwargs ):
 
 
 if __name__ == '__main__':
+    print('Figure 3')
     # -------------------------------
     # Initialize model
     # -------------------------------
-    Mixed_Model = load_model.load_model()
-    scale_factor = 1.  # load_model.scale_factor
+    Mixed_Model, DR_method = lm.load_model()
+    scale_factor = 1.  # lm.SCALE_FACTOR
+    DR_KWARGS, PLOT_KWARGS = lm.DR_KWARGS, lm.PLOT_KWARGS
 
     times = [60.0]
     doses_alpha = np.divide([0, 1E-7, 1E-8, 3E-9, 1E-9, 3E-10, 1E-10, 1E-11], 1E-12)
     doses_beta = np.divide([0, 2E-9, 6E-10, 2E-10, 6E-11, 2E-11, 6E-12, 2E-13], 1E-12)
-    """
-    # -------------------------------
-    # Scanning effect of cell size
-    # 60 minute IFN dosed at 10 pM
-    # -------------------------------
-    alpha_cell_size_curve = []
-    beta_cell_size_curve = []
-    volPM_typical = 2 * 30E-6 ** 2 + 4 * 30E-6 * 8E-6
-    volCP_typical = 8E-6 * 30E-6 ** 2
-    radii = list(np.logspace(np.log10(30E-7), np.log10(30E-5)))
-    for radius in radii:
-        volPM = 2 * radius ** 2 + 4 * radius * 8E-6
-        volCP = 8E-6 * radius ** 2
-        # Alpha
-        response = Mixed_Model.timecourse(list(np.linspace(0, 60)), 'TotalpSTAT',
-                                          parameters={'Ia': 10E-12 * 6.022E23 * 1E-5, 'Ib': 0,
-                                                      'R1': (volPM / volPM_typical) * 1200,
-                                                      'R2': (volPM / volPM_typical) * 4920,
-                                                      'S': (volCP / volCP_typical) * 1E4},
-                                          return_type='list', scale_factor=scale_factor)['TotalpSTAT'][-1]
-        normalized_response = response / ((volCP / volCP_typical) * 1E4)
-        alpha_cell_size_curve.append(normalized_response)
-        # Beta
-        response = Mixed_Model.timecourse(list(np.linspace(0, 60)), 'TotalpSTAT',
-                                          parameters={'Ib': 10 * 1E-12 * 6.022E23 * 1E-5, 'Ia': 0,
-                                                      'R1': (volPM / volPM_typical) * 1200,
-                                                      'R2': (volPM / volPM_typical) * 4920,
-                                                      'S': (volCP / volCP_typical) * 1E4},
-                                          return_type='list', scale_factor=scale_factor)['TotalpSTAT'][-1]
-        normalized_response = response / ((volCP / volCP_typical) * 1E4)
-        beta_cell_size_curve.append(normalized_response)
 
-    # -------------------------------
-    # Plot cell size panel
-    # -------------------------------
-    alpha_palette = sns.color_palette("Reds", 8)
-    beta_palette = sns.color_palette("Greens", 8)
-    matplotlib.rcParams['xtick.labelsize'] = 12
-    matplotlib.rcParams['ytick.labelsize'] = 12
-    dr_fig = DoseresponsePlot((1, 2))
-    ax = dr_fig.axes[0]
-    xlabels = np.divide(radii, 1E-6)
-    ax.plot(xlabels, alpha_cell_size_curve, color=alpha_palette[-1], label='Alpha', linewidth=2)
-    ax.plot(xlabels, beta_cell_size_curve, color=beta_palette[-1], label='Beta', linewidth=2)
-    ax.legend()
-    ax.set_xlabel(r'Cell radius ($\mu$m)', fontsize=14)
-    ax.set_ylabel('pSTAT/STAT', fontsize=14)
-    ax.set_xlim((1, 300))
-    ax.set_title('Fraction pSTAT vs Cell Radius\n 10 pM IFN at 60 minutes', fontsize=16)
-    """
     # -----------------------------
     # Investigate cell variability
     # in data
@@ -227,107 +180,6 @@ if __name__ == '__main__':
     #  | 1E-11  2E-13
     # H| alpha  beta
     #  | 0 pM   0 pM
-    """
-    # Get dose-response data
-    dataset_names = ['20190214', '20190121', '20190119', '20190108']
-    times = [2.5, 2.5, 5.0, 5.0, 7.5, 7.5, 10.0, 10.0, 20.0, 20.0, 60.0, 60.0]
-    well_IDs = ['H', 'A', 'B', 'C', 'D', 'E', 'F', 'G']
-    doses = {'Alpha': np.divide([0, 1E-7, 1E-8, 3E-9, 1E-9, 3E-10, 1E-10, 1E-11], 1E-12),
-            'Beta': np.divide([0, 2E-9, 6E-10, 2E-10, 6E-11, 2E-11, 6E-12, 2E-13], 1E-12)}
-    column_labels = ['Dose_Species', 'Dose (pM)', 'time', 'pSTAT']
-    large_cell_percentile = 0.2
-    average_large_fraction_dict = {}
-    small_IfnData_list = []
-    large_IfnData_list = []
-    for dataset in dataset_names:
-        print("Working on dataset {}".format(dataset))
-        small_df = []
-        large_df = []
-        small_zeros = []
-        large_zeros = []
-        # Gates:
-        upper_cutoff = 50000
-
-        average_large_fraction = 0
-        for dose_idx, concentration in enumerate(well_IDs):
-           for time_idx, time in enumerate(times):
-                # Annotate
-                if time_idx % 2 == 0:
-                    species = 'Beta'
-                else:
-                    species = 'Alpha'
-                well = concentration+str(time_idx+1)
-                # Clean data
-                data = grab_data(dataset, well)
-                outliers = (data['FSC'] > upper_cutoff) | (data['pSTAT1 in B cells'] < 0)
-                data = data.loc[~outliers]
-                small_large_threshold = data.quantile(q=1 - large_cell_percentile).loc['FSC']
-                # Partition data
-                small_cells = data[(data['FSC'] <= small_large_threshold)]
-                large_cells = data[(data['FSC'] > small_large_threshold)]
-                average_large_fraction += len(large_cells)/(len(small_cells) + len(large_cells))
-                pSTAT_small = small_cells.mean().loc['pSTAT1 in B cells']
-                pSTAT_large = large_cells.mean().loc['pSTAT1 in B cells']
-                # Recognize zero dose data and set aside
-                if doses[species][dose_idx] == 0.0:
-                    small_zeros.append([species, doses[species][dose_idx], time, pSTAT_small])
-                    large_zeros.append([species, doses[species][dose_idx], time, pSTAT_large])
-                else:
-                    small_zero_value = 0
-                    for item in small_zeros:
-                        if item[0] == species and item[1] == 0.0 and item[2] == time:
-                            small_zero_value = item[3]
-                            break
-                    large_zero_value = 0
-                    for item in large_zeros:
-                        if item[0] == species and item[1] == 0.0 and item[2] == time:
-                            large_zero_value = item[3]
-                            break
-                    small_df.append([species, doses[species][dose_idx], time, (pSTAT_small-small_zero_value, np.nan)])
-                    large_df.append([species, doses[species][dose_idx], time, (pSTAT_large-large_zero_value, np.nan)])
-        average_large_fraction_dict[dataset] = average_large_fraction = average_large_fraction/(len(times)*len(well_IDs))
-        # Make dataframes
-        small_df = pd.DataFrame.from_records(small_df, columns=column_labels)
-        large_df = pd.DataFrame.from_records(large_df, columns=column_labels)
-
-        # Convert to multiindex
-        small_df.set_index(['Dose_Species', 'Dose (pM)'], inplace=True)
-        small_df = pd.pivot_table(small_df, values='pSTAT', index=['Dose_Species', 'Dose (pM)'], columns=['time'],
-                                 aggfunc=np.sum)
-        small_df.columns.name = None
-
-        large_df.set_index(['Dose_Species', 'Dose (pM)'], inplace=True)
-        large_df = pd.pivot_table(large_df, values='pSTAT', index=['Dose_Species', 'Dose (pM)'], columns=['time'],
-                                 aggfunc=np.sum)
-        large_df.columns.name = None
-
-        # Make IfnData object
-        small_cell_IfnData = IfnData('custom', df=small_df, conditions={'Alpha': {'Ib': 0}, 'Beta': {'Ia': 0}})
-        small_cell_IfnData.name = dataset
-        large_cell_IfnData = IfnData('custom', df=large_df, conditions={'Alpha': {'Ib': 0}, 'Beta': {'Ia': 0}})
-        large_cell_IfnData.name = dataset
-        small_IfnData_list.append(small_cell_IfnData)
-        large_IfnData_list.append(large_cell_IfnData)
-    # Check that thresholding worked (it works)
-    #print(average_large_fraction_dict)
-
-    # Align data
-    small_alignment = DataAlignment()
-    small_alignment.add_data(small_IfnData_list)
-    small_alignment.align()
-    small_alignment.get_scaled_data()
-    mean_small_data = small_alignment.summarize_data()
-
-    large_alignment = DataAlignment()
-    large_alignment.add_data(large_IfnData_list)
-    large_alignment.align()
-    large_alignment.get_scaled_data()
-    mean_large_data = large_alignment.summarize_data()
-
-    # Save results
-    small_alignment.save('small_alignment', save_dir=os.path.join(os.getcwd(), 'small_alignment'))
-    large_alignment.save('large_alignment', save_dir=os.path.join(os.getcwd(), 'large_alignment'))
-    """
 
     # Load saved DataAlignment
     small_alignment = DataAlignment()
@@ -383,55 +235,53 @@ if __name__ == '__main__':
     alpha_doses = list(np.logspace(np.log10(doses_alpha[1]), np.log10(doses_alpha[-1])))
     beta_doses = list(np.logspace(np.log10(doses_beta[1]), np.log10(doses_beta[-1])))
     # Small cells
-    radius = 1E-6
+    radius = 6.5E-6 # 2E-6
     volPM_small = 2 * radius ** 2 + 4 * radius * 8E-6
     volCP_small = 8E-6 * radius ** 2
     R1 = 6755
     R2 = 1511
     STAT = 10000
-    small_cells_alpha = Mixed_Model.mixed_dose_response(times, 'TotalpSTAT', 'Ia',
+    small_cells_alpha_IFNdata = DR_method(times, 'TotalpSTAT', 'Ia',
                                                         alpha_doses,
                                                         parameters={'Ib': 0,
                                                                     'R1': R1,
                                                                     'R2': R2,
                                                                     'S': STAT},
-                                                        sf=scale_factor)
-    small_cells_beta = Mixed_Model.mixed_dose_response(times, 'TotalpSTAT', 'Ib',
+                                                        sf=scale_factor,
+                                                        **DR_KWARGS)
+    small_cells_beta_IFNdata = DR_method(times, 'TotalpSTAT', 'Ib',
                                                        beta_doses,
                                                        parameters={'Ia': 0,
                                                                    'R1': R1,
                                                                    'R2': R2,
                                                                    'S': STAT},
-                                                       sf=scale_factor)
-    small_cells_alpha_IFNdata = IfnData('custom', df=small_cells_alpha, conditions={'Alpha': {'Ib': 0}})
-    small_cells_beta_IFNdata = IfnData('custom', df=small_cells_beta, conditions={'Beta': {'Ia': 0}})
+                                                       sf=scale_factor,
+                                                       **DR_KWARGS)
 
     # Large (normal) cells
-    radius = 1.6**0.5 * radius
+    radius = 8E-6 # 1.6**0.5 * radius
     volPM_large = 2 * radius ** 2 + 4 * radius * 8E-6
     volCP_large = 8E-6 * radius ** 2
     R1 = R1 * volPM_large / volPM_small
     R2 = R2 * volPM_large / volPM_small
     STAT = STAT * volCP_large / volCP_small
-    large_cells_alpha = Mixed_Model.mixed_dose_response(times, 'TotalpSTAT', 'Ia',
+    large_cells_alpha_IFNdata = DR_method(times, 'TotalpSTAT', 'Ia',
                                                  alpha_doses,
                                                  parameters={'Ib': 0,
                                                              'R1': R1,
                                                              'R2': R2,
                                                              'S': STAT},
-                                                 sf=scale_factor)
-    large_cells_beta = Mixed_Model.mixed_dose_response(times, 'TotalpSTAT', 'Ib',
+                                                 sf=scale_factor,
+                                                 **DR_KWARGS)
+    large_cells_beta_IFNdata = DR_method(times, 'TotalpSTAT', 'Ib',
                                                 beta_doses,
                                                 parameters={'Ia': 0,
                                                             'R1': R1,
                                                             'R2': R2,
                                                             'S': STAT},
-                                                sf=scale_factor)
-    large_cells_alpha_IFNdata = IfnData('custom', df=large_cells_alpha, conditions={'Alpha': {'Ib': 0}})
-    large_cells_beta_IFNdata = IfnData('custom', df=large_cells_beta, conditions={'Beta': {'Ia': 0}})
-
+                                                sf=scale_factor,
+                                                **DR_KWARGS)
     # Plot
-
     dr_plot = new_fit
     dr_axes = dr_plot.axes
     # Add model predictions fits

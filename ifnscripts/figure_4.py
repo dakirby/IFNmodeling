@@ -1,4 +1,4 @@
-import load_model
+import load_model as lm
 from ifnclass.ifndata import IfnData, DataAlignment
 from ifnclass.ifnplot import TimecoursePlot
 from numpy import logspace
@@ -16,6 +16,7 @@ import os
 from scipy.optimize import curve_fit
 from ifnclass.ifnplot import DoseresponsePlot
 
+
 # ---------------------------------------------------
 # First make the figure where we increase K4
 # ---------------------------------------------------
@@ -26,29 +27,27 @@ def increase_K4_figure():
     # --------------------
     # Set up Model
     # --------------------
-    Mixed_Model = load_model.load_model()
-    scale_factor = load_model.scale_factor
+    Mixed_Model, DR_method = lm.load_model()
+    scale_factor, DR_KWARGS, PLOT_KWARGS = lm.SCALE_FACTOR, lm.DR_KWARGS, lm.PLOT_KWARGS
 
     dose_list = list(logspace(-2, 8, num=35))
 
-    dr_curve_a = [el[0][0] for el in Mixed_Model.mixed_dose_response([60], 'TotalpSTAT', 'Ia', dose_list,
-                                                                     parameters={'Ib': 0}, sf=scale_factor).values]
-
-    dr_curve_b = [el[0][0] for el in Mixed_Model.mixed_dose_response([60], 'TotalpSTAT', 'Ib', dose_list,
-                                                                     parameters={'Ia': 0}, sf=scale_factor).values]
+    dr_a1 = DR_method([60], 'TotalpSTAT', 'Ia', dose_list, parameters={'Ib': 0}, sf=scale_factor, **DR_KWARGS)
+    dr_curve_a = [el[0][0] for el in dr_a1.data_set.values]
+    dr_b1 = DR_method([60], 'TotalpSTAT', 'Ib', dose_list, parameters={'Ia': 0}, sf=scale_factor, **DR_KWARGS)
+    dr_curve_b = [el[0][0] for el in dr_b1.data_set.values]
 
     # Now compute the 15* refractory response
     k4sf1 = 15
-    kd4_reference = Mixed_Model.model_1.parameters['kd4']
-    kd3_reference = Mixed_Model.model_1.parameters['kd3']
-    k_d4_reference = Mixed_Model.model_1.parameters['k_d4']
-    k_d3_reference = Mixed_Model.model_1.parameters['k_d3']
-    Mixed_Model.set_global_parameters({'kd4': kd4_reference*k4sf1, 'k_d4': k_d4_reference*k4sf1})
+    ref_params = Mixed_Model.get_parameters()
+    kd4_reference = ref_params['kd4']
+    k_d4_reference = ref_params['k_d4']
+    Mixed_Model.set_parameters({'kd4': kd4_reference*k4sf1, 'k_d4': k_d4_reference*k4sf1})
 
-    dr_curve_a15 = [el[0][0] for el in Mixed_Model.mixed_dose_response([60], 'TotalpSTAT', 'Ia', dose_list,
-                                                                     parameters={'Ib': 0}, sf=scale_factor).values]
-    dr_curve_b15 = [el[0][0] for el in Mixed_Model.mixed_dose_response([60], 'TotalpSTAT', 'Ib', dose_list,
-                                                                     parameters={'Ia': 0}, sf=scale_factor).values]
+    dr_a15 = DR_method([60], 'TotalpSTAT', 'Ia', dose_list, parameters={'Ib': 0}, sf=scale_factor, **DR_KWARGS)
+    dr_curve_a15 = [el[0][0] for el in dr_a15.data_set.values]
+    dr_b15 = DR_method([60], 'TotalpSTAT', 'Ib', dose_list, parameters={'Ia': 0}, sf=scale_factor, **DR_KWARGS)
+    dr_curve_b15 = [el[0][0] for el in dr_b15.data_set.values]
 
     # Plot
     fig, axes = plt.subplots(nrows=1, ncols=1)
@@ -119,6 +118,7 @@ def timecourse_figure():
 
 
 if __name__ == '__main__':
+    print('Figure 4')
     K4_flag = True
     TC_flag = True
     # ---------------------------------------------

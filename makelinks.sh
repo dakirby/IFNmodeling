@@ -1,13 +1,15 @@
 #!/bin/bash
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-rm "$DIR/ifnscripts/ifnclass"
+rm $DIR/ifnscripts/ifnclass
 rm $DIR/ifnscripts/ifnmodels
 rm $DIR/ifnscripts/ifndatabase
+rm $DIR/ifnscripts/pydream
 
 ln -s $DIR/ifndatabase $DIR/ifnscripts/ifndatabase
 ln -s $DIR/ifnmodels $DIR/ifnscripts/ifnmodels
 ln -s $DIR/ifnclass $DIR/ifnscripts/ifnclass
+ln -s $DIR/pydream $DIR/ifnscripts/pydream
 
 rm $DIR/pydream/GAB/ifndatabase
 rm $DIR/pydream/GAB/ifnmodels

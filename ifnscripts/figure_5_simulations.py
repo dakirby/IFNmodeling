@@ -1,12 +1,12 @@
-import load_model
+import load_model as lm
 import numpy as np
 import copy
 import os
 
 
 def figure_5_simulations(USP18_sf, times, test_doses, dir, tag=''):
-    Mixed_Model = load_model.load_model()
-    scale_factor = load_model.scale_factor
+    Mixed_Model, DR_method = lm.load_model()
+    scale_factor, DR_KWARGS, PLOT_KWARGS = lm.SCALE_FACTOR, lm.DR_KWARGS, lm.PLOT_KWARGS
 
     params = copy.deepcopy(Mixed_Model.get_parameters())
 
@@ -15,19 +15,19 @@ def figure_5_simulations(USP18_sf, times, test_doses, dir, tag=''):
     # IFNa2-YNS
     # ---------------------------------------------------------------
     # Use IFNbeta parameters for YNS since it is a beta mimic
-    pSTAT_a2YNS = Mixed_Model.mixed_dose_response(times, 'TotalpSTAT', 'Ib',
+    pSTAT_a2YNS = DR_method(times, 'TotalpSTAT', 'Ib',
                                                   test_doses,
                                                   parameters={'Ia': 0},
-                                                  sf=scale_factor)
-    pSTAT_a2YNS = np.array([el[0][0] for el in pSTAT_a2YNS.values])
+                                                  sf=scale_factor, **DR_KWARGS)
+    pSTAT_a2YNS = np.array([el[0][0] for el in pSTAT_a2YNS.data_set.values])
 
     np.save(dir + os.sep + 'pSTAT_a2YNS' + tag + '.npy', pSTAT_a2YNS)
 
-    pSTAT_a2YNS_refractory = Mixed_Model.mixed_dose_response(times, 'TotalpSTAT', 'Ib',
+    pSTAT_a2YNS_refractory = DR_method(times, 'TotalpSTAT', 'Ib',
                                                              test_doses,
                                                              parameters={'Ia': 0, 'k_d4': params['k_d4'] * USP18_sf},
-                                                             sf=scale_factor)
-    pSTAT_a2YNS_refractory = np.array([el[0][0] for el in pSTAT_a2YNS_refractory.values])
+                                                             sf=scale_factor, **DR_KWARGS)
+    pSTAT_a2YNS_refractory = np.array([el[0][0] for el in pSTAT_a2YNS_refractory.data_set.values])
 
     np.save(dir + os.sep + 'pSTAT_a2YNS_refractory' + tag + '.npy', pSTAT_a2YNS_refractory)
 
@@ -39,20 +39,20 @@ def figure_5_simulations(USP18_sf, times, test_doses, dir, tag=''):
     # ---------------------------------------------------------------
     # IFNw has K1 = 0.08 * K1 of IFNa2  and K2 = 0.4 * K2 of IFNa2, but no change to K4
     custom_params_w = {'Ib': 0, 'kd1': params['kd1'] * 0.08, 'kd2': params['kd2'] * 0.4}
-    pSTAT_w = Mixed_Model.mixed_dose_response(times, 'TotalpSTAT', 'Ia',
+    pSTAT_w = DR_method(times, 'TotalpSTAT', 'Ia',
                                             test_doses,
                                             parameters=custom_params_w,
-                                            sf=scale_factor)
-    pSTAT_w = np.array([el[0][0] for el in pSTAT_w.values])
+                                            sf=scale_factor, **DR_KWARGS)
+    pSTAT_w = np.array([el[0][0] for el in pSTAT_w.data_set.values])
     np.save(dir + os.sep + 'pSTAT_w' + tag + '.npy', pSTAT_w)
 
     # now refractory
     custom_params_w.update({'kd4': params['kd4'] * USP18_sf})
-    pSTAT_w_ref = Mixed_Model.mixed_dose_response(times, 'TotalpSTAT', 'Ia',
+    pSTAT_w_ref = DR_method(times, 'TotalpSTAT', 'Ia',
                                             test_doses,
                                             parameters=custom_params_w,
-                                            sf=scale_factor)
-    pSTAT_w_ref = np.array([el[0][0] for el in pSTAT_w_ref.values])
+                                            sf=scale_factor, **DR_KWARGS)
+    pSTAT_w_ref = np.array([el[0][0] for el in pSTAT_w_ref.data_set.values])
     np.save(dir + os.sep + 'pSTAT_w_refractory' + tag + '.npy', pSTAT_w_ref)
 
     # response('pSTAT_w', 0.4 / 5, 2. / 5.)
@@ -67,11 +67,11 @@ def figure_5_simulations(USP18_sf, times, test_doses, dir, tag=''):
         custom_params = {'Ib': 0, 'kd1': params['kd1'] * kd1_sf, 'kd2': params['kd2'] * kd2_sf, 'kd4': params['kd4'] * kd1_sf}
         if refractory:
             custom_params.update({'kd4': params['kd4'] * kd1_sf * USP18_sf})
-        pSTAT = Mixed_Model.mixed_dose_response(times, 'TotalpSTAT', 'Ia',
+        pSTAT = DR_method(times, 'TotalpSTAT', 'Ia',
                                                 test_doses,
                                                 parameters=custom_params,
-                                                sf=scale_factor)
-        pSTAT = np.array([el[0][0] for el in pSTAT.values])
+                                                sf=scale_factor, **DR_KWARGS)
+        pSTAT = np.array([el[0][0] for el in pSTAT.data_set.values])
         np.save(dir + os.sep + filename + tag + '.npy', pSTAT)
 
     # Use the fit IFNa2 parameters
