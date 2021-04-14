@@ -463,7 +463,7 @@ def _MSE(x, y):
         x = np.array(x)
     if type(y) == list:
         y = np.array(y)
-    assert x.shape() == y.shape()
+    assert x.shape == y.shape
     MSE, count, MPE = 0., 0., 0.
     for row in x.shape()[0]:
         for col in x.shape()[1]:
