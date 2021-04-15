@@ -465,8 +465,8 @@ def _MSE(x, y):
         y = np.array(y)
     assert x.shape == y.shape
     MSE, count, MPE = 0., 0., 0.
-    for row in x.shape()[0]:
-        for col in x.shape()[1]:
+    for row in range(x.shape[0]):
+        for col in range(x.shape[1]):
             if not np.isnan(x[row, col]) and not np.isnan(y[row, col]):
                 MSE += (x[row, col] - y[row, col])**2
                 MPE += np.abs((x[row, col] - y[row, col]) / y[row, col])
@@ -476,7 +476,7 @@ def _MSE(x, y):
 
 def bootstrap(model, datalist, priors_list, start_params,
               sampled_param_names, niterations, nchains, sim_name,
-              save_dir, withhold: int, epochs: int):
+              save_dir, withhold: int, epochs: int, iteration_cutoff=1E7):
     """
     Given a list of IfnData objects, splits the entire set of data into
     train and test samples, aligns each subset, fits the train subset,
@@ -508,7 +508,8 @@ def bootstrap(model, datalist, priors_list, start_params,
                   start_params=start_params,
                   sampled_param_names=sampled_param_names,
                   niterations=niterations,
-                  nchains=nchains, sim_name=sim_name, save_dir=epoch_save_dir)
+                  nchains=nchains, sim_name=sim_name, save_dir=epoch_save_dir,
+                  iteration_cutoff=iteration_cutoff)
 
         # analyse results
         test.drop_sigmas()
