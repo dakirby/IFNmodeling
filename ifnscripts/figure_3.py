@@ -203,28 +203,28 @@ if __name__ == '__main__':
 
     # Plot Dose respsonse data
     times = [2.5, 5.0, 7.5, 10.0, 20.0, 60.0]
-    color_palette = sns.color_palette("Paired", 10)
+    color_palette = sns.color_palette("rocket_r", 6)  # sns.color_palette("Paired", 10)
     alpha_mask = [2.5, 5.0, 7.5, 20.0]
     beta_mask = [2.5, 5.0, 7.5, 20.0]
     for idx, t in enumerate([10.0, 60.0]):
         if t == 10.0:
-            new_fit.add_trajectory(mean_large_data, t, 'errorbar', 'o', (0, 0), 'Alpha', color=color_palette[4],
-                                   linewidth=2.0)
-            new_fit.add_trajectory(mean_small_data, t, 'errorbar', 'o', (0, 0), 'Alpha', color=color_palette[5],
-                                   linewidth=2.0)
-            new_fit.add_trajectory(mean_large_data, t, 'errorbar', 'o', (0, 1), 'Beta', color=color_palette[2],
-                                   linewidth=2.0)
+            new_fit.add_trajectory(mean_large_data, t, 'errorbar', 'v', (0, 0), 'Alpha', color=color_palette[3],
+                                   linewidth=2.0, label=r'Large Cells, 10 min', alpha=0.5)
+            new_fit.add_trajectory(mean_small_data, t, 'errorbar', 'o', (0, 0), 'Alpha', color=color_palette[3],
+                                   linewidth=2.0, label=r'Small Cells, 10 min')
+            new_fit.add_trajectory(mean_large_data, t, 'errorbar', 'v', (0, 1), 'Beta', color=color_palette[3],
+                                   linewidth=2.0, label=r'Large Cells, 10 min', alpha=0.5)
             new_fit.add_trajectory(mean_small_data, t, 'errorbar', 'o', (0, 1), 'Beta', color=color_palette[3],
-                                   linewidth=2.0)
-        else:
-            new_fit.add_trajectory(mean_large_data, t, 'errorbar', 'o', (0, 0), 'Alpha', color=color_palette[6],
-                                   linewidth=2.0)
-            new_fit.add_trajectory(mean_small_data, t, 'errorbar', 'o', (0, 0), 'Alpha', color=color_palette[7],
-                                   linewidth=2.0)
-            new_fit.add_trajectory(mean_large_data, t, 'errorbar', 'o', (0, 1), 'Beta', color=color_palette[0],
-                                   linewidth=2.0)
-            new_fit.add_trajectory(mean_small_data, t, 'errorbar', 'o', (0, 1), 'Beta', color=color_palette[1],
-                                   linewidth=2.0)
+                                   linewidth=2.0, label=r'Small Cells, 10 min')
+        elif t == 60.0:
+            new_fit.add_trajectory(mean_large_data, t, 'errorbar', 'v', (0, 0), 'Alpha', color=color_palette[5],
+                                   linewidth=2.0, label=r'Large Cells, 60 min', alpha=0.5)
+            new_fit.add_trajectory(mean_small_data, t, 'errorbar', 'o', (0, 0), 'Alpha', color=color_palette[5],
+                                   linewidth=2.0, label=r'Small Cells, 60 min')
+            new_fit.add_trajectory(mean_large_data, t, 'errorbar', 'v', (0, 1), 'Beta', color=color_palette[5],
+                                   linewidth=2.0, label=r'Large Cells, 60 min', alpha=0.5)
+            new_fit.add_trajectory(mean_small_data, t, 'errorbar', 'o', (0, 1), 'Beta', color=color_palette[5],
+                                   linewidth=2.0, label=r'Small Cells, 60 min')
 
     # ------------------------------------------------------------------------------
     # Population heterogeneity
@@ -286,23 +286,23 @@ if __name__ == '__main__':
     dr_axes = dr_plot.axes
     # Add model predictions fits
     # Alpha
-    dr_plot.add_trajectory(large_cells_alpha_IFNdata, 60.0, 'plot', '--', (0, 0), 'Alpha', color=color_palette[6],
-                           label=r'Large Cells, 60 min', linewidth=2)
-    dr_plot.add_trajectory(small_cells_alpha_IFNdata, 60.0, 'plot', color_palette[7], (0, 0), 'Alpha',
-                           label=r'Small Cells, 60 min', linewidth=2)
-    dr_plot.add_trajectory(large_cells_alpha_IFNdata, 10.0, 'plot', '--', (0, 0), 'Alpha', color=color_palette[4],
-                           label=r'Large Cells, 10 min', linewidth=2)
-    dr_plot.add_trajectory(small_cells_alpha_IFNdata, 10.0, 'plot', color_palette[5], (0, 0), 'Alpha',
-                           label=r'Small Cells, 10 min', linewidth=2)
+    dr_plot.add_trajectory(large_cells_alpha_IFNdata, 60.0, 'plot', '-', (0, 0), 'Alpha', color=color_palette[5],
+                           linewidth=2, alpha=0.5)
+    dr_plot.add_trajectory(small_cells_alpha_IFNdata, 60.0, 'plot', color_palette[5], (0, 0), 'Alpha',
+                           linewidth=2)
+    dr_plot.add_trajectory(large_cells_alpha_IFNdata, 10.0, 'plot', '-', (0, 0), 'Alpha', color=color_palette[3],
+                           linewidth=2, alpha=0.5)
+    dr_plot.add_trajectory(small_cells_alpha_IFNdata, 10.0, 'plot', color_palette[3], (0, 0), 'Alpha',
+                           linewidth=2)
     # Beta
-    dr_plot.add_trajectory(large_cells_beta_IFNdata, 60.0, 'plot', '--', (0, 1), 'Beta', color=color_palette[0],
-                           label=r'Large Cells, 60 min', linewidth=2)
-    dr_plot.add_trajectory(small_cells_beta_IFNdata, 60.0, 'plot', color_palette[1], (0, 1), 'Beta',
-                           label=r'Small Cells, 60 min', linewidth=2)
-    dr_plot.add_trajectory(large_cells_beta_IFNdata, 10.0, 'plot', '--', (0, 1), 'Beta', color=color_palette[2],
-                           label=r'Large Cells, 10 min', linewidth=2)
+    dr_plot.add_trajectory(large_cells_beta_IFNdata, 60.0, 'plot', '-', (0, 1), 'Beta', color=color_palette[5],
+                           linewidth=2, alpha=0.5)
+    dr_plot.add_trajectory(small_cells_beta_IFNdata, 60.0, 'plot', color_palette[5], (0, 1), 'Beta',
+                           linewidth=2)
+    dr_plot.add_trajectory(large_cells_beta_IFNdata, 10.0, 'plot', '-', (0, 1), 'Beta', color=color_palette[3],
+                           linewidth=2, alpha=0.5)
     dr_plot.add_trajectory(small_cells_beta_IFNdata, 10.0, 'plot', color_palette[3], (0, 1), 'Beta',
-                           label=r'Small Cells, 10 min', linewidth=2)
+                           linewidth=2)
 
     dr_axes[0].set_title(r'IFN$\alpha$')
     dr_axes[1].set_title(r'IFN$\beta$')

@@ -401,11 +401,11 @@ class DoseresponsePlot:
                 if type(trajectory.line_style) == str:
                     if trajectory.color is not None:
                         ax.errorbar(x, z, yerr=sigmas, fmt=trajectory.line_style,
-                                    label=trajectory.label, color=trajectory.color)
+                                    label=trajectory.label, color=trajectory.color, alpha=trajectory.alpha)
                     else:
-                        ax.errorbar(x, z, yerr=sigmas, fmt=trajectory.line_style, label=trajectory.label)
+                        ax.errorbar(x, z, yerr=sigmas, fmt=trajectory.line_style, label=trajectory.label, alpha=trajectory.alpha)
                 else:
-                    ax.errorbar(x, z, yerr=sigmas, fmt='--', label=trajectory.label, color=trajectory.line_style)
+                    ax.errorbar(x, z, yerr=sigmas, fmt='--', label=trajectory.label, color=trajectory.line_style, alpha=trajectory.alpha)
                 ax.legend()
             elif trajectory.plot_type == 'envelope':
                 x = trajectory.d()
