@@ -9,7 +9,7 @@ ENSEMBLE = True
 
 if ENSEMBLE:
     SCALE_FACTOR = 1.
-    DR_KWARGS = {'num_checks': 5}
+    DR_KWARGS = {'num_checks': 50}
     PLOT_KWARGS = {'line_type': 'envelope', 'alpha': 0.2}
     with open(os.path.join(os.getcwd(), 'pydream', 'GAB','PyDREAM_SETTINGS.py'), 'r') as f:
         s = f.read()

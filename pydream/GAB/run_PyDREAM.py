@@ -77,4 +77,4 @@ if __name__ == '__main__':
     if bootstrap_flag:
         bootstrap(Mixed_Model, datalist, priors_list, original_params,
                   pysb_sampled_parameter_names, NITERATIONS, NCHAINS,
-                  SIM_NAME, save_dir, 20, 5)
+                  SIM_NAME, save_dir, 20, 5, iteration_cutoff=ITERATION_CUTOFF)

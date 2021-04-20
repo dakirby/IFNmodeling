@@ -199,6 +199,10 @@ def DREAM_fit(model, priors_list, posterior, start_params,
         ml_model = {pname: 10 ** pvalue for pname, pvalue in zip(sampled_param_names, ml_params)}
         print(ml_model,
               file=open(os.path.join(save_dir, sim_name + '_ML_params.txt'), 'w'))
+        # Maximum posterior for each chain
+        ml_samples = [{pname: 10 ** pvalue for pname, pvalue in zip(sampled_param_names, sampled_params[chain_idx, max_in_each_chain[chain_idx]])} for chain_idx in range(nchains)]
+        print(ml_samples,
+              file=open(os.path.join(save_dir, sim_name + '_ML_samples.txt'), 'w'))
 
     except IndexError:
         print("IndexError finding maximum posterior parameters")
@@ -218,6 +222,7 @@ def DREAM_fit(model, priors_list, posterior, start_params,
                                      str(dim) + '_' +
                                      sampled_param_names[dim] +
                                      '.pdf'))
+            plt.close()
 
         # Convert to dataframe
         df = pd.DataFrame(samples, columns=sampled_param_names)

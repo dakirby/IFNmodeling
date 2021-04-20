@@ -13,11 +13,11 @@ from datetime import datetime
 # -----------------------------------------------------------------------------
 # Set simulation parameters
 # -----------------------------------------------------------------------------
-NITERATIONS = 50
-ITERATION_CUTOFF = 1000
+NITERATIONS = 2000
+ITERATION_CUTOFF = 10000
 NCHAINS = 5
 SIM_NAME = 'mixed_IFN'
-DIR_NAME = 'PyDREAM_15-04-2021_BOOTSTRAP'
+DIR_NAME = 'PyDREAM_19-04-2021'
 # -----------------------------------------------------------------------------
 
 
@@ -44,14 +44,14 @@ for key in pysb_sampled_parameter_names:
     if key in ['kd4', 'k_d4', 'R1', 'R2']:
         priors_list.append(SampledParam(norm,
                                         loc=np.log10(Mixed_Model.parameters[key]),
-                                        scale=0.3))
+                                        scale=0.2))
         priors_dict.update({key: (np.log10(Mixed_Model.parameters[key]), np.log10(2))})
     else:
         priors_list.append(SampledParam(norm,
                                         loc=np.log10(Mixed_Model.parameters[key]),
-                                        scale=1.0))
+                                        scale=0.3))
         priors_dict.update({key: (np.log10(
-                                  Mixed_Model.parameters[key]), 1.0)})
+                                  Mixed_Model.parameters[key]), 0.3)})
 # -----------------------------------------------------------------------------
 
 
