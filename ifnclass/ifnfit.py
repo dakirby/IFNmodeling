@@ -180,6 +180,7 @@ class DualMixedPopulation:
         model1_parameters = {key[:-2]: value for key, value in param_dict.items() if key[-2:] == '_1'}
         model2_parameters = {key[:-2]: value for key, value in param_dict.items() if key[-2:] == '_2'}
         self.model_1.set_parameters(shared_parameters)
+        self.model_2.set_parameters(shared_parameters)
         self.model_1.set_parameters(model1_parameters)
         self.model_2.set_parameters(model2_parameters)
         return 0
