@@ -17,7 +17,7 @@ NITERATIONS = 2000
 ITERATION_CUTOFF = 10000
 NCHAINS = 5
 SIM_NAME = 'mixed_IFN'
-DIR_NAME = 'PyDREAM_19-04-2021'
+DIR_NAME = 'PyDREAM_20-04-2021_BOOTSTRAP'
 # -----------------------------------------------------------------------------
 
 
