@@ -244,7 +244,7 @@ def DREAM_fit(model, priors_list, posterior, start_params,
 
     # Clean up stray files
     try:
-        shutil.move(os.path.join(os.getcwd(), '*_DREAM_chain_*.*'),
+        shutil.move(os.path.join(os.getcwd(), os.sep, '*_DREAM_chain_*.*'),
                     save_dir)
     except FileNotFoundError:
         pass
@@ -496,6 +496,7 @@ def bootstrap(model, datalist, priors_list, start_params,
     dir_list = []
     boot_MSE, boot_MPE, boot_R2 = 0., 0., 0.
     for epoch in range(epochs):
+        print("Epoch {}".format(epoch))
         # split data
         train, test = _split_data(datalist, withhold)
 
@@ -507,6 +508,8 @@ def bootstrap(model, datalist, priors_list, start_params,
                                       'Batch_{}'.format(epoch))
         os.makedirs(epoch_save_dir, exist_ok=True)
         dir_list.append(epoch_save_dir)
+        train.data_set.to_pickle(epoch_save_dir + os.sep + 'train.pkl')
+        test.data_set.to_pickle(epoch_save_dir + os.sep + 'test.pkl')
 
         DREAM_fit(model=model, priors_list=priors_list,
                   posterior=posterior_obj.IFN_posterior,
@@ -514,14 +517,17 @@ def bootstrap(model, datalist, priors_list, start_params,
                   sampled_param_names=sampled_param_names,
                   niterations=niterations,
                   nchains=nchains, sim_name=sim_name, save_dir=epoch_save_dir,
-                  iteration_cutoff=iteration_cutoff)
+                  iteration_cutoff=iteration_cutoff, verbose=False)
 
         # analyse results
         test.drop_sigmas()
-        mean_y = np.mean(test.data_set.values)
-        SStot = np.sum(
-                       np.square(
-                                 np.subtract(test.data_set.values, mean_y)))
+        mean_y = np.nanmean(test.data_set.values)
+        SStot = 0
+        for row in range(test.data_set.values.shape[0]):
+            for col in range(test.data_set.values.shape[1]):
+                if not np.isnan(test.data_set.values[row, col]):
+                    SStot += (test.data_set.values[row, col] - mean_y)**2
+
         with open(os.path.join(epoch_save_dir, sim_name + '_ML_params.txt'), 'r') as f:
             map = eval(f.read())
         pred = posterior_prediction(model, map, sampled_param_names, 1.0,
@@ -535,9 +541,9 @@ def bootstrap(model, datalist, priors_list, start_params,
         boot_MPE += MPE
         boot_R2 += 1 - MSE / SStot
 
-    boot_MSE = boot_MSE / range(epochs)
-    boot_MPE = boot_MPE / range(epochs)
-    boot_R2 = boot_R2 / range(epochs)
+    boot_MSE = boot_MSE / epochs
+    boot_MPE = boot_MPE / epochs
+    boot_R2 = boot_R2 / epochs
 
     with open(os.path.join(save_dir, 'bootstrap_analysis.txt'), 'w') as f:
         f.write("mean R2 = {}\nmean MSE = {}\nmean MPE = {}".format(boot_R2, boot_MSE, boot_MPE))

@@ -20,6 +20,7 @@ if __name__ == '__main__':
     fit_flag = False
     post_analysis_flag = False
     bootstrap_flag = True
+
     save_dir = dir_setup(DIR_NAME, fit_flag, bootstrap_flag, post_analysis_flag)
 
     # Plotting parameters
