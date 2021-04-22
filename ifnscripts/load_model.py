@@ -5,17 +5,21 @@ import pandas as pd
 import numpy as np
 import pickle
 
-ENSEMBLE = False
+ENSEMBLE = True
+RANDOM_ENSEMBLE = False
 
 if ENSEMBLE:
-    SCALE_FACTOR = 1.
-    DR_KWARGS = {'num_checks': 50}
+    SCALE_FACTOR = 1.5
     PLOT_KWARGS = {'line_type': 'envelope', 'alpha': 0.2}
     with open(os.path.join(os.getcwd(), 'pydream', 'GAB','PyDREAM_SETTINGS.py'), 'r') as f:
         s = f.read()
         NCHAINS = s.split('NCHAINS =')[1].split()[0].strip()
         NITERATIONS = s.split('NITERATIONS =')[1].split()[0].strip()
         PYDREAM_DIR = s.split('DIR_NAME =')[1].split()[0].strip(' "\'') + '_' + NITERATIONS
+    if RANDOM_ENSEMBLE:
+        DR_KWARGS = {'num_checks': 50}
+    else:
+        DR_KWARGS = {'num_checks': int(NCHAINS)}
 
 else:
     SCALE_FACTOR = 1.227
@@ -29,11 +33,13 @@ def load_model():
 
     if ENSEMBLE:
         param_file_dir = os.path.join(os.getcwd(), 'pydream', 'GAB', PYDREAM_DIR)
-        param_file_name = param_file_dir + os.sep + 'mixed_IFN_samples.npy'
         param_names = np.load(param_file_dir + os.sep + 'param_names.npy')
         prior_file_name = param_file_dir + os.sep + 'init_params.pkl'
+        if RANDOM_ENSEMBLE:
+            param_file_name = param_file_dir + os.sep + 'mixed_IFN_samples.npy'
+        else:
+            param_file_name = param_file_dir + os.sep + 'mixed_IFN_ML_samples.txt'
         model = EnsembleModel('Mixed_IFN_ppCompatible', param_file_name, param_names, prior_file_name)
-
         DR_method = model.posterior_prediction
 
     else:

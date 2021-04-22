@@ -505,8 +505,13 @@ class EnsembleModel():
         with open(prior_fname, 'rb') as f:
             self.prior_parameters = pickle.load(f)
 
-        log10_parameters = load(param_fname)
-        self.parameters = power(10, log10_parameters)
+        if param_fname[-3:] == 'npy':
+            log10_parameters = load(param_fname)
+            self.parameters = power(10, log10_parameters)
+        elif param_fname[-3:] == 'txt':
+            with open(param_fname, 'r') as f:
+                pdicts = eval(f.read())
+                self.parameters = np.array([list(d.values()) for d in pdicts])
         self.parameter_names = parameter_names
 
     def __posterior_prediction__(self, parameter_dict, test_times,
@@ -568,7 +573,12 @@ class EnsembleModel():
         parameters_to_check = []
         params_list_len = len(self.parameters)
         burn_in_len = int(params_list_len / 2)
-        for i in list(np.random.randint(burn_in_len, high=params_list_len, size=num_checks)):
+        if params_list_len - burn_in_len < num_checks:
+            print("Skipping burn in due to insufficient sample size")
+            indices_to_check = list(range(params_list_len))
+        else:
+            indices_to_check = list(np.random.randint(burn_in_len, high=params_list_len, size=num_checks))
+        for i in indices_to_check:
             parameters_to_check.append(self.parameters[i])
 
         # Compute posterior sample trajectories

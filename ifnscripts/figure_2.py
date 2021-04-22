@@ -350,8 +350,8 @@ if __name__ == '__main__':
     new_fit.axes[1].set_ylabel('pSTAT (MFI)')
     new_fit.fig = Figure_2
 
-    alpha_mask = [7.5]
-    beta_mask = [7.5]
+    alpha_mask = [7.5, 10.0]
+    beta_mask = [7.5, 10.0]
     # Add fits
     for idx, t in enumerate(times):
         if t not in alpha_mask:
