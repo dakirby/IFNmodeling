@@ -5,11 +5,16 @@ from numpy import linspace, logspace, log10, nan
 import seaborn as sns
 import load_model as lm
 import copy
+import os
+
 
 if __name__ == '__main__':
     alpha_palette = sns.color_palette("Reds", 6)
     beta_palette = sns.color_palette("Greens", 6)
-
+    out_dir = os.path.join(os.getcwd(), 'results', 'Figures', 'Figure_3')
+    if not os.path.exists(out_dir):
+        os.makedirs(out_dir)
+    fname = out_dir + os.sep + 'negative_feedback_figure.pdf'
     # # This is the best fit parameters for GAB aligned data
     # Mixed_Model = IfnModel('Mixed_IFN_ppCompatible')
     # # Optimal parameters for fitting mean GAB data
@@ -145,4 +150,4 @@ if __name__ == '__main__':
     dr_plot.axes[0].set_title('Effects of Negative Feedback')
     dr_plot.axes[1].set_title('Effect of SOCS Matched to\n Alpha Internalization')
     dr_plot.axes[2].set_title('Effect of Internalization Matched to SOCS')
-    dr_plot.show_figure()
+    dr_plot.show_figure(show_flag=False, save_flag=True, save_dir=fname)
