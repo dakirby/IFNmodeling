@@ -16,7 +16,7 @@ while getopts ":f" opt; do
   esac
 done
 
-python3 $DIR/figure_2.py
-python3 $DIR/figure_3.py
-python3 $DIR/figure_4.py
-python3 $DIR/figure_5.py
+python3 $DIR/DR_figure.py         # Figure 2
+python3 $DIR/cell_size_figure.py  # Figure 3
+python3 $DIR/K4_and_TC_figures.py # Figure 4 & 5
+python3 $DIR/AP_AV_figure.py      # Figure 6
