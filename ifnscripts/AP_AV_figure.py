@@ -83,6 +83,8 @@ def plot_barchart(axis=None, df=None, custom_order=None):
     ax.set_yscale('log')
     ax.set_xlabel(None)
     ax.set_ylabel("Value relative to WT")
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
     plt.xticks(rotation=45)
     plt.tight_layout()
     ax = plt.gca()
@@ -216,6 +218,8 @@ if __name__ == '__main__':
     for ax in axes:
         ax.set_xscale('log')
         ax.set_xlabel('[IFN] (pM)')
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
 
     # -----------------------------------
     # save figure
