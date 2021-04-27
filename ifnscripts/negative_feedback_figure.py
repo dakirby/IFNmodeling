@@ -1,20 +1,22 @@
 from ifnclass.ifndata import IfnData
-from ifnclass.ifnmodel import IfnModel
-from ifnclass.ifnplot import Trajectory, TimecoursePlot, DoseresponsePlot
+from ifnclass.ifnplot import DoseresponsePlot
 from numpy import linspace, logspace, log10, nan
 import seaborn as sns
 import load_model as lm
 import copy
 import os
+import matplotlib.pyplot as plt
 
 
 if __name__ == '__main__':
     alpha_palette = sns.color_palette("Reds", 6)
     beta_palette = sns.color_palette("Greens", 6)
+
     out_dir = os.path.join(os.getcwd(), 'results', 'Figures', 'Figure_3')
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
     fname = out_dir + os.sep + 'negative_feedback_figure.pdf'
+
     # # This is the best fit parameters for GAB aligned data
     # Mixed_Model = IfnModel('Mixed_IFN_ppCompatible')
     # # Optimal parameters for fitting mean GAB data
@@ -35,13 +37,27 @@ if __name__ == '__main__':
     # Set up Model
     # --------------------
     Mixed_Model, DR_method = lm.load_model()
-    scale_factor, DR_KWARGS, PLOT_KWARGS = lm.SCALE_FACTOR, lm.DR_KWARGS, lm.PLOT_KWARGS
-    Mixed_Model.model_1.default_parameters = copy.deepcopy(Mixed_Model.model_1.parameters)
-    Mixed_Model.model_2.default_parameters = copy.deepcopy(Mixed_Model.model_2.parameters)
+    scale_factor, DR_KWARGS, PLOT_KWARGS, ENSEMBLE = lm.SCALE_FACTOR, lm.DR_KWARGS, lm.PLOT_KWARGS, lm.ENSEMBLE
+    # initial_parameters = {'k_a1': 4.98E-14 * 1.33, 'k_a2': 8.30e-13 * 2,
+    #                       'k_d4': 0.006 * 3.8,
+    #                       'kpu': 0.00095,
+    #                       'ka2': 4.98e-13 * 1.33, 'kd4': 0.3 * 2.867,
+    #                       'kint_a': 0.000124, 'kint_b': 0.00056,
+    #                       'krec_a1': 0.0028, 'krec_a2': 0.01,
+    #                       'krec_b1': 0.005, 'krec_b2': 0.05}
+    # Mixed_Model.set_parameters(initial_parameters)
 
-    # Produce plots
+    if ENSEMBLE:
+        raise NotImplementedError("Ensemble sampling not yet implemented")
+    else:
+        Mixed_Model.model_1.default_parameters = copy.deepcopy(Mixed_Model.model_1.parameters)
+        Mixed_Model.model_2.default_parameters = copy.deepcopy(Mixed_Model.model_2.parameters)
+
+    # --------------------
+    # Run Simulations
+    # --------------------
     times = [60]
-    # No Negative Feedback
+    # Control Dose-Response
     Mixed_Model.set_parameters({'kSOCSon': 0, 'kIntBasal_r1': 0, 'kIntBasal_r2': 0, 'kint_a': 0, 'kint_b': 0})
     dradf = DR_method(times, 'TotalpSTAT', 'Ia', list(logspace(-2, 8)),
                       parameters={'Ib': 0}, return_type='DataFrame', dataframe_labels='Alpha',
@@ -70,28 +86,6 @@ if __name__ == '__main__':
                            parameters={'Ia': 0}, return_type='DataFrame', dataframe_labels='Beta',
                            scale_factor=scale_factor)
 
-
-    # Show SOCS tuned to alpha internalization
-    Mixed_Model.set_parameters({'kSOCSon': Mixed_Model.model_1.parameters['kSOCSon'] * 2.6})
-    dradf_match_1 = DR_method(times, 'TotalpSTAT', 'Ia', list(logspace(-2, 8)),
-                              parameters={'Ib': 0}, return_type='DataFrame', dataframe_labels='Alpha',
-                              scale_factor=scale_factor)
-    drbdf_match_1 = DR_method(times, 'TotalpSTAT', 'Ib', list(logspace(-2, 8)),
-                              parameters={'Ia': 0}, return_type='DataFrame', dataframe_labels='Beta',
-                              scale_factor=scale_factor)
-
-    # Show internalization matched to SOCS
-    Mixed_Model.reset_global_parameters()
-    Mixed_Model.set_parameters({'kint_a': Mixed_Model.model_1.parameters['kint_a'] * 0.4,
-                                'kint_b': Mixed_Model.model_1.parameters['kint_b'] * 0.3,
-                                'kSOCSon': 0})
-    dradf_match_2 = DR_method(times, 'TotalpSTAT', 'Ia', list(logspace(-2, 8)),
-                              parameters={'Ib': 0}, return_type='DataFrame', dataframe_labels='Alpha',
-                              scale_factor=scale_factor)
-    drbdf_match_2 = DR_method(times, 'TotalpSTAT', 'Ib', list(logspace(-2, 8)),
-                              parameters={'Ia': 0}, return_type='DataFrame', dataframe_labels='Beta',
-                              scale_factor=scale_factor)
-
     # Make IfnData objects
     dra60 = IfnData('custom', df=dradf, conditions={'Alpha': {'Ib': 0}})
     drb60 = IfnData('custom', df=drbdf, conditions={'Beta': {'Ia': 0}})
@@ -99,55 +93,33 @@ if __name__ == '__main__':
     drb60_int = IfnData('custom', df=drbdf_int, conditions={'Beta': {'Ia': 0}})
     dra60_SOCS = IfnData('custom', df=dradf_SOCS, conditions={'Alpha': {'Ib': 0}})
     drb60_SOCS = IfnData('custom', df=drbdf_SOCS, conditions={'Beta': {'Ia': 0}})
-    dra60_match1 = IfnData('custom', df=dradf_match_1, conditions={'Alpha': {'Ib': 0}})
-    drb60_match1 = IfnData('custom', df=drbdf_match_1, conditions={'Beta': {'Ia': 0}})
-    dra60_match2 = IfnData('custom', df=dradf_match_2, conditions={'Alpha': {'Ib': 0}})
-    drb60_match2 = IfnData('custom', df=drbdf_match_2, conditions={'Beta': {'Ia': 0}})
 
-    dr_plot = DoseresponsePlot((1, 3))
+    # --------------------
+    # Make Plot
+    # --------------------
+    dr_plot = DoseresponsePlot((1, 1))
     alpha_mask = []
     beta_mask = []
-    # Add fits
-    # Panel A: Effect of SOCS vs effect of internalization
     for idx, t in enumerate([el for el in times]):
         if t not in alpha_mask:
-            dr_plot.add_trajectory(dra60, t, 'plot', alpha_palette[5], (0, 0), 'Alpha', label='Alpha - No Feedback', linewidth=2.0)
-            dr_plot.add_trajectory(dra60_int, t, 'plot', '--', (0, 0), 'Alpha', color=alpha_palette[3],
-                                   label='Internalization only', linewidth=2.0, )
-            dr_plot.add_trajectory(dra60_SOCS, t, 'plot', ':', (0, 0), 'Alpha', color=alpha_palette[1], label='SOCS only', linewidth=2.0)
+            dr_plot.add_trajectory(dra60, t, 'plot', alpha_palette[5], (0, 0), 'Alpha',  linewidth=2.0)
+            dr_plot.add_trajectory(dra60_int, t, 'plot', '--', (0, 0), 'Alpha', color=alpha_palette[5], linewidth=2.0)
+            dr_plot.add_trajectory(dra60_SOCS, t, 'plot', ':', (0, 0), 'Alpha', color=alpha_palette[5], linewidth=2.0)
         if t not in beta_mask:
-            dr_plot.add_trajectory(drb60, t, 'plot', beta_palette[5], (0, 0), 'Beta', label='Beta - No Feedback', linewidth=2.0)
-            dr_plot.add_trajectory(drb60_int, t, 'plot', '--', (0, 0), 'Beta', color=beta_palette[3],
-                                   label='Internalization only', linewidth=2.0)
-            dr_plot.add_trajectory(drb60_SOCS, t, 'plot', ':', (0, 0), 'Beta', color=beta_palette[1], label='SOCS only', linewidth=2.0)
+            dr_plot.add_trajectory(drb60, t, 'plot', beta_palette[5], (0, 0), 'Beta', linewidth=2.0)
+            dr_plot.add_trajectory(drb60_int, t, 'plot', '--', (0, 0), 'Beta', color=beta_palette[5], linewidth=2.0)
+            dr_plot.add_trajectory(drb60_SOCS, t, 'plot', ':', (0, 0), 'Beta', color=beta_palette[5], linewidth=2.0)
+    # Legend:
+    plt.scatter([], [], color=alpha_palette[5], label=r'IFN$\alpha$2', figure=dr_plot.fig)
+    plt.scatter([], [], color=beta_palette[5], label=r'IFN$\beta$', figure=dr_plot.fig)
+    plt.plot([], [], c='grey', label='No Feedback', linewidth=2.0, figure=dr_plot.fig)
+    plt.plot([], [], '--', c='grey', label='Effect of Internalization', linewidth=2.0, figure=dr_plot.fig)
+    plt.plot([], [], ':', c='grey', label='Effect of SOCS', linewidth=2.0, figure=dr_plot.fig)
 
-    # Panel B: Effect of SOCS vs matched to alpha internalization
-    for idx, t in enumerate([el for el in times]):
-        if t not in alpha_mask:
-            dr_plot.add_trajectory(dra60_int, t, 'plot', '--', (0, 1), 'Alpha', color=alpha_palette[3],
-                                   label='Internalization only', linewidth=2.0, )
-            dr_plot.add_trajectory(dra60_match1, t, 'plot', ':', (0, 1), 'Alpha', color=alpha_palette[1],
-                                   label='SOCS matched to internalization', linewidth=2.0)
-        if t not in beta_mask:
-            dr_plot.add_trajectory(drb60_int, t, 'plot', '--', (0, 1), 'Beta', color=beta_palette[3],
-                                   label='Internalization only', linewidth=2.0)
-            dr_plot.add_trajectory(drb60_match1, t, 'plot', ':', (0, 1), 'Beta', color=beta_palette[1],
-                                   label='SOCS matched to internalization', linewidth=2.0)
-
-    # Panel C: Effect of internalization matched to SOCS
-    for idx, t in enumerate([el for el in times]):
-        if t not in alpha_mask:
-            dr_plot.add_trajectory(dra60_match2, t, 'plot', '--', (0, 2), 'Alpha', color=alpha_palette[3],
-                                   label='Internalization matched to SOCS', linewidth=2.0, )
-            dr_plot.add_trajectory(dra60_SOCS, t, 'plot', ':', (0, 2), 'Alpha', color=alpha_palette[1], label='SOCS only', linewidth=2.0)
-        if t not in beta_mask:
-            dr_plot.add_trajectory(drb60_match2, t, 'plot', '--', (0, 2), 'Beta', color=beta_palette[3],
-                                   label='Internalization matched to SOCS', linewidth=2.0)
-            dr_plot.add_trajectory(drb60_SOCS, t, 'plot', ':', (0, 2), 'Beta', color=beta_palette[1], label='SOCS only', linewidth=2.0)
-
-    #dr_plot.fig.suptitle('Internalization vs SOCS')
-    dr_plot.fig.set_size_inches((14, 4))
-    dr_plot.axes[0].set_title('Effects of Negative Feedback')
-    dr_plot.axes[1].set_title('Effect of SOCS Matched to\n Alpha Internalization')
-    dr_plot.axes[2].set_title('Effect of Internalization Matched to SOCS')
-    dr_plot.show_figure(show_flag=False, save_flag=True, save_dir=fname)
+    # Plot formatting
+    dr_plot.fig.set_size_inches((5, 4))
+    dr_plot.axes.set_title('Effects of Negative Feedback')
+    dr_plot.axes.set_ylabel('pSTAT')
+    dr_plot.axes.spines['top'].set_visible(False)
+    dr_plot.axes.spines['right'].set_visible(False)
+    dr_plot.save_figure(save_dir=fname, tight=True)

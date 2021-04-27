@@ -4,6 +4,7 @@ import seaborn as sns
 from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 import matplotlib
 matplotlib.rc('xtick', labelsize=14)
 matplotlib.rc('ytick', labelsize=14)
@@ -85,7 +86,7 @@ if __name__ == '__main__':
 
         # Plot
         fig, axes = plt.subplots(nrows=1, ncols=2)
-        fig.set_size_inches(16, 8)
+        fig.set_size_inches(10, 8)
         axes[0].set_xlabel("Dose (pM)")
         axes[1].set_xlabel("Dose (pM)")
         axes[0].set_title("Relative Refractory Response")

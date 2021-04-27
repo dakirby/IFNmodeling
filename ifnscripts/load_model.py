@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 import pickle
 
-ENSEMBLE = True
+ENSEMBLE = False
 RANDOM_ENSEMBLE = False
 
 if ENSEMBLE:

@@ -345,7 +345,7 @@ class DoseresponsePlot:
         del self.trajectories[index]
         del self.subplot_indices[index]
 
-    def show_figure(self, show_flag=True, save_flag=False, save_dir=''):
+    def show_figure(self, show_flag=True, save_flag=False, save_dir='', tight=False):
         for trajectory_idx in range(len(self.trajectories)):
             trajectory = self.trajectories[trajectory_idx]
             plt_idx = self.subplot_indices[trajectory_idx]
@@ -433,6 +433,8 @@ class DoseresponsePlot:
                     ax.fill_between(x, z_plus_sigma, z_minus_sigma, facecolor=trajectory.line_style,
                                     alpha=trajectory.alpha)
                 ax.legend()
+        if tight:
+            plt.tight_layout()
         if save_flag:
             if save_dir == '':
                 plt.savefig(os.path.join(save_dir, 'fig{}.pdf'.format(int(time.time()))))
@@ -442,8 +444,8 @@ class DoseresponsePlot:
             plt.show()
         return self.fig, self.axes
 
-    def save_figure(self, save_dir=''):
-        fig, axes =self.show_figure(show_flag=False, save_flag=True, save_dir=save_dir)
+    def save_figure(self, save_dir='', tight=False):
+        fig, axes = self.show_figure(show_flag=False, save_flag=True, save_dir=save_dir, tight=tight)
         return fig, axes
 
 
