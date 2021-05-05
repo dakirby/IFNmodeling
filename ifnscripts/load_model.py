@@ -27,7 +27,7 @@ else:
     PLOT_KWARGS = {'line_type': 'plot', 'alpha': 1}
 
 
-def load_model():
+def load_model(model_name='Mixed_IFN_ppCompatible', ENSEMBLE=ENSEMBLE, RANDOM_ENSEMBLE=RANDOM_ENSEMBLE):
     # Dose-response method must return a Pandas DataFrame which is compatible
     # with an IfnData object
 
@@ -39,7 +39,7 @@ def load_model():
             param_file_name = param_file_dir + os.sep + 'mixed_IFN_samples.npy'
         else:
             param_file_name = param_file_dir + os.sep + 'mixed_IFN_ML_samples.txt'
-        model = EnsembleModel('Mixed_IFN_ppCompatible', param_file_name, param_names, prior_file_name)
+        model = EnsembleModel(model_name, param_file_name, param_names, prior_file_name)
         DR_method = model.posterior_prediction
 
     else:
@@ -54,7 +54,7 @@ def load_model():
                            'kint_b': 0.00052,
                            'krec_a1': 0.001, 'krec_a2': 0.1,
                            'krec_b1': 0.005, 'krec_b2': 0.05}
-        model = DualMixedPopulation('Mixed_IFN_ppCompatible', 0.8, 0.2)
+        model = DualMixedPopulation(model_name, 0.8, 0.2)
         model.model_1.set_parameters(initial_parameters)
         model.model_1.set_parameters(dual_parameters)
         model.model_1.set_parameters({'R1': 12000.0, 'R2': 1511.1})

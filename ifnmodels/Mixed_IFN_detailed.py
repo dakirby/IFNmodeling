@@ -30,6 +30,8 @@ Parameter('R2', 2000)#(2000/7.2e-15)*volCP#(8000/2.76e-9)*volPM#(8000/2.76e-9)*v
 
 Parameter('S', 1E4)#(1e4/7.2e-15)*volCP#
 Parameter('pS',0)
+
+Parameter('Initial_SOCS', 1)
 # Rate constants
 # Divide by NA*V to convert bimolecular rate constants
 # from /M/sec to /(molecule/cell)/sec
@@ -42,6 +44,7 @@ Parameter('kd1', 1)#*10
 Parameter('ka2', 4.98173364330787e-13) # = (3e6)/(NA*volEC)
 Parameter('kd2', 0.015) #*10              # ligand-monomer dissociation
 
+# ka4 has units of molec.^-1 s^-1
 Parameter('ka4', 3.623188E-4) # = (2E5)/(NA*volEC)
 Parameter('kd4', 0.3) #*20
 
@@ -63,39 +66,41 @@ Parameter('k_d3', 2.4e-5) #(ka3)/(q3)
 Parameter('k_a4', 3.62e-4) #*20#e-12
 Parameter('k_d4', 0.006) #*20
 
+Parameter('kpa', 1E-6)  # s^-1
+Parameter('kpu', 1E-3)  # s^-1
+
 #Internalization:
 # Basal:
 Parameter('kIntBasal_r1', 0.0001)#0.0002
 Parameter('kIntBasal_r2', 0.00002)#0.000012
 Parameter('krec_r1', 0.0001)
 Parameter('krec_r2', 0.0001)
+Parameter('kdeg_a', 0.0008)
+Parameter('kdeg_b', 0.0008)
+
 # Alpha:
 # Asymmetric:
 Parameter('kint_a', 0.0005)
 Parameter('kint_b', 0.0002)
-Parameter('kdeg_a', 0.0008)
-Parameter('kdeg_b', 0.0008)
+
 Parameter('krec_a1', 0.0003)
 Parameter('krec_a2', 0.005)
 Parameter('krec_b1', 0.0001)
 Parameter('krec_b2', 0.001)
 
+Parameter('kSOCS', 4E-3)
+Parameter('SOCSdeg', (5e-4)*5)	#Maiwald*form factor
+Parameter('kSOCSon', 1E-6) # = kpa
+Parameter('kSOCSoff', 5.5E-4)
+
 #SOCS Feedback Inhibition
 Parameter('kSTATbinding',1e-6)
 Parameter('kSTATunbinding',4)
-Parameter('kpa', 1)
-Parameter('kpu', 1E-3)#1e-3
 Parameter('kloc', 1.25e-3)
 Parameter('kdeloc', 1e-2)
 Parameter('kSOCSmRNA', 1e-3)
 Parameter('mRNAdeg', 5e-4)
 Parameter('mRNAtrans',1e-3)
-
-Parameter('kSOCS', 5E-3)
-Parameter('SOCSdeg', (5e-4)*5)	#Maiwald*form factor
-Parameter('kSOCSon', 1E-3) # = kpa
-Parameter('kSOCSoff', 5E-4)
-
 
 # =============================================================================
 # # Molecules
@@ -122,6 +127,9 @@ Initial(IFNAR2(re=None, ri=None, rs=None , loc='out'), R2)
 
 Initial(STAT(j='U',loc='Cyt',fdbk=None), S)
 Initial(STAT(j='P',loc='Cyt',fdbk=None), pS)
+
+Initial(SOCS(site=None), Initial_SOCS)
+
 # =============================================================================
 # # Observables
 # Use 'WILD' for ?, use 'ANY' for +
@@ -181,6 +189,7 @@ Rule('transport_STAT', STAT(j='P',loc='Cyt',fdbk=None) | STAT(j='P',loc='Nuc',fd
 Rule('synth_mRNA', STAT(j='P',loc='Nuc',fdbk=None) >> STAT(j='P',loc='Nuc',fdbk=None) + SOCSmRNA(loc='Nuc',reg=None), kSOCSmRNA)
 Rule('transport_mRNA', SOCSmRNA(loc='Nuc',reg=None) >> SOCSmRNA(loc='Cyt',reg=None), mRNAtrans)
 Rule('synth_SOCS', SOCSmRNA(loc='Cyt',reg=None) >> SOCSmRNA(loc='Cyt',reg=None) + SOCS(site=None), kSOCS)
+Rule('degrade_SOCS', SOCS(site=None) >> None, SOCSdeg)
 
 # SOCS Inhibition Feedback
 # Alpha
@@ -201,4 +210,3 @@ Rule('Rec_a2', IFNAR2(re=None, ri=None, loc='in')>>IFNAR2(re=None, ri=None,rs=No
 Rule('IFNb_intT', IFNAR1(re=1, ri=None, loc='out')%IFN_beta(r1=1,r2=2)%IFNAR2(re=2, ri=None,rs=None, loc='out') >> IFNAR1(re=1,ri=None,loc='in')%IFN_beta(r1=1,r2=2)%IFNAR2(re=2,ri=None,rs=None,loc='in'), kint_b)
 Rule('Rec_b1', IFNAR1(re=None, ri=None, loc='in')>>IFNAR1(re=None, ri=None, loc='out'), krec_a1)
 Rule('Rec_b2', IFNAR2(re=None, ri=None, loc='in')>>IFNAR2(re=None, ri=None,rs=None, loc='out'), krec_a2)
-

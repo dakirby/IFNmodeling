@@ -82,6 +82,7 @@ Parameter('kdeg_b', 0.0008)
 # Asymmetric:
 Parameter('kint_a', 0.0005)
 Parameter('kint_b', 0.0002)
+
 Parameter('krec_a1', 0.0003)
 Parameter('krec_a2', 0.005)
 Parameter('krec_b1', 0.0001)
