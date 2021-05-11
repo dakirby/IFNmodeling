@@ -546,9 +546,9 @@ class EnsembleModel():
                 parameter_dict.pop(pname + '_std*')
             # add sample to parameter_dict
             parameter_dict.update(dist_param_dict)
-        else:
-            parameter_dict.update(condition)
-            self.model.set_parameters(parameter_dict)
+
+        parameter_dict.update(condition)
+        self.model.set_parameters(parameter_dict)
 
         # Make predictions
         if dose_species == 'Ia':
