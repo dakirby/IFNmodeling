@@ -124,7 +124,7 @@ class IFN_posterior_object():
         pvec = {}
         for idx, (key, val) in enumerate(zip(self.sampled_parameter_names, initial_pvec)):
             if key.endswith('_mu*'):
-                std = initial_pvec[idx + 1]
+                std = 10 ** initial_pvec[idx + 1]
                 sampled_logval = np.random.normal(loc=val, scale=std)
                 pvec.update({key[:-4]: 10 ** sampled_logval})
             elif key.endswith('_std*'):
