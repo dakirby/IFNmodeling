@@ -13,11 +13,11 @@ from datetime import datetime
 # -----------------------------------------------------------------------------
 # Set simulation parameters
 # -----------------------------------------------------------------------------
-NITERATIONS = 2000
-ITERATION_CUTOFF = 10000
+NITERATIONS = 5
+ITERATION_CUTOFF = 10
 NCHAINS = 5
 SIM_NAME = 'mixed_IFN'
-DIR_NAME = 'PyDREAM_19-04-2021'
+DIR_NAME = 'PyDREAM_testing'
 # -----------------------------------------------------------------------------
 
 
@@ -33,25 +33,42 @@ custom_params = {}
 # -----------------------------------------------------------------------------
 # Parameters to fit:
 # -----------------------------------------------------------------------------
-pysb_sampled_parameter_names = ['kpa', 'kSOCSon', 'kd4', 'k_d4', 'R1', 'R2', 'kint_a', 'kint_b', 'krec_a2', 'krec_b2']
+pysb_sampled_parameter_names = ['kpa', 'kSOCSon', 'kd4', 'k_d4', 'R1*', 'R2*', 'kint_a', 'kint_b', 'krec_a2', 'krec_b2']
 
-# Parameters to be sampled as unobserved random variables in DREAM:
-original_params = np.log10([Mixed_Model.parameters[param] for param in pysb_sampled_parameter_names])
-
+original_params = []
 priors_list = []
 priors_dict = {}
 for key in pysb_sampled_parameter_names:
-    if key in ['kd4', 'k_d4', 'R1', 'R2']:
-        priors_list.append(SampledParam(norm,
-                                        loc=np.log10(Mixed_Model.parameters[key]),
-                                        scale=0.2))
-        priors_dict.update({key: (np.log10(Mixed_Model.parameters[key]), np.log10(2))})
+    # add to original_params
+    if key[-1] == '*':
+        original_params.append(np.log10(Mixed_Model.parameters[key[:-1]]))
     else:
-        priors_list.append(SampledParam(norm,
-                                        loc=np.log10(Mixed_Model.parameters[key]),
-                                        scale=0.3))
-        priors_dict.update({key: (np.log10(
-                                  Mixed_Model.parameters[key]), 0.3)})
+        original_params.append(np.log10(Mixed_Model.parameters[key]))
+
+    # build prior
+    if key in ['kd4', 'k_d4', 'R1', 'R2']:
+        mu = np.log10(Mixed_Model.parameters[key])
+        std = 0.2
+        priors_list.append(SampledParam(norm, loc=mu, scale=std))
+        priors_dict.update({key: (mu, std)})
+    elif key in ['R1*', 'R2*']:
+        # set mean prior
+        mu = np.log10(Mixed_Model.parameters[key[:-1]])
+        std = 0.2
+        priors_list.append(SampledParam(norm, loc=mu, scale=std))
+        priors_dict.update({key[:-1] + '_mu*': (mu, std)})
+        # set std prior
+        mu = np.log10(0.2)
+        std = 1
+        priors_list.append(SampledParam(norm, loc=mu, scale=std))
+        priors_dict.update({key[:-1] + '_std*': (mu, std)})
+    else:
+        mu = np.log10(Mixed_Model.parameters[key])
+        std = 0.3
+        priors_list.append(SampledParam(norm, loc=mu, scale=std))
+        priors_dict.update({key: (mu, std)})
+pysb_sampled_parameter_names = list(priors_dict.keys())
+
 # -----------------------------------------------------------------------------
 
 

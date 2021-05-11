@@ -28,12 +28,17 @@ class IFN_posterior_object():
     The function returns a log probability value for the parameter vector given
     the experimental data.
     """
-    def __init__(self, sampled_parameter_names, model, experiment):
-        self.sampled_parameter_names = sampled_parameter_names
+    def __init__(self, sampled_parameter_names, model, experiment, **kwargs):
         self.model = model
-        self.sf = 1.0
+        self.sf = kwargs.get('sf', 1.0)
         self.experiment = experiment
-
+        self.sampled_parameter_names = sampled_parameter_names
+        # Check if parameters are values or distributions
+        self.param_dist_flag = False
+        for name in self.sampled_parameter_names:
+            if name[-1] == '*':
+                self.param_dist_flag = True
+        self.num_dist_samples = kwargs.get('num_dist_samples', 10)
         # Create scipy normal probability distributions for data likelihoods
         exp_data = np.array([[el[0] for el in dose] for dose in
                              self.experiment.data_set.values]).flatten()
@@ -44,7 +49,7 @@ class IFN_posterior_object():
 
         self.like_ctot = norm(loc=exp_data, scale=exp_data_std)
 
-        # The each species and dose within a species may have a different set
+        # Each species and dose within a species may have a different set
         # of times to simulate. Generate dictionaries to use in IFN_posterior()
         coord = _get_data_coordinates(self.experiment)
         self.species = []
@@ -72,14 +77,11 @@ class IFN_posterior_object():
             self.tspan[c[0]][c[1]].append(c[2])
 
     # -------------------------------------------------------------------------
-    def IFN_posterior(self, parameter_vector):
-        # Change model parameter values to current location in parameter space
-        # (values are in log(value) format)
-        shared_param_dict = {pname: 10 ** pvalue for pname, pvalue in
-                             zip(self.sampled_parameter_names,
-                                 parameter_vector)}
-
-        self.model.set_parameters(shared_param_dict)
+    def __sim__(self, param_vec):
+        """
+        Returns a numpy array of predicted values for given param_vec
+        """
+        self.model.set_parameters(param_vec)
 
         # Simulate experimentally measured TotalpSTAT values.
         data = []
@@ -112,6 +114,37 @@ class IFN_posterior_object():
 
         sim_data = df.values.flatten()
         sim_data = sim_data[~np.isnan(sim_data)]  # drop NaNs
+        return sim_data
+
+    def __sample_pvec__(self, initial_pvec):
+        """
+        Returns a parameter dict with sampled values for params with * at
+        the end of name
+        """
+        pvec = {}
+        for idx, (key, val) in enumerate(zip(self.sampled_parameter_names, initial_pvec)):
+            if key.endswith('_mu*'):
+                std = initial_pvec[idx + 1]
+                sampled_logval = np.random.normal(loc=val, scale=std)
+                pvec.update({key[:-4]: 10 ** sampled_logval})
+            elif key.endswith('_std*'):
+                pass
+            else:
+                pvec.update({key: 10 ** val})
+        return pvec
+
+    def IFN_posterior(self, parameter_vector):
+        # Change model parameter values to current location in parameter space
+        # (values are in log(value) format)
+        if self.param_dist_flag:
+            sim_data_list = []
+            for i in range(self.num_dist_samples):
+                ptest = self.__sample_pvec__(parameter_vector)
+                sim_data_list.append(self.__sim__(ptest))
+            sim_data = np.mean(sim_data_list, axis=0)
+        else:
+            ptest = {pname: 10 ** pvalue for pname, pvalue in zip(self.sampled_parameter_names, parameter_vector)}
+            sim_data = self.__sim__(ptest)
 
         # Calculate log probability from simulated experimental values
         logp_ctotal = np.sum(self.like_ctot.logpdf(sim_data))
