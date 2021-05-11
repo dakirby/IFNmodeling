@@ -33,7 +33,7 @@ custom_params = {}
 # -----------------------------------------------------------------------------
 # Parameters to fit:
 # -----------------------------------------------------------------------------
-pysb_sampled_parameter_names = ['kpa', 'kSOCSon', 'kd4', 'k_d4', 'R1*', 'R2*', 'kint_a', 'kint_b', 'krec_a2', 'krec_b2']
+pysb_sampled_parameter_names = ['kpa', 'kSOCSon', 'kd4', 'k_d4', 'R1', 'R2', 'kint_a', 'kint_b', 'krec_a2', 'krec_b2']
 
 original_params = []
 priors_list = []
@@ -41,9 +41,9 @@ priors_dict = {}
 for key in pysb_sampled_parameter_names:
     # add to original_params
     if key[-1] == '*':
-        original_params.append(np.log10(Mixed_Model.parameters[key[:-1]]))
+        original_params.append(Mixed_Model.parameters[key[:-1]])
     else:
-        original_params.append(np.log10(Mixed_Model.parameters[key]))
+        original_params.append(Mixed_Model.parameters[key])
 
     # build prior
     if key in ['kd4', 'k_d4', 'R1', 'R2']:
@@ -67,6 +67,7 @@ for key in pysb_sampled_parameter_names:
         std = 0.3
         priors_list.append(SampledParam(norm, loc=mu, scale=std))
         priors_dict.update({key: (mu, std)})
+original_params = np.log10(original_params)
 pysb_sampled_parameter_names = list(priors_dict.keys())
 
 # -----------------------------------------------------------------------------
