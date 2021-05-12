@@ -499,7 +499,7 @@ class EnsembleModel():
         Make predictions from the ensemble of models
 
     """
-    def __init__(self, name, param_fname, parameter_names, prior_fname):
+    def __init__(self, name, param_fname, parameter_names, prior_fname, **kwargs):
         self.name = name
         self.model = IfnModel(self.name)
         with open(prior_fname, 'rb') as f:
@@ -513,6 +513,12 @@ class EnsembleModel():
                 pdicts = eval(f.read())
                 self.parameters = np.array([list(d.values()) for d in pdicts])
         self.parameter_names = parameter_names
+        # Check if any parameters were fit as distributions
+        self.param_dist_flag = False
+        for name in self.parameter_names:
+            if name[-1] == '*':
+                self.param_dist_flag = True
+        self.num_dist_samples = kwargs.get('num_dist_samples', 10)
 
     def __posterior_prediction__(self, parameter_dict, test_times,
                                  observable, dose_species, doses,
@@ -521,9 +527,30 @@ class EnsembleModel():
         Produce predictions for IFNa and IFNb using model with parameters given
         as input to the function.
         """
-        # Make predictions
+        # Update parameters
+        if self.param_dist_flag:
+            # find all distribution parameters
+            dist_param_names = []
+            for key in parameter_dict.keys():
+                if key.endswith('_mu*'):
+                    dist_param_names.append(key[:-4])
+            # sample according to mu, std
+            dist_param_dict = {}
+            for pname in dist_param_names:
+                mu = parameter_dict[pname + '_mu*']
+                std = parameter_dict[pname + '_std*']
+                sample = 10 ** np.random.normal(loc=np.log10(mu), scale=std)
+                dist_param_dict.update({pname: sample})
+                # remove distribution parameters
+                parameter_dict.pop(pname + '_mu*')
+                parameter_dict.pop(pname + '_std*')
+            # add sample to parameter_dict
+            parameter_dict.update(dist_param_dict)
+
         parameter_dict.update(condition)
         self.model.set_parameters(parameter_dict)
+
+        # Make predictions
         if dose_species == 'Ia':
             dataframe_label = 'Alpha'
         if dose_species == 'Ib':
@@ -568,6 +595,10 @@ class EnsembleModel():
         Class method for producing ensemble model predictions
         """
         num_checks = kwargs.get('num_checks', 50)
+        if dose_species == 'Ia':
+            dataframe_label = 'Alpha'
+        if dose_species == 'Ib':
+            dataframe_label = 'Beta'
 
         # Prepare parameter vectors
         parameters_to_check = []
@@ -585,15 +616,19 @@ class EnsembleModel():
         posterior_trajectories = []
         for p in parameters_to_check:
             param_dict = {key: value for key, value in zip(self.parameter_names, p)}
-            pp = self.__posterior_prediction__(param_dict, test_times, observable, dose_species, doses, sf, parameters)
-            posterior_trajectories.append(pp)
+
+            if self.param_dist_flag:
+                traj_subsamples = []
+                for _ in range(self.num_dist_samples):
+                    pp = self.__posterior_prediction__(param_dict, test_times, observable, dose_species, doses, sf, parameters)
+                    traj_subsamples.add_data(pp)
+                mean_pred, _ = self.__posterior_IFN_summary_statistics__(traj_subsamples, dataframe_label)
+                posterior_trajectories.append(mean_pred)
+            else:
+                pp = self.__posterior_prediction__(param_dict, test_times, observable, dose_species, doses, sf, parameters)
+                posterior_trajectories.append(pp)
 
         # Make aggregate predicitions
-        if dose_species == 'Ia':
-            dataframe_label = 'Alpha'
-        if dose_species == 'Ib':
-            dataframe_label = 'Beta'
-
         mean_pred, std_pred = self.__posterior_IFN_summary_statistics__(posterior_trajectories, dataframe_label)
 
         mean_model = copy.deepcopy(posterior_trajectories[0])
