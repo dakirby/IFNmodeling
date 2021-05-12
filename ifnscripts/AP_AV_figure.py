@@ -13,7 +13,10 @@ import matplotlib.gridspec as gridspec
 from AP_AV_DATA import Thomas2011IFNalpha2AV, Thomas2011IFNalpha2YNSAV,\
  Thomas2011IFNalpha7AV, Thomas2011IFNomegaAV, Thomas2011IFNalpha2YNSAP,\
  Thomas2011IFNalpha2AP, Thomas2011IFNalpha7AP, Thomas2011IFNomegaAP,\
- Schreiber2017AV, Schreiber2017AP
+ Schreiber2017AV, Schreiber2017AP,\
+ Thomas2011IFNalpha2AV_s, Thomas2011IFNalpha2YNSAV_s,\
+ Thomas2011IFNalpha7AV_s, Thomas2011IFNomegaAV_s, Thomas2011IFNalpha2YNSAP_s,\
+ Thomas2011IFNalpha2AP_s, Thomas2011IFNalpha7AP_s, Thomas2011IFNomegaAP_s
 
 from AP_AV_theory import antiViralActivity, antiProliferativeActivity
 from AP_AV_simulations import AP_AV_simulations
@@ -195,17 +198,19 @@ if __name__ == '__main__':
     axes[0].set_xscale('log')
     axes[1].set_xscale('log')
     # Anti-viral activity
-    exp_data_av = list(map(np.array, [Thomas2011IFNalpha2AV, Thomas2011IFNalpha7AV, Thomas2011IFNomegaAV, Thomas2011IFNalpha2YNSAV]))
+    exp_data_av = list(map(np.array, [Thomas2011IFNalpha2AV_s, Thomas2011IFNalpha7AV_s, Thomas2011IFNomegaAV_s, Thomas2011IFNalpha2YNSAV_s]))
     sim_data_av = list(map(np.array, [DATA['pSTAT_' + key + '_AV'] for key in ['a2', 'a7', 'w', 'a2YNS']]))
     for idx in range(len(exp_data_av)):
         axes[0].scatter(exp_data_av[idx][:, 0], exp_data_av[idx][:, 1], color=colour_palette[idx], label=labels[idx])
+        axes[0].errorbar(exp_data_av[idx][:, 0], exp_data_av[idx][:, 1], yerr=exp_data_av[idx][:, 2], color=colour_palette[idx], ls='none')
         axes[0].plot(DATA['doses'], 100-sim_data_av[idx], color=colour_palette[idx], linewidth=3)
     # Anti-proliferative activity
-    exp_data_ap = list(map(np.array, [Thomas2011IFNalpha2AP, Thomas2011IFNalpha7AP, Thomas2011IFNomegaAP, Thomas2011IFNalpha2YNSAP]))
+    exp_data_ap = list(map(np.array, [Thomas2011IFNalpha2AP_s, Thomas2011IFNalpha7AP_s, Thomas2011IFNomegaAP_s, Thomas2011IFNalpha2YNSAP_s]))
     sim_data_ap = list(map(np.array, [DATA['pSTAT_' + key + '_AP'] for key in ['a2', 'a7', 'w', 'a2YNS']]))
     for idx in range(len(exp_data_ap)):
         # include factor of 1E3 because data is in nM but axis is in pM
         axes[1].scatter(1E3*exp_data_ap[idx][:, 0], exp_data_ap[idx][:, 1], color=colour_palette[idx], label=labels[idx])
+        axes[1].errorbar(1E3*exp_data_ap[idx][:, 0], exp_data_ap[idx][:, 1], yerr=exp_data_ap[idx][:, 2], color=colour_palette[idx], ls='none')
         axes[1].plot(DATA['doses'], [max(0, el) for el in 100-sim_data_ap[idx]], color=colour_palette[idx], linewidth=3)
 
     axes[0].set_title('Anti-viral activity assay')

@@ -1,43 +1,43 @@
 import numpy as np
-Thomas2011IFNalpha2AP = [[0.00001, 100], [0.0000296, 100], [0.0000873, 100],
-                         [0.000258, 100], [0.000763, 100], [0.00225, 88],
-                         [0.00666, 95], [0.0197, 90], [0.0582, 87],
-                         [0.172, 84], [0.508, 74], [1.5, 38], [4.44, 29],
-                         [13.1, 20], [38.7, 16], [115., 13], [338., 13],
-                         [1000., 13]]
+import pandas as pd
+import os
 
-Thomas2011IFNalpha2AV = [[0.0001, 100], [0.001, 98], [0.01, 88], [0.1, 55],
-                         [1., 5], [10., 0], [100., 0], [1000., 0]]
+AVcsv = pd.read_csv(os.getcwd() + os.sep + '2011_Thomas_IFN_Antiviral_Activity.csv')
+APcsv = pd.read_csv(os.getcwd() + os.sep + '2011_Thomas_IFN_Cell_Proliferation.csv')
 
-Thomas2011IFNalpha7AP = [[0.00001, 100], [0.0000296, 100], [0.0000873, 100],
-                         [0.000258, 100], [0.000763, 100], [0.00225, 84],
-                         [0.00666, 92], [0.0197, 100], [0.0582, 105],
-                         [0.172, 88], [0.508, 77], [1.5, 57], [4.44, 40],
-                         [13.1, 26], [38.7, 22], [115., 18], [338., 10],
-                         [1000., 10]]
+# No error bars
+Thomas2011IFNalpha2AP = APcsv.loc[APcsv['Dose_Species'] == 'IFNa2'].values[:,1:3]
 
-Thomas2011IFNalpha7AV = [[0.0001, 100], [0.001, 98], [0.01, 98], [0.1, 13],
-                         [1., 2], [10., 0], [100., 0], [1000., 0]]
+Thomas2011IFNalpha2AV = AVcsv.loc[AVcsv['Dose_Species'] == 'IFNa2'].values[:,1:3]
 
-Thomas2011IFNomegaAP = [[0.00001, 100], [0.0000296, 100], [0.0000873, 100],
-                        [0.000258, 100], [0.000763, 100], [0.00225, 90],
-                        [0.00666, 105], [0.0197, 98], [0.0582, 92],
-                        [0.172, 76], [0.508, 53], [1.5, 30], [4.44, 20],
-                        [13.1, 15], [38.7, 12], [115., 10], [338., 0],
-                        [1000., 0]]
+Thomas2011IFNalpha7AP = APcsv.loc[APcsv['Dose_Species'] == 'IFNa7'].values[:,1:3]
 
-Thomas2011IFNomegaAV = [[0.0001, 100], [0.001, 92], [0.01, 82], [0.1, 23],
-                        [1., 2], [10., 0], [100., 0], [1000., 0]]
+Thomas2011IFNalpha7AV = AVcsv.loc[AVcsv['Dose_Species'] == 'IFNa7'].values[:,1:3]
 
-Thomas2011IFNalpha2YNSAP = [[0.00001, 100], [0.0000296, 105], [0.0000873, 88],
-                            [0.000258, 82], [0.000763, 70], [0.00225, 38],
-                            [0.00666, 25], [0.0197, 14], [0.0582, 8],
-                            [0.172, 5], [0.508, 0], [1.5, 0], [4.44, 0],
-                            [13.1, 0], [38.7, 0], [115., 0], [338., 0],
-                            [1000., 0]]
+Thomas2011IFNomegaAP = APcsv.loc[APcsv['Dose_Species'] == 'IFNw'].values[:,1:3]
 
-Thomas2011IFNalpha2YNSAV = [[0.0001, 100], [0.001, 95], [0.01, 75], [0.1, 4],
-                            [1., 0], [10., 0], [100., 0], [1000., 0]]
+Thomas2011IFNomegaAV = AVcsv.loc[AVcsv['Dose_Species'] == 'IFNw'].values[:,1:3]
+
+Thomas2011IFNalpha2YNSAP = APcsv.loc[APcsv['Dose_Species'] == 'IFNa2_YNS'].values[:,1:3]
+
+Thomas2011IFNalpha2YNSAV = AVcsv.loc[AVcsv['Dose_Species'] == 'IFNa2_YNS'].values[:,1:3]
+
+# With error bars
+Thomas2011IFNalpha2AP_s = APcsv.loc[APcsv['Dose_Species'] == 'IFNa2'].values[:,1:4]
+
+Thomas2011IFNalpha2AV_s = AVcsv.loc[AVcsv['Dose_Species'] == 'IFNa2'].values[:,1:4]
+
+Thomas2011IFNalpha7AP_s = APcsv.loc[APcsv['Dose_Species'] == 'IFNa7'].values[:,1:4]
+
+Thomas2011IFNalpha7AV_s = AVcsv.loc[AVcsv['Dose_Species'] == 'IFNa7'].values[:,1:4]
+
+Thomas2011IFNomegaAP_s = APcsv.loc[APcsv['Dose_Species'] == 'IFNw'].values[:,1:4]
+
+Thomas2011IFNomegaAV_s = AVcsv.loc[AVcsv['Dose_Species'] == 'IFNw'].values[:,1:4]
+
+Thomas2011IFNalpha2YNSAP_s = APcsv.loc[APcsv['Dose_Species'] == 'IFNa2_YNS'].values[:,1:4]
+
+Thomas2011IFNalpha2YNSAV_s = AVcsv.loc[AVcsv['Dose_Species'] == 'IFNa2_YNS'].values[:,1:4]
 
 Schreiber2017AV = np.array(
                   [[0.0001, 0.0015], [0.00034, 0.0025], [0.0014, 0.01],
