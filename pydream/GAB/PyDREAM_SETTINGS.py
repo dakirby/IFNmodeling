@@ -13,11 +13,11 @@ from datetime import datetime
 # -----------------------------------------------------------------------------
 # Set simulation parameters
 # -----------------------------------------------------------------------------
-NITERATIONS = 5
-ITERATION_CUTOFF = 10
+NITERATIONS = 500
+ITERATION_CUTOFF = 1000
 NCHAINS = 5
 SIM_NAME = 'mixed_IFN'
-DIR_NAME = 'PyDREAM_testing'
+DIR_NAME = 'PyDREAM_11-05-2021'
 # -----------------------------------------------------------------------------
 
 

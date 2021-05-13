@@ -5,8 +5,8 @@ import pandas as pd
 import numpy as np
 import pickle
 
-ENSEMBLE = False
-RANDOM_ENSEMBLE = False
+ENSEMBLE = True
+RANDOM_ENSEMBLE = True
 
 if ENSEMBLE:
     SCALE_FACTOR = 1.5
