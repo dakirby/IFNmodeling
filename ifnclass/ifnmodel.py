@@ -8,6 +8,7 @@ import pandas as pd
 import pickle
 import time
 import os
+from tqdm import tqdm
 from random import randint
 from ifnclass.ifndata import IfnData, DataAlignment
 
@@ -617,7 +618,7 @@ class EnsembleModel():
 
             if self.param_dist_flag:
                 traj_subsamples = []
-                for _ in range(self.num_dist_samples):
+                for _ in tqdm(range(self.num_dist_samples)):
                     pp = self.__posterior_prediction__(param_dict, test_times, observable, dose_species, doses, sf, parameters)
                     traj_subsamples.append(pp)
                 mean_pred, _ = self.__posterior_IFN_summary_statistics__(traj_subsamples, dataframe_label)
