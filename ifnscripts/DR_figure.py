@@ -227,13 +227,13 @@ if __name__ == '__main__':
     ec50_axes = ec50_axes_list[0:2]
     ec50_axes[0].set_xlabel("Time (min)")
     ec50_axes[1].set_xlabel("Time (min)")
-    ec50_axes[0].set_title(r"EC50 vs Time for IFN$\alpha$")
+    ec50_axes[0].set_title(r"EC50 vs Time for IFN$\alpha$2")
     ec50_axes[1].set_title(r"EC50 vs Time for IFN$\beta$")
     ec50_axes[0].set_ylabel("EC50 (pM)")
     ec50_axes[0].set_yscale('log')
     ec50_axes[1].set_yscale('log')
     # Add models
-    ec50_axes[0].plot(time_list, alpha_ec_aggregate, label=r'IFN$\alpha$',
+    ec50_axes[0].plot(time_list, alpha_ec_aggregate, label=r'IFN$\alpha$2',
                       color=alpha_palette[5], linewidth=2)
     ec50_axes[1].plot(time_list, beta_ec_aggregate, label=r'IFN$\beta$',
                       color=beta_palette[5], linewidth=2)
@@ -290,9 +290,9 @@ if __name__ == '__main__':
     max_response_axes = ec50_axes_list[2:4]
     max_response_axes[0].set_xlabel("Time (min)")
     max_response_axes[1].set_xlabel("Time (min)")
-    max_response_axes[0].set_title(r"Max pSTAT vs Time for IFN$\alpha$")
-    max_response_axes[1].set_title(r"Max pSTAT vs Time for IFN$\beta$")
-    max_response_axes[0].set_ylabel("Max pSTAT (MFI)")
+    max_response_axes[0].set_title(r"pSTAT$_{max}$ vs Time for IFN$\alpha$2")
+    max_response_axes[1].set_title(r"pSTAT$_{max}$ vs Time for IFN$\beta$")
+    max_response_axes[0].set_ylabel(r"pSTAT$_{max}$ (MFI)")
 
     # Add models
     max_response_axes[0].plot(time_list, alpha_peak_aggregate,
@@ -376,8 +376,11 @@ if __name__ == '__main__':
     # Dose response aesthetics
     for ax in Figure_2.axes[4:6]:
         ax.set_ylim((0, 5000))
-    Figure_2.axes[4].set_title(r'IFN$\alpha$')
+    Figure_2.axes[4].set_title(r'IFN$\alpha$2')
     Figure_2.axes[5].set_title(r'IFN$\beta$')
+    for direction in ['top', 'right']:
+        Figure_2.axes[4].spines[direction].set_visible(False)
+        Figure_2.axes[5].spines[direction].set_visible(False)
 
     # max pSTAT aesthetics
     for ax in Figure_2.axes[2:4]:
