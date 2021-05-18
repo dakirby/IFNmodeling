@@ -610,6 +610,9 @@ class EnsembleModel():
             indices_to_check = list(np.random.randint(burn_in_len, high=params_list_len, size=num_checks))
         for i in indices_to_check:
             parameters_to_check.append(self.parameters[i])
+        dist_var_only = False
+        if len(parameters_to_check) == 1 and self.param_dist_flag:  # get model variance from distribution parameters
+            dist_var_only = True
 
         # Compute posterior sample trajectories
         posterior_trajectories = []
@@ -620,7 +623,12 @@ class EnsembleModel():
                 traj_subsamples = []
                 for _ in tqdm(range(self.num_dist_samples)):
                     pp = self.__posterior_prediction__(param_dict, test_times, observable, dose_species, doses, sf, parameters)
-                    traj_subsamples.append(pp)
+                    if dist_var_only:
+                        posterior_trajectories.append(pp)
+                    else:
+                        traj_subsamples.append(pp)
+                if dist_var_only:  # do not perform trajectory aggregation here
+                    break
                 mean_pred, _ = self.__posterior_IFN_summary_statistics__(traj_subsamples, dataframe_label)
                 # Convert to IfnData object
                 mean_pred_ifndata = copy.deepcopy(pp)

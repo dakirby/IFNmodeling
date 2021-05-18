@@ -144,7 +144,7 @@ if __name__ == '__main__':
     # Make theory dose response curves
     # ---------------------------------
     # Equilibrium predictions
-    if lm.ENSEMBLE:
+    if lm.ENSEMBLE or lm.RANDOM_ENSEMBLE:
         avg_pSTAT_Max_Alpha, avg_pSTAT_EC50_Alpha, avg_pSTAT_Max_Beta, avg_pSTAT_EC50_Beta = prior_theory(Mixed_Model)
     else:
         avg_pSTAT_Max_Alpha, avg_pSTAT_EC50_Alpha, avg_pSTAT_Max_Beta, avg_pSTAT_EC50_Beta = avg_theory(Mixed_Model)
