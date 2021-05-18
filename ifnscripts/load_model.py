@@ -24,7 +24,10 @@ if ENSEMBLE:
 else:
     SCALE_FACTOR = 1.227
     DR_KWARGS = {'return_type': 'IfnData'}
-    PLOT_KWARGS = {'line_type': 'plot', 'alpha': 1}
+    if RANDOM_ENSEMBLE:
+        PLOT_KWARGS = {'line_type': 'envelope', 'alpha': 0.2}
+    else:
+        PLOT_KWARGS = {'line_type': 'plot', 'alpha': 1}
 
 
 def load_model(model_name='Mixed_IFN_ppCompatible', ENSEMBLE=ENSEMBLE, RANDOM_ENSEMBLE=RANDOM_ENSEMBLE):

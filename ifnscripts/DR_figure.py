@@ -202,7 +202,7 @@ if __name__ == '__main__':
                                           list(logspace(-3, 5)),
                                           parameters={'Ib': 0},
                                           sf=scale_factor,
-                                          **{'return_type': 'IfnData'})
+                                          **DR_KWARGS)
 
     alpha_ec_aggregate = [el[1] for el in dfa.get_ec50s()['Alpha']]
     alpha_peak_aggregate = [el[1] for el in dfa.get_max_responses()['Alpha']]
@@ -211,7 +211,7 @@ if __name__ == '__main__':
                                           list(logspace(-3, 5)),
                                           parameters={'Ia': 0},
                                           sf=scale_factor,
-                                          **{'return_type': 'IfnData'})
+                                          **DR_KWARGS)
 
     beta_ec_aggregate = [el[1] for el in dfb.get_ec50s()['Beta']]
     beta_peak_aggregate = [el[1] for el in dfb.get_max_responses()['Beta']]
