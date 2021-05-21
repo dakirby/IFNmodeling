@@ -538,9 +538,9 @@ class EnsembleModel():
             # sample according to mu, std
             dist_param_dict = {}
             for pname in dist_param_names:
-                mu = parameter_dict[pname + '_mu*']
+                mu = np.log10(parameter_dict[pname + '_mu*'])
                 std = parameter_dict[pname + '_std*']
-                sample = 10 ** np.random.normal(loc=np.log10(mu), scale=std)
+                sample = 10 ** np.random.normal(loc=mu, scale=std)
                 dist_param_dict.update({pname: sample})
                 # remove distribution parameters
                 parameter_dict.pop(pname + '_mu*')
@@ -618,11 +618,11 @@ class EnsembleModel():
         posterior_trajectories = []
         for p in parameters_to_check:
             param_dict = {key: value for key, value in zip(self.parameter_names, p)}
-
             if self.param_dist_flag:
                 traj_subsamples = []
                 for _ in tqdm(range(self.num_dist_samples)):
-                    pp = self.__posterior_prediction__(param_dict, test_times, observable, dose_species, doses, sf, parameters)
+                    arg_param_dict = copy.deepcopy(param_dict)
+                    pp = self.__posterior_prediction__(arg_param_dict, test_times, observable, dose_species, doses, sf, parameters)
                     if dist_var_only:
                         posterior_trajectories.append(pp)
                     else:
