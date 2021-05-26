@@ -17,6 +17,7 @@ import pandas as pd
 import seaborn as sns
 from matplotlib import pyplot as plt
 import copy
+from functools import reduce
 
 
 class IFN_posterior_object():
@@ -242,27 +243,44 @@ def DREAM_fit(model, priors_list, posterior, start_params,
         pass
 
     try:
-        # Plot output
+        # Compute burn-in
         total_iterations = len(old_samples[0])
         burnin = int(total_iterations / 2)
         samples = np.concatenate(list((old_samples[i][burnin:, :] for i in range(len(old_samples)))))
         np.save(os.path.join(save_dir, sim_name+'_samples'), samples)
+
+        # Prepare plot canvas
         ndims = len(old_samples[0][0])
         colors = sns.color_palette(n_colors=ndims)
-        for dim in range(ndims):
-            sns.distplot(samples[:, dim], color=colors[dim])
-            plt.savefig(os.path.join(save_dir, sim_name + '_dimension_' +
-                                     str(dim) + '_' +
-                                     sampled_param_names[dim] +
-                                     '.pdf'))
-            plt.close()
+        priors_dict = dict(list(zip(sampled_param_names, priors_list)))
+        # computes the factors of ndims:
+        f1 = list(set(reduce(list.__add__, ([i, ndims//i] for i in range(1, int(ndims**0.5) + 1) if ndims % i == 0))))
+        ncols = f[int(len(f1) / 2 - 1)]
+        nrows = f[int(len(f1) / 2)]
+        fig, axes = plt.subplots(nrows=nrows, ncols=ncols)
+
+        # Plot posterior distributions
+        for dim, ax in enumerate(fig.axes):
+            p = sampled_param_names[dim]
+            sns.histplot(samples[:, dim], color=colors[dim], ax=ax, kde=True, stat='density')
+            xrange = np.arange(priors_dict[p][0] - 3 * priors_dict[p][1],
+                               priors_dict[p][0] + 3 * priors_dict[p][1], 0.01)
+            yrange = norm.pdf(xrange, priors_dict[p][0], priors_dict[p][1])
+            ax.plot(xrange, yrange, 'k--')
+            ax.set_xlabel(p)
+            ax.set_ylabel(None)
+            ax.spines['right'].set_visible(False)
+            ax.spines['top'].set_visible(False)
+        plt.tight_layout()
+        plt.savefig(os.path.join(save_dir, sim_name + 'posteriors.pdf'))
+        plt.close()
 
         # Convert to dataframe
         df = pd.DataFrame(samples, columns=sampled_param_names)
         g = sns.pairplot(df)
         for i, j in zip(*np.triu_indices_from(g.axes, 1)):
             g.axes[i, j].set_visible(False)
-        g.savefig(os.path.join(save_dir, 'corner_plot.pdf'))
+        g.savefig(os.path.join(save_dir, 'corner_plot.png'))
 
         # Basic statistics
         mean_parameters = np.mean(samples, axis=0)
