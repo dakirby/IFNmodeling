@@ -48,16 +48,15 @@ def load_model(model_name='Mixed_IFN_ppCompatible', ENSEMBLE=ENSEMBLE, RANDOM_EN
         DR_method = model.posterior_prediction
 
     else:  # Not MCMC
-        initial_parameters = {'k_a1': 4.98E-14 * 1.33, 'k_a2': 8.30e-13 * 2,
-                              'k_d4': 0.006 * 3.8,
-                              'kpu': 0.00095, 'kSOCSon': 6e-07,
-                              'ka2': 4.98e-13 * 1.33, 'kd4': 0.3 * 2.867,
-                              'kint_a': 0.00052, 'kint_b': 0.00052,
-                              'krec_a1': 0.001, 'krec_a2': 0.1,
-                              'krec_b1': 0.005, 'krec_b2': 0.05}
+
         if RANDOM_ENSEMBLE:  # use distribution variables, with * at end of name
-            initial_parameters.update({'R1_mu*': 6755.56, 'R1_std*': 0.2,
-                                       'R2_mu*': 1511.1, 'R2_std*': 0.2})
+            # median parameters from MCMC, but only use variance in R for model variance
+            initial_parameters = {'kSOCSon': 6e-07, 'kpa': 1.108e-06,
+                                  'kint_a': 6.986e-05, 'kint_b': 3.146e-04,
+                                  'krec_a1': 0.001, 'krec_a2': 5.781e-03,
+                                  'krec_b1': 0.0001, 'krec_b2': 9.717e-04}
+            initial_parameters.update({'R1_mu*': 2123., 'R1_std*': 0.187,
+                                       'R2_mu*': 1968, 'R2_std*': 0.205})
             param_file_dir = os.getcwd()
             param_names = np.array(list(initial_parameters.keys()))
             prior_file_name = param_file_dir + os.sep + 'init_params_temp.pkl'
@@ -77,6 +76,13 @@ def load_model(model_name='Mixed_IFN_ppCompatible', ENSEMBLE=ENSEMBLE, RANDOM_EN
                 os.remove(param_file_name)
 
         else:  # use stagewise fit params in DualMixedPopulation
+            initial_parameters = {'k_a1': 4.98E-14 * 1.33, 'k_a2': 8.30e-13 * 2,
+                                  'k_d4': 0.006 * 3.8,
+                                  'kpu': 0.00095, 'kSOCSon': 6e-07,
+                                  'ka2': 4.98e-13 * 1.33, 'kd4': 0.3 * 2.867,
+                                  'kint_a': 0.00052, 'kint_b': 0.00052,
+                                  'krec_a1': 0.001, 'krec_a2': 0.1,
+                                  'krec_b1': 0.005, 'krec_b2': 0.05}
             model = DualMixedPopulation(model_name, 0.8, 0.2)
             model.model_1.set_parameters(initial_parameters)
             model.model_1.set_parameters({'R1': 12000.0, 'R2': 1511.1})

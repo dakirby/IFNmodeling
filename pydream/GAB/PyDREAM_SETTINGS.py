@@ -17,7 +17,7 @@ NITERATIONS = 500
 ITERATION_CUTOFF = 1000
 NCHAINS = 5
 SIM_NAME = 'mixed_IFN'
-DIR_NAME = 'PyDREAM_11-05-2021'
+DIR_NAME = 'PyDREAM_26-05-2021'
 # -----------------------------------------------------------------------------
 
 
@@ -25,7 +25,7 @@ DIR_NAME = 'PyDREAM_11-05-2021'
 # Model Setup
 # -----------------------------------------------------------------------------
 Mixed_Model = IfnModel('Mixed_IFN_ppCompatible')
-sf = 1.0
+sf = 1.5
 custom_params = {}
 # -----------------------------------------------------------------------------
 
@@ -33,7 +33,7 @@ custom_params = {}
 # -----------------------------------------------------------------------------
 # Parameters to fit:
 # -----------------------------------------------------------------------------
-pysb_sampled_parameter_names = ['kpa', 'kSOCSon', 'kd4', 'k_d4', 'R1*', 'R2*', 'kint_a', 'kint_b', 'krec_a2', 'krec_b2']
+pysb_sampled_parameter_names = ['kpa', 'kSOCSon', 'R1*', 'R2*', 'kint_a', 'kint_b', 'krec_a1', 'krec_a2', 'krec_b1', 'krec_b2']
 
 original_params = []
 priors_list = []
@@ -50,19 +50,19 @@ for key in pysb_sampled_parameter_names:
         # set mean prior
         original_params.append(Mixed_Model.parameters[key[:-1]])
         mu = np.log10(Mixed_Model.parameters[key[:-1]])
-        std = 0.2
+        std = 1.0
         priors_list.append(SampledParam(norm, loc=mu, scale=std))
         priors_dict.update({key[:-1] + '_mu*': (mu, std)})
         # set std prior
         original_params.append(0.2)
         mu = np.log10(0.2)
-        std = 0.1
+        std = 0.5
         priors_list.append(SampledParam(norm, loc=mu, scale=std))
         priors_dict.update({key[:-1] + '_std*': (mu, std)})
     else:
         original_params.append(Mixed_Model.parameters[key])
         mu = np.log10(Mixed_Model.parameters[key])
-        std = 0.3
+        std = 1.0
         priors_list.append(SampledParam(norm, loc=mu, scale=std))
         priors_dict.update({key: (mu, std)})
 original_params = np.log10(original_params)

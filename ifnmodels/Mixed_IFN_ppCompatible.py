@@ -41,7 +41,7 @@ Parameter('ka1', 3.321155762205247e-14) # = (2E5 M^-1 s^-1)/(NA*volEC)
 Parameter('kd1', 1)#*10
 
 # ligand-monomer binding  (scaled)
-Parameter('ka2', 4.98173364330787e-13) # = (3e6 M^-1 s^-1)/(NA*volEC)
+Parameter('ka2', 1.33 * 4.98173364330787e-13) # = (3e6 M^-1 s^-1)/(NA*volEC)
 Parameter('kd2', 0.015) #*10              # ligand-monomer dissociation
 
 # ka4 has units of molec.^-1 s^-1
@@ -83,7 +83,7 @@ Parameter('kdeg_b', 0.0008)
 Parameter('kint_a', 0.0005)
 Parameter('kint_b', 0.0002)
 
-Parameter('krec_a1', 0.0003)
+Parameter('krec_a1', 0.001)
 Parameter('krec_a2', 0.005)
 Parameter('krec_b1', 0.0001)
 Parameter('krec_b2', 0.001)
