@@ -22,13 +22,13 @@ if ENSEMBLE:
         DR_KWARGS = {'num_checks': int(NCHAINS)}
 
 else:
-    SCALE_FACTOR = 1.227
     DR_KWARGS = {'return_type': 'IfnData'}
     if RANDOM_ENSEMBLE:
         PLOT_KWARGS = {'line_type': 'envelope', 'alpha': 0.2}
+        SCALE_FACTOR = 1.5
     else:
         PLOT_KWARGS = {'line_type': 'plot', 'alpha': 1}
-
+        SCALE_FACTOR = 1.227
 
 def load_model(model_name='Mixed_IFN_ppCompatible', ENSEMBLE=ENSEMBLE, RANDOM_ENSEMBLE=RANDOM_ENSEMBLE):
     # Dose-response method must return a Pandas DataFrame which is compatible
