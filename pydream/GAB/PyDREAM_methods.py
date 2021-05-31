@@ -255,8 +255,8 @@ def DREAM_fit(model, priors_list, posterior, start_params,
         priors_dict = dict(list(zip(sampled_param_names, priors_list)))
         # computes the factors of ndims:
         f1 = list(set(reduce(list.__add__, ([i, ndims//i] for i in range(1, int(ndims**0.5) + 1) if ndims % i == 0))))
-        ncols = f[int(len(f1) / 2 - 1)]
-        nrows = f[int(len(f1) / 2)]
+        ncols = f1[int(len(f1) / 2 - 1)]
+        nrows = f1[int(len(f1) / 2)]
         fig, axes = plt.subplots(nrows=nrows, ncols=ncols)
 
         # Plot posterior distributions
