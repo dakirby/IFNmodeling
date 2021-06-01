@@ -51,9 +51,9 @@ def load_model(model_name='Mixed_IFN_ppCompatible', ENSEMBLE=ENSEMBLE, RANDOM_EN
 
         if RANDOM_ENSEMBLE:  # use distribution variables, with * at end of name
             # median parameters from MCMC, but only use variance in R for model variance
-            initial_parameters = {'kSOCSon': 1.03992e-06, 'kpa': 8.7565e-07,
-                                  'kint_a': 0.0005139, 'kint_b': 0.0002085,
-                                  'krec_a1': 0.00074586, 'krec_a2': 0.00443,
+            initial_parameters = {'kSOCSon': 1.03992e-06, 'kpa': 1.e-06,
+                                  'kint_a': 0.000239, 'kint_b': 0.0002085,
+                                  'krec_a1': 0.00179, 'krec_a2': 0.00912,
                                   'krec_b1': 8.049335e-05, 'krec_b2': 0.000801364}
             initial_parameters.update({'R1_mu*': 1601., 'R1_std*': 0.190,
                                        'R2_mu*': 2023., 'R2_std*': 0.182})

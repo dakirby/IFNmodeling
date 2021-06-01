@@ -37,7 +37,7 @@ if __name__ == '__main__':
     # Set up Model
     # --------------------
     Mixed_Model, DR_method = lm.load_model()
-    scale_factor, DR_KWARGS, PLOT_KWARGS, ENSEMBLE = lm.SCALE_FACTOR, lm.DR_KWARGS, lm.PLOT_KWARGS, lm.ENSEMBLE
+    scale_factor, DR_KWARGS, PLOT_KWARGS, ENSEMBLE, RANDOM_ENSEMBLE = lm.SCALE_FACTOR, lm.DR_KWARGS, lm.PLOT_KWARGS, lm.ENSEMBLE, lm.RANDOM_ENSEMBLE
     # initial_parameters = {'k_a1': 4.98E-14 * 1.33, 'k_a2': 8.30e-13 * 2,
     #                       'k_d4': 0.006 * 3.8,
     #                       'kpu': 0.00095,
@@ -49,9 +49,13 @@ if __name__ == '__main__':
 
     if ENSEMBLE:
         raise NotImplementedError("Ensemble sampling not yet implemented")
-    else:
+    elif not RANDOM_ENSEMBLE:
         Mixed_Model.model_1.default_parameters = copy.deepcopy(Mixed_Model.model_1.parameters)
         Mixed_Model.model_2.default_parameters = copy.deepcopy(Mixed_Model.model_2.parameters)
+    else:
+        default_params = {}
+        for key in ['kSOCSon', 'kIntBasal_r1', 'kIntBasal_r2', 'kint_a', 'kint_b', 'kSOCSon']:
+                default_params.update({key: copy.deepcopy(Mixed_Model.model.parameters[key])})  # Use IfnModel instance directly
 
     # --------------------
     # Run Simulations
@@ -67,7 +71,10 @@ if __name__ == '__main__':
                       scale_factor=scale_factor)
 
     # Show internalization effects
-    Mixed_Model.reset_global_parameters()
+    if not RANDOM_ENSEMBLE:
+        Mixed_Model.reset_global_parameters()
+    else:
+        Mixed_Model.model.set_parameters(default_params)  # Use IfnModel instance directly
     Mixed_Model.set_parameters({'kSOCSon': 0})
     dradf_int = DR_method(times, 'TotalpSTAT', 'Ia', list(logspace(-2, 8)),
                           parameters={'Ib': 0}, return_type='DataFrame', dataframe_labels='Alpha',
@@ -77,7 +84,10 @@ if __name__ == '__main__':
                           scale_factor=scale_factor)
 
     # Show SOCS effects
-    Mixed_Model.reset_global_parameters()
+    if not RANDOM_ENSEMBLE:
+        Mixed_Model.reset_global_parameters()
+    else:
+        Mixed_Model.model.set_parameters(default_params)  # Use IfnModel instance directly
     Mixed_Model.set_parameters({'kIntBasal_r1': 0, 'kIntBasal_r2': 0, 'kint_a': 0, 'kint_b': 0})
     dradf_SOCS = DR_method(times, 'TotalpSTAT', 'Ia', list(logspace(-2, 8)),
                            parameters={'Ib': 0}, return_type='DataFrame', dataframe_labels='Alpha',
@@ -87,12 +97,20 @@ if __name__ == '__main__':
                            scale_factor=scale_factor)
 
     # Make IfnData objects
-    dra60 = IfnData('custom', df=dradf, conditions={'Alpha': {'Ib': 0}})
-    drb60 = IfnData('custom', df=drbdf, conditions={'Beta': {'Ia': 0}})
-    dra60_int = IfnData('custom', df=dradf_int, conditions={'Alpha': {'Ib': 0}})
-    drb60_int = IfnData('custom', df=drbdf_int, conditions={'Beta': {'Ia': 0}})
-    dra60_SOCS = IfnData('custom', df=dradf_SOCS, conditions={'Alpha': {'Ib': 0}})
-    drb60_SOCS = IfnData('custom', df=drbdf_SOCS, conditions={'Beta': {'Ia': 0}})
+    if not RANDOM_ENSEMBLE:
+        dra60 = IfnData('custom', df=dradf, conditions={'Alpha': {'Ib': 0}})
+        drb60 = IfnData('custom', df=drbdf, conditions={'Beta': {'Ia': 0}})
+        dra60_int = IfnData('custom', df=dradf_int, conditions={'Alpha': {'Ib': 0}})
+        drb60_int = IfnData('custom', df=drbdf_int, conditions={'Beta': {'Ia': 0}})
+        dra60_SOCS = IfnData('custom', df=dradf_SOCS, conditions={'Alpha': {'Ib': 0}})
+        drb60_SOCS = IfnData('custom', df=drbdf_SOCS, conditions={'Beta': {'Ia': 0}})
+    else:
+        dra60 = dradf
+        drb60 = drbdf
+        dra60_int = dradf_int
+        drb60_int = drbdf_int
+        dra60_SOCS = dradf_SOCS
+        drb60_SOCS = drbdf_SOCS
 
     # --------------------
     # Make Plot
