@@ -28,16 +28,19 @@ def increase_K4_figure():
     # Set up Model
     # --------------------
     scale_factor = 1.5
-    DR_KWARGS = {'return_type': 'IfnData'}
-    MODEL_TYPE = 'SINGLE_CELL'
+    DR_KWARGS = {'return_type': 'dataframe'}
+    MODEL_TYPE = 'MEDIAN' # 'SINGLE_CELL'
 
     Mixed_Model, DR_method = lm.load_model(MODEL_TYPE=MODEL_TYPE)
 
     dose_list = list(logspace(-2, 8, num=35))
 
-    dr_a1 = DR_method([60], 'TotalpSTAT', 'Ia', dose_list, parameters={'Ib': 0}, sf=scale_factor, **DR_KWARGS)
+    dr_a1 = DR_method([60], 'TotalpSTAT', 'Ia', dose_list, parameters={'Ib': 0}, scale_factor=scale_factor, dataframe_labels='Alpha', **DR_KWARGS)
+    dr_b1 = DR_method([60], 'TotalpSTAT', 'Ib', dose_list, parameters={'Ia': 0}, scale_factor=scale_factor, dataframe_labels='Beta', **DR_KWARGS)
+    if MODEL_TYPE == 'SINGLE_CELL':
+        dr_a1 = IfnData('custom', df=dr_a1)
+        dr_b1 = IfnData('custom', df=dr_b1)
     dr_curve_a = [el[0][0] for el in dr_a1.data_set.values]
-    dr_b1 = DR_method([60], 'TotalpSTAT', 'Ib', dose_list, parameters={'Ia': 0}, sf=scale_factor, **DR_KWARGS)
     dr_curve_b = [el[0][0] for el in dr_b1.data_set.values]
 
     # Now compute the 15* refractory response
@@ -47,9 +50,12 @@ def increase_K4_figure():
     k_d4_reference = ref_params['k_d4']
     Mixed_Model.set_parameters({'kd4': kd4_reference*k4sf1, 'k_d4': k_d4_reference*k4sf1})
 
-    dr_a15 = DR_method([60], 'TotalpSTAT', 'Ia', dose_list, parameters={'Ib': 0}, sf=scale_factor, **DR_KWARGS)
+    dr_a15 = DR_method([60], 'TotalpSTAT', 'Ia', dose_list, parameters={'Ib': 0}, scale_factor=scale_factor, dataframe_labels='Alpha', **DR_KWARGS)
+    dr_b15 = DR_method([60], 'TotalpSTAT', 'Ib', dose_list, parameters={'Ia': 0}, scale_factor=scale_factor, dataframe_labels='Beta', **DR_KWARGS)
+    if MODEL_TYPE == 'SINGLE_CELL':
+        dr_a15 = IfnData('custom', df=dr_a15)
+        dr_b15 = IfnData('custom', df=dr_b15)
     dr_curve_a15 = [el[0][0] for el in dr_a15.data_set.values]
-    dr_b15 = DR_method([60], 'TotalpSTAT', 'Ib', dose_list, parameters={'Ia': 0}, sf=scale_factor, **DR_KWARGS)
     dr_curve_b15 = [el[0][0] for el in dr_b15.data_set.values]
 
     # Plot
