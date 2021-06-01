@@ -76,18 +76,27 @@ def load_model(model_name='Mixed_IFN_ppCompatible', ENSEMBLE=ENSEMBLE, RANDOM_EN
                 os.remove(param_file_name)
 
         else:  # use stagewise fit params in DualMixedPopulation
-            initial_parameters = {'k_a1': 4.98E-14 * 1.33, 'k_a2': 8.30e-13 * 2,
-                                  'k_d4': 0.006 * 3.8,
-                                  'kpu': 0.00095, 'kSOCSon': 6e-07,
-                                  'ka2': 4.98e-13 * 1.33, 'kd4': 0.3 * 2.867,
-                                  'kint_a': 0.00052, 'kint_b': 0.00052,
-                                  'krec_a1': 0.001, 'krec_a2': 0.1,
-                                  'krec_b1': 0.005, 'krec_b2': 0.05}
-            model = DualMixedPopulation(model_name, 0.8, 0.2)
-            model.model_1.set_parameters(initial_parameters)
-            model.model_1.set_parameters({'R1': 12000.0, 'R2': 1511.1})
-            model.model_2.set_parameters(initial_parameters)
-            model.model_2.set_parameters({'R1': 6755.56, 'R2': 1511.1})
-            DR_method = model.mixed_dose_response
+            # initial_parameters = {'k_a1': 4.98E-14 * 1.33, 'k_a2': 8.30e-13 * 2,
+            #                       'k_d4': 0.006 * 3.8,
+            #                       'kpu': 0.00095, 'kSOCSon': 6e-07,
+            #                       'ka2': 4.98e-13 * 1.33, 'kd4': 0.3 * 2.867,
+            #                       'kint_a': 0.00052, 'kint_b': 0.00052,
+            #                       'krec_a1': 0.001, 'krec_a2': 0.1,
+            #                       'krec_b1': 0.005, 'krec_b2': 0.05}
+            # model = DualMixedPopulation(model_name, 0.8, 0.2)
+            # model.model_1.set_parameters(initial_parameters)
+            # model.model_1.set_parameters({'R1': 12000.0, 'R2': 1511.1})
+            # model.model_2.set_parameters(initial_parameters)
+            # model.model_2.set_parameters({'R1': 6755.56, 'R2': 1511.1})
+            # DR_method = model.mixed_dose_response
+            median_parameters = {'kSOCSon': 1.03992e-06, 'kpa': 1.e-06,
+                                 'kint_a': 0.000239, 'kint_b': 0.0002085,
+                                 'krec_a1': 0.00179, 'krec_a2': 0.00912,
+                                 'krec_b1': 8.049335e-05, 'krec_b2': 0.000801364,
+                                 'R1': 1601., 'R2': 2023.}
+            # initiate model and DR method
+            model = IfnModel(model_name)
+            model.set_parameters(median_parameters)
+            DR_method = model.doseresponse
 
     return model, DR_method

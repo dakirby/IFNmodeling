@@ -36,8 +36,9 @@ if __name__ == '__main__':
     # --------------------
     # Set up Model
     # --------------------
-    Mixed_Model, DR_method = lm.load_model()
-    scale_factor, DR_KWARGS, PLOT_KWARGS, ENSEMBLE, RANDOM_ENSEMBLE = lm.SCALE_FACTOR, lm.DR_KWARGS, lm.PLOT_KWARGS, lm.ENSEMBLE, lm.RANDOM_ENSEMBLE
+    scale_factor, DR_KWARGS, PLOT_KWARGS = lm.SCALE_FACTOR, lm.DR_KWARGS, lm.PLOT_KWARGS
+    RANDOM_ENSEMBLE, ENSEMBLE = False, False
+    Mixed_Model, DR_method = lm.load_model(ENSEMBLE=ENSEMBLE, RANDOM_ENSEMBLE=RANDOM_ENSEMBLE)
     # initial_parameters = {'k_a1': 4.98E-14 * 1.33, 'k_a2': 8.30e-13 * 2,
     #                       'k_d4': 0.006 * 3.8,
     #                       'kpu': 0.00095,
@@ -50,8 +51,7 @@ if __name__ == '__main__':
     if ENSEMBLE:
         raise NotImplementedError("Ensemble sampling not yet implemented")
     elif not RANDOM_ENSEMBLE:
-        Mixed_Model.model_1.default_parameters = copy.deepcopy(Mixed_Model.model_1.parameters)
-        Mixed_Model.model_2.default_parameters = copy.deepcopy(Mixed_Model.model_2.parameters)
+        Mixed_Model.default_parameters = copy.deepcopy(Mixed_Model.parameters)
     else:
         default_params = {}
         for key in ['kSOCSon', 'kIntBasal_r1', 'kIntBasal_r2', 'kint_a', 'kint_b', 'kSOCSon']:
@@ -66,13 +66,14 @@ if __name__ == '__main__':
     dradf = DR_method(times, 'TotalpSTAT', 'Ia', list(logspace(-2, 8)),
                       parameters={'Ib': 0}, return_type='DataFrame', dataframe_labels='Alpha',
                       scale_factor=scale_factor)
+
     drbdf = DR_method(times, 'TotalpSTAT', 'Ib', list(logspace(-2, 8)),
                       parameters={'Ia': 0}, return_type='DataFrame', dataframe_labels='Beta',
                       scale_factor=scale_factor)
 
     # Show internalization effects
     if not RANDOM_ENSEMBLE:
-        Mixed_Model.reset_global_parameters()
+        Mixed_Model.reset_parameters()
     else:
         Mixed_Model.model.set_parameters(default_params)  # Use IfnModel instance directly
     Mixed_Model.set_parameters({'kSOCSon': 0})
@@ -85,7 +86,7 @@ if __name__ == '__main__':
 
     # Show SOCS effects
     if not RANDOM_ENSEMBLE:
-        Mixed_Model.reset_global_parameters()
+        Mixed_Model.reset_parameters()
     else:
         Mixed_Model.model.set_parameters(default_params)  # Use IfnModel instance directly
     Mixed_Model.set_parameters({'kIntBasal_r1': 0, 'kIntBasal_r2': 0, 'kint_a': 0, 'kint_b': 0})

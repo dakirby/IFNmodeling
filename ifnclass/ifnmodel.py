@@ -330,6 +330,7 @@ class IfnModel:
         self.parameters = copy.deepcopy(self.default_parameters)
 
     def timecourse(self, times, observable, parameters=None, return_type='list', dataframe_labels=[], scale_factor=1):
+        return_type = return_type.lower()
         # Keep current parameter state
         initial_parameters = copy.deepcopy(self.parameters)
         # Substitute in new simulation-specific values
@@ -399,6 +400,7 @@ class IfnModel:
 
     def doseresponse(self, times, observable, dose_species, doses, parameters={}, return_type='list',
                      dataframe_labels=None, scale_factor=1):
+        return_type = return_type.lower()
         # create dose_response_table dictionary
         if type(observable) == list:
             dose_response_table = {obs: zeros((len(doses), len(times))) for obs in observable}
