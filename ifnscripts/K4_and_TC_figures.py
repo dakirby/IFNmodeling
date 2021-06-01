@@ -27,8 +27,11 @@ def increase_K4_figure():
     # --------------------
     # Set up Model
     # --------------------
-    Mixed_Model, DR_method = lm.load_model()
-    scale_factor, DR_KWARGS, PLOT_KWARGS = lm.SCALE_FACTOR, lm.DR_KWARGS, lm.PLOT_KWARGS
+    scale_factor = 1.5
+    DR_KWARGS = {'return_type': 'IfnData'}
+    MODEL_TYPE = 'SINGLE_CELL'
+
+    Mixed_Model, DR_method = lm.load_model(MODEL_TYPE=MODEL_TYPE)
 
     dose_list = list(logspace(-2, 8, num=35))
 

@@ -36,9 +36,12 @@ if __name__ == '__main__':
     # --------------------
     # Set up Model
     # --------------------
-    scale_factor, DR_KWARGS, PLOT_KWARGS = lm.SCALE_FACTOR, lm.DR_KWARGS, lm.PLOT_KWARGS
-    RANDOM_ENSEMBLE, ENSEMBLE = False, False
-    Mixed_Model, DR_method = lm.load_model(ENSEMBLE=ENSEMBLE, RANDOM_ENSEMBLE=RANDOM_ENSEMBLE)
+    scale_factor = 1.5
+    DR_KWARGS = {'return_type': 'IfnData'}
+    PLOT_KWARGS = {'line_type': 'plot', 'alpha': 1}
+    MODEL_TYPE = 'SINGLE_CELL'
+
+    Mixed_Model, DR_method = lm.load_model(MODEL_TYPE=MODEL_TYPE)
     # initial_parameters = {'k_a1': 4.98E-14 * 1.33, 'k_a2': 8.30e-13 * 2,
     #                       'k_d4': 0.006 * 3.8,
     #                       'kpu': 0.00095,
@@ -48,14 +51,14 @@ if __name__ == '__main__':
     #                       'krec_b1': 0.005, 'krec_b2': 0.05}
     # Mixed_Model.set_parameters(initial_parameters)
 
-    if ENSEMBLE:
-        raise NotImplementedError("Ensemble sampling not yet implemented")
-    elif not RANDOM_ENSEMBLE:
+    if MODEL_TYPE == 'SINGLE_CELL':
         Mixed_Model.default_parameters = copy.deepcopy(Mixed_Model.parameters)
-    else:
+    elif MODEL_TYPE == 'MEDIAN':
         default_params = {}
         for key in ['kSOCSon', 'kIntBasal_r1', 'kIntBasal_r2', 'kint_a', 'kint_b', 'kSOCSon']:
-                default_params.update({key: copy.deepcopy(Mixed_Model.model.parameters[key])})  # Use IfnModel instance directly
+            default_params.update({key: copy.deepcopy(Mixed_Model.model.parameters[key])})  # Use IfnModel instance directly
+    else:
+        raise ValueError('Model type requested is not implemented for this script')
 
     # --------------------
     # Run Simulations
@@ -72,7 +75,7 @@ if __name__ == '__main__':
                       scale_factor=scale_factor)
 
     # Show internalization effects
-    if not RANDOM_ENSEMBLE:
+    if MODEL_TYPE == 'SINGLE_CELL':
         Mixed_Model.reset_parameters()
     else:
         Mixed_Model.model.set_parameters(default_params)  # Use IfnModel instance directly
@@ -85,7 +88,7 @@ if __name__ == '__main__':
                           scale_factor=scale_factor)
 
     # Show SOCS effects
-    if not RANDOM_ENSEMBLE:
+    if MODEL_TYPE == 'SINGLE_CELL':
         Mixed_Model.reset_parameters()
     else:
         Mixed_Model.model.set_parameters(default_params)  # Use IfnModel instance directly
@@ -98,7 +101,7 @@ if __name__ == '__main__':
                            scale_factor=scale_factor)
 
     # Make IfnData objects
-    if not RANDOM_ENSEMBLE:
+    if MODEL_TYPE == 'SINGLE_CELL':
         dra60 = IfnData('custom', df=dradf, conditions={'Alpha': {'Ib': 0}})
         drb60 = IfnData('custom', df=drbdf, conditions={'Beta': {'Ia': 0}})
         dra60_int = IfnData('custom', df=dradf_int, conditions={'Alpha': {'Ib': 0}})
