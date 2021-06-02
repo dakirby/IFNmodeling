@@ -55,11 +55,12 @@ def load_model(model_name='Mixed_IFN_ppCompatible', MODEL_TYPE=MODEL_TYPE):
         if MODEL_TYPE == 'MEDIAN':  # use distribution variables, with * at end of name
             # median parameters from MCMC, but only use variance in R for model variance
             initial_parameters = {'kSOCSon': 1.03992e-06, 'kpa': 1.e-06,
-                                  'kint_a': 0.000239, 'kint_b': 0.0002085,
+                                  'kint_a': 3.737e-05, 'kint_b': 0.0002085,
                                   'krec_a1': 0.00179, 'krec_a2': 0.00912,
-                                  'krec_b1': 8.049335e-05, 'krec_b2': 0.000801364}
-            initial_parameters.update({'R1_mu*': 1601., 'R1_std*': 0.190,
-                                       'R2_mu*': 2023., 'R2_std*': 0.182})
+                                  'krec_b1': 8.049335e-05, 'krec_b2': 0.000801,
+                                  'R1_mu*': 2000., 'R1_std*': 0.190,
+                                  'R2_mu*': 2023., 'R2_std*': 0.182}
+
             param_file_dir = os.getcwd()
             param_names = np.array(list(initial_parameters.keys()))
             prior_file_name = param_file_dir + os.sep + 'init_params_temp.pkl'

@@ -208,7 +208,7 @@ if __name__ == '__main__':
     alpha_peak_aggregate = [el[1] for el in dfa.get_max_responses()['Alpha']]
 
     dfb = DR_method(time_list, 'TotalpSTAT', 'Ib',
-                                          list(logspace(-3, 5)),
+                                          list(logspace(-3, 4)),
                                           parameters={'Ia': 0},
                                           sf=scale_factor,
                                           **DR_KWARGS)
