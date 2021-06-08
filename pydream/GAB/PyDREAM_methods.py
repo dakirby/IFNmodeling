@@ -249,6 +249,15 @@ def DREAM_fit(model, priors_list, posterior, start_params,
         samples = np.concatenate(list((old_samples[i][burnin:, :] for i in range(len(old_samples)))))
         np.save(os.path.join(save_dir, sim_name+'_samples'), samples)
 
+        # Basic statistics
+        mean_parameters = np.mean(samples, axis=0)
+        median_parameters = np.median(samples, axis=0)
+        np.save(os.path.join(save_dir, 'mean_parameters'), mean_parameters)
+        np.save(os.path.join(save_dir, 'median_parameters'), median_parameters)
+        df = pd.DataFrame(samples, columns=sampled_param_names)
+        df.describe().to_csv(os.path.join(save_dir,
+                             'descriptive_statistics.csv'))
+
         # Prepare plot canvas
         ndims = len(old_samples[0][0])
         colors = sns.color_palette(n_colors=ndims)
@@ -275,22 +284,13 @@ def DREAM_fit(model, priors_list, posterior, start_params,
         plt.savefig(os.path.join(save_dir, sim_name + 'posteriors.pdf'))
         plt.close()
 
-        # Convert to dataframe
-        df = pd.DataFrame(samples, columns=sampled_param_names)
+        # Create pairplot
         g = sns.pairplot(df)
         for i, j in zip(*np.triu_indices_from(g.axes, 1)):
             g.axes[i, j].set_visible(False)
         g.savefig(os.path.join(save_dir, 'corner_plot.png'))
 
-        # Basic statistics
-        mean_parameters = np.mean(samples, axis=0)
-        median_parameters = np.median(samples, axis=0)
-        np.save(os.path.join(save_dir, 'mean_parameters'), mean_parameters)
-        np.save(os.path.join(save_dir, 'median_parameters'), median_parameters)
-        df.describe().to_csv(os.path.join(save_dir,
-                             'descriptive_statistics.csv'))
-
-    except (ImportError, OSError):
+    except (ImportError, OSError, AttributeError):
         pass
 
     # Clean up stray files
