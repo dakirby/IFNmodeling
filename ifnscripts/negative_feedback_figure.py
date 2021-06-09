@@ -9,6 +9,9 @@ import matplotlib.pyplot as plt
 
 
 if __name__ == '__main__':
+    # --------------------
+    # User controls
+    # --------------------
     alpha_palette = sns.color_palette("Reds", 6)
     beta_palette = sns.color_palette("Greens", 6)
 
@@ -17,48 +20,17 @@ if __name__ == '__main__':
         os.makedirs(out_dir)
     fname = out_dir + os.sep + 'negative_feedback_figure.pdf'
 
-    # # This is the best fit parameters for GAB aligned data
-    # Mixed_Model = IfnModel('Mixed_IFN_ppCompatible')
-    # # Optimal parameters for fitting mean GAB data
-    # default_parameters = {'R2': 4920, 'R1': 1200,
-    #  'k_a1': 2.0e-13, 'k_a2': 1.328e-12, 'k_d3': 1.13e-4, 'k_d4': 0.9,
-    #  'kSOCSon': 5e-08, 'kpu': 0.0022, 'kpa': 2.36e-06,
-    #  'ka1': 3.3e-15, 'ka2': 1.85e-12, 'kd4': 2.0,
-    #  'kd3': 6.52e-05,
-    #  'kint_a': 0.0015, 'kint_b': 0.002,
-    #  'krec_a1': 0.01, 'krec_a2': 0.01, 'krec_b1': 0.005, 'krec_b2': 0.05}
-    #
-    # scale_factor = 1.46182313424
-    #
-    # Mixed_Model.set_parameters(default_parameters)
-    # Mixed_Model.default_parameters.update(default_parameters)
+    scale_factor = 1.5
+    DR_KWARGS = {'return_type': 'IfnData'}
+    PLOT_KWARGS = {'line_type': 'plot', 'alpha': 1}
+    MODEL_TYPE = 'MEDIAN'  # 'SINGLE_CELL'
 
     # --------------------
     # Set up Model
     # --------------------
-    scale_factor = 1.5
-    DR_KWARGS = {'return_type': 'IfnData'}
-    PLOT_KWARGS = {'line_type': 'plot', 'alpha': 1}
-    MODEL_TYPE = 'SINGLE_CELL'
-
+    assert MODEL_TYPE in ['MEDIAN', 'SINGLE_CELL']
     Mixed_Model, DR_method = lm.load_model(MODEL_TYPE=MODEL_TYPE)
-    # initial_parameters = {'k_a1': 4.98E-14 * 1.33, 'k_a2': 8.30e-13 * 2,
-    #                       'k_d4': 0.006 * 3.8,
-    #                       'kpu': 0.00095,
-    #                       'ka2': 4.98e-13 * 1.33, 'kd4': 0.3 * 2.867,
-    #                       'kint_a': 0.000124, 'kint_b': 0.00056,
-    #                       'krec_a1': 0.0028, 'krec_a2': 0.01,
-    #                       'krec_b1': 0.005, 'krec_b2': 0.05}
-    # Mixed_Model.set_parameters(initial_parameters)
-
-    if MODEL_TYPE == 'SINGLE_CELL':
-        Mixed_Model.default_parameters = copy.deepcopy(Mixed_Model.parameters)
-    elif MODEL_TYPE == 'MEDIAN':
-        default_params = {}
-        for key in ['kSOCSon', 'kIntBasal_r1', 'kIntBasal_r2', 'kint_a', 'kint_b', 'kSOCSon']:
-            default_params.update({key: copy.deepcopy(Mixed_Model.model.parameters[key])})  # Use IfnModel instance directly
-    else:
-        raise ValueError('Model type requested is not implemented for this script')
+    Mixed_Model.set_default_parameters(Mixed_Model.get_parameters())
 
     # --------------------
     # Run Simulations
@@ -66,6 +38,7 @@ if __name__ == '__main__':
     times = [60]
     # Control Dose-Response
     Mixed_Model.set_parameters({'kSOCSon': 0, 'kIntBasal_r1': 0, 'kIntBasal_r2': 0, 'kint_a': 0, 'kint_b': 0})
+
     dradf = DR_method(times, 'TotalpSTAT', 'Ia', list(logspace(-2, 8)),
                       parameters={'Ib': 0}, return_type='DataFrame', dataframe_labels='Alpha',
                       scale_factor=scale_factor)
@@ -75,10 +48,7 @@ if __name__ == '__main__':
                       scale_factor=scale_factor)
 
     # Show internalization effects
-    if MODEL_TYPE == 'SINGLE_CELL':
-        Mixed_Model.reset_parameters()
-    else:
-        Mixed_Model.model.set_parameters(default_params)  # Use IfnModel instance directly
+    Mixed_Model.reset_parameters()
     Mixed_Model.set_parameters({'kSOCSon': 0})
     dradf_int = DR_method(times, 'TotalpSTAT', 'Ia', list(logspace(-2, 8)),
                           parameters={'Ib': 0}, return_type='DataFrame', dataframe_labels='Alpha',
@@ -88,10 +58,7 @@ if __name__ == '__main__':
                           scale_factor=scale_factor)
 
     # Show SOCS effects
-    if MODEL_TYPE == 'SINGLE_CELL':
-        Mixed_Model.reset_parameters()
-    else:
-        Mixed_Model.model.set_parameters(default_params)  # Use IfnModel instance directly
+    Mixed_Model.reset_parameters()
     Mixed_Model.set_parameters({'kIntBasal_r1': 0, 'kIntBasal_r2': 0, 'kint_a': 0, 'kint_b': 0})
     dradf_SOCS = DR_method(times, 'TotalpSTAT', 'Ia', list(logspace(-2, 8)),
                            parameters={'Ib': 0}, return_type='DataFrame', dataframe_labels='Alpha',

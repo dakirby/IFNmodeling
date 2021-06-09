@@ -329,6 +329,9 @@ class IfnModel:
     def reset_parameters(self):
         self.parameters = copy.deepcopy(self.default_parameters)
 
+    def set_default_parameters(self, parameters):
+        self.default_parameters = copy.deepcopy(parameters)
+
     def timecourse(self, times, observable, parameters=None, return_type='list', dataframe_labels=[], scale_factor=1):
         return_type = return_type.lower()
         # Keep current parameter state
@@ -657,6 +660,12 @@ class EnsembleModel():
 
     def set_parameters(self, new_parameters, db_check=True):
         self.model.set_parameters(new_parameters, db_check)
+
+    def set_default_parameters(self, parameters):
+        self.model.default_parameters = copy.deepcopy(parameters)
+
+    def reset_parameters(self):
+        self.model.reset_parameters()
 
 
 if __name__ == '__main__':
