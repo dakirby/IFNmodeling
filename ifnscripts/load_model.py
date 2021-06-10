@@ -94,10 +94,10 @@ def load_model(model_name='Mixed_IFN_ppCompatible', MODEL_TYPE=MODEL_TYPE):
             # model.model_2.set_parameters({'R1': 6755.56, 'R2': 1511.1})
             # DR_method = model.mixed_dose_response
             median_parameters = {'kSOCSon': 1.03992e-06, 'kpa': 1.e-06,
-                                 'kint_a': 0.000239, 'kint_b': 0.0002085,
+                                 'kint_a': 3.737e-05, 'kint_b': 0.0002085,
                                  'krec_a1': 0.00179, 'krec_a2': 0.00912,
-                                 'krec_b1': 8.049335e-05, 'krec_b2': 0.000801364,
-                                 'R1': 1601., 'R2': 2023.}
+                                 'krec_b1': 8.049335e-05, 'krec_b2': 0.000801,
+                                 'R1': 2000., 'R2': 2023.}
             # initiate model and DR method
             model = IfnModel(model_name)
             model.set_parameters(median_parameters)
