@@ -161,7 +161,7 @@ class IFN_posterior_object():
 def DREAM_fit(model, priors_list, posterior, start_params,
               sampled_param_names, niterations, nchains, sim_name,
               save_dir, custom_params={}, GR_cutoff=1.2, iteration_cutoff=1E7,
-              verbose=True):
+              verbose=True, plot_posteriors=True):
     """
     The DREAM fitting algorithm as implemented in run_dream(), plus decorations
     for saving run parameters, checking convergence, and post fitting analysis.
@@ -258,39 +258,40 @@ def DREAM_fit(model, priors_list, posterior, start_params,
         df.describe().to_csv(os.path.join(save_dir,
                              'descriptive_statistics.csv'))
 
-        # Prepare plot canvas
-        ndims = len(old_samples[0][0])
-        colors = sns.color_palette(n_colors=ndims)
-        priors_dict = dict(list(zip(sampled_param_names, priors_list)))
-        # computes the factors of ndims:
-        f1 = list(set(reduce(list.__add__, ([i, ndims//i] for i in range(1, int(ndims**0.5) + 1) if ndims % i == 0))))
-        ncols = f1[int(len(f1) / 2 - 1)]
-        nrows = f1[int(len(f1) / 2)]
-        fig, axes = plt.subplots(nrows=nrows, ncols=ncols)
+        if plot_posteriors:
+            # Prepare plot canvas
+            ndims = len(old_samples[0][0])
+            colors = sns.color_palette(n_colors=ndims)
+            priors_dict = dict(list(zip(sampled_param_names, priors_list)))
+            # computes the factors of ndims:
+            f1 = list(set(reduce(list.__add__, ([i, ndims//i] for i in range(1, int(ndims**0.5) + 1) if ndims % i == 0))))
+            ncols = f1[int(len(f1) / 2 - 1)]
+            nrows = f1[int(len(f1) / 2)]
+            fig, axes = plt.subplots(nrows=nrows, ncols=ncols)
 
-        # Plot posterior distributions
-        for dim, ax in enumerate(fig.axes):
-            p = sampled_param_names[dim]
-            sns.histplot(samples[:, dim], color=colors[dim], ax=ax, kde=True, stat='density')
-            xrange = np.arange(priors_dict[p][0] - 3 * priors_dict[p][1],
-                               priors_dict[p][0] + 3 * priors_dict[p][1], 0.01)
-            yrange = norm.pdf(xrange, priors_dict[p][0], priors_dict[p][1])
-            ax.plot(xrange, yrange, 'k--')
-            ax.set_xlabel(p)
-            ax.set_ylabel(None)
-            ax.spines['right'].set_visible(False)
-            ax.spines['top'].set_visible(False)
-        plt.tight_layout()
-        plt.savefig(os.path.join(save_dir, sim_name + 'posteriors.pdf'))
-        plt.close()
+            # Plot posterior distributions
+            for dim, ax in enumerate(fig.axes):
+                p = sampled_param_names[dim]
+                sns.histplot(samples[:, dim], color=colors[dim], ax=ax, kde=True, stat='density')
+                xrange = np.arange(priors_dict[p][0] - 3 * priors_dict[p][1],
+                                   priors_dict[p][0] + 3 * priors_dict[p][1], 0.01)
+                yrange = norm.pdf(xrange, priors_dict[p][0], priors_dict[p][1])
+                ax.plot(xrange, yrange, 'k--')
+                ax.set_xlabel(p)
+                ax.set_ylabel(None)
+                ax.spines['right'].set_visible(False)
+                ax.spines['top'].set_visible(False)
+            plt.tight_layout()
+            plt.savefig(os.path.join(save_dir, sim_name + 'posteriors.pdf'))
+            plt.close()
 
-        # Create pairplot
-        g = sns.pairplot(df)
-        for i, j in zip(*np.triu_indices_from(g.axes, 1)):
-            g.axes[i, j].set_visible(False)
-        g.savefig(os.path.join(save_dir, 'corner_plot.png'))
+            # Create pairplot
+            g = sns.pairplot(df)
+            for i, j in zip(*np.triu_indices_from(g.axes, 1)):
+                g.axes[i, j].set_visible(False)
+            g.savefig(os.path.join(save_dir, 'corner_plot.png'))
 
-    except (ImportError, OSError, AttributeError):
+    except (ImportError, OSError, AttributeError, TypeError):
         pass
 
     # Clean up stray files
@@ -568,7 +569,8 @@ def bootstrap(model, datalist, priors_list, start_params,
                   sampled_param_names=sampled_param_names,
                   niterations=niterations,
                   nchains=nchains, sim_name=sim_name, save_dir=epoch_save_dir,
-                  iteration_cutoff=iteration_cutoff, verbose=False)
+                  iteration_cutoff=iteration_cutoff, verbose=False,
+                  plot_posteriors=False)
 
         # analyse results
         test.drop_sigmas()
