@@ -63,7 +63,7 @@ def increase_K4_figure():
     fig.set_size_inches(16, 8)
     axes.set_xlabel("Dose (pM)", fontsize=14)
     axes.set_title("Relative Refractory Response", fontsize=16)
-    axes.set_ylabel("pSTAT1 Relative to Primary Response", fontsize=14)
+    axes.set_ylabel("pSTAT Relative to Primary Response", fontsize=14)
     axes.set(xscale='log', yscale='linear')
 
     axes.plot(dose_list, np.divide(dr_curve_a15, dr_curve_a), label=r'IFN$\alpha$ $K_{D4}\times$'+'{}'.format(k4sf1), color=alpha_palette[4], linestyle='--', linewidth=2)
@@ -79,7 +79,7 @@ def increase_K4_figure():
 
     axes.set_xlabel("Dose (pM)", fontsize=18)
 
-    axes.set_ylabel("pSTAT1", fontsize=18)
+    axes.set_ylabel("pSTAT", fontsize=18)
     axes.set(xscale='log', yscale='linear')
 
     axes.plot(dose_list, dr_curve_a, label=r'IFN$\alpha$', color=alpha_palette[5], linewidth=4)

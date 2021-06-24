@@ -198,8 +198,8 @@ if __name__ == '__main__':
     # ----------------------
     # Set up dose response figures
     new_fit = DoseresponsePlot((1, 2), figsize=(12, 5))
-    new_fit.axes[0].set_ylabel('pSTAT (MFI)')
-    new_fit.axes[1].set_ylabel('pSTAT (MFI)')
+    new_fit.axes[0].set_ylabel('pSTAT1 (MFI)')
+    new_fit.axes[1].set_ylabel('pSTAT1 (MFI)')
 
     # Plot Dose respsonse data
     times = [2.5, 5.0, 7.5, 10.0, 20.0, 60.0]
