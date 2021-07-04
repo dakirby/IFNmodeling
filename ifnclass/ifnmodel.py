@@ -542,7 +542,7 @@ class EnsembleModel():
 
     def __posterior_prediction__(self, parameter_dict, test_times,
                                  observable, dose_species, doses,
-                                 scale_factor, conditions):
+                                 scale_factor, conditions, dataframe_label):
         """
         Produce predictions for IFNa and IFNb using model with parameters given
         as input to the function.
@@ -570,10 +570,6 @@ class EnsembleModel():
         parameter_dict.update(conditions)
 
         # Make predictions
-        if dose_species == 'Ia':
-            dataframe_label = 'Alpha'
-        if dose_species == 'Ib':
-            dataframe_label = 'Beta'
         df = self.model.doseresponse(test_times, observable, dose_species,
                                      doses, parameters=parameter_dict,
                                      scale_factor=scale_factor,
@@ -615,8 +611,10 @@ class EnsembleModel():
         num_checks = kwargs.get('num_checks', 50)
         if dose_species == 'Ia':
             dataframe_label = 'Alpha'
-        if dose_species == 'Ib':
+        elif dose_species == 'Ib':
             dataframe_label = 'Beta'
+        else:
+            dataframe_label = kwargs.get('dataframe_label', 'dose_species')
 
         # Prepare parameter vectors
         parameters_to_check = []
@@ -641,7 +639,7 @@ class EnsembleModel():
                 traj_subsamples = []
                 for _ in tqdm(range(self.num_dist_samples)):
                     arg_param_dict = copy.deepcopy(param_dict)
-                    pp = self.__posterior_prediction__(arg_param_dict, test_times, observable, dose_species, doses, sf, parameters)
+                    pp = self.__posterior_prediction__(arg_param_dict, test_times, observable, dose_species, doses, sf, parameters, dataframe_label)
                     if dist_var_only:
                         posterior_trajectories.append(pp)
                     else:
@@ -656,7 +654,7 @@ class EnsembleModel():
                         mean_pred_ifndata.data_set.loc[dataframe_label][str(t)].loc[d] = mean_pred[didx][tidx]
                 posterior_trajectories.append(copy.deepcopy(mean_pred_ifndata)) # getting paranoid about memory leaks, so deep copy
             else:
-                pp = self.__posterior_prediction__(param_dict, test_times, observable, dose_species, doses, sf, parameters)
+                pp = self.__posterior_prediction__(param_dict, test_times, observable, dose_species, doses, sf, parameters, dataframe_label)
                 posterior_trajectories.append(pp)
 
         # Make aggregate predicitions
