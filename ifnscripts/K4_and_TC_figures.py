@@ -75,7 +75,9 @@ def increase_K4_figure():
     fig.savefig(os.path.join(os.getcwd(), 'results', 'Figures', 'Figure_5', 'Figure_5_Refractoriness_By_K4.pdf'))
 
     # Also plot absolute curves
-    fig, axes = plt.subplots(nrows=1, ncols=1, figsize=[6.4, 6.4])
+    fig, axes = plt.subplots(nrows=1, ncols=1, figsize=[8, 6.4])
+    axes.spines['top'].set_visible(False)
+    axes.spines['right'].set_visible(False)
 
     axes.set_xlabel("Dose (pM)", fontsize=18)
 
