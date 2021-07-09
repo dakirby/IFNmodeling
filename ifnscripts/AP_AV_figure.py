@@ -85,7 +85,7 @@ def plot_barchart(axis=None, df=None, custom_order=None):
                      palette=custom_palette, ax=axis, order=custom_order)
     ax.set_yscale('log')
     ax.set_xlabel(None)
-    ax.set_ylabel("Value relative to WT")
+    ax.set_ylabel(r"$IC_{50}$ relative to WT")
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
     plt.xticks(rotation=45)
