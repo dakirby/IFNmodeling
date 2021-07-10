@@ -163,8 +163,8 @@ if __name__ == '__main__':
     plt.scatter([], [], color=alpha_palette[5], label=r'IFN$\alpha$2', figure=dr_plot.fig)
     plt.scatter([], [], color=beta_palette[5], label=r'IFN$\beta$', figure=dr_plot.fig)
     plt.plot([], [], c='grey', label='No Feedback', linewidth=2.0, figure=dr_plot.fig)
-    plt.plot([], [], '--', c='grey', label='Effect of Internalization', linewidth=2.0, figure=dr_plot.fig)
-    plt.plot([], [], ':', c='grey', label='Effect of SOCS', linewidth=2.0, figure=dr_plot.fig)
+    plt.plot([], [], '--', c='grey', label='+ Internalization', linewidth=2.0, figure=dr_plot.fig)
+    plt.plot([], [], ':', c='grey', label='+ SOCS', linewidth=2.0, figure=dr_plot.fig)
 
     # Plot formatting
     dr_plot.fig.set_size_inches((5, 4))

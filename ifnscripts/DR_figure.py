@@ -144,10 +144,10 @@ if __name__ == '__main__':
     # Make theory dose response curves
     # ---------------------------------
     # Equilibrium predictions
-    if lm.MODEL_TYPE in ['ENSEMBLE', 'MEDIAN']:
-        avg_pSTAT_Max_Alpha, avg_pSTAT_EC50_Alpha, avg_pSTAT_Max_Beta, avg_pSTAT_EC50_Beta = prior_theory(Mixed_Model)
-    else:
-        avg_pSTAT_Max_Alpha, avg_pSTAT_EC50_Alpha, avg_pSTAT_Max_Beta, avg_pSTAT_EC50_Beta = avg_theory(Mixed_Model)
+    # if lm.MODEL_TYPE in ['ENSEMBLE', 'MEDIAN']:
+    #     avg_pSTAT_Max_Alpha, avg_pSTAT_EC50_Alpha, avg_pSTAT_Max_Beta, avg_pSTAT_EC50_Beta = prior_theory(Mixed_Model)
+    # else:
+    #     avg_pSTAT_Max_Alpha, avg_pSTAT_EC50_Alpha, avg_pSTAT_Max_Beta, avg_pSTAT_EC50_Beta = avg_theory(Mixed_Model)
 
     # Make predictions
     times = [2.5, 5.0, 7.5, 10.0, 20.0, 60.0]
@@ -262,12 +262,12 @@ if __name__ == '__main__':
                          color='k')
 
     # Add equilibrium expressions
-    ec50_axes[0].plot(time_list, [avg_pSTAT_EC50_Alpha / 1E-12
-                                  for _ in time_list],
-                      '--', color=alpha_palette[5], linewidth=2)
-    ec50_axes[1].plot(time_list, [avg_pSTAT_EC50_Beta / 1E-12
-                                  for _ in time_list],
-                      '--', color=beta_palette[5], linewidth=2)
+    # ec50_axes[0].plot(time_list, [avg_pSTAT_EC50_Alpha / 1E-12
+    #                               for _ in time_list],
+    #                   '--', color=alpha_palette[5], linewidth=2)
+    # ec50_axes[1].plot(time_list, [avg_pSTAT_EC50_Beta / 1E-12
+    #                               for _ in time_list],
+    #                   '--', color=beta_palette[5], linewidth=2)
     # -----------------
     # Data max response
     # -----------------
