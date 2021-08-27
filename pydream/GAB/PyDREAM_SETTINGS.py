@@ -33,7 +33,7 @@ custom_params = {}
 # -----------------------------------------------------------------------------
 # Parameters to fit:
 # -----------------------------------------------------------------------------
-pysb_sampled_parameter_names = ['kpa', 'kSOCSon', 'R1*', 'R2*', 'kint_a', 'kint_b', 'krec_a1', 'krec_a2', 'krec_b1', 'krec_b2']
+pysb_sampled_parameter_names = ['kpa', 'kSOCSon', 'R1*', 'R2*', 'kint_a', 'kint_b', 'krec_a1', 'krec_a2']
 
 original_params = []
 priors_list = []

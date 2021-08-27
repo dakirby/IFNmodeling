@@ -85,8 +85,6 @@ Parameter('kint_b', 0.0002)
 
 Parameter('krec_a1', 0.0003)
 Parameter('krec_a2', 0.005)
-Parameter('krec_b1', 0.0001)
-Parameter('krec_b2', 0.001)
 
 Parameter('kSOCS', 4E-3)
 Parameter('SOCSdeg', (5e-4)*5)	#Maiwald*form factor

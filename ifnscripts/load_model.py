@@ -57,7 +57,7 @@ def load_model(model_name='Mixed_IFN_ppCompatible', MODEL_TYPE=MODEL_TYPE):
             initial_parameters = {'kSOCSon': 1.03992e-06, 'kpa': 1.e-06,
                                   'kint_a': 3.737e-05, 'kint_b': 0.0002085,
                                   'krec_a1': 0.00179, 'krec_a2': 0.00912,
-                                  'krec_b1': 8.049335e-05, 'krec_b2': 0.000801,
+                                  #'krec_b1': 8.049335e-05, 'krec_b2': 0.000801,
                                   'R1_mu*': 2000., 'R1_std*': 0.190,
                                   'R2_mu*': 2023., 'R2_std*': 0.182}
 
@@ -96,7 +96,7 @@ def load_model(model_name='Mixed_IFN_ppCompatible', MODEL_TYPE=MODEL_TYPE):
             median_parameters = {'kSOCSon': 1.03992e-06, 'kpa': 1.e-06,
                                  'kint_a': 3.737e-05, 'kint_b': 0.0002085,
                                  'krec_a1': 0.00179, 'krec_a2': 0.00912,
-                                 'krec_b1': 8.049335e-05, 'krec_b2': 0.000801,
+                                 #'krec_b1': 8.049335e-05, 'krec_b2': 0.000801,
                                  'R1': 2000., 'R2': 2023.}
             # initiate model and DR method
             model = IfnModel(model_name)

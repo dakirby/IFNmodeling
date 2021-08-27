@@ -27,7 +27,7 @@ if __name__ == '__main__':
     # ---------------------------
     # Set up simple model
     # ---------------------------
-    Simple_Model, DR_method = lm.load_model(ENSEMBLE=False, RANDOM_ENSEMBLE=False)
+    Simple_Model, DR_method = lm.load_model(MODEL_TYPE='SINGLE_CELL')
 
     scale_factor, DR_KWARGS, PLOT_KWARGS = 1.227, {'return_type': 'IfnData'}, {'line_type': 'plot', 'alpha': 1}
 
@@ -44,14 +44,14 @@ if __name__ == '__main__':
     # Now repeat for detailed model:
     # -------------------------------
     Detailed_Model, Detailed_DR_method = lm.load_model(model_name='Mixed_IFN_detailed',
-                                                       ENSEMBLE=False, RANDOM_ENSEMBLE=False)
+                                                       MODEL_TYPE='SINGLE_CELL')
 
     # Match the simple model predictions using only unconstrained parameters:
     best_match = {'kloc': 1.25E-4, 'kdeloc': 0.6, 'kSOCSmRNA': 0.8, 'mRNAtrans': 0.8,
-                  'mRNAdeg': 5.00e-06,
+                  'mRNAdeg': 0,#5.00e-06,
                   'kpa': 10.0, 'kpu': 0.00342}
     scale_factor = 2.5
-    Detailed_Model.update_parameters(best_match)
+    Detailed_Model.set_parameters(best_match)
 
     # Make detailed model predictions
     dra_d = Detailed_DR_method(times, 'TotalpSTAT', 'Ia', alpha_doses,
