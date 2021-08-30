@@ -441,7 +441,7 @@ class IfnModel:
                     return [multiply(scale_factor, asarray(dose_response_table[obs])).tolist() for obs in observable]
                 else:
                     return multiply(scale_factor, asarray(dose_response_table[observable])).tolist()
-        elif return_type == 'dataframe':
+        elif return_type == 'dataframe' or return_type == 'ifndata':
             if type(observable) != list:
                 if dataframe_labels is None:
                     dataframe_labels == dose_species
@@ -455,7 +455,10 @@ class IfnModel:
                 df = pd.DataFrame.from_dict(data_dict)
                 df.set_index(['Dose_Species', 'Dose (pM)'], inplace=True)
                 if scale_factor == 1:
-                    return df
+                    if return_type == 'dataframe':
+                        return df
+                    else:
+                        return IfnData('custom', df=df)
                 else:
                     if no_sigma:
                         scale_data = lambda q: scale_factor * q
@@ -468,7 +471,10 @@ class IfnModel:
 
                     for i in range(len(times)):
                         df.loc[dose_species].iloc[:, i] = df.loc[dose_species].iloc[:, i].apply(scale_data)
-                    return df
+                    if return_type == 'dataframe':
+                        return df
+                    else:
+                        return IfnData('custom', df=df)
             else:
                 if dataframe_labels is None:
                     dataframe_labels == dose_species
@@ -483,7 +489,11 @@ class IfnModel:
                     total_df = total_df.append(df)
                 total_df.set_index(['Observable_Species', 'Dose_Species', 'Dose (pM)'], inplace=True)
                 if scale_factor == 1:
-                    return total_df
+                    if return_type == 'dataframe':
+                        return total_df
+                    else:
+                        return IfnData('custom', df=total_df)
+
                 else:
                     scale_data = lambda q: (scale_factor * q[0], scale_factor * q[1])
                     if dose_species == 'Ia':
@@ -493,7 +503,10 @@ class IfnModel:
                     for obs in observable:
                         for i in range(len(times)):
                             total_df.loc[obs].loc[dose_species].iloc[:, i] = total_df.loc[obs].loc[dose_species].iloc[:, i].apply(scale_data)
-                    return total_df
+                    if return_type == 'dataframe':
+                        return total_df
+                    else:
+                        return IfnData('custom', df=total_df)
 
 
 class EnsembleModel():

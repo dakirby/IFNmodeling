@@ -35,10 +35,10 @@ if __name__ == '__main__':
     alpha_doses = list(logspace(1, 5.2, num=20))
     beta_doses = list(logspace(-1, 4, num=20))
     dra_s = DR_method(times, 'TotalpSTAT', 'Ia', alpha_doses,
-                      parameters={'Ib': 0}, sf=scale_factor, **DR_KWARGS)
+                      parameters={'Ib': 0}, dataframe_labels='Alpha', sf=scale_factor, **DR_KWARGS)
 
     drb_s = DR_method(times, 'TotalpSTAT', 'Ib', beta_doses,
-                      parameters={'Ia': 0}, sf=scale_factor, **DR_KWARGS)
+                      parameters={'Ia': 0}, dataframe_labels='Beta', sf=scale_factor, **DR_KWARGS)
 
     # -------------------------------
     # Now repeat for detailed model:
@@ -47,17 +47,22 @@ if __name__ == '__main__':
                                                        MODEL_TYPE='SINGLE_CELL')
 
     # Match the simple model predictions using only unconstrained parameters:
-    best_match = {'kloc': 1.25E-4, 'kdeloc': 0.6, 'kSOCSmRNA': 0.8, 'mRNAtrans': 0.8,
+    best_match = {'kloc': 1.25E-4, 'kdeloc': 0.6, 'kSOCSmRNA': 0.6, 'mRNAtrans': 0.8,
                   'mRNAdeg': 0,#5.00e-06,
-                  'kpa': 10.0, 'kpu': 0.00342}
-    scale_factor = 2.5
+                  'kpa': 900.0, 'kpu': 0.0020}
+    # Also match shared parameters with simple model
+    # best_match.update({'kSOCSon': 1.03992e-06, 'kpa': 1.e-06,
+    #                    'kint_a': 3.737e-05, 'kint_b': 0.0002085,
+    #                    'krec_a1': 0.00179, 'krec_a2': 0.00912,
+    #                    'R1': 2000., 'R2': 2023.})
+    # scale_factor = 0
     Detailed_Model.set_parameters(best_match)
 
     # Make detailed model predictions
     dra_d = Detailed_DR_method(times, 'TotalpSTAT', 'Ia', alpha_doses,
-                               parameters={'Ib': 0}, sf=scale_factor, **DR_KWARGS)
+                               parameters={'Ib': 0}, dataframe_labels='Alpha', sf=scale_factor, **DR_KWARGS)
     drb_d = Detailed_DR_method(times, 'TotalpSTAT', 'Ib', beta_doses,
-                               parameters={'Ia': 0}, sf=scale_factor, **DR_KWARGS)
+                               parameters={'Ia': 0}, dataframe_labels='Beta', sf=scale_factor, **DR_KWARGS)
 
     # ----------------------------------------
     # Finally, plot both models in comparison
@@ -78,7 +83,7 @@ if __name__ == '__main__':
 
     alpha_palette = sns.color_palette("rocket_r", 6)
     beta_palette = sns.color_palette("rocket_r", 6)
-    t_mask = [2.5, 7.5]
+    t_mask = [2.5, 7.5, 20.]
     # Add fits
     for idx, t in enumerate(times):
         if t not in t_mask:
