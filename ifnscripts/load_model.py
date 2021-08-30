@@ -7,6 +7,7 @@ import pickle
 
 # Default is to use median parameters with variance arising from R1 and R2
 MODEL_TYPE = 'MEDIAN'
+AFFINITY_SPECIES = 'MOUSE'  #'HUMAN'
 
 if MODEL_TYPE in ['ENSEMBLE', 'BOOTSTRAP']:
     SCALE_FACTOR = 1.5
@@ -33,11 +34,14 @@ else:
         raise ValueError('Did not recognize model type in load_model.py')
 
 
-def load_model(model_name='Mixed_IFN_ppCompatible', MODEL_TYPE=MODEL_TYPE):
+def load_model(model_name='Mixed_IFN_ppCompatible', MODEL_TYPE=MODEL_TYPE,
+               AFFINITY_SPECIES=AFFINITY_SPECIES):
     # Dose-response method must return a Pandas DataFrame which is compatible
     # with an IfnData object
 
     if MODEL_TYPE in ['ENSEMBLE', 'BOOTSTRAP']:  # MCMC ensemble
+        if AFFINITY_SPECIES != 'HUMAN':
+            print("Non-human IFN affinities not implemented for this model type.\n Reverting to human affinities.\n")
         param_file_dir = os.path.join(os.getcwd(), 'pydream', 'GAB', PYDREAM_DIR)
         param_names = np.load(param_file_dir + os.sep + 'param_names.npy')
         prior_file_name = param_file_dir + os.sep + 'init_params.pkl'
@@ -60,6 +64,12 @@ def load_model(model_name='Mixed_IFN_ppCompatible', MODEL_TYPE=MODEL_TYPE):
                                   #'krec_b1': 8.049335e-05, 'krec_b2': 0.000801,
                                   'R1_mu*': 2000., 'R1_std*': 0.190,
                                   'R2_mu*': 2023., 'R2_std*': 0.182}
+            if AFFINITY_SPECIES == 'MOUSE':
+                NAxvolEC = 6.022E23 * 1E-5
+                initial_parameters.update({'ka1': 3.75E5 / NAxvolEC,  # 2666 nM Kd -> 3.75E5 M^-1 association rate when kd1=1
+                                           'ka2': 6.88E6 / NAxvolEC,  # 2.18 nM -> 6.88E6 M^-1 association rate when kd2=0.015
+                                           'k_a1': 2.368E6 / NAxvolEC,  # 12.67 nM Kd -> 2.368E6 M^-1 association rate when k_d1=0.03
+                                           'k_a2': 1.195E3 / NAxvolEC})  # 1673 nM -> 1.195E3 M^-1 association rate when kd2=0.002
 
             param_file_dir = os.getcwd()
             param_names = np.array(list(initial_parameters.keys()))
