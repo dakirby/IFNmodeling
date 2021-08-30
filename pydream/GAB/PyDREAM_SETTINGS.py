@@ -17,7 +17,9 @@ NITERATIONS = 500
 ITERATION_CUTOFF = 1000
 NCHAINS = 5
 SIM_NAME = 'mixed_IFN'
-DIR_NAME = 'PyDREAM_26-05-2021'
+DIR_NAME = 'PyDREAM_30-08-2021'
+AFFINITY_SPECIES = 'MOUSE'  #'HUMAN'
+
 # -----------------------------------------------------------------------------
 
 
@@ -25,6 +27,14 @@ DIR_NAME = 'PyDREAM_26-05-2021'
 # Model Setup
 # -----------------------------------------------------------------------------
 Mixed_Model = IfnModel('Mixed_IFN_ppCompatible')
+if AFFINITY_SPECIES == 'MOUSE':
+    NAxvolEC = 6.022E23 * 1E-5
+    affinity_parameters = {'ka1': 3.75E5 / NAxvolEC,  # 2666 nM Kd -> 3.75E5 M^-1 association rate when kd1=1
+                           'ka2': 6.88E6 / NAxvolEC,  # 2.18 nM -> 6.88E6 M^-1 association rate when kd2=0.015
+                           'k_a1': 2.368E6 / NAxvolEC,  # 12.67 nM Kd -> 2.368E6 M^-1 association rate when k_d1=0.03
+                           'k_a2': 1.195E3 / NAxvolEC}  # 1673 nM -> 1.195E3 M^-1 association rate when kd2=0.002
+    Mixed_Model.set_parameters(affinity_parameters)
+    Mixed_Model.set_default_parameters(Mixed_Model.parameters)
 sf = 1.5
 custom_params = {}
 # -----------------------------------------------------------------------------
