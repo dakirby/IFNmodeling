@@ -219,7 +219,7 @@ if __name__ == '__main__':
     axes[1].set_ylabel('Relative Cell Density (%)')
     axes[0].legend()  # more space in the AV plot for a legend
     axes[0].set_xlim(left=1E-4, right=3E2)
-    axes[1].set_xlim(left=1E-2, right=3E5)
+    axes[1].set_xlim(left=1E-2, right=1.1E5)
     for ax in axes:
         ax.set_xscale('log')
         ax.set_xlabel('[IFN] (pM)')
