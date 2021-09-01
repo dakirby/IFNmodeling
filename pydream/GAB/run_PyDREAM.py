@@ -4,7 +4,7 @@ from PyDREAM_SETTINGS import NITERATIONS, NCHAINS, SIM_NAME, DIR_NAME,\
     priors_list, priors_dict
 
 from PyDREAM_methods import DREAM_fit, posterior_IFN_summary_statistics,\
-    bootstrap, plot_posterior
+    bootstrap, plot_posterior, plot_posterior_distributions
 
 import numpy as np
 import os
@@ -17,8 +17,9 @@ if __name__ == '__main__':
     # -------------------------------------------------
     # Runtime control
     # -------------------------------------------------
-    fit_flag = True
+    fit_flag = False
     post_analysis_flag = False
+    plot_posterior_distribution = True
     bootstrap_flag = False
 
     save_dir = dir_setup(DIR_NAME, fit_flag, bootstrap_flag, post_analysis_flag)
@@ -54,6 +55,7 @@ if __name__ == '__main__':
     # -------------------------------------------------
     if post_analysis_flag:
         try:
+            save_dir += '_' + str(NITERATIONS)
             posterior_param_file = save_dir + os.sep + SIM_NAME +\
                                    '_samples.npy'
             parameter_names = pd.read_csv(save_dir + os.sep +
@@ -74,6 +76,9 @@ if __name__ == '__main__':
         plot_posterior(posterior_param_file, parameter_names, num_checks,
                        Mixed_Model, posterior_obj, sf, time_mask,
                        wd, plot_data=True)
+
+    if plot_posterior_distribution:
+        plot_posterior_distributions(save_dir + '_' + str(NITERATIONS))
 
     if bootstrap_flag:
         bootstrap(Mixed_Model, datalist, priors_list, original_params,

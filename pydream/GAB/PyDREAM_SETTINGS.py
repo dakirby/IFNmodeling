@@ -17,7 +17,7 @@ NITERATIONS = 500
 ITERATION_CUTOFF = 1000
 NCHAINS = 5
 SIM_NAME = 'mixed_IFN'
-DIR_NAME = 'PyDREAM_30-08-2021'
+DIR_NAME = 'PyDREAM_31-08-2021'
 AFFINITY_SPECIES = 'MOUSE'  #'HUMAN'
 
 # -----------------------------------------------------------------------------
@@ -60,13 +60,13 @@ for key in pysb_sampled_parameter_names:
         # set mean prior
         original_params.append(Mixed_Model.parameters[key[:-1]])
         mu = np.log10(Mixed_Model.parameters[key[:-1]])
-        std = 1.0
+        std = 0.2
         priors_list.append(SampledParam(norm, loc=mu, scale=std))
         priors_dict.update({key[:-1] + '_mu*': (mu, std)})
         # set std prior
         original_params.append(0.2)
         mu = np.log10(0.2)
-        std = 0.5
+        std = 0.1
         priors_list.append(SampledParam(norm, loc=mu, scale=std))
         priors_dict.update({key[:-1] + '_std*': (mu, std)})
     else:

@@ -302,6 +302,50 @@ def DREAM_fit(model, priors_list, posterior, start_params,
         pass
 
 
+def plot_posterior_distributions(save_dir):
+    # load in simulation results
+    from PyDREAM_SETTINGS import SIM_NAME, priors_dict
+    posterior_param_file = save_dir + os.sep + SIM_NAME + '_samples.npy'
+    samples = np.load(posterior_param_file)
+    sampled_param_names = np.load(save_dir + os.sep + 'param_names.npy')
+
+    # Prepare plot canvas
+    ndims = len(sampled_param_names)
+    colors = sns.color_palette(n_colors=ndims)
+
+    # computes the factors of ndims:
+    f1 = sorted(list(set(reduce(list.__add__, ([i, ndims//i] for i in range(1, int(ndims**0.5) + 1) if ndims % i == 0)))))
+    ncols = f1[int(len(f1) / 2 - 1)]
+    nrows = f1[int(len(f1) / 2)]
+    fig, axes = plt.subplots(nrows=nrows, ncols=ncols)
+
+    # Plot posterior distributions
+    for dim, ax in enumerate(fig.axes):
+        if dim >= ndims:
+            ax.set_visible(False)
+        else:
+            p = sampled_param_names[dim]
+            sns.histplot(samples[:, dim], color=colors[dim], ax=ax, kde=True, stat='density')
+            xrange = np.arange(priors_dict[p][0] - 3 * priors_dict[p][1],
+                               priors_dict[p][0] + 3 * priors_dict[p][1], 0.01)
+            yrange = norm.pdf(xrange, priors_dict[p][0], priors_dict[p][1])
+            ax.plot(xrange, yrange, 'k--')
+            ax.set_xlabel(p)
+            ax.set_ylabel(None)
+            ax.spines['right'].set_visible(False)
+            ax.spines['top'].set_visible(False)
+    plt.tight_layout()
+    plt.savefig(os.path.join(save_dir, SIM_NAME + '_posteriors.pdf'))
+    plt.close()
+
+    # Create pairplot
+    df = pd.DataFrame(samples, columns=sampled_param_names)
+    g = sns.pairplot(df)
+    for i, j in zip(*np.triu_indices_from(g.axes, 1)):
+        g.axes[i, j].set_visible(False)
+    g.savefig(os.path.join(save_dir, 'corner_plot.png'))
+
+
 def posterior_prediction(model, parameter_vector, parameter_names, sf,
                          test_times=[2.5, 5.0, 7.5, 10.0, 20.0, 60.0],
                          alpha_doses=np.logspace(-1, 5, 15),
