@@ -44,8 +44,8 @@ if __name__ == '__main__':
         IFNAR1_siRNA = [1., 0.5, 0.2]
         IFNAR2_siRNA = [1., 0.6, 0.4]
     else:
-        IFNAR1_siRNA = np.linspace(1., 0.15, 30)  # [1., 0.85, 0.7, 0.6, 0.4, 0.2]
-        IFNAR2_siRNA = np.linspace(1., 0.4, 30)  # [1., 0.9, 0.8, 0.6, 0.5, 0.4]
+        IFNAR1_siRNA = np.linspace(1., 0.15, 15)  # [1., 0.85, 0.7, 0.6, 0.4, 0.2]
+        IFNAR2_siRNA = np.linspace(1., 0.4, 15)  # [1., 0.9, 0.8, 0.6, 0.5, 0.4]
     siRNA_doses = [IFNAR1_siRNA, IFNAR2_siRNA]
 
     R_idx = [np.where(Mixed_Model.parameter_names == 'R1_mu*'),
