@@ -74,8 +74,8 @@ def load_model(model_name='Mixed_IFN_ppCompatible', MODEL_TYPE=MODEL_TYPE,
                 initial_parameters.update({'ka1': 3.75E5 / NAxvolEC,  # 2666 nM Kd -> 3.75E5 M^-1 association rate when kd1=1
                                            'ka2': 6.88E6 / NAxvolEC,  # 2.18 nM -> 6.88E6 M^-1 association rate when kd2=0.015
                                            'k_a1': 2.368E6 / NAxvolEC,  # 12.67 nM Kd -> 2.368E6 M^-1 association rate when k_d1=0.03
-                                           'k_a2': 1.195E3 / NAxvolEC})  # 1673 nM -> 1.195E3 M^-1 association rate when kd2=0.002
-
+                                           'k_a2': 1.195E3 / NAxvolEC,  # 1673 nM -> 1.195E3 M^-1 association rate when kd2=0.002
+                                           'k_d4': 0.00163, 'k_a4': 3.62e-4})  # from detailed balance (see SI)
             param_file_dir = os.getcwd()
             param_names = np.array(list(initial_parameters.keys()))
             prior_file_name = param_file_dir + os.sep + 'init_params_temp.pkl'
