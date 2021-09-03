@@ -58,18 +58,18 @@ def load_model(model_name='Mixed_IFN_ppCompatible', MODEL_TYPE=MODEL_TYPE,
 
         if MODEL_TYPE == 'MEDIAN':  # use distribution variables, with * at end of name
             # median parameters from MCMC, but only use variance in R for model variance
-            if AFFINITY_SPECIES == 'HUMAN':
-                initial_parameters = {'kSOCSon': 1.03992e-06, 'kpa': 1.e-06,
-                                      'kint_a': 3.737e-05, 'kint_b': 0.0002085,
-                                      'krec_a1': 0.00179, 'krec_a2': 0.00912,
-                                      'R1_mu*': 2000., 'R1_std*': 0.190,
-                                      'R2_mu*': 2023., 'R2_std*': 0.182}
+            initial_parameters = {'kSOCSon': 9.091e-07, 'kpa': 1.e-06,
+                                  'kint_a': 0.000615, 'kint_b': 0.0002299,
+                                  'krec_a1': 0.001239, 'krec_a2': 0.004999,
+                                  'R1_mu*': 1969.703, 'R1_std*': 0.20,
+                                  'R2_mu*': 2092.941, 'R2_std*': 0.20}
+            # if AFFINITY_SPECIES == 'HUMAN':
+            #     initial_parameters = {'kSOCSon': 1.03992e-06, 'kpa': 1.e-06,
+            #                           'kint_a': 3.737e-05, 'kint_b': 0.0002085,
+            #                           'krec_a1': 0.00179, 'krec_a2': 0.00912,
+            #                           'R1_mu*': 2000., 'R1_std*': 0.190,
+            #                           'R2_mu*': 2023., 'R2_std*': 0.182}
             if AFFINITY_SPECIES == 'MOUSE':
-                initial_parameters = {'kSOCSon': 9.091e-07, 'kpa': 1.e-06,
-                                      'kint_a': 0.000615, 'kint_b': 0.0002299,
-                                      'krec_a1': 0.001239, 'krec_a2': 0.004999,
-                                      'R1_mu*': 1969.703, 'R1_std*': 0.20,
-                                      'R2_mu*': 2092.941, 'R2_std*': 0.20}
                 NAxvolEC = 6.022E23 * 1E-5
                 initial_parameters.update({'ka1': 3.75E5 / NAxvolEC,  # 2666 nM Kd -> 3.75E5 M^-1 association rate when kd1=1
                                            'ka2': 6.88E6 / NAxvolEC,  # 2.18 nM -> 6.88E6 M^-1 association rate when kd2=0.015

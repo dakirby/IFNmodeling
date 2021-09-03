@@ -5,7 +5,7 @@ import os
 
 
 def AP_AV_simulations(USP18_sf, times, test_doses, dir, tag=''):
-    Mixed_Model, DR_method = lm.load_model()
+    Mixed_Model, DR_method = lm.load_model(AFFINITY_SPECIES='HUMAN')
     scale_factor, DR_KWARGS, PLOT_KWARGS = lm.SCALE_FACTOR, lm.DR_KWARGS, lm.PLOT_KWARGS
 
     params = copy.deepcopy(Mixed_Model.get_parameters())

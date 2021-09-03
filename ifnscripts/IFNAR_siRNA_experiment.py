@@ -29,7 +29,7 @@ if __name__ == '__main__':
     # --------------------
     # Set up Model
     # --------------------
-    Mixed_Model, DR_method = lm.load_model()
+    Mixed_Model, DR_method = lm.load_model(AFFINITY_SPECIES='HUMAN')
     scale_factor, DR_KWARGS, PLOT_KWARGS = lm.SCALE_FACTOR, lm.DR_KWARGS, lm.PLOT_KWARGS
     if DEBUG is True:
         Mixed_Model.num_dist_samples = 3
