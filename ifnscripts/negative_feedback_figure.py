@@ -45,14 +45,14 @@ def aggregate_response(model, method, model_type, plist, times=[60], scale_facto
             # simulate IFN alpha-2
             tempP = copy.deepcopy(p)
             tempP.update({'Ib': 0})
-            tempA = method(times, 'TotalpSTAT', 'Ia', list(logspace(-2, 8, num=30)),
+            tempA = method(times, 'TotalpSTAT', 'Ia', list(logspace(-2, 5, num=30)),
                            parameters=tempP, return_type='DataFrame', dataframe_labels='Alpha',
                            scale_factor=scale_factor, no_sigma=True)
 
             # simulate IFN beta
             tempP = copy.deepcopy(p)
             tempP.update({'Ia': 0})
-            tempB = method(times, 'TotalpSTAT', 'Ib', list(logspace(-2, 8, num=30)),
+            tempB = method(times, 'TotalpSTAT', 'Ib', list(logspace(-2, 5, num=30)),
                            parameters=tempP, return_type='DataFrame', dataframe_labels='Beta',
                            scale_factor=scale_factor, no_sigma=True)
 
@@ -76,11 +76,11 @@ def aggregate_response(model, method, model_type, plist, times=[60], scale_facto
                 drb60.data_set.loc['Beta'][str(t)].loc[d] = mean_beta_predictions[didx][tidx]
 
     elif model_type == 'SINGLE_CELL':
-        dradf = method(times, 'TotalpSTAT', 'Ia', list(logspace(-2, 8)),
+        dradf = method(times, 'TotalpSTAT', 'Ia', list(logspace(-2, 5)),
                        parameters={'Ib': 0}, return_type='DataFrame', dataframe_labels='Alpha',
                        scale_factor=scale_factor)
 
-        drbdf = method(times, 'TotalpSTAT', 'Ib', list(logspace(-2, 8)),
+        drbdf = method(times, 'TotalpSTAT', 'Ib', list(logspace(-2, 5)),
                        parameters={'Ia': 0}, return_type='DataFrame', dataframe_labels='Beta',
                        scale_factor=scale_factor)
         dra60 = IfnData('custom', df=dradf, conditions={'Alpha': {'Ib': 0}})
