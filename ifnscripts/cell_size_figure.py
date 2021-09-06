@@ -144,6 +144,9 @@ def scatter_density_plot(x , y, ax=None, sort=True, bins=20, **kwargs ):
     return ax
 
 
+PLOT_MODEL = True
+
+
 if __name__ == '__main__':
     print('Figure 3')
     # -------------------------------
@@ -197,9 +200,9 @@ if __name__ == '__main__':
     # Set up Figure layout
     # ----------------------
     # Set up dose response figures
-    new_fit = DoseresponsePlot((1, 2), figsize=(12, 5))
+    new_fit = DoseresponsePlot((1, 2), figsize=(9, 1.5*2.5))
     new_fit.axes[0].set_ylabel('pSTAT1 (MFI)')
-    new_fit.axes[1].set_ylabel('pSTAT1 (MFI)')
+    # new_fit.axes[1].set_ylabel('pSTAT1 (MFI)')
 
     # Plot Dose respsonse data
     times = [2.5, 5.0, 7.5, 10.0, 20.0, 60.0]
@@ -241,71 +244,79 @@ if __name__ == '__main__':
     R1 = 6755
     R2 = 1511
     STAT = 10000
-    small_cells_alpha_IFNdata = DR_method(times, 'TotalpSTAT', 'Ia',
-                                                        alpha_doses,
-                                                        parameters={'Ib': 0,
-                                                                    'R1': R1,
-                                                                    'R2': R2,
-                                                                    'S': STAT},
-                                                        sf=scale_factor,
-                                                        **DR_KWARGS)
-    small_cells_beta_IFNdata = DR_method(times, 'TotalpSTAT', 'Ib',
-                                                       beta_doses,
-                                                       parameters={'Ia': 0,
-                                                                   'R1': R1,
-                                                                   'R2': R2,
-                                                                   'S': STAT},
-                                                       sf=scale_factor,
-                                                       **DR_KWARGS)
+    if PLOT_MODEL:
+        small_cells_alpha_IFNdata = DR_method(times, 'TotalpSTAT', 'Ia',
+                                                            alpha_doses,
+                                                            parameters={'Ib': 0,
+                                                                        'R1': R1,
+                                                                        'R2': R2,
+                                                                        'S': STAT},
+                                                            sf=scale_factor,
+                                                            **DR_KWARGS)
+        small_cells_beta_IFNdata = DR_method(times, 'TotalpSTAT', 'Ib',
+                                                           beta_doses,
+                                                           parameters={'Ia': 0,
+                                                                       'R1': R1,
+                                                                       'R2': R2,
+                                                                       'S': STAT},
+                                                           sf=scale_factor,
+                                                           **DR_KWARGS)
 
-    # Large (normal) cells
-    radius = 8E-6 # 1.6**0.5 * radius
-    volPM_large = 2 * radius ** 2 + 4 * radius * 8E-6
-    volCP_large = 8E-6 * radius ** 2
-    R1 = R1 * volPM_large / volPM_small
-    R2 = R2 * volPM_large / volPM_small
-    STAT = STAT * volCP_large / volCP_small
-    large_cells_alpha_IFNdata = DR_method(times, 'TotalpSTAT', 'Ia',
-                                                 alpha_doses,
-                                                 parameters={'Ib': 0,
-                                                             'R1': R1,
-                                                             'R2': R2,
-                                                             'S': STAT},
-                                                 sf=scale_factor,
-                                                 **DR_KWARGS)
-    large_cells_beta_IFNdata = DR_method(times, 'TotalpSTAT', 'Ib',
-                                                beta_doses,
-                                                parameters={'Ia': 0,
-                                                            'R1': R1,
-                                                            'R2': R2,
-                                                            'S': STAT},
-                                                sf=scale_factor,
-                                                **DR_KWARGS)
+        # Large (normal) cells
+        radius = 8E-6 # 1.6**0.5 * radius
+        volPM_large = 2 * radius ** 2 + 4 * radius * 8E-6
+        volCP_large = 8E-6 * radius ** 2
+        R1 = R1 * volPM_large / volPM_small
+        R2 = R2 * volPM_large / volPM_small
+        STAT = STAT * volCP_large / volCP_small
+        large_cells_alpha_IFNdata = DR_method(times, 'TotalpSTAT', 'Ia',
+                                                     alpha_doses,
+                                                     parameters={'Ib': 0,
+                                                                 'R1': R1,
+                                                                 'R2': R2,
+                                                                 'S': STAT},
+                                                     sf=scale_factor,
+                                                     **DR_KWARGS)
+        large_cells_beta_IFNdata = DR_method(times, 'TotalpSTAT', 'Ib',
+                                                    beta_doses,
+                                                    parameters={'Ia': 0,
+                                                                'R1': R1,
+                                                                'R2': R2,
+                                                                'S': STAT},
+                                                    sf=scale_factor,
+                                                    **DR_KWARGS)
     # Plot
     dr_plot = new_fit
     dr_axes = dr_plot.axes
     # Add model predictions fits
-    # Alpha
-    dr_plot.add_trajectory(large_cells_alpha_IFNdata, 60.0, 'plot', '-', (0, 0), 'Alpha', color=color_palette[5],
-                           linewidth=2, alpha=0.5)
-    dr_plot.add_trajectory(small_cells_alpha_IFNdata, 60.0, 'plot', color_palette[5], (0, 0), 'Alpha',
-                           linewidth=2)
-    dr_plot.add_trajectory(large_cells_alpha_IFNdata, 10.0, 'plot', '-', (0, 0), 'Alpha', color=color_palette[3],
-                           linewidth=2, alpha=0.5)
-    dr_plot.add_trajectory(small_cells_alpha_IFNdata, 10.0, 'plot', color_palette[3], (0, 0), 'Alpha',
-                           linewidth=2)
-    # Beta
-    dr_plot.add_trajectory(large_cells_beta_IFNdata, 60.0, 'plot', '-', (0, 1), 'Beta', color=color_palette[5],
-                           linewidth=2, alpha=0.5)
-    dr_plot.add_trajectory(small_cells_beta_IFNdata, 60.0, 'plot', color_palette[5], (0, 1), 'Beta',
-                           linewidth=2)
-    dr_plot.add_trajectory(large_cells_beta_IFNdata, 10.0, 'plot', '-', (0, 1), 'Beta', color=color_palette[3],
-                           linewidth=2, alpha=0.5)
-    dr_plot.add_trajectory(small_cells_beta_IFNdata, 10.0, 'plot', color_palette[3], (0, 1), 'Beta',
-                           linewidth=2)
+    if PLOT_MODEL:
+        # Alpha
+        dr_plot.add_trajectory(large_cells_alpha_IFNdata, 60.0, 'plot', '-', (0, 0), 'Alpha', color=color_palette[5],
+                               linewidth=2, alpha=0.5)
+        dr_plot.add_trajectory(small_cells_alpha_IFNdata, 60.0, 'plot', color_palette[5], (0, 0), 'Alpha',
+                               linewidth=2)
+        dr_plot.add_trajectory(large_cells_alpha_IFNdata, 10.0, 'plot', '-', (0, 0), 'Alpha', color=color_palette[3],
+                               linewidth=2, alpha=0.5)
+        dr_plot.add_trajectory(small_cells_alpha_IFNdata, 10.0, 'plot', color_palette[3], (0, 0), 'Alpha',
+                               linewidth=2)
+        # Beta
+        dr_plot.add_trajectory(large_cells_beta_IFNdata, 60.0, 'plot', '-', (0, 1), 'Beta', color=color_palette[5],
+                               linewidth=2, alpha=0.5)
+        dr_plot.add_trajectory(small_cells_beta_IFNdata, 60.0, 'plot', color_palette[5], (0, 1), 'Beta',
+                               linewidth=2)
+        dr_plot.add_trajectory(large_cells_beta_IFNdata, 10.0, 'plot', '-', (0, 1), 'Beta', color=color_palette[3],
+                               linewidth=2, alpha=0.5)
+        dr_plot.add_trajectory(small_cells_beta_IFNdata, 10.0, 'plot', color_palette[3], (0, 1), 'Beta',
+                               linewidth=2)
 
     dr_axes[0].set_title(r'IFN$\alpha$')
     dr_axes[1].set_title(r'IFN$\beta$')
 
     fname = os.path.join(os.getcwd(), 'results', 'Figures', 'Figure_3', 'Figure_3.pdf')
-    dr_fig, dr_axes = dr_plot.show_figure(show_flag=False, save_flag=True, save_dir=fname)
+    dr_fig, dr_axes = dr_plot.show_figure(show_flag=False, save_flag=False)
+    for direction in ['top', 'right']:
+        dr_fig.axes[0].spines[direction].set_visible(False)
+        dr_fig.axes[1].spines[direction].set_visible(False)
+    dr_axes[1].get_legend().remove()
+    dr_fig.tight_layout()
+    dr_fig.savefig(fname)
