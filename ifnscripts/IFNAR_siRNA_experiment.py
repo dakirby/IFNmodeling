@@ -16,6 +16,7 @@ import os
 from numpy import array
 
 DEBUG = False
+SCALE_RT = 0.1
 if __name__ == '__main__':
     # --------------------
     # Import data
@@ -33,6 +34,8 @@ if __name__ == '__main__':
     scale_factor, DR_KWARGS, PLOT_KWARGS = lm.SCALE_FACTOR, lm.DR_KWARGS, lm.PLOT_KWARGS
     if DEBUG is True:
         Mixed_Model.num_dist_samples = 3
+    else:
+        Mixed_Model.num_dist_samples = 80
 
     # ------------------------------------------------------------
     # Make predictions following
@@ -44,8 +47,8 @@ if __name__ == '__main__':
         IFNAR1_siRNA = [1., 0.5, 0.2]
         IFNAR2_siRNA = [1., 0.6, 0.4]
     else:
-        IFNAR1_siRNA = np.linspace(1., 0.15, 15)  # [1., 0.85, 0.7, 0.6, 0.4, 0.2]
-        IFNAR2_siRNA = np.linspace(1., 0.4, 15)  # [1., 0.9, 0.8, 0.6, 0.5, 0.4]
+        IFNAR1_siRNA = np.linspace(1., 0.15, 6)  # [1., 0.85, 0.7, 0.6, 0.4, 0.2]
+        IFNAR2_siRNA = np.linspace(1., 0.4, 6)  # [1., 0.9, 0.8, 0.6, 0.5, 0.4]
     siRNA_doses = [IFNAR1_siRNA, IFNAR2_siRNA]
 
     R_idx = [np.where(Mixed_Model.parameter_names == 'R1_mu*'),
@@ -60,14 +63,24 @@ if __name__ == '__main__':
             # Update model with new IFNAR value
             Mixed_Model.parameters[0][R_idx[i]] = [R_reference[i] * Rsf]
 
-            # Simulate pSTAT1 response for IFNa2 and IFNb
+            # Simulate pSTAT1 response for IFNa2
             dra60 = DR_method(times, 'TotalpSTAT', 'Ia', doses, parameters={'Ib': 0},
                                                     sf=scale_factor, **DR_KWARGS)
             responses[1][i].append(dra60.data_set.values.flatten())
-
+            # Simulate pSTAT1 response for IFNb with possibly lower RT
+            if SCALE_RT != 1.0:
+                R1_idx = np.where(Mixed_Model.parameter_names ==  'R1_mu*')
+                R2_idx = np.where(Mixed_Model.parameter_names ==  'R2_mu*')
+                Mixed_Model.parameters[0][R1_idx] = Mixed_Model.parameters[0][R1_idx] * SCALE_RT
+                Mixed_Model.parameters[0][R2_idx] = Mixed_Model.parameters[0][R2_idx] * SCALE_RT
             drb60 = DR_method(times, 'TotalpSTAT', 'Ib', doses, parameters={'Ia': 0},
                                                 sf=scale_factor, **DR_KWARGS)
             responses[0][i].append(drb60.data_set.values.flatten())
+            if SCALE_RT != 1.0:  # reset RT
+                R1_idx = np.where(Mixed_Model.parameter_names ==  'R1_mu*')
+                R2_idx = np.where(Mixed_Model.parameter_names ==  'R2_mu*')
+                Mixed_Model.parameters[0][R1_idx] = Mixed_Model.parameters[0][R1_idx] / SCALE_RT
+                Mixed_Model.parameters[0][R2_idx] = Mixed_Model.parameters[0][R2_idx] / SCALE_RT
 
         Mixed_Model.parameters[0][R_idx[i]] = [R_reference[i]]  # reset IFNARi
 
@@ -106,5 +119,8 @@ if __name__ == '__main__':
             ax.set_title(ylabels[IFN_idx])
     axes[0][0].legend()
     fig.tight_layout()
-    fname = os.path.join(os.getcwd(), 'results', 'Figures', 'Figure_3', 'siRNA.pdf')
+    if SCALE_RT != 1.0:
+        fname = os.path.join(os.getcwd(), 'results', 'Figures', 'Figure_3', 'siRNA_lower_RT.pdf')
+    else:
+        fname = os.path.join(os.getcwd(), 'results', 'Figures', 'Figure_3', 'siRNA.pdf')
     plt.savefig(fname, )
