@@ -74,9 +74,9 @@ if __name__ == '__main__':
             ax.set_yscale('log')
 
             if LOW_IFN:
-                fig.savefig(os.path.join(os.getcwd(), 'results', spec+'_low_dose.pdf'))
+                fig.savefig(os.path.join(os.getcwd(), 'results', observable+'_low_dose.pdf'))
             else:
-                fig.savefig(os.path.join(os.getcwd(), 'results', spec+'.pdf'))
+                fig.savefig(os.path.join(os.getcwd(), 'results', observable+'.pdf'))
 
         plot_spec('Free_Ib', 'Ib', 'Beta')
         plot_spec('R1Ib', 'Ib', 'R1Ib')
