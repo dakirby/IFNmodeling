@@ -464,13 +464,13 @@ class IfnModel:
                         scale_data = lambda q: scale_factor * q
                     else:
                         scale_data = lambda q: (scale_factor * q[0], scale_factor * q[1])
-                    if dose_species == 'Ia':
-                        dose_species = 'Alpha'
-                    elif dose_species == 'Ib':
-                        dose_species = 'Beta'
+                    if dataframe_labels == 'Ia':
+                        dataframe_labels = 'Alpha'
+                    elif dataframe_labels == 'Ib':
+                        dataframe_labels = 'Beta'
 
                     for i in range(len(times)):
-                        df.loc[dose_species].iloc[:, i] = df.loc[dose_species].iloc[:, i].apply(scale_data)
+                        df.loc[dataframe_labels].iloc[:, i] = df.loc[dataframe_labels].iloc[:, i].apply(scale_data)
                     if return_type == 'dataframe':
                         return df
                     else:
@@ -622,12 +622,14 @@ class EnsembleModel():
         Class method for producing ensemble model predictions
         """
         num_checks = kwargs.get('num_checks', 50)
-        if dose_species == 'Ia':
+        if 'dataframe_label' in kwargs.keys():
+            dataframe_label = kwargs.get('dataframe_label')
+        elif dose_species == 'Ia':
             dataframe_label = 'Alpha'
         elif dose_species == 'Ib':
             dataframe_label = 'Beta'
         else:
-            dataframe_label = kwargs.get('dataframe_label', 'dose_species')
+            dataframe_label = 'dose_species'
 
         # Prepare parameter vectors
         parameters_to_check = []

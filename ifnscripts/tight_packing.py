@@ -8,7 +8,7 @@ from ifnclass.ifnplot import DoseresponsePlot
 import matplotlib.gridspec as gridspec
 import load_model as lm
 
-PLOT_IFN = False
+PLOT_IFN = True
 LOW_IFN = True
 
 if __name__ == '__main__':
@@ -57,12 +57,14 @@ if __name__ == '__main__':
 
     if PLOT_IFN:
         def plot_spec(observable, dose_spec, df_label):
-            Mixed_Model.num_dist_samples = 5
-            drb60 = DR_method(times, observable, dose_spec,
-                                                    doses,
-                                                    parameters=dfa_dict,
-                                                    sf=scale_factor,
-                                                    **DR_KWARGS)
+            if dose_spec == 'Ia':
+                arg_dict = dfa_dict
+            elif dose_spec == 'Ib':
+                arg_dict = dfb_dict
+            DR_KWARGS.update({'dataframe_label': observable})
+            drb60 = DR_method(times, observable, dose_spec, doses,
+                              parameters=arg_dict, sf=scale_factor,
+                              **DR_KWARGS)
             new_fit = DoseresponsePlot((1, 1))
             beta_palette = sns.color_palette("rocket_r", 6)
             for idx, t in enumerate(times):
