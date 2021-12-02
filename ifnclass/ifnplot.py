@@ -59,43 +59,47 @@ class Trajectory:
         else:
             return [self.timeslice]
 
-    def y(self):  # timecourse response values
+    def y(self, label=''):  # timecourse response values
+        if label == '':
+            label = self.dose_species
         idx = self.t()
         if self.doseslice is None:
             return self.data.data_set[idx].values[0]
         else:
             try:
-                return self.data.data_set.loc[self.dose_species].loc[self.doseslice].values
+                return self.data.data_set.loc[label].loc[self.doseslice].values
             except KeyError:
                 print(self.data.data_set)
-                print(self.data.data_set.loc[self.dose_species])
-                print(self.data.data_set.loc[self.dose_species].index)
+                print(self.data.data_set.loc[label])
+                print(self.data.data_set.loc[label].index)
                 raise KeyError
 
-    def d(self):  # doses
+    def d(self, label=''):  # doses
+        if label == '':
+            label = self.dose_species
         if self.timeslice is None:
-            return divide(self.data.data_set.loc[self.dose_species].index.values, self.dose_norm)
+            return divide(self.data.data_set.loc[label].index.values, self.dose_norm)
         else:
-            return divide(self.data.data_set.loc[self.dose_species].index.values, self.dose_norm)
+            return divide(self.data.data_set.loc[label].index.values, self.dose_norm)
 
-    def z(self):  # dose-response response values
+    def z(self, label=''):  # dose-response response values
+        if label == '':
+            label = self.dose_species
         if self.timeslice is None:
-            return self.data.data_set.xs(self.dose_species).values
+            return self.data.data_set.xs(label).values
         else:
             try:
-                return self.data.data_set.xs(self.dose_species).loc[:, self.timeslice].values
+                return self.data.data_set.xs(label).loc[:, self.timeslice].values
             except (KeyError, TypeError):
                 try:
                     if type(self.timeslice) == list:
                         temp = [str(el) for el in self.timeslice]
                     else:
                         temp = str(self.timeslice)
-                    return self.data.data_set.xs(self.dose_species).loc[:, temp].values
+                    return self.data.data_set.xs(label).loc[:, temp].values
                 except KeyError:
-                    print(self.data.data_set.xs(self.dose_species).columns)
-                    #print(self.data.data_set.xs(self.dose_species).loc[:, self.timeslice])
+                    print(self.data.data_set.xs(label).columns)
                     raise KeyError("Something went wrong indexing times")
-                    #return self.data.data_set.xs(self.dose_species).loc[:, [float(el) for el in self.timeslice][0]].values
 
 
 class TimecoursePlot:
@@ -182,45 +186,51 @@ class TimecoursePlot:
         del self.trajectories[index]
         del self.subplot_indices[index]
 
-    def show_figure(self, show_flag=True, save_flag=False, save_dir=''):
+    def show_figure(self, show_flag=True, save_flag=False, save_dir='', df_label=''):
         for trajectory_idx in range(len(self.trajectories)):
             trajectory = self.trajectories[trajectory_idx]
             plt_idx = self.subplot_indices[trajectory_idx]
             ax = self.get_axis_object(plt_idx)
+            x = trajectory.t()
+            y = [el[0] for el in trajectory.y(label=df_label)]
             if trajectory.plot_type == 'plot':
                 if type(trajectory.line_style) == str:
                     if trajectory.color is not None:
-                        ax.plot(trajectory.t(), [el[0] for el in trajectory.y()], trajectory.line_style,
-                                label=trajectory.label, color=trajectory.color, linewidth=trajectory.linewidth,
+                        ax.plot(x, y, trajectory.line_style,
+                                label=trajectory.label, color=trajectory.color,
+                                linewidth=trajectory.linewidth,
                                 alpha=trajectory.alpha)
                         ax.legend()
                     else:
-                        ax.plot(trajectory.t(), [el[0] for el in trajectory.y()], trajectory.line_style,
-                                label=trajectory.label, linewidth=trajectory.linewidth, alpha=trajectory.alpha)
+                        ax.plot(x, y, trajectory.line_style,
+                                label=trajectory.label,
+                                linewidth=trajectory.linewidth,
+                                alpha=trajectory.alpha)
                         ax.legend()
                 else:
-                    ax.plot(trajectory.t(), [el[0] for el in trajectory.y()], c=trajectory.line_style,
-                            label=trajectory.label, linewidth=trajectory.linewidth, alpha=trajectory.alpha)
+                    ax.plot(x, y, c=trajectory.line_style,
+                            label=trajectory.label,
+                            linewidth=trajectory.linewidth,
+                            alpha=trajectory.alpha)
                     ax.legend()
             elif trajectory.plot_type == 'scatter':
                 if type(trajectory.line_style) == str:
                     if trajectory.color is not None:
-                        plot_times = trajectory.t()
-                        plot_responses = [el[0] for el in trajectory.y()]
-                        ax.scatter(plot_times, plot_responses, marker=trajectory.line_style, label=trajectory.label, color=trajectory.color)
+                        ax.scatter(x, y, marker=trajectory.line_style,
+                                   label=trajectory.label,
+                                   color=trajectory.color)
                         ax.legend()
                     else:
-                        ax.scatter(trajectory.t(), [el[0] for el in trajectory.y()], c=trajectory.line_style[0],
-                                   marker=trajectory.line_style[1], label=trajectory.label)
+                        ax.scatter(x, y, c=trajectory.line_style[0],
+                                   marker=trajectory.line_style[1],
+                                   label=trajectory.label)
                         ax.legend()
                 else:
-                    ax.scatter(trajectory.t(), [el[0] for el in trajectory.y()], c=trajectory.line_style,
+                    ax.scatter(x, y, c=trajectory.line_style,
                                label=trajectory.label)
                     ax.legend()
             elif trajectory.plot_type == 'errorbar':
-                x = trajectory.t()
-                y = [el[0] for el in trajectory.y()]
-                sigmas = [el[1] for el in trajectory.y()]
+                sigmas = [el[1] for el in trajectory.y(label=df_label)]
                 if type(trajectory.line_style) == str:
                     if trajectory.color is not None:
                         ax.errorbar(x, y, yerr=sigmas, fmt=trajectory.line_style,
@@ -228,7 +238,8 @@ class TimecoursePlot:
                     else:
                         ax.errorbar(x, y, yerr=sigmas, fmt=trajectory.line_style, label=trajectory.label)
                 else:
-                    ax.errorbar(x, y, yerr=sigmas, fmt='--', label=trajectory.label, color=trajectory.line_style)
+                    ax.errorbar(x, y, yerr=sigmas, fmt='--',
+                                label=trajectory.label, color=trajectory.line_style)
                 ax.legend()
 
         if self.match_axes:
@@ -345,17 +356,17 @@ class DoseresponsePlot:
         del self.trajectories[index]
         del self.subplot_indices[index]
 
-    def show_figure(self, show_flag=True, save_flag=False, save_dir='', tight=False):
+    def show_figure(self, show_flag=True, save_flag=False, save_dir='', tight=False, df_label=''):
         for trajectory_idx in range(len(self.trajectories)):
             trajectory = self.trajectories[trajectory_idx]
             plt_idx = self.subplot_indices[trajectory_idx]
             ax = self.get_axis_object(plt_idx)
             if trajectory.plot_type == 'plot':
-                x = trajectory.d()
-                if type(trajectory.z()[0]) == tuple:
-                    z = [el[0] for el in trajectory.z()]
+                x = trajectory.d(label=df_label)
+                if type(trajectory.z(label=df_label)[0]) == tuple:
+                    z = [el[0] for el in trajectory.z(label=df_label)]
                 else:
-                    z = trajectory.z()
+                    z = trajectory.z(label=df_label)
                 if x[0] == 0:
                     x = x[1:]
                     z = z[1:]
@@ -372,8 +383,8 @@ class DoseresponsePlot:
                 ax.legend()
 
             elif trajectory.plot_type == 'scatter':
-                x = trajectory.d()
-                z = [el[0] for el in trajectory.z()]
+                x = trajectory.d(label=df_label)
+                z = [el[0] for el in trajectory.z(label=df_label)]
                 if x[0] == 0:
                     x = x[1:]
                     z = z[1:]
@@ -392,12 +403,12 @@ class DoseresponsePlot:
                         print("Could not interpret line style")
                         raise
             elif trajectory.plot_type == 'errorbar':
-                x = trajectory.d()
-                z = [el[0] for el in trajectory.z()]
+                x = trajectory.d(label=df_label)
+                z = [el[0] for el in trajectory.z(label=df_label)]
                 if x[0] == 0:
                     x = x[1:]
                     z = z[1:]
-                sigmas = [el[1] for el in trajectory.z()]
+                sigmas = [el[1] for el in trajectory.z(label=df_label)]
                 if type(trajectory.line_style) == str:
                     if trajectory.color is not None:
                         ax.errorbar(x, z, yerr=sigmas, fmt=trajectory.line_style,
@@ -408,12 +419,12 @@ class DoseresponsePlot:
                     ax.errorbar(x, z, yerr=sigmas, fmt='--', label=trajectory.label, color=trajectory.line_style, alpha=trajectory.alpha)
                 ax.legend()
             elif trajectory.plot_type == 'envelope':
-                x = trajectory.d()
-                z = [el[0] for el in trajectory.z()]
+                x = trajectory.d(label=df_label)
+                z = [el[0] for el in trajectory.z(label=df_label)]
                 if x[0] == 0:
                     x = x[1:]
                     z = z[1:]
-                sigmas = [el[1] for el in trajectory.z()]
+                sigmas = [el[1] for el in trajectory.z(label=df_label)]
                 z_plus_sigma = [z[i] + sigmas[i] for i in range(len(sigmas))]
                 z_minus_sigma = [z[i] - sigmas[i] for i in range(len(sigmas))]
                 if type(trajectory.line_style) == str:

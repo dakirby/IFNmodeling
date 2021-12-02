@@ -57,6 +57,7 @@ if __name__ == '__main__':
 
     if PLOT_IFN:
         def plot_spec(observable, dose_spec, df_label):
+            Mixed_Model.num_dist_samples = 3
             if dose_spec == 'Ia':
                 arg_dict = dfa_dict
             elif dose_spec == 'Ib':
@@ -72,7 +73,7 @@ if __name__ == '__main__':
                                        beta_palette[idx], (0, 1),
                                        df_label, label=str(t) + ' min',
                                        linewidth=2, alpha=PLOT_KWARGS['alpha'])
-            fig, ax = new_fit.show_figure(show_flag=False)
+            fig, ax = new_fit.show_figure(show_flag=False, df_label=observable)
             ax.set_yscale('log')
 
             if LOW_IFN:
@@ -81,6 +82,7 @@ if __name__ == '__main__':
                 fig.savefig(os.path.join(os.getcwd(), 'results', observable+'.pdf'))
 
         plot_spec('Free_Ib', 'Ib', 'Beta')
+        exit()
         plot_spec('R1Ib', 'Ib', 'R1Ib')
         plot_spec('R2Ib', 'Ib', 'R2Ib')
         plot_spec('Tb', 'Ib', 'Tb')
