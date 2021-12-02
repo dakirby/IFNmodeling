@@ -57,7 +57,6 @@ if __name__ == '__main__':
 
     if PLOT_IFN:
         def plot_spec(observable, dose_spec, df_label):
-            Mixed_Model.num_dist_samples = 3
             if dose_spec == 'Ia':
                 arg_dict = dfa_dict
             elif dose_spec == 'Ib':
