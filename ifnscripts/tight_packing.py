@@ -82,7 +82,6 @@ if __name__ == '__main__':
                 fig.savefig(os.path.join(os.getcwd(), 'results', observable+'.pdf'))
 
         plot_spec('Free_Ib', 'Ib', 'Beta')
-        exit()
         plot_spec('R1Ib', 'Ib', 'R1Ib')
         plot_spec('R2Ib', 'Ib', 'R2Ib')
         plot_spec('Tb', 'Ib', 'Tb')
